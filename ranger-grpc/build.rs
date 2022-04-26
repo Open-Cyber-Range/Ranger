@@ -7,7 +7,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let proto_path = PathBuf::from("grpc-proto");
     let proto_path_string = proto_path.to_str().unwrap();
     configure()
-        .build_server(false)
         .compile_well_known_types(true)
         .out_dir(out_dir)
         .compile(
