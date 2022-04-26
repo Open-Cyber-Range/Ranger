@@ -4,7 +4,7 @@ use std::fs::read_to_string;
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct Configuration {
-    pub node_deployer_addresses: Vec<String>,
+    pub(crate) node_deployer_addresses: Vec<String>,
 }
 
 pub fn read_configuration(arguments: Vec<String>) -> Result<Configuration> {

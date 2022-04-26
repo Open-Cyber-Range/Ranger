@@ -1,7 +1,10 @@
 use actix::prelude::*;
-use actix::{Actor, ContextFutureSpawner, Handler, Message, SyncContext, WrapFuture};
+use actix::{Actor, Handler, Message};
 use anyhow::{Ok, Result};
-use ranger_grpc::{node_service_client::NodeServiceClient, Identifier, Node};
+use ranger_grpc::{
+    node_service_client::NodeServiceClient, simple_response::Status, Identifier, Node,
+    SimpleResponse,
+};
 use tonic::transport::Channel;
 
 #[derive(Message)]
@@ -37,7 +40,11 @@ impl Handler<CreateNode> for NodeClient {
         let node_id = format!("{}/{}", node.exercise_name, node.name);
         let mut client = self.client.clone();
         Box::pin(async move {
-            client.create(tonic::Request::new(node)).await?;
+            let result: SimpleResponse =
+                client.create(tonic::Request::new(node)).await?.into_inner();
+            if result.status == i32::from(Status::Error) {
+                return Err(anyhow::anyhow!(result.message));
+            }
             Ok(node_id)
         })
     }
@@ -51,9 +58,13 @@ impl Handler<DeleteNode> for NodeClient {
         //In future this will be id returned by the deployer
         let mut client = self.client.clone();
         Box::pin(async move {
-            client
+            let result: SimpleResponse = client
                 .delete(tonic::Request::new(Identifier { value: node_id }))
-                .await?;
+                .await?
+                .into_inner();
+            if result.status == i32::from(Status::Error) {
+                return Err(anyhow::anyhow!(result.message));
+            }
             Ok(())
         })
     }
