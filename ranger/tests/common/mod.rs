@@ -55,7 +55,7 @@ pub(crate) fn create_mock_node_server() -> MockNodeBuilder {
         successful_create: true,
         successful_delete: true,
         server_address: None,
-        timeout_millis: 2000,
+        timeout_millis: 100,
     }
 }
 
@@ -100,9 +100,7 @@ impl MockNodeBuilder {
             None => format!("127.0.0.1:{}", Self::random_port()),
         };
         let server_address = server_addres_string.parse()?;
-
         let mock_server = MockNodeService::new(self.clone());
-
         let tokio_runtime = Runtime::new()?;
 
         std::thread::spawn(move || {
@@ -116,6 +114,7 @@ impl MockNodeBuilder {
             Ok::<(), anyhow::Error>(())
         });
         std::thread::sleep(Duration::from_millis(self.timeout_millis));
+
         Ok(server_addres_string)
     }
 }
