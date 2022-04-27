@@ -95,11 +95,11 @@ impl MockNodeBuilder {
     }
 
     pub fn run(self) -> Result<String> {
-        let server_addres_string = match self.server_address.clone() {
+        let server_address_string = match self.server_address.clone() {
             Some(address) => address,
             None => format!("127.0.0.1:{}", Self::random_port()),
         };
-        let server_address = server_addres_string.parse()?;
+        let server_address = server_address_string.parse()?;
         let mock_server = MockNodeService::new(self.clone());
         let tokio_runtime = Runtime::new()?;
 
@@ -115,6 +115,6 @@ impl MockNodeBuilder {
         });
         std::thread::sleep(Duration::from_millis(self.timeout_millis));
 
-        Ok(server_addres_string)
+        Ok(server_address_string)
     }
 }
