@@ -1,0 +1,5 @@
+---
+source: ranger/tests/node.rs
+expression: node_id
+---
+"some-exercise-name/some-name"

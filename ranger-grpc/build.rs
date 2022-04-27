@@ -1,17 +1,25 @@
 use std::env;
-use std::fs;
-use std::path::Path;
+use std::path::PathBuf;
+use tonic_build::configure;
 
-fn main() {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let out_dir = env::var_os("OUT_DIR").unwrap();
-    let dest_path = Path::new(&out_dir).join("hello.rs");
-    fs::write(
-        &dest_path,
-        "pub fn message() -> &'static str {
-            \"Hello, World!\"
-        }
-        ",
-    )
-    .unwrap();
-    println!("cargo:rerun-if-changed=build.rs");
+    let proto_path = PathBuf::from("grpc-proto");
+    let proto_path_string = proto_path.to_str().unwrap();
+    configure()
+        .compile_well_known_types(true)
+        .out_dir(out_dir)
+        .compile(
+            &[
+                proto_path
+                    .join("src")
+                    .join("common.proto")
+                    .to_str()
+                    .unwrap(),
+                proto_path.join("src").join("node.proto").to_str().unwrap(),
+            ],
+            &[proto_path_string],
+        )?;
+    println!("cargo:rerun-if-changed={}", proto_path_string);
+    Ok(())
 }

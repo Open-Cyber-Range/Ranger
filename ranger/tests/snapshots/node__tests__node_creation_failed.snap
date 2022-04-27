@@ -1,0 +1,5 @@
+---
+source: ranger/tests/node.rs
+expression: result.unwrap_err()
+---
+"Failed to create node"
