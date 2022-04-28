@@ -1,0 +1,15 @@
+{
+  "name": "Ranger devcontainer",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "ranger",
+  "settings": {},
+  "extensions": [
+    "serayuzgur.crates",
+    "vadimcn.vscode-lldb",
+    "tamasfe.even-better-toml",
+    "matklad.rust-analyzer",
+    "zxh404.vscode-proto3"
+  ],
+  "workspaceFolder": "/workspace",
+  "remoteUser": "vscode"
+}
