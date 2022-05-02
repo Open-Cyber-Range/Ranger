@@ -2,7 +2,7 @@ version: '3'
 
 services:
   ranger:
-    image: mcr.microsoft.com/vscode/devcontainers/rust
+    image: nexus.ex.c-lab.ee:8002/rust-development:latest
     command: /bin/sh -c "while sleep 1000; do :; done"
     volumes:
       - ..:/workspace:cached
