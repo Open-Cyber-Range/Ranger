@@ -2,7 +2,7 @@ version: '3'
 
 services:
   ranger:
-    image: nexus.ex.c-lab.ee:8002/rust-development:latest
+    image: nexus.ex.c-lab.ee:8003/rust-development:latest
     command: /bin/sh -c "while sleep 1000; do :; done"
     volumes:
       - ..:/workspace:cached
@@ -10,7 +10,7 @@ services:
     user: vscode
 
   ranger-vmware-node-deployer:
-    image: nexus.ex.c-lab.ee:8002/ranger-vmware-node-deployer:latest
+    image: nexus.ex.c-lab.ee:8003/ranger-vmware-node-deployer:latest
     volumes:
       - ./configs/ranger-vmware-node-deployer.yml:/etc/opt/ranger/ranger-vmware-node-deployer/config.yml
     ports:
