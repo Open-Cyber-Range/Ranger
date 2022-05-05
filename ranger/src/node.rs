@@ -52,7 +52,6 @@ impl Handler<DeleteNode> for NodeClient {
 
     fn handle(&mut self, msg: DeleteNode, _ctx: &mut Self::Context) -> Self::Result {
         let node_id = msg.0;
-        //In future this will be id returned by the deployer
         let mut client = self.client.clone();
         Box::pin(async move {
             let result: SimpleResult = client
