@@ -6,6 +6,7 @@ mod tests {
     use actix_rt::System;
     use anyhow::{Error, Result};
     use ranger::node::{CreateNode, DeleteNode, NodeClient};
+    use ranger_grpc::IdentifierResult;
 
     #[test]
     fn node_created_successfully() -> Result<()> {
@@ -23,7 +24,7 @@ mod tests {
                     template_name: "debian10".to_string(),
                 }))
                 .await??;
-            Ok::<String, Error>(node_id)
+            Ok::<IdentifierResult, Error>(node_id)
         })?;
 
         insta::assert_debug_snapshot!(node_id);

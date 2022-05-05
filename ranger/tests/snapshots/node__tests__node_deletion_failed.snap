@@ -2,4 +2,4 @@
 source: ranger/tests/node.rs
 expression: result.unwrap_err()
 ---
-"Failed to delete node"
+"Some(Error { message: \"Failed to delete node\" })"
