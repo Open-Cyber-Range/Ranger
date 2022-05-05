@@ -15,7 +15,7 @@ async fn main() -> Result<(), Error> {
     for deployer_address in configuration.node_deployer_addresses {
         let node_deployer_client = NodeClient::new(deployer_address.clone()).await?.start();
         println!("Deploying node at: {}", deployer_address);
-        let node_id = node_deployer_client
+        let identifier_result = node_deployer_client
             .send(CreateNode(ranger_grpc::Node {
                 name: "some-name".to_string(),
                 exercise_name: "some-exercise-name".to_string(),
@@ -23,7 +23,7 @@ async fn main() -> Result<(), Error> {
             }))
             .await??;
         println!("Node deployed, now deleting");
-        node_deployer_client.send(DeleteNode(node_id)).await??;
+        node_deployer_client.send(DeleteNode(identifier_result.identifier.unwrap().value)).await??;
         println!("Node deleted");
     }
     Ok(())
