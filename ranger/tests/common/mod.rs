@@ -2,8 +2,7 @@ use anyhow::Result;
 use rand::Rng;
 use ranger_grpc::{
     node_service_server::{NodeService, NodeServiceServer},
-    simple_response::Status as ResponseStatus,
-    Identifier, Node, SimpleResponse,
+    Identifier, Node,
 };
 use std::time::Duration;
 use tokio::runtime::Runtime;
@@ -21,32 +20,22 @@ impl MockNodeService {
 
 #[tonic::async_trait]
 impl NodeService for MockNodeService {
-    async fn create(&self, _: Request<Node>) -> Result<Response<SimpleResponse>, Status> {
+    async fn create(&self, _: Request<Node>) -> Result<Response<Identifier>, Status> {
         if self.builder.successful_create {
-            return Ok(Response::new(SimpleResponse {
-                status: ResponseStatus::Ok.into(),
-                message: String::from(""),
+            Status::ok("Node created successfully");
+            return Ok(Response::new(Identifier {
+                value: String::from("Some_UUID"),
             }));
         }
 
-        Ok(Response::new(SimpleResponse {
-            status: ResponseStatus::Error.into(),
-            message: String::from("Failed to create node"),
-        }))
+        return Err(Status::internal("Failed to create node"));
     }
 
-    async fn delete(&self, _: Request<Identifier>) -> Result<Response<SimpleResponse>, Status> {
+    async fn delete(&self, _: Request<Identifier>) -> Result<Response<()>, Status> {
         if self.builder.successful_delete {
-            return Ok(Response::new(SimpleResponse {
-                status: ResponseStatus::Ok.into(),
-                message: String::from(""),
-            }));
+            return Ok(Response::new(()));
         }
-
-        Ok(Response::new(SimpleResponse {
-            status: ResponseStatus::Error.into(),
-            message: String::from("Failed to delete node"),
-        }))
+        return Err(Status::internal("Failed to delete node"));
     }
 }
 
