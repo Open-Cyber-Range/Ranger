@@ -1,13 +1,11 @@
 use actix::prelude::*;
 use actix::{Actor, Handler, Message};
 use anyhow::{Ok, Result};
-use ranger_grpc::{
-    node_service_client::NodeServiceClient, Identifier, IdentifierResult, Node, SimpleResult,
-};
+use ranger_grpc::{node_service_client::NodeServiceClient, Identifier, Node};
 use tonic::transport::Channel;
 
 #[derive(Message)]
-#[rtype(result = "Result<IdentifierResult, anyhow::Error>")]
+#[rtype(result = "Result<Identifier, anyhow::Error>")]
 pub struct CreateNode(pub Node);
 
 #[derive(Message)]
@@ -31,18 +29,17 @@ impl Actor for NodeClient {
 }
 
 impl Handler<CreateNode> for NodeClient {
-    type Result = ResponseFuture<Result<IdentifierResult>>;
+    type Result = ResponseFuture<Result<Identifier>>;
 
     fn handle(&mut self, msg: CreateNode, _ctx: &mut Self::Context) -> Self::Result {
         let node = msg.0;
         let mut client = self.client.clone();
         Box::pin(async move {
-            let result: IdentifierResult =
-                client.create(tonic::Request::new(node)).await?.into_inner();
-            if result.error.is_some() {
-                return Err(anyhow::anyhow!("{:?}", result.error));
+            let result = client.create(tonic::Request::new(node)).await;
+            if let Err(status) = result {
+                return Err(anyhow::anyhow!("{:?}", status));
             }
-            Ok(result)
+            Ok(result?.into_inner())
         })
     }
 }
@@ -54,12 +51,11 @@ impl Handler<DeleteNode> for NodeClient {
         let node_id = msg.0;
         let mut client = self.client.clone();
         Box::pin(async move {
-            let result: SimpleResult = client
+            let result = client
                 .delete(tonic::Request::new(Identifier { value: node_id }))
-                .await?
-                .into_inner();
-            if result.error.is_some() {
-                return Err(anyhow::anyhow!("{:?}", result.error));
+                .await;
+            if let Err(status) = result {
+                return Err(anyhow::anyhow!("{:?}", status));
             }
             Ok(())
         })

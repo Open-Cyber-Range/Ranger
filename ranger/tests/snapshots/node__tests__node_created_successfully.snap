@@ -2,11 +2,6 @@
 source: ranger/tests/node.rs
 expression: node_id
 ---
-IdentifierResult {
-    identifier: Some(
-        Identifier {
-            value: "Some_UUID",
-        },
-    ),
-    error: None,
+Identifier {
+    value: "Some_UUID",
 }

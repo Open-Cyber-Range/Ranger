@@ -23,7 +23,9 @@ async fn main() -> Result<(), Error> {
             }))
             .await??;
         println!("Node deployed, now deleting");
-        node_deployer_client.send(DeleteNode(identifier_result.identifier.unwrap().value)).await??;
+        node_deployer_client
+            .send(DeleteNode(identifier_result.value))
+            .await??;
         println!("Node deleted");
     }
     Ok(())

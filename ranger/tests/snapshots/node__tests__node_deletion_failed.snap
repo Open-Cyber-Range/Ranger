@@ -1,5 +1,0 @@
----
-source: ranger/tests/node.rs
-expression: result.unwrap_err()
----
-"Some(Error { message: \"Failed to delete node\" })"
