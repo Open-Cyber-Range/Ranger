@@ -17,7 +17,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         ],
         &[proto_path_string],
     )?;
-    configure().out_dir(out_dir).compile_well_known_types(true);
     println!("cargo:rerun-if-changed={}", proto_path_string);
     Ok(())
 }
