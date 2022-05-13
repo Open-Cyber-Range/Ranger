@@ -1,0 +1,16 @@
+stages:
+  - build
+
+lint-and-test:
+  stage: build
+  image: $DOCKER_REGISTRY_PULL/rust-builder
+  script:
+    - cargo clippy -- -Dwarnings
+    - cargo build --verbose
+    - cargo tarpaulin --skip-clean --verbose --out Xml
+  coverage: '/^\d+.\d+% coverage/'
+  only:
+    - develop
+    - master
+    - merge_requests
+    
