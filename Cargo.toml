@@ -2,3 +2,6 @@
 
 members = ["ranger", "ranger-grpc"]
 default-members = ["ranger"]
+
+[dependencies]
+macros = { git = "ssh://git@code.ex.c-lab.ee/open-cyber-range/public/sdl-parser", version = "0.8" }
