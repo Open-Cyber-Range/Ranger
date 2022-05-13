@@ -4,7 +4,9 @@ use std::fs::read_to_string;
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct Configuration {
-    pub(crate) node_deployer_addresses: Vec<String>,
+    pub node_deployer_addresses: Vec<String>,
+    pub host: String,
+    pub port: u16,
 }
 
 pub fn read_configuration(arguments: Vec<String>) -> Result<Configuration> {
@@ -34,6 +36,8 @@ mod tests {
             file,
             r#"
 node_deployer_addresses: ["http://localhost:9999", "http://localhost:9998", "http://localhost:9997"]
+host: localhost
+port: 8080
     "#
         )?;
         let arguments = vec![String::from("program-name"), path_string];
