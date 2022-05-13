@@ -8,4 +8,6 @@ Configuration {
         "http://localhost:9998",
         "http://localhost:9997",
     ],
+    host: "localhost",
+    port: 8080,
 }

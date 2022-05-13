@@ -1,32 +1,27 @@
-mod configuration;
-mod node;
-
 use actix::Actor;
+use actix_web::web::scope;
+use actix_web::{web::Data, App, HttpServer};
 use anyhow::Error;
+use ranger::configuration::read_configuration;
+use ranger::database::Database;
+use ranger::routes::basic::{status, version};
+use ranger::routes::exercise::add_exercise;
+use ranger::AppState;
 
-use crate::{
-    configuration::read_configuration,
-    node::{CreateNode, DeleteNode, NodeClient},
-};
-
-#[actix::main]
+#[actix_web::main]
 async fn main() -> Result<(), Error> {
     let configuration = read_configuration(std::env::args().collect())?;
-    for deployer_address in configuration.node_deployer_addresses {
-        let node_deployer_client = NodeClient::new(deployer_address.clone()).await?.start();
-        println!("Deploying node at: {}", deployer_address);
-        let identifier_result = node_deployer_client
-            .send(CreateNode(ranger_grpc::Node {
-                name: "some-name".to_string(),
-                exercise_name: "some-exercise-name".to_string(),
-                template_name: "debian10".to_string(),
-            }))
-            .await??;
-        println!("Node deployed, now deleting");
-        node_deployer_client
-            .send(DeleteNode(identifier_result.value))
-            .await??;
-        println!("Node deleted");
-    }
+    HttpServer::new(move || {
+        let database_address = Database::new().start();
+        let app_state = Data::new(AppState { database_address });
+        App::new()
+            .app_data(app_state)
+            .service(status)
+            .service(version)
+            .service(scope("api/v1").service(add_exercise))
+    })
+    .bind((configuration.host, configuration.port))?
+    .run()
+    .await?;
     Ok(())
 }
