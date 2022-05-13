@@ -13,4 +13,3 @@ lint-and-test:
     - develop
     - master
     - merge_requests
-    
