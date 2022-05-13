@@ -1,3 +1,6 @@
 [submodule "ranger-grpc/grpc-proto"]
 	path = ranger-grpc/grpc-proto
 	url = ../ranger-grpc.git
+
+[submodule "sdl-parser"]
+	url = git@code.ex.c-lab.ee/open-cyber-range/public/sdl-parser.git
