@@ -5,7 +5,7 @@ lint-and-test:
   stage: build
   image: $DOCKER_REGISTRY_PULL/rust-builder
   before_script:
-    - git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@code.ex.c-lab.ee/".insteadOf "git@code.ex.c-lab.ee:open-cyber-range/"
+    - git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@code.ex.c-lab.ee/public/sdl-parser.git/".insteadOf "git@code.ex.c-lab.ee:open-cyber-range/public/sdl-parser.git"
     - git submodule sync && git submodule update --init
   script:
     - cargo clippy -- -Dwarnings
