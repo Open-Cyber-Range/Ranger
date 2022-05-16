@@ -9,8 +9,8 @@ lint-and-test:
     - echo $CI_DEPLOY_PASSWORD
 
     - sed -i 's/ssh:\/\/git@/https:\/\/gitlab-ci-token:${CI_JOB_TOKEN}@/' ranger/Cargo.toml
-    - git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@code.ex.c-lab.ee/public/ranger.git/".insteadOf "git@code.ex.c-lab.ee:open-cyber-range/public/ranger.git"
-    #- git clone https://${CI_DEPLOY_USER}:${CI_DEPLOY_PASSWORD}@code.ex.c-lab.ee/open-cyber-range/public/sdl-parser.git
+    #- git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@code.ex.c-lab.ee/public/ranger.git/".insteadOf "git@code.ex.c-lab.ee:open-cyber-range/public/ranger.git"
+    - git clone https://${CI_DEPLOY_USER}:${CI_DEPLOY_PASSWORD}@code.ex.c-lab.ee/open-cyber-range/public/sdl-parser.git
     - git submodule sync && git submodule update --init
   script:
     - cargo clippy -- -Dwarnings
