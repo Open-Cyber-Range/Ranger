@@ -7,6 +7,7 @@ lint-and-test:
   before_script:
     - sed -i 's/ssh:\/\/git@/https:\/\/gitlab-ci-token:${CI_JOB_TOKEN}@/' ranger/Cargo.toml
     - git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@code.ex.c-lab.ee/public/sdl-parser.git/".insteadOf "git@code.ex.c-lab.ee:open-cyber-range/public/sdl-parser.git"
+    - git clone git@code.ex.c-lab.ee:open-cyber-range/public/sdl-parser.git
     - git submodule sync && git submodule update --init
   script:
     - cargo clippy -- -Dwarnings
