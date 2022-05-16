@@ -3,4 +3,4 @@
 	url = ../ranger-grpc.git
 
 [submodule "sdl-parser"]
-	url = git@code.ex.c-lab.ee/open-cyber-range/public/sdl-parser.git
+	url = git@code.ex.c-lab.ee:open-cyber-range/public/sdl-parser.git
