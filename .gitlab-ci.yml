@@ -5,7 +5,7 @@ lint-and-test:
   stage: build
   image: $DOCKER_REGISTRY_PULL/rust-builder
   before_script:
-    # - git config --global url."https://gitlab+deploy-token-2:${OCR_DEPLOY_TOKEN_PASSWORD}@code.ex.c-lab.ee/open-cyber-range/public/sdl-parser.git/".insteadOf "ssh://git@code.ex.c-lab.ee/open-cyber-range/public/sdl-parser"
+    - git config --global url."https://gitlab+deploy-token-2:${OCR_DEPLOY_TOKEN_PASSWORD}@code.ex.c-lab.ee/open-cyber-range/public/sdl-parser.git/".insteadOf "ssh://git@code.ex.c-lab.ee/open-cyber-range/public/sdl-parser"
     - git clone https://gitlab+deploy-token-2:${OCR_DEPLOY_TOKEN_PASSWORD}@code.ex.c-lab.ee/open-cyber-range/public/sdl-parser.git
   script:
     - cargo clippy -- -Dwarnings
@@ -25,6 +25,7 @@ build-x86-64bit-windows-release:
   needs: ["lint-and-test"]
   image: $DOCKER_REGISTRY_PULL/rust-builder
   before_script:
+    - git config --global url."https://gitlab+deploy-token-2:${OCR_DEPLOY_TOKEN_PASSWORD}@code.ex.c-lab.ee/open-cyber-range/public/sdl-parser.git/".insteadOf "ssh://git@code.ex.c-lab.ee/open-cyber-range/public/sdl-parser"
     - git clone https://gitlab+deploy-token-2:${OCR_DEPLOY_TOKEN_PASSWORD}@code.ex.c-lab.ee/open-cyber-range/public/sdl-parser.git
   script:
     - cargo build --release --target x86_64-pc-windows-gnu
@@ -37,6 +38,7 @@ build-and-upload-x86-64bit-linux-release-for-ranger:
   needs: ["lint-and-test"]
   image: $DOCKER_REGISTRY_PULL/rust-builder
   before_script:
+    - git config --global url."https://gitlab+deploy-token-2:${OCR_DEPLOY_TOKEN_PASSWORD}@code.ex.c-lab.ee/open-cyber-range/public/sdl-parser.git/".insteadOf "ssh://git@code.ex.c-lab.ee/open-cyber-range/public/sdl-parser"
     - git clone https://gitlab+deploy-token-2:${OCR_DEPLOY_TOKEN_PASSWORD}@code.ex.c-lab.ee/open-cyber-range/public/sdl-parser.git
   script:
     - cargo deb --target x86_64-unknown-linux-gnu -p ranger
