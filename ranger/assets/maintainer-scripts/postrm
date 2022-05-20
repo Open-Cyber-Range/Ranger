@@ -1,0 +1,12 @@
+#! /bin/sh
+set -e
+
+ACTION=$1
+case $ACTION in
+
+  remove)
+    rm -rf /var/opt/ranger/ranger
+    ;;
+esac
+
+#DEBHELPER#

@@ -5,6 +5,31 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[package.metadata.deb]
+name = "ranger"
+maintainer = "Kaarel Allemann <kaarel.allemann@c14.ee>"
+copyright = "2022, CR14 <info@cr14.ee>"
+license-file = ["../LICENSE", "4"]
+# What's the correct description?
+# extended-description = """\
+# Deputy package server is a digital library server meant for storing deputy packages."""
+depends = "$auto, systemd"
+section = "utility"
+priority = "optional"
+assets = [
+  [
+    "target/release/ranger",
+    "/var/opt/ranger/bin/",
+    "755",
+  ],
+  [
+    "assets/default-production-config.yml",
+    "/etc/opt/ranger/ranger/config.yml",
+    "644",
+  ],
+]
+maintainer-scripts = "assets/maintainer-scripts"
+
 [dependencies]
 actix = "0.13"
 actix-web = "4"
