@@ -7,12 +7,8 @@ edition = "2021"
 
 [package.metadata.deb]
 name = "ranger"
-maintainer = "Kaarel Allemann <kaarel.allemann@c14.ee>"
+maintainer = "Madis-Mikk Remmet <madismikk.remmet@c14.ee>"
 copyright = "2022, CR14 <info@cr14.ee>"
-license-file = ["../LICENSE", "4"]
-# What's the correct description?
-# extended-description = """\
-# Deputy package server is a digital library server meant for storing deputy packages."""
 depends = "$auto, systemd"
 section = "utility"
 priority = "optional"
@@ -28,7 +24,7 @@ assets = [
     "644",
   ],
 ]
-maintainer-scripts = "assets/maintainer-scripts"
+systemd-units = { unit-name = "ranger", unit-scripts = "assets/unit-scripts", enable = true }
 
 [dependencies]
 actix = "0.13"
