@@ -24,7 +24,7 @@ assets = [
     "644",
   ],
 ]
-systemd-units = { unit-name = "ranger", unit-scripts = "assets/unit-scripts", enable = true }
+systemd-units = { unit-name = "ranger", unit-scripts = "assets/unit-scripts" }
 
 [dependencies]
 actix = "0.13"
