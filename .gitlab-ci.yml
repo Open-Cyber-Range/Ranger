@@ -10,6 +10,7 @@ lint-and-test:
   script:
     - cargo clippy -- -Dwarnings
     - cargo build --verbose
+    - cargo tarpaulin --skip-clean --verbose --out Xml
   coverage: '/^\d+.\d+% coverage/'
   artifacts:
     reports:
