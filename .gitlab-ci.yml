@@ -30,7 +30,6 @@ build-x86-64bit-windows-release:
   script:
     - cargo build --release --target x86_64-pc-windows-gnu
   only:
-    - merge_requests
     - master
 
 build-and-upload-x86-64bit-linux-release-for-ranger:
@@ -45,5 +44,4 @@ build-and-upload-x86-64bit-linux-release-for-ranger:
     - DEB_FILE=$(find ./target/x86_64-unknown-linux-gnu/debian/ -maxdepth 1 -type f -name "*.deb")
     - 'curl -u $OCR_DEPLOYMENT_USER:$OCR_DEPLOYMENT_PASSWORD -X POST -H "Content-Type: multipart/form-data" --data-binary "@$DEB_FILE" $OCR_APT_REPOSITORY'
   only:
-    - merge_requests
     - master
