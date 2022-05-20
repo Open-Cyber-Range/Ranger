@@ -1,7 +1,3 @@
 host: 0.0.0.0
 port: 8080
-repository:
-  folder: /var/opt/ranger/ranger/repository
-  username: ranger
-  email: ranger@localhost
-package_folder: /var/opt/ranger/ranger/package
+database_address: "http://localhost:9999"
