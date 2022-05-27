@@ -1245,6 +1245,7 @@ dependencies = [
  "actix-web",
  "anyhow",
  "insta",
+ "lazy_static",
  "log",
  "rand",
  "ranger-grpc",

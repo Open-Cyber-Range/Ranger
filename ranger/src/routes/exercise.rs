@@ -1,5 +1,12 @@
-use crate::{database::AddScenario, AppState};
-use actix_web::{post, web::Data, HttpResponse};
+use crate::{
+    database::{AddScenario, GetScenario},
+    AppState, scenario::deploy_scenario,
+};
+use actix_web::{
+    post,
+    web::{Data, Path},
+    HttpResponse,
+};
 use log::error;
 use sdl_parser::parse_sdl;
 
@@ -22,4 +29,21 @@ pub async fn add_exercise(text: String, app_state: Data<AppState>) -> HttpRespon
             HttpResponse::BadRequest().finish()
         }
     }
+}
+
+#[post("exercise/{scenario_name}/deployment")]
+pub async fn deploy_exercise(
+    path_variables: Path<String>,
+    app_state: Data<AppState>,
+) -> HttpResponse {
+    let scenario_name = path_variables.into_inner();
+    println!("Adding scenario: {}", scenario_name);
+    let scenario = app_state
+        .database_address
+        .send(GetScenario(scenario_name))
+        .await
+        .unwrap()
+        .unwrap();
+        deploy_scenario(scenario).await.unwrap();
+    HttpResponse::Ok().body("Ok")
 }

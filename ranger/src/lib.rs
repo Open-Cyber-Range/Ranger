@@ -2,6 +2,7 @@ pub mod configuration;
 pub mod database;
 pub mod node;
 pub mod routes;
+pub mod scenario;
 
 use crate::database::Database;
 

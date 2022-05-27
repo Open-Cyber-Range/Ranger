@@ -5,7 +5,7 @@ use anyhow::Error;
 use ranger::configuration::read_configuration;
 use ranger::database::Database;
 use ranger::routes::basic::{status, version};
-use ranger::routes::exercise::add_exercise;
+use ranger::routes::exercise::{add_exercise, deploy_exercise};
 use ranger::AppState;
 
 #[actix_web::main]
@@ -18,7 +18,11 @@ async fn main() -> Result<(), Error> {
             .app_data(app_state)
             .service(status)
             .service(version)
-            .service(scope("api/v1").service(add_exercise))
+            .service(
+                scope("/api/v1")
+                    .service(add_exercise)
+                    .service(deploy_exercise),
+            )
     })
     .bind((configuration.host, configuration.port))?
     .run()

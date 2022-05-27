@@ -32,6 +32,7 @@ actix-web = "4"
 anyhow = "1"
 insta = "1"
 log = "0.4"
+lazy_static = "1.4"
 rand = "0.8"
 ranger-grpc = { path = "../ranger-grpc" }
 sdl-parser = { git = "ssh://git@code.ex.c-lab.ee/open-cyber-range/public/sdl-parser", version = "0.8" }
