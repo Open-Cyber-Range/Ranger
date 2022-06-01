@@ -2,7 +2,7 @@ use anyhow::Result;
 use rand::Rng;
 use ranger_grpc::{
     node_service_server::{NodeService, NodeServiceServer},
-    Identifier, Node,
+    Identifier, NodeDeployment, NodeIdentifier, NodeType,
 };
 use std::time::Duration;
 use tokio::runtime::Runtime;
@@ -20,18 +20,24 @@ impl MockNodeService {
 
 #[tonic::async_trait]
 impl NodeService for MockNodeService {
-    async fn create(&self, _: Request<Node>) -> Result<Response<Identifier>, Status> {
+    async fn create(&self, _: Request<NodeDeployment>) -> Result<Response<NodeIdentifier>, Status> {
         if self.builder.successful_create {
             Status::ok("Node created successfully");
-            return Ok(Response::new(Identifier {
-                value: String::from("Some_UUID"),
-            }));
+            return Ok(
+                Response::new(
+                    NodeIdentifier { 
+                        identifier: Some(Identifier{
+                            value: String::from("Some UUID")
+                        }),
+                        node_type: NodeType::Vm.into(),
+                    }
+                ));
         }
 
         return Err(Status::internal("Failed to create node"));
     }
 
-    async fn delete(&self, _: Request<Identifier>) -> Result<Response<()>, Status> {
+    async fn delete(&self, _: Request<NodeIdentifier>) -> Result<Response<()>, Status> {
         if self.builder.successful_delete {
             return Ok(Response::new(()));
         }

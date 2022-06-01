@@ -2,6 +2,11 @@
 source: ranger/tests/node.rs
 expression: node_id
 ---
-Identifier {
-    value: "Some_UUID",
+NodeIdentifier {
+    identifier: Some(
+        Identifier {
+            value: "Some UUID",
+        },
+    ),
+    node_type: Vm,
 }

@@ -6,7 +6,7 @@ mod tests {
     use actix_rt::System;
     use anyhow::{Error, Result};
     use ranger::node::{CreateNode, DeleteNode, NodeClient};
-    use ranger_grpc::Identifier;
+    use ranger_grpc::{Identifier, NodeIdentifier, DeploymentParameters, Node, Configuration, NodeType};
 
     #[test]
     fn node_created_successfully() -> Result<()> {
@@ -18,13 +18,25 @@ mod tests {
                     .await?
                     .start();
             let node_id = node_deployer_client
-                .send(CreateNode(ranger_grpc::Node {
-                    name: "some-name".to_string(),
-                    exercise_name: "some-exercise-name".to_string(),
-                    template_name: "debian10".to_string(),
+                .send(CreateNode(ranger_grpc::NodeDeployment {
+                    parameters: Some(DeploymentParameters {
+                        name: "some-name".to_string(),
+                        exercise_name: "some-exercise".to_string(),
+                        template_name: "debian10".to_string(),
+                    }),
+                    node: Some(Node{
+                        identifier: Some(NodeIdentifier{
+                            identifier: None,
+                            node_type:  NodeType::Vm.into(),
+                        }),
+                        configuration: Some(Configuration {
+                            cpu: 1,
+                            ram: 536870912, //512mb
+                        }),
+                    }),
                 }))
                 .await??;
-            Ok::<Identifier, Error>(node_id)
+            Ok::<NodeIdentifier, Error>(node_id)
         })?;
 
         insta::assert_debug_snapshot!(node_id);
@@ -43,10 +55,22 @@ mod tests {
                     .await?
                     .start();
             node_deployer_client
-                .send(CreateNode(ranger_grpc::Node {
-                    name: "some-name".to_string(),
-                    exercise_name: "some-exercise-name".to_string(),
-                    template_name: "debian10".to_string(),
+                .send(CreateNode(ranger_grpc::NodeDeployment {
+                    parameters: Some(DeploymentParameters {
+                        name: "some-name".to_string(),
+                        exercise_name: "some-exercise".to_string(),
+                        template_name: "debian10".to_string(),
+                    }),
+                    node: Some(Node{
+                        identifier: Some(NodeIdentifier{
+                            identifier: None,
+                            node_type: NodeType::Vm.into(), 
+                        }),
+                        configuration: Some(Configuration {
+                            cpu: 1,
+                            ram: 536870912, //512mb
+                        }),
+                    }),
                 }))
                 .await??;
             Ok::<(), Error>(())
@@ -66,7 +90,13 @@ mod tests {
                     .await?
                     .start();
             node_deployer_client
-                .send(DeleteNode("some-node-id".to_string()))
+                .send(
+                    DeleteNode(
+                        ranger_grpc::NodeIdentifier{
+                            identifier: Some(Identifier{
+                                value: "some-identifier".to_string()}),
+                            node_type: NodeType::Vm.into(),
+                        }))
                 .await??;
             Ok::<(), Error>(())
         })?;
@@ -86,7 +116,13 @@ mod tests {
                     .await?
                     .start();
             node_deployer_client
-                .send(DeleteNode("some-node-id".to_string()))
+                .send(
+                    DeleteNode(
+                        ranger_grpc::NodeIdentifier{
+                            identifier: Some(Identifier{
+                                value: "some-identifier".to_string()}),
+                            node_type: NodeType::Vm.into(),
+                        }))
                 .await??;
             Ok::<(), Error>(())
         });
