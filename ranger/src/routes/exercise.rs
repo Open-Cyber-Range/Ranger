@@ -1,12 +1,15 @@
 use crate::{
     database::{AddScenario, GetScenario},
-    AppState, scenario::deploy_scenario,
+    deployer::CreateDeployment,
+    scenario::deploy_scenario,
+    AppState,
 };
 use actix_web::{
     post,
     web::{Data, Path},
     HttpResponse,
 };
+use anyhow::anyhow;
 use log::error;
 use sdl_parser::parse_sdl;
 
@@ -44,6 +47,12 @@ pub async fn deploy_exercise(
         .await
         .unwrap()
         .unwrap();
-        deploy_scenario(scenario).await.unwrap();
+    app_state
+        .deployer_address
+        .send(CreateDeployment(scenario))
+        .await
+        .unwrap()
+        .unwrap();
+
     HttpResponse::Ok().body("Ok")
 }
