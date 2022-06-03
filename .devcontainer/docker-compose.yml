@@ -9,10 +9,18 @@ services:
     network_mode: service:ranger-vmware-node-deployer
     user: vscode
 
-  ranger-vmware-node-deployer:
-    image: nexus.ex.c-lab.ee:8003/ranger-vmware-node-deployer:latest
+  ranger-vmware-machiner:
+    image: nexus.ex.c-lab.ee:8003/ranger-vmware-machiner:latest
     volumes:
-      - ./configs/ranger-vmware-node-deployer.yml:/etc/opt/ranger/ranger-vmware-node-deployer/config.yml
+      - ./configs/ranger-vmware-machiner.yml:/etc/opt/ranger/ranger-vmware-machiner/config.yml
     ports:
       - "9999:9999"
+    restart: unless-stopped
+
+  ranger-vmware-swithcer:
+    image: nexus.ex.c-lab.ee:8003/ranger-vmware-switcher:latest
+    volumes:
+      - ./configs/ranger-vmware-switcher.yml:/etc/opt/ranger/ranger-vmware-switcher/config.yml
+    ports:
+      - "9998:9998"
     restart: unless-stopped
