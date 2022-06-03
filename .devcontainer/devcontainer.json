@@ -7,7 +7,7 @@
     "serayuzgur.crates",
     "vadimcn.vscode-lldb",
     "tamasfe.even-better-toml",
-    "matklad.rust-analyzer",
+    "rust-lang.rust-analyzer",
     "zxh404.vscode-proto3"
   ],
   "workspaceFolder": "/workspace",
