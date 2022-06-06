@@ -7,7 +7,7 @@ use std::collections::HashMap;
 #[rtype(result = "()")]
 pub struct AddScenario(pub(crate) Scenario);
 
-#[derive(Message, Debug, PartialEq)]
+#[derive(Message, Debug)]
 #[rtype(result = "Result<Scenario>")]
 pub struct GetScenario(pub(crate) String);
 

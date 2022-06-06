@@ -2,7 +2,7 @@ use anyhow::{Error, Result};
 use serde::{Deserialize, Serialize};
 use std::fs::read_to_string;
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Configuration {
     pub node_deployer_addresses: Vec<String>,
     pub host: String,
