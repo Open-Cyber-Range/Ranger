@@ -29,6 +29,7 @@ systemd-units = { unit-name = "ranger", unit-scripts = "assets/unit-scripts" }
 [dependencies]
 actix = "0.13"
 actix-web = "4"
+actix-http = { version = "3", features = ["http2", "ws"] }
 anyhow = "1"
 futures = "0.3"
 insta = "1"
@@ -40,6 +41,7 @@ sdl-parser = { git = "ssh://git@code.ex.c-lab.ee/open-cyber-range/public/sdl-par
 serde = { version = "1.0", features = ["derive"] }
 serde_yaml = "0.8"
 tempfile = "3"
+thiserror = "1"
 tokio = { version = "1", features = [
   "rt-multi-thread",
   "time",
