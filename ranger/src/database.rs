@@ -29,7 +29,9 @@ impl Handler<AddScenario> for Database {
     type Result = ();
 
     fn handle(&mut self, msg: AddScenario, _: &mut Context<Self>) -> Self::Result {
-        if let std::collections::hash_map::Entry::Vacant(e) = self.scenarios.entry(msg.0.name.clone()) {
+        if let std::collections::hash_map::Entry::Vacant(e) =
+            self.scenarios.entry(msg.0.name.clone())
+        {
             e.insert(msg.0);
         } else {
             println!("This scenario already exists in the database")
