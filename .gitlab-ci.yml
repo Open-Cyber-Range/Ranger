@@ -1,9 +1,6 @@
 stages:
   - build
 
-variables:
-  GIT_SUBMODULE_STRATEGY: recursive
-
 lint-and-test:
   stage: build
   image: $DOCKER_REGISTRY_PULL/rust-builder
@@ -24,6 +21,8 @@ lint-and-test:
     - develop
     - master
     - merge_requests
+  variables:
+    GIT_SUBMODULE_STRATEGY: recursive
 
 build-x86-64bit-windows-release:
   stage: build
@@ -36,6 +35,8 @@ build-x86-64bit-windows-release:
     - cargo build --release --target x86_64-pc-windows-gnu
   only:
     - master
+  variables:
+    GIT_SUBMODULE_STRATEGY: recursive
 
 build-and-upload-x86-64bit-linux-release-for-ranger:
   stage: build
@@ -50,3 +51,5 @@ build-and-upload-x86-64bit-linux-release-for-ranger:
     - 'curl -u $OCR_DEPLOYMENT_USER:$OCR_DEPLOYMENT_PASSWORD -X POST -H "Content-Type: multipart/form-data" --data-binary "@$DEB_FILE" $OCR_APT_REPOSITORY'
   only:
     - master
+  variables:
+    GIT_SUBMODULE_STRATEGY: recursive
