@@ -16,12 +16,12 @@ async fn main() -> Result<(), Error> {
     let node_client_address = NodeClient::new(configuration.node_deployer_addresses[0].clone())
         .await?
         .start();
+    let database_address = Database::new().start();
+    let deployer_address = DeploymentManager::new(node_client_address.clone()).start();
     HttpServer::new(move || {
-        let database_address = Database::new().start();
-        let deployer_address = DeploymentManager::new(node_client_address.clone()).start();
         let app_state = Data::new(AppState {
-            database_address,
-            deployer_address,
+            database_address: database_address.clone(),
+            deployer_address: deployer_address.clone(),
         });
         App::new()
             .app_data(app_state)
