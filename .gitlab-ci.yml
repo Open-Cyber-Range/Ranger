@@ -1,6 +1,9 @@
 stages:
   - build
 
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+
 lint-and-test:
   stage: build
   image: $DOCKER_REGISTRY_PULL/rust-builder
