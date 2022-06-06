@@ -1,7 +1,6 @@
 use crate::{
     database::{AddScenario, GetScenario},
     deployer::CreateDeployment,
-    scenario::deploy_scenario,
     AppState,
 };
 use actix_web::{
