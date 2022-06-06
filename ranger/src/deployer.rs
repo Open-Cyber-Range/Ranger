@@ -1,11 +1,12 @@
 use crate::node::{CreateNode, NodeClient};
 use actix::{
-    Actor, ActorFutureExt, Addr, Context, Handler, Message, ResponseActFuture, ResponseFuture,
-    WrapFuture,
+    Actor, ActorFutureExt, Addr, Context, Handler, Message, ResponseActFuture, WrapFuture,
 };
 use anyhow::{anyhow, Ok, Result};
 use futures::future::try_join_all;
-use ranger_grpc::{Identifier, Node};
+use ranger_grpc::{
+    Configuration, DeploymentParameters, Node, NodeDeployment, NodeIdentifier, NodeType,
+};
 use sdl_parser::Scenario;
 use std::collections::HashMap;
 use uuid::Uuid;
@@ -20,7 +21,7 @@ pub struct DeleteDeployment(pub(crate) String);
 
 #[derive(Debug, Clone)]
 pub struct DeploymentManager {
-    nodes: HashMap<String, HashMap<Uuid, Vec<(Identifier, String)>>>,
+    nodes: HashMap<String, HashMap<Uuid, Vec<(NodeIdentifier, String)>>>,
     node_client_address: Addr<NodeClient>,
 }
 
@@ -48,17 +49,26 @@ impl Handler<CreateDeployment> for DeploymentManager {
             async move {
                 let deployment_id = Uuid::new_v4();
                 let exercise_name = format!("{}-{}", scenario_name, deployment_id);
-                let node_ids: Vec<(Identifier, String)> =
+                let node_ids: Vec<(NodeIdentifier, String)> =
                     if let Some(infrastructure) = scenario.infrastructure {
                         try_join_all(infrastructure.into_iter().map(|(node_name, node)| async {
                             let node_id = client_address
-                                .send(CreateNode(Node {
-                                    name: node_name.clone(),
-                                    exercise_name: exercise_name.clone(),
-                                    template_name: node.source.unwrap().template.unwrap(),
+                                .send(CreateNode(NodeDeployment {
+                                    parameters: Some(DeploymentParameters {
+                                        name: node_name.clone(),
+                                        exercise_name: exercise_name.clone(),
+                                        template_name: node.source.unwrap().template.unwrap(),
+                                    }),
+                                    node: Some(Node {
+                                        identifier: Some(NodeIdentifier {
+                                            identifier: None,
+                                            node_type: NodeType::Vm.into(),
+                                        }),
+                                        configuration: None,
+                                    }),
                                 }))
                                 .await??;
-                            Ok::<(Identifier, String)>((node_id, node_name))
+                            Ok::<(NodeIdentifier, String)>((node_id, node_name))
                         }))
                         .await?
                     } else {
@@ -76,9 +86,17 @@ impl Handler<CreateDeployment> for DeploymentManager {
                         .insert(deployment_id, node_ids);
                     Ok(deployment_id)
                 } else {
-                    Err(anyhow!("no can do"))
+                    Err(anyhow!("Deployment failed"))
                 }
             }),
         )
     }
+}
+
+#[cfg(test)]
+mod tests {
+    use sdl_parser::test::TEST_SCHEMA;
+
+    use crate::{deployer::{CreateDeployment, DeploymentManager}, node::NodeClient};
+    
 }
