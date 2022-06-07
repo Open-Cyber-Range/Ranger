@@ -1302,6 +1302,7 @@ dependencies = [
  "rand",
  "ranger-grpc",
  "sdl-parser",
+ "semver",
  "serde",
  "serde_yaml",
  "tempfile",

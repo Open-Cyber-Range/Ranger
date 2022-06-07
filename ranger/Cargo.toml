@@ -40,6 +40,7 @@ ranger-grpc = { path = "../ranger-grpc" }
 sdl-parser = { git = "ssh://git@code.ex.c-lab.ee/open-cyber-range/public/sdl-parser", version = "0.8" }
 serde = { version = "1.0", features = ["derive"] }
 serde_yaml = "0.8"
+semver = "1"
 tempfile = "3"
 thiserror = "1"
 tokio = { version = "1", features = [
