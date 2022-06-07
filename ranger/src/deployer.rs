@@ -4,9 +4,7 @@ use actix::{
 };
 use anyhow::{anyhow, Ok, Result};
 use futures::future::try_join_all;
-use ranger_grpc::{
-    Configuration, DeploymentParameters, Node, NodeDeployment, NodeIdentifier, NodeType,
-};
+use ranger_grpc::{DeploymentParameters, Node, NodeDeployment, NodeIdentifier, NodeType};
 use sdl_parser::Scenario;
 use std::collections::HashMap;
 use uuid::Uuid;
@@ -95,8 +93,5 @@ impl Handler<CreateDeployment> for DeploymentManager {
 
 #[cfg(test)]
 mod tests {
-    use sdl_parser::test::TEST_SCHEMA;
 
-    use crate::{deployer::{CreateDeployment, DeploymentManager}, node::NodeClient};
-    
 }
