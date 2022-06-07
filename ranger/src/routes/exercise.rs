@@ -8,7 +8,7 @@ use actix_web::{
     web::{Data, Path},
     HttpResponse,
 };
-use anyhow::anyhow;
+
 use log::error;
 use sdl_parser::parse_sdl;
 
