@@ -76,7 +76,7 @@ impl Handler<CreateDeployment> for DeploymentManager {
             }
             .into_actor(self)
             .map(move |result, act, _| {
-                println!("result: {:?}", result);
+                log::info!("result: {:?}", result);
                 if let core::result::Result::Ok((deployment_id, node_ids)) = result {
                     act.nodes
                         .entry(scenario.name)

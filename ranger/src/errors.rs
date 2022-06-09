@@ -25,7 +25,7 @@ impl Display for ServerResponseError {
 }
 
 impl ResponseError for ServerResponseError {
-    fn status_code(&self) -> actix_http::StatusCode {
+    fn status_code(&self) -> StatusCode {
         if let Some(ranger_server_error) = self.0.root_cause().downcast_ref::<RangerError>()
         {
             return match ranger_server_error {
@@ -41,8 +41,8 @@ impl ResponseError for ServerResponseError {
     }
 }
 
-impl From<anyhow::Error> for ServerResponseError {
-    fn from(error: anyhow::Error) -> ServerResponseError {
+impl From<Error> for ServerResponseError {
+    fn from(error:Error) -> ServerResponseError {
         ServerResponseError(error)
     }
 }

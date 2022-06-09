@@ -25,7 +25,7 @@ impl NodeClient {
 }
 
 impl Actor for NodeClient {
-    type Context = actix::Context<Self>;
+    type Context = Context<Self>;
 }
 
 impl Handler<CreateNode> for NodeClient {

@@ -40,7 +40,7 @@ pub async fn deploy_exercise(
     app_state: Data<AppState>,
 ) -> Result<HttpResponse, Error> {
     let scenario_name = path_variables.into_inner();
-    println!("Adding scenario: {}", scenario_name);
+    log::info!("Adding scenario: {}", scenario_name);
     let scenario = app_state
         .database_address
         .send(GetScenario(scenario_name))
