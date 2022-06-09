@@ -55,7 +55,11 @@ impl Handler<CreateDeployment> for DeploymentManager {
                                     parameters: Some(DeploymentParameters {
                                         name: node_name.clone(),
                                         exercise_name: exercise_name.clone(),
-                                        template_name: node.source.unwrap().template.unwrap(),
+                                        template_name: node
+                                            .source
+                                            .ok_or_else(|| anyhow!("Source is missing"))?
+                                            .template
+                                            .ok_or_else(|| anyhow!("Template is missing"))?,
                                     }),
                                     node: Some(Node {
                                         identifier: Some(NodeIdentifier {
@@ -89,9 +93,4 @@ impl Handler<CreateDeployment> for DeploymentManager {
             }),
         )
     }
-}
-
-#[cfg(test)]
-mod tests {
-
 }
