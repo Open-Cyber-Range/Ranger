@@ -5,11 +5,11 @@ use std::collections::{HashMap, hash_map::Entry::Vacant};
 
 #[derive(Message, Debug)]
 #[rtype(result = "()")]
-pub struct AddScenario(pub(crate) Scenario);
+pub struct AddScenario(pub Scenario);
 
 #[derive(Message, Debug)]
 #[rtype(result = "Result<Scenario>")]
-pub struct GetScenario(pub(crate) String);
+pub struct GetScenario(pub String);
 
 #[derive(Default, PartialEq)]
 pub struct Database {
@@ -34,7 +34,7 @@ impl Handler<AddScenario> for Database {
         {
             e.insert(msg.0);
         } else {
-            log::error!("This scenario already exists in the databse");
+            log::error!("This scenario already exists in the database");
         }
     }
 }
