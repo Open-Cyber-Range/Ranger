@@ -38,7 +38,11 @@ mod tests {
 
         let app_state = AppState::new();
         app_state
-            .add_initial_deployergroups(deployer_groups, deployers)
+            .add_initial_deployergroups(
+                deployer_groups,
+                deployers,
+                "my_cool_machiner_group_one".to_string(),
+            )
             .await?;
 
         let validated_deployer_groups = app_state
@@ -49,6 +53,8 @@ mod tests {
             .unwrap();
         insta::with_settings!({sort_maps => true}, {
            insta::assert_yaml_snapshot!(validated_deployer_groups, {
+              "[\"default\"].machiners[\"my_cool_machiner_one\"]" => "http://some-host:some-port",
+              "[\"default\"].machiners[\"my_cool_machiner_two\"]" => "http://some-host:some-port",
               "[\"my_cool_machiner_group_one\"].machiners[\"my_cool_machiner_one\"]" => "http://some-host:some-port",
               "[\"my_cool_machiner_group_one\"].machiners[\"my_cool_machiner_two\"]" => "http://some-host:some-port",
               "[\"my_cool_machiner_group_two\"].machiners[\"my_cool_machiner_one\"]" => "http://some-host:some-port"

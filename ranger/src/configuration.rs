@@ -7,6 +7,7 @@ pub struct Configuration {
     pub host: String,
     pub port: u16,
     pub deployers: HashMap<String, String>,
+    pub default_deployment_group: String,
     pub deployment_groups: HashMap<String, Vec<String>>,
 }
 
@@ -43,6 +44,7 @@ mod tests {
                     my-switch-deployer: http://ranger-vmware-switcher:9999
                     ungrouped-deployer: http://some-vmware-deployer:9999
 
+                default_deployment_group: my-cool-group
                 deployment_groups:
                     my-cool-group:
                         - my-machiner-deployer

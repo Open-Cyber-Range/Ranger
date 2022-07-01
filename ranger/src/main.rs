@@ -15,7 +15,11 @@ async fn main() -> Result<(), Error> {
     let configuration = read_configuration(std::env::args().collect())?;
     let app_state = AppState::new();
     app_state
-        .add_initial_deployergroups(configuration.deployment_groups, configuration.deployers)
+        .add_initial_deployergroups(
+            configuration.deployment_groups,
+            configuration.deployers,
+            configuration.default_deployment_group,
+        )
         .await?;
 
     let app_data = Data::new(app_state);

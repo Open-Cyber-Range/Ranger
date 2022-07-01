@@ -1,15 +1,15 @@
 pub mod capability;
 pub mod configuration;
 pub mod database;
-pub mod machiner;
 pub mod deployers;
 pub mod errors;
+pub mod machiner;
 pub mod node;
 pub mod routes;
 
 use crate::database::Database;
 use actix::{Actor, Addr};
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use deployers::{get_deployer_capabilities, AddDeployerGroups, DeployerGroups};
 
 use std::collections::HashMap;
@@ -31,6 +31,7 @@ impl AppState {
         &self,
         deployment_groups: HashMap<String, Vec<String>>,
         deployers: HashMap<String, String>,
+        default_deployer_group: String,
     ) -> Result<()> {
         let mut deployer_groups = DeployerGroups::initialize_with_group_names(&deployment_groups);
         let mut deployers = get_deployer_capabilities(deployers).await?;
@@ -44,6 +45,16 @@ impl AppState {
                 }
             });
         });
+        let default_deployer_group_value = deployer_groups
+            .0
+            .get(&default_deployer_group)
+            .ok_or_else(|| anyhow!("Default group with given name not found"))?
+            .clone();
+
+        deployer_groups
+            .0
+            .insert("default".to_string(), default_deployer_group_value);
+
         self.deployer_actor_address
             .send(AddDeployerGroups(deployer_groups))
             .await?;

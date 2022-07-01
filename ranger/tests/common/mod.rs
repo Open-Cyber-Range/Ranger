@@ -36,6 +36,7 @@ lazy_static! {
                 "http://localhost:9997".to_string(),
             )
         ]),
+        default_deployment_group: "my-cool-deployer-group-one".to_string(),
         deployment_groups: HashMap::from([
             (
                 "my-cool-deployer-group-one".to_string(),
