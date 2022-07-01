@@ -26,9 +26,12 @@ pub struct DeploymentManager {
 }
 
 impl DeploymentManager {
-    pub async fn new(deployer_actor_address: Addr<DeployerGroups>) -> Result<Self> {
+    pub async fn new(
+        deployer_actor_address: Addr<DeployerGroups>,
+        deployment_group_name: String,
+    ) -> Result<Self> {
         let validated_deployer_groups = deployer_actor_address.send(GetDeployerGroups).await?;
-        if let Some(deployer_group) = validated_deployer_groups.0.values().next() {
+        if let Some(deployer_group) = validated_deployer_groups.0.get(&deployment_group_name) {
             if let Some(machiner) = deployer_group.machiners.values().next() {
                 return Ok(DeploymentManager {
                     nodes: HashMap::new(),
@@ -37,7 +40,9 @@ impl DeploymentManager {
             }
             return Err(anyhow!("No machiners found"));
         }
-        Err(anyhow!("No deployer groups found"))
+        Err(anyhow!(
+            "Deployer group named {deployment_group_name} not found"
+        ))
     }
 }
 
