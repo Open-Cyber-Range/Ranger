@@ -5,7 +5,7 @@ use actix::{
 };
 use anyhow::{anyhow, Ok, Result};
 use futures::future::try_join_all;
-use log::info;
+use log::{error, info};
 use ranger_grpc::{DeploymentParameters, Node, NodeDeployment, NodeIdentifier, NodeType};
 use sdl_parser::Scenario;
 use std::collections::HashMap;
@@ -38,8 +38,12 @@ impl DeploymentManager {
                     node_client_address: NodeClient::new(machiner.to_string()).await?.start(),
                 });
             }
-            return Err(anyhow!("No machiners found"));
+            error!("No machiner found in deployer group {deployment_group_name}");
+            return Err(anyhow!(
+                "No machiner found in deployer group {deployment_group_name}"
+            ));
         }
+        error!("Deployer group named {deployment_group_name} not found");
         Err(anyhow!(
             "Deployer group named {deployment_group_name} not found"
         ))
