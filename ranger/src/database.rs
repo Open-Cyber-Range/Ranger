@@ -53,13 +53,13 @@ impl Handler<GetScenario> for Database {
 #[cfg(test)]
 mod tests {
     use crate::database::{AddScenario, Database, GetScenario};
-    use actix::Actor;
+    use actix::{Actor, System};
     use anyhow::Result;
     use sdl_parser::test::TEST_SCHEMA;
 
     #[test]
     fn add_test_exercise() -> Result<()> {
-        let system = actix::System::new();
+        let system = System::new();
         system.block_on(async {
             let database_address = Database::new().start();
             let result = database_address
@@ -72,7 +72,7 @@ mod tests {
 
     #[test]
     fn get_test_exercise() -> Result<()> {
-        let system = actix::System::new();
+        let system = System::new();
         let result = system.block_on(async {
             let database_address = Database::new().start();
             database_address

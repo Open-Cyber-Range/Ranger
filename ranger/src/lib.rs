@@ -1,15 +1,58 @@
+pub mod capability;
 pub mod configuration;
 pub mod database;
+pub mod machiner;
+pub mod deployers;
+pub mod errors;
 pub mod node;
 pub mod routes;
-pub mod deployer;
-mod errors;
 
 use crate::database::Database;
-use actix::Addr;
-use deployer::DeploymentManager;
+use actix::{Actor, Addr};
+use anyhow::Result;
+use deployers::{get_deployer_capabilities, AddDeployerGroups, DeployerGroups};
+
+use std::collections::HashMap;
 
 pub struct AppState {
     pub database_address: Addr<Database>,
-    pub deployer_address: Addr<DeploymentManager>,
+    pub deployer_actor_address: Addr<DeployerGroups>,
+}
+
+impl AppState {
+    pub fn new() -> Self {
+        AppState {
+            database_address: Database::new().start(),
+            deployer_actor_address: DeployerGroups::new().start(),
+        }
+    }
+
+    pub async fn add_initial_deployergroups(
+        &self,
+        deployment_groups: HashMap<String, Vec<String>>,
+        deployers: HashMap<String, String>,
+    ) -> Result<()> {
+        let mut deployer_groups = DeployerGroups::initialize_with_group_names(&deployment_groups);
+        let mut deployers = get_deployer_capabilities(deployers).await?;
+
+        deployers.iter_mut().for_each(|deployer| {
+            deployment_groups.iter().for_each(|deployer_group| {
+                if deployer_group.1.contains(&deployer.deployer_name) {
+                    if let Some(deployer_group) = deployer_groups.0.get_mut(deployer_group.0) {
+                        deployer_group.insert_by_capability(deployer);
+                    }
+                }
+            });
+        });
+        self.deployer_actor_address
+            .send(AddDeployerGroups(deployer_groups))
+            .await?;
+        Ok(())
+    }
+}
+
+impl Default for AppState {
+    fn default() -> Self {
+        Self::new()
+    }
 }

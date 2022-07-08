@@ -1,0 +1,9 @@
+---
+source: ranger/tests/capability.rs
+expression: capabilities
+---
+Capabilities {
+    values: [
+        VirtualMachine,
+    ],
+}

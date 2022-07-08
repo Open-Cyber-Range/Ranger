@@ -1,4 +1,3 @@
-
 use std::fmt::{Display, Formatter, Result};
 use actix_web::{error::ResponseError, HttpResponse};
 use actix_http::{StatusCode, body::BoxBody};
@@ -16,7 +15,7 @@ pub enum RangerError {
 }
 
 #[derive(Debug)]
-pub struct ServerResponseError(pub(crate) Error);
+pub struct ServerResponseError(pub Error);
 
 impl Display for ServerResponseError {
     fn fmt(&self, formatter: &mut Formatter) -> Result {
