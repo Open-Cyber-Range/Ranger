@@ -1,12 +1,13 @@
 use anyhow::{Error, Result};
 use serde::{Deserialize, Serialize};
-use std::fs::read_to_string;
+use std::{collections::HashMap, fs::read_to_string};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 pub struct Configuration {
-    pub node_deployer_addresses: Vec<String>,
     pub host: String,
     pub port: u16,
+    pub deployers: HashMap<String, String>,
+    pub deployment_groups: HashMap<String, Vec<String>>,
 }
 
 pub fn read_configuration(arguments: Vec<String>) -> Result<Configuration> {
@@ -35,15 +36,25 @@ mod tests {
         writeln!(
             file,
             r#"
-node_deployer_addresses: ["http://localhost:9999", "http://localhost:9998", "http://localhost:9997"]
-host: localhost
-port: 8080
-    "#
+                host: localhost
+                port: 8080
+                deployers:
+                    my-machiner-deployer: http://ranger-vmware-machiner:9999
+                    my-switch-deployer: http://ranger-vmware-switcher:9999
+                    ungrouped-deployer: http://some-vmware-deployer:9999
+
+                deployment_groups:
+                    my-cool-group:
+                        - my-machiner-deployer
+                        - my-switch-deployer
+                "#
         )?;
         let arguments = vec![String::from("program-name"), path_string];
-
         let configuration = read_configuration(arguments)?;
-        insta::assert_debug_snapshot!(configuration);
+
+        insta::with_settings!({sort_maps => true}, {
+        insta::assert_yaml_snapshot!(configuration);
+        });
         Ok(())
     }
 }

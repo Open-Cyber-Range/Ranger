@@ -1,9 +1,10 @@
 use crate::{
     database::{AddScenario, GetScenario},
-    deployer::CreateDeployment,
     errors::{RangerError, ServerResponseError},
+    machiner::{CreateDeployment, DeploymentManager},
     AppState,
 };
+use actix::Actor;
 use actix_web::{
     post,
     web::{Data, Path},
@@ -53,8 +54,15 @@ pub async fn deploy_exercise(
             error!("Scenario not found {}", error);
             ServerResponseError(RangerError::ScenarioNotFound.into())
         })?;
-    app_state
-        .deployer_address
+
+    let deployment_address = DeploymentManager::new(app_state.deployer_actor_address.clone())
+        .await
+        .map_err(|error| {
+            error!("DeployerGroup actor error: {}", error);
+            ServerResponseError(RangerError::ActixMailBoxError.into())
+        })?
+        .start();
+    deployment_address
         .send(CreateDeployment(scenario))
         .await
         .map_err(|error| {

@@ -1,9 +1,11 @@
+use crate::deployers::{DeployerGroups, GetDeployerGroups};
 use crate::node::{CreateNode, NodeClient};
 use actix::{
     Actor, ActorFutureExt, Addr, Context, Handler, Message, ResponseActFuture, WrapFuture,
 };
 use anyhow::{anyhow, Ok, Result};
 use futures::future::try_join_all;
+use log::info;
 use ranger_grpc::{DeploymentParameters, Node, NodeDeployment, NodeIdentifier, NodeType};
 use sdl_parser::Scenario;
 use std::collections::HashMap;
@@ -24,11 +26,18 @@ pub struct DeploymentManager {
 }
 
 impl DeploymentManager {
-    pub fn new(node_client_address: Addr<NodeClient>) -> Self {
-        Self {
-            nodes: HashMap::new(),
-            node_client_address,
+    pub async fn new(deployer_actor_address: Addr<DeployerGroups>) -> Result<Self> {
+        let validated_deployer_groups = deployer_actor_address.send(GetDeployerGroups).await?;
+        if let Some(deployer_group) = validated_deployer_groups.0.values().next() {
+            if let Some(machiner) = deployer_group.machiners.values().next() {
+                return Ok(DeploymentManager {
+                    nodes: HashMap::new(),
+                    node_client_address: NodeClient::new(machiner.to_string()).await?.start(),
+                });
+            }
+            return Err(anyhow!("No machiners found"));
         }
+        Err(anyhow!("No deployer groups found"))
     }
 }
 
@@ -80,15 +89,23 @@ impl Handler<CreateDeployment> for DeploymentManager {
             }
             .into_actor(self)
             .map(move |result, act, _| {
-                log::info!("result: {:?}", result);
                 if let core::result::Result::Ok((deployment_id, node_ids)) = result {
+                    info!(
+                        "Successful deployment id: {deployment_id}, deployed {} nodes",
+                        &node_ids.len()
+                    );
                     act.nodes
                         .entry(scenario.name)
                         .or_insert_with(HashMap::new)
                         .insert(deployment_id, node_ids);
                     Ok(deployment_id)
                 } else {
-                    Err(anyhow!("Deployment failed"))
+                    Err(anyhow!(
+                        "Deployment failed: {:?}",
+                        result
+                            .err()
+                            .unwrap_or_else(|| anyhow!("DeploymentManager error"))
+                    ))
                 }
             }),
         )
