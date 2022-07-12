@@ -11,19 +11,22 @@ use crate::database::Database;
 use actix::{Actor, Addr};
 use anyhow::{anyhow, Result};
 use deployers::{get_deployer_capabilities, AddDeployerGroups, DeployerGroups};
+use machiner::DeploymentManager;
 
 use std::collections::HashMap;
 
 pub struct AppState {
     pub database_address: Addr<Database>,
-    pub deployer_actor_address: Addr<DeployerGroups>,
+    pub deployer_grouper_address: Addr<DeployerGroups>,
+    pub deployment_manager_address: Addr<DeploymentManager>,
 }
 
 impl AppState {
     pub fn new() -> Self {
         AppState {
             database_address: Database::new().start(),
-            deployer_actor_address: DeployerGroups::new().start(),
+            deployer_grouper_address: DeployerGroups::new().start(),
+            deployment_manager_address: DeploymentManager::new().start(),
         }
     }
 
@@ -55,7 +58,7 @@ impl AppState {
             .0
             .insert("default".to_string(), default_deployer_group_value);
 
-        self.deployer_actor_address
+        self.deployer_grouper_address
             .send(AddDeployerGroups(deployer_groups))
             .await?;
         Ok(())

@@ -1,6 +1,11 @@
-use crate::{capability::GetCapabilities, node::NodeClient};
+use crate::{
+    capability::GetCapabilities,
+    errors::{RangerError, ServerResponseError},
+    machiner::{filter_node_clients, initiate_node_clients, DeploymentGroup},
+    node::NodeClient,
+};
 
-use actix::{Actor, Context, Handler, Message, MessageResponse};
+use actix::{Actor, Addr, Context, Handler, Message, MessageResponse};
 use anyhow::{anyhow, Result};
 use futures::future::join_all;
 use log::error;
@@ -23,7 +28,7 @@ pub struct Deployer {
     pub capabilities: Option<Capabilities>,
 }
 
-#[derive(Debug, Default, PartialEq, Eq, Serialize, Clone)]
+#[derive(Debug, Default, Serialize, Clone)]
 pub struct DeployerGroup {
     pub machiners: HashMap<String, String>,
     pub switchers: HashMap<String, String>,
@@ -31,6 +36,17 @@ pub struct DeployerGroup {
 }
 
 impl DeployerGroup {
+    pub async fn start(&self) -> DeploymentGroup {
+        let machiners = join_all(initiate_node_clients(self.machiners.clone())).await;
+        let switchers = join_all(initiate_node_clients(self.switchers.clone())).await;
+        let templaters = join_all(initiate_node_clients(self.templaters.clone())).await;
+        DeploymentGroup {
+            machiners: filter_node_clients(machiners),
+            switchers: filter_node_clients(switchers),
+            templaters: filter_node_clients(templaters),
+        }
+    }
+
     pub fn insert_by_capability(&mut self, deployer: &Deployer) {
         if let Some(capabilities) = &deployer.capabilities {
             capabilities
@@ -60,13 +76,23 @@ impl DeployerGroup {
     }
 }
 
-#[derive(Debug, Default, PartialEq, Eq, Clone, Serialize, MessageResponse)]
+#[derive(Debug, Default, Clone, Serialize, MessageResponse)]
 pub struct DeployerGroups(pub HashMap<String, DeployerGroup>);
 
 impl DeployerGroups {
     pub fn new() -> Self {
         DeployerGroups(HashMap::new())
     }
+
+    pub fn find(&self, requested_deployer_group: String) -> Option<(&String, &DeployerGroup)> {
+        let deployer = &self.0;
+        deployer.iter().find(|deployer_group| {
+            deployer_group
+                .0
+                .eq_ignore_ascii_case(&requested_deployer_group)
+        })
+    }
+
     pub fn initialize_with_group_names(
         deployment_groups: &HashMap<String, Vec<String>>,
     ) -> DeployerGroups {
@@ -128,4 +154,16 @@ pub async fn get_deployer_capabilities(
         return Err(anyhow!("No deployers found with capabilities"));
     }
     Ok(verified_deployers)
+}
+
+pub async fn get_deployer_groups(
+    deployer_grouper_address: Addr<DeployerGroups>,
+) -> Result<DeployerGroups, ServerResponseError> {
+    deployer_grouper_address
+        .send(GetDeployerGroups)
+        .await
+        .map_err(|error| {
+            error!("DeployerGroup actor mailbox error: {}", error);
+            ServerResponseError(RangerError::ActixMailBoxError.into())
+        })
 }

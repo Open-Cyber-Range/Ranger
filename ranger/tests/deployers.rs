@@ -46,7 +46,7 @@ mod tests {
             .await?;
 
         let validated_deployer_groups = app_state
-            .deployer_actor_address
+            .deployer_grouper_address
             .send(GetDeployerGroups)
             .await
             .map_err(|_| ServerResponseError(RangerError::ActixMailBoxError.into()))

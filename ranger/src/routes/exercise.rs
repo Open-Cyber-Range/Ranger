@@ -1,10 +1,10 @@
 use crate::{
     database::{AddScenario, GetScenario},
+    deployers::get_deployer_groups,
     errors::{RangerError, ServerResponseError},
-    machiner::{CreateDeployment, DeploymentManager},
+    machiner::CreateDeployment,
     AppState,
 };
-use actix::Actor;
 use actix_web::{
     post,
     web::{Data, Path, Query},
@@ -45,7 +45,7 @@ pub struct DeploymentGroupNameQuery {
 pub async fn deploy_exercise(
     path_variables: Path<String>,
     app_state: Data<AppState>,
-    query_param: Query<DeploymentGroupNameQuery>,
+    name_query: Query<DeploymentGroupNameQuery>,
 ) -> Result<HttpResponse, Error> {
     let scenario_name = path_variables.into_inner();
     info!("Deploying scenario: {}", scenario_name);
@@ -61,34 +61,30 @@ pub async fn deploy_exercise(
             error!("Scenario not found {}", error);
             ServerResponseError(RangerError::ScenarioNotFound.into())
         })?;
-
-    let deployment_group_name = query_param
+    let requested_deployer_group_name = name_query
         .into_inner()
         .name
         .unwrap_or_else(|| "default".to_string());
+    info!("Using deplyoment group: {}", requested_deployer_group_name);
+    let deployer_groups = get_deployer_groups(app_state.deployer_grouper_address.clone()).await?;
 
-    info!("Using deplyoment group: {}", deployment_group_name);
-    let deployment_address = DeploymentManager::new(
-        app_state.deployer_actor_address.clone(),
-        deployment_group_name,
-    )
-    .await
-    .map_err(|error| {
-        error!("DepoloyerGroup actor error: {}", error);
-        ServerResponseError(RangerError::ActixMailBoxError.into())
-    })?
-    .start();
-
-    deployment_address
-        .send(CreateDeployment(scenario))
+    let deployer_group = deployer_groups
+        .find(requested_deployer_group_name.clone())
+        .ok_or_else(|| {
+            error!(
+                "Deployment group not found: {}",
+                requested_deployer_group_name
+            );
+            ServerResponseError(RangerError::ActixMailBoxError.into())
+        })?;
+    let deployment_group = deployer_group.1.start().await;
+    let deployment_uuid = app_state
+        .deployment_manager_address
+        .send(CreateDeployment(scenario, deployment_group))
         .await
         .map_err(|error| {
-            error!("DeployerGroup actor error: {}", error);
+            error!("Deployment manager actor mailbox error: {}", error);
             ServerResponseError(RangerError::ActixMailBoxError.into())
-        })?
-        .map_err(|error| {
-            error!("Failed to deploy scenario: {}", error);
-            ServerResponseError(RangerError::DeploymentFailed.into())
         })?;
-    Ok(HttpResponse::Ok().body("Ok"))
+    Ok(HttpResponse::Ok().body(format!("{:?}", deployment_uuid)))
 }

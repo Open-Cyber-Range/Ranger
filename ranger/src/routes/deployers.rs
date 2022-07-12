@@ -9,11 +9,11 @@ use log::error;
 #[get("deployers")]
 pub async fn get_deployers(app_state: Data<AppState>) -> Result<HttpResponse, Error> {
     let validated_deployer_groups = app_state
-        .deployer_actor_address
+        .deployer_grouper_address
         .send(GetDeployerGroups)
         .await
         .map_err(|error| {
-            error!("Database actor mailbox error: {}", error);
+            error!("Deployer actor mailbox error: {}", error);
             ServerResponseError(RangerError::ActixMailBoxError.into())
         })?;
 
