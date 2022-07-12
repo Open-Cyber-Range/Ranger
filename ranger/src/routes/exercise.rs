@@ -65,7 +65,6 @@ pub async fn deploy_exercise(
         .into_inner()
         .deployment_group
         .unwrap_or_else(|| "default".to_string());
-    info!("Using deplyoment group: {}", requested_deployer_group_name);
     let deployer_groups = get_deployer_groups(app_state.deployer_grouper_address.clone()).await?;
 
     let deployer_group = deployer_groups
@@ -77,6 +76,7 @@ pub async fn deploy_exercise(
             );
             ServerResponseError(RangerError::DeployerGroupNotfound.into())
         })?;
+    info!("Using deployment group: {}", deployer_group.0);
     let deployment_group = deployer_group.1.start().await;
     let deployment_uuid = app_state
         .deployment_manager_address
