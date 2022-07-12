@@ -38,7 +38,7 @@ pub async fn add_exercise(text: String, app_state: Data<AppState>) -> HttpRespon
 
 #[derive(Debug, Deserialize)]
 pub struct DeploymentGroupNameQuery {
-    name: Option<String>,
+    deployment_group: Option<String>,
 }
 
 #[post("exercise/{scenario_name}/deployment")]
@@ -63,7 +63,7 @@ pub async fn deploy_exercise(
         })?;
     let requested_deployer_group_name = name_query
         .into_inner()
-        .name
+        .deployment_group
         .unwrap_or_else(|| "default".to_string());
     info!("Using deplyoment group: {}", requested_deployer_group_name);
     let deployer_groups = get_deployer_groups(app_state.deployer_grouper_address.clone()).await?;
@@ -75,7 +75,7 @@ pub async fn deploy_exercise(
                 "Deployment group not found: {}",
                 requested_deployer_group_name
             );
-            ServerResponseError(RangerError::ActixMailBoxError.into())
+            ServerResponseError(RangerError::DeployerGroupNotfound.into())
         })?;
     let deployment_group = deployer_group.1.start().await;
     let deployment_uuid = app_state

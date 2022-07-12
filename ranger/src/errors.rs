@@ -1,7 +1,7 @@
-use std::fmt::{Display, Formatter, Result};
+use actix_http::{body::BoxBody, StatusCode};
 use actix_web::{error::ResponseError, HttpResponse};
-use actix_http::{StatusCode, body::BoxBody};
 use anyhow::Error;
+use std::fmt::{Display, Formatter, Result};
 use thiserror::Error as ThisError;
 
 #[derive(ThisError, Debug)]
@@ -11,7 +11,9 @@ pub enum RangerError {
     #[error("Internal server error")]
     ActixMailBoxError,
     #[error("Failed to deploy scenario")]
-    DeploymentFailed
+    DeploymentFailed,
+    #[error("DeployerGroup not found")]
+    DeployerGroupNotfound,
 }
 
 #[derive(Debug)]
@@ -25,12 +27,12 @@ impl Display for ServerResponseError {
 
 impl ResponseError for ServerResponseError {
     fn status_code(&self) -> StatusCode {
-        if let Some(ranger_server_error) = self.0.root_cause().downcast_ref::<RangerError>()
-        {
+        if let Some(ranger_server_error) = self.0.root_cause().downcast_ref::<RangerError>() {
             return match ranger_server_error {
-              RangerError::ScenarioNotFound => StatusCode::NOT_FOUND,
-              _ => StatusCode::INTERNAL_SERVER_ERROR,
-            }
+                RangerError::ScenarioNotFound => StatusCode::NOT_FOUND,
+                RangerError::DeployerGroupNotfound => StatusCode::NOT_FOUND,
+                _ => StatusCode::INTERNAL_SERVER_ERROR,
+            };
         }
         StatusCode::INTERNAL_SERVER_ERROR
     }
@@ -41,7 +43,7 @@ impl ResponseError for ServerResponseError {
 }
 
 impl From<Error> for ServerResponseError {
-    fn from(error:Error) -> ServerResponseError {
+    fn from(error: Error) -> ServerResponseError {
         ServerResponseError(error)
     }
 }
