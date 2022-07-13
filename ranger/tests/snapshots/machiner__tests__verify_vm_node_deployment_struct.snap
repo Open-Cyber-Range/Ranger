@@ -1,0 +1,24 @@
+---
+source: ranger/tests/machiner.rs
+expression: deployment
+---
+NodeDeployment {
+    parameters: Some(
+        DeploymentParameters {
+            name: "win10",
+            exercise_name: "test-exercise",
+            template_name: "windows10",
+        },
+    ),
+    node: Some(
+        Node {
+            identifier: Some(
+                NodeIdentifier {
+                    identifier: None,
+                    node_type: Vm,
+                },
+            ),
+            configuration: None,
+        },
+    ),
+}

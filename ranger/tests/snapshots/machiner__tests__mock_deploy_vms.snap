@@ -1,0 +1,28 @@
+---
+source: ranger/tests/machiner.rs
+expression: result
+---
+[
+    (
+        NodeIdentifier {
+            identifier: Some(
+                Identifier {
+                    value: "Some UUID",
+                },
+            ),
+            node_type: Vm,
+        },
+        "deb10",
+    ),
+    (
+        NodeIdentifier {
+            identifier: Some(
+                Identifier {
+                    value: "Some UUID",
+                },
+            ),
+            node_type: Vm,
+        },
+        "win10",
+    ),
+]
