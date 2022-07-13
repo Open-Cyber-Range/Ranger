@@ -61,7 +61,26 @@ pub fn filter_node_clients(
         .collect::<Vec<Addr<NodeClient>>>()
 }
 
-trait NodeDeploymentTrait {
+pub trait NodeDeploymentTrait {
+    fn set_deployment_parameters(
+        &self,
+        node: (String, sdl_parser::node::Node),
+        exercise_name: String,
+    ) -> Result<DeploymentParameters>;
+
+    fn initialize_vm(
+        &self,
+        node: (String, sdl_parser::node::Node),
+        exercise_name: String,
+    ) -> Result<NodeDeployment>;
+
+    fn initialize_switch(
+        &self,
+        node: (String, sdl_parser::node::Node),
+        exercise_name: String,
+    ) -> Result<NodeDeployment>;
+}
+impl NodeDeploymentTrait for NodeDeployment {
     fn set_deployment_parameters(
         &self,
         node: (String, sdl_parser::node::Node),
@@ -114,7 +133,6 @@ trait NodeDeploymentTrait {
         })
     }
 }
-impl NodeDeploymentTrait for NodeDeployment {}
 
 impl DeploymentManager {
     pub fn deploy_vms(
