@@ -252,12 +252,12 @@ mod tests {
     use super::*;
     use actix_web::{test, App};
     use ranger::routes::exercise::add_exercise;
-    use sdl_parser::test::{TEST_SCHEMA, TEST_SCHEMA_STRING};
+    use sdl_parser::test::{RAW_TEST_SCHEMA, RAW_TEST_SCHEMA_STRING};
 
     pub async fn create_test_app_state() -> Data<AppState> {
         let database_address = Database::new().start();
         database_address
-            .send(AddScenario(TEST_SCHEMA.scenario.clone()))
+            .send(AddScenario(RAW_TEST_SCHEMA.scenario.clone()))
             .await
             .unwrap();
         let app_state = AppState::new();
@@ -268,7 +268,7 @@ mod tests {
     pub async fn exercise_added_successfully() -> Result<()> {
         let app_state = create_test_app_state().await;
         let app = test::init_service(App::new().app_data(app_state).service(add_exercise)).await;
-        let payload = Vec::try_from(TEST_SCHEMA_STRING)?;
+        let payload = Vec::try_from(RAW_TEST_SCHEMA_STRING)?;
         let request = test::TestRequest::post()
             .uri("/exercise")
             .set_payload(payload)

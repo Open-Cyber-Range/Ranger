@@ -1525,7 +1525,7 @@ checksum = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
 [[package]]
 name = "sdl-parser"
 version = "0.8.0"
-source = "git+ssh://git@code.ex.c-lab.ee/open-cyber-range/public/sdl-parser?branch=original-sdl-schema#d3c0b9538bfec7d2acfc217cc2000bca58cd0941"
+source = "git+ssh://git@code.ex.c-lab.ee/open-cyber-range/public/sdl-parser?branch=original-sdl-schema#cfb275bbfbfdd110fbb526ee17a7a6988ba98aa2"
 dependencies = [
  "anyhow",
  "bytesize",
