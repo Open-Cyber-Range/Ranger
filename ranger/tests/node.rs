@@ -6,11 +6,13 @@ mod tests {
     use actix_rt::System;
     use anyhow::{Error, Result};
     use ranger::node::{CreateNode, DeleteNode, NodeClient};
-    use ranger_grpc::{Identifier, NodeIdentifier, DeploymentParameters, Node, Configuration, NodeType};
+    use ranger_grpc::{
+        Configuration, DeploymentParameters, Identifier, Node, NodeIdentifier, NodeType,
+    };
 
     #[test]
     fn node_created_successfully() -> Result<()> {
-        let socket_address = crate::common::create_mock_node_server().run()?;
+        let socket_address = crate::common::create_mock_vmware_server().run_node_server()?;
         let system = System::new();
         let node_id = system.block_on(async {
             let node_deployer_client =
@@ -24,14 +26,14 @@ mod tests {
                         exercise_name: "some-exercise".to_string(),
                         template_name: "debian10".to_string(),
                     }),
-                    node: Some(Node{
-                        identifier: Some(NodeIdentifier{
+                    node: Some(Node {
+                        identifier: Some(NodeIdentifier {
                             identifier: None,
-                            node_type:  NodeType::Vm.into(),
+                            node_type: NodeType::Vm.into(),
                         }),
                         configuration: Some(Configuration {
                             cpu: 1,
-                            ram: 536870912, //512mb
+                            ram: 536870912, //512mib
                         }),
                     }),
                 }))
@@ -45,9 +47,9 @@ mod tests {
 
     #[test]
     fn node_creation_failed() -> Result<()> {
-        let socket_address = crate::common::create_mock_node_server()
+        let socket_address = crate::common::create_mock_vmware_server()
             .successful_create(false)
-            .run()?;
+            .run_node_server()?;
         let system = System::new();
         let result = system.block_on(async {
             let node_deployer_client =
@@ -61,14 +63,14 @@ mod tests {
                         exercise_name: "some-exercise".to_string(),
                         template_name: "debian10".to_string(),
                     }),
-                    node: Some(Node{
-                        identifier: Some(NodeIdentifier{
+                    node: Some(Node {
+                        identifier: Some(NodeIdentifier {
                             identifier: None,
-                            node_type: NodeType::Vm.into(), 
+                            node_type: NodeType::Vm.into(),
                         }),
                         configuration: Some(Configuration {
                             cpu: 1,
-                            ram: 536870912, //512mb
+                            ram: 536870912, //512mib
                         }),
                     }),
                 }))
@@ -82,7 +84,7 @@ mod tests {
 
     #[test]
     fn node_deleted_successfully() -> Result<()> {
-        let socket_address = crate::common::create_mock_node_server().run()?;
+        let socket_address = crate::common::create_mock_vmware_server().run_node_server()?;
         let system = System::new();
         system.block_on(async {
             let node_deployer_client =
@@ -106,9 +108,9 @@ mod tests {
 
     #[test]
     fn node_deletion_failed() -> Result<()> {
-        let socket_address = crate::common::create_mock_node_server()
+        let socket_address = crate::common::create_mock_vmware_server()
             .successful_delete(false)
-            .run()?;
+            .run_node_server()?;
         let system = System::new();
         let result = system.block_on(async {
             let node_deployer_client =

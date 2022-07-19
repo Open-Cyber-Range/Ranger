@@ -1,11 +1,12 @@
 pub mod capability;
 pub mod configuration;
 pub mod database;
-pub mod machiner;
 pub mod deployers;
 pub mod errors;
+pub mod machiner;
 pub mod node;
 pub mod routes;
+pub mod templater;
 
 use crate::database::Database;
 use actix::{Actor, Addr};
