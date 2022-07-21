@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use actix::Actor;
 use actix_web::web::Data;
 use anyhow::Result;
@@ -11,7 +12,8 @@ use ranger::{
 use ranger_grpc::{
     capability_server::{Capability as CapabilityService, CapabilityServer},
     node_service_server::{NodeService, NodeServiceServer},
-    Capabilities, Identifier, NodeDeployment, NodeIdentifier, NodeType,
+    template_service_server::{TemplateService, TemplateServiceServer},
+    Capabilities, Identifier, NodeDeployment, NodeIdentifier, NodeType, Source,
 };
 
 use std::{collections::HashMap, time::Duration};
@@ -54,21 +56,31 @@ lazy_static! {
 }
 
 pub struct MockNodeService {
-    builder: MockNodeBuilder,
+    builder: MockVmwareBuilder,
 }
 
 pub struct MockCapabilityService {
     builder: MockCapabilityBuilder,
 }
 
+pub struct MockTemplateService {
+    builder: MockVmwareBuilder,
+}
+
 impl MockNodeService {
-    pub(crate) fn new(builder: MockNodeBuilder) -> Self {
+    pub(crate) fn new(builder: MockVmwareBuilder) -> Self {
         Self { builder }
     }
 }
 
 impl MockCapabilityService {
     pub(crate) fn new(builder: MockCapabilityBuilder) -> Self {
+        Self { builder }
+    }
+}
+
+impl MockTemplateService {
+    pub(crate) fn new(builder: MockVmwareBuilder) -> Self {
         Self { builder }
     }
 }
@@ -107,9 +119,29 @@ impl CapabilityService for MockCapabilityService {
     }
 }
 
-#[allow(dead_code)]
-pub(crate) fn create_mock_node_server() -> MockNodeBuilder {
-    MockNodeBuilder {
+#[tonic::async_trait]
+impl TemplateService for MockTemplateService {
+    async fn create(&self, _: Request<Source>) -> Result<Response<Identifier>, Status> {
+        if self.builder.successful_create {
+            Status::ok("Template created successfully");
+            return Ok(Response::new(Identifier {
+                value: String::from("Some UUID"),
+            }));
+        }
+
+        return Err(Status::internal("Failed to create template"));
+    }
+
+    async fn delete(&self, _: Request<Identifier>) -> Result<Response<()>, Status> {
+        if self.builder.successful_delete {
+            return Ok(Response::new(()));
+        }
+        return Err(Status::internal("Failed to delete template"));
+    }
+}
+
+pub(crate) fn create_mock_vmware_server() -> MockVmwareBuilder {
+    MockVmwareBuilder {
         successful_create: true,
         successful_delete: true,
         server_address: None,
@@ -117,7 +149,6 @@ pub(crate) fn create_mock_node_server() -> MockNodeBuilder {
     }
 }
 
-#[allow(dead_code)]
 pub(crate) fn create_mock_capability_server() -> MockCapabilityBuilder {
     MockCapabilityBuilder {
         successful_get_capabilities: true,
@@ -127,7 +158,7 @@ pub(crate) fn create_mock_capability_server() -> MockCapabilityBuilder {
 }
 
 #[derive(Clone)]
-pub(crate) struct MockNodeBuilder {
+pub(crate) struct MockVmwareBuilder {
     pub(crate) successful_create: bool,
     pub(crate) successful_delete: bool,
     pub(crate) timeout_millis: u64,
@@ -141,13 +172,11 @@ pub(crate) struct MockCapabilityBuilder {
     pub(crate) server_address: Option<String>,
 }
 
-impl MockNodeBuilder {
-    #[allow(dead_code)]
+impl MockVmwareBuilder {
     fn random_port() -> u16 {
         rand::thread_rng().gen_range(1024..65535)
     }
 
-    #[allow(dead_code)]
     pub fn successful_create(mut self, value: bool) -> Self {
         self.successful_create = value;
         self
@@ -159,20 +188,17 @@ impl MockNodeBuilder {
         self
     }
 
-    #[allow(dead_code)]
     pub fn timeout_millis(mut self, value: u64) -> Self {
         self.timeout_millis = value;
         self
     }
 
-    #[allow(dead_code)]
     pub fn server_address(mut self, value: Option<String>) -> Self {
         self.server_address = value;
         self
     }
 
-    #[allow(dead_code)]
-    pub fn run(self) -> Result<String> {
+    pub fn run_node_server(self) -> Result<String> {
         let server_address_string = match self.server_address.clone() {
             Some(address) => address,
             None => format!("127.0.0.1:{}", Self::random_port()),
@@ -195,33 +221,52 @@ impl MockNodeBuilder {
 
         Ok(server_address_string)
     }
+
+    pub fn run_template_server(self) -> Result<String> {
+        let server_address_string = match self.server_address.clone() {
+            Some(address) => address,
+            None => format!("127.0.0.1:{}", Self::random_port()),
+        };
+        let server_address = server_address_string.parse()?;
+        let mock_server = MockTemplateService::new(self.clone());
+        let tokio_runtime = Runtime::new()?;
+
+        std::thread::spawn(move || {
+            tokio_runtime.block_on(async move {
+                Server::builder()
+                    .add_service(TemplateServiceServer::new(mock_server))
+                    .serve(server_address)
+                    .await?;
+                Ok::<(), anyhow::Error>(())
+            })?;
+            Ok::<(), anyhow::Error>(())
+        });
+        std::thread::sleep(Duration::from_millis(self.timeout_millis));
+
+        Ok(server_address_string)
+    }
 }
 
 impl MockCapabilityBuilder {
-    #[allow(dead_code)]
     fn random_port() -> u16 {
         rand::thread_rng().gen_range(1024..65535)
     }
 
-    #[allow(dead_code)]
     pub fn successful_get_capabilities(mut self, value: bool) -> Self {
         self.successful_get_capabilities = value;
         self
     }
 
-    #[allow(dead_code)]
     pub fn timeout_millis(mut self, value: u64) -> Self {
         self.timeout_millis = value;
         self
     }
 
-    #[allow(dead_code)]
     pub fn server_address(mut self, value: Option<String>) -> Self {
         self.server_address = value;
         self
     }
 
-    #[allow(dead_code)]
     pub fn run(self) -> Result<String> {
         let server_address_string = match self.server_address.clone() {
             Some(address) => address,

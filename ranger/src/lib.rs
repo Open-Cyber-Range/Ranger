@@ -6,6 +6,7 @@ pub mod errors;
 pub mod machiner;
 pub mod node;
 pub mod routes;
+pub mod templater;
 
 use crate::database::Database;
 use actix::{Actor, Addr};

@@ -1,0 +1,7 @@
+---
+source: ranger/tests/template.rs
+expression: template_id
+---
+Identifier {
+    value: "Some UUID",
+}

@@ -14,7 +14,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .to_str()
                 .unwrap(),
             proto_path.join("src").join("node.proto").to_str().unwrap(),
-            proto_path.join("src").join("capability.proto").to_str().unwrap(),
+            proto_path
+                .join("src")
+                .join("capability.proto")
+                .to_str()
+                .unwrap(),
+            proto_path
+                .join("src")
+                .join("template.proto")
+                .to_str()
+                .unwrap(),
         ],
         &[proto_path_string],
     )?;
