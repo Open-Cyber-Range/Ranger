@@ -3,6 +3,7 @@ use crate::{
     deployers::get_deployer_groups,
     errors::{RangerError, ServerResponseError},
     machiner::CreateDeployment,
+    templater::template_scenario,
     AppState,
 };
 use actix_web::{
@@ -67,7 +68,7 @@ pub async fn deploy_exercise(
         .unwrap_or_else(|| "default".to_string());
     let deployer_groups = get_deployer_groups(app_state.deployer_grouper_address.clone()).await?;
 
-    let deployer_group = deployer_groups
+    let requested_deployer_group = deployer_groups
         .find(requested_deployer_group_name.clone())
         .ok_or_else(|| {
             error!(
@@ -76,11 +77,18 @@ pub async fn deploy_exercise(
             );
             ServerResponseError(RangerError::DeployerGroupNotfound.into())
         })?;
-    info!("Using deployment group: {}", deployer_group.0);
-    let deployment_group = deployer_group.1.start().await;
+    info!("Using deployment group: {}", requested_deployer_group.0);
+    let deployment_group = requested_deployer_group.1.start().await;
+    let templated_scenario = template_scenario(scenario, &deployment_group.templaters)
+        .await
+        .map_err(|error| {
+            error!("Templater actor mailbox error: {}", error);
+            ServerResponseError(RangerError::ActixMailBoxError.into())
+        })?;
+
     let deployment_uuid = app_state
         .deployment_manager_address
-        .send(CreateDeployment(scenario, deployment_group))
+        .send(CreateDeployment(templated_scenario, deployment_group))
         .await
         .map_err(|error| {
             error!("Deployment manager actor mailbox error: {}", error);

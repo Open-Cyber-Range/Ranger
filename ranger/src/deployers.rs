@@ -3,6 +3,7 @@ use crate::{
     errors::{RangerError, ServerResponseError},
     machiner::{filter_node_clients, initiate_node_clients, DeploymentGroup},
     node::NodeClient,
+    templater::{filter_template_clients, initiate_template_clients},
 };
 
 use actix::{Actor, Addr, Context, Handler, Message, MessageResponse};
@@ -39,11 +40,11 @@ impl DeployerGroup {
     pub async fn start(&self) -> DeploymentGroup {
         let machiners = join_all(initiate_node_clients(self.machiners.clone())).await;
         let switchers = join_all(initiate_node_clients(self.switchers.clone())).await;
-        let templaters = join_all(initiate_node_clients(self.templaters.clone())).await;
+        let templaters = join_all(initiate_template_clients(self.templaters.clone())).await;
         DeploymentGroup {
             machiners: filter_node_clients(machiners),
             switchers: filter_node_clients(switchers),
-            templaters: filter_node_clients(templaters),
+            templaters: filter_template_clients(templaters),
         }
     }
 
