@@ -53,7 +53,7 @@ mod tests {
     use crate::database::{AddScenario, Database, GetScenario};
     use actix::{Actor, System};
     use anyhow::Result;
-    use sdl_parser::test::RAW_TEST_SCHEMA;
+    use sdl_parser::test::TEST_SCHEMA;
 
     #[test]
     fn add_test_exercise() -> Result<()> {
@@ -61,7 +61,7 @@ mod tests {
         system.block_on(async {
             let database_address = Database::new().start();
             let result = database_address
-                .send(AddScenario(RAW_TEST_SCHEMA.scenario.clone()))
+                .send(AddScenario(TEST_SCHEMA.scenario.clone()))
                 .await;
             assert!(result.is_ok());
         });
@@ -74,7 +74,7 @@ mod tests {
         let result = system.block_on(async {
             let database_address = Database::new().start();
             database_address
-                .send(AddScenario(RAW_TEST_SCHEMA.scenario.clone()))
+                .send(AddScenario(TEST_SCHEMA.scenario.clone()))
                 .await
                 .unwrap();
             let result = database_address
@@ -82,7 +82,7 @@ mod tests {
                 .await;
             result?
         })?;
-        assert_eq!(RAW_TEST_SCHEMA.scenario, result);
+        assert_eq!(TEST_SCHEMA.scenario, result);
         Ok(())
     }
 }

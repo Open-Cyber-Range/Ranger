@@ -1,5 +1,5 @@
 ---
-source: ranger/tests/template.rs
+source: ranger/tests/templater.rs
 expression: template_id
 ---
 Identifier {
