@@ -7,7 +7,7 @@ edition = "2021"
 
 [package.metadata.deb]
 name = "ranger"
-maintainer = "Madis-Mikk Remmet <madismikk.remmet@c14.ee>"
+maintainer = "Madis-Mikk Remmet <developers@cr14.ee>"
 copyright = "2022, CR14 <info@cr14.ee>"
 depends = "$auto, systemd"
 section = "utility"
