@@ -1,4 +1,5 @@
 use crate::node::{CreateNode, NodeClient};
+use crate::templater::TemplateClient;
 use actix::{
     Actor, ActorFutureExt, Addr, Context, Handler, Message, ResponseActFuture, WrapFuture,
 };
@@ -36,7 +37,7 @@ impl Actor for DeploymentManager {
 pub struct DeploymentGroup {
     pub machiners: Vec<Addr<NodeClient>>,
     pub switchers: Vec<Addr<NodeClient>>,
-    pub templaters: Vec<Addr<NodeClient>>,
+    pub templaters: Vec<Addr<TemplateClient>>,
 }
 
 pub fn initiate_node_clients(
@@ -93,8 +94,7 @@ impl NodeDeploymentTrait for NodeDeployment {
                 .1
                 .source
                 .ok_or_else(|| anyhow!("Source is missing"))?
-                .template
-                .ok_or_else(|| anyhow!("Template is missing"))?,
+                .name,
         })
     }
 
@@ -134,45 +134,67 @@ impl NodeDeploymentTrait for NodeDeployment {
     }
 }
 
+pub async fn deploy_vm(
+    node_map: (String, node::Node),
+    machiner_client: Addr<NodeClient>,
+    exercise_name: &str,
+) -> Result<NodeIdentifier> {
+    info!("Deploying VM: {}", node_map.0);
+    machiner_client
+        .send(CreateNode(
+            NodeDeployment::default().initialize_vm(node_map.clone(), exercise_name.to_string())?,
+        ))
+        .await?
+}
+pub async fn deploy_switch(
+    node_map: (String, node::Node),
+    switcher_client: Addr<NodeClient>,
+    exercise_name: &str,
+) -> Result<NodeIdentifier> {
+    info!("Deploying VM: {}", node_map.0);
+    switcher_client
+        .send(CreateNode(
+            NodeDeployment::default().initialize_switch(node_map.clone(), exercise_name.to_string())?,
+        ))
+        .await?
+}
+
 impl DeploymentManager {
     pub fn deploy_vms(
-        infrastructure: HashMap<String, node::Node>,
+        nodes: HashMap<String, node::Node>,
         deployment_group: DeploymentGroup,
         exercise_name: &str,
     ) -> futures::future::TryJoinAll<
         impl Future<Output = Result<(NodeIdentifier, String), anyhow::Error>> + '_,
     > {
         try_join_all(
-            infrastructure
+            nodes
                 .into_iter()
                 .zip(deployment_group.machiners.into_iter().cycle())
                 .map(|(node, machiner_client)| async move {
                     match node.1.type_field {
                         node::NodeType::VM => {
                             info!("Deploying VM: {}", node.0);
-                            let node_id = machiner_client
-                                .send(CreateNode(
-                                    NodeDeployment::default()
-                                        .initialize_vm(node.clone(), exercise_name.to_string())?,
-                                ))
-                                .await??;
+                            let node_id =
+                                deploy_vm(node.clone(), machiner_client, exercise_name).await?;
                             info!("Deployment of VM {} finished", node.0);
                             Ok::<(NodeIdentifier, String)>((node_id, node.0))
                         }
-                        _ => Err(anyhow!("Node type not supported for machiner deployment")),
+                        _ => Err(anyhow!("Node type not supported for VM deployment")),
                     }
                 }),
         )
     }
+
     pub fn deploy_switches(
-        infrastructure: HashMap<String, node::Node>,
+        nodes: HashMap<String, node::Node>,
         deployment_group: DeploymentGroup,
         exercise_name: &str,
     ) -> futures::future::TryJoinAll<
         impl Future<Output = Result<(NodeIdentifier, String), anyhow::Error>> + '_,
     > {
         try_join_all(
-            infrastructure
+            nodes
                 .into_iter()
                 .zip(deployment_group.switchers.into_iter().cycle())
                 .map(|(node, switcher_client)| async move {
@@ -180,12 +202,7 @@ impl DeploymentManager {
                         node::NodeType::Network => {
                             info!("Deploying Switch: {}", node.0);
                             let node_id =
-                                switcher_client
-                                    .send(CreateNode(NodeDeployment::default().initialize_switch(
-                                        node.clone(),
-                                        exercise_name.to_string(),
-                                    )?))
-                                    .await??;
+                                deploy_switch(node.clone(), switcher_client, exercise_name).await?;
                             info!("Deployment of Switch {} finished", node.0);
                             Ok::<(NodeIdentifier, String)>((node_id, node.0))
                         }
@@ -207,11 +224,8 @@ impl Handler<CreateDeployment> for DeploymentManager {
                 let deployment_id = Uuid::new_v4();
                 let exercise_name = format!("{}-{}", scenario.name, deployment_id);
                 let exercise_name = exercise_name.as_str();
-                let node_ids: Vec<(NodeIdentifier, String)> = if let Some(infrastructure) =
-                    scenario.infrastructure
-                {
-                    DeploymentManager::deploy_vms(infrastructure, deployment_group, exercise_name)
-                        .await?
+                let node_ids: Vec<(NodeIdentifier, String)> = if let Some(nodes) = scenario.nodes {
+                    DeploymentManager::deploy_vms(nodes, deployment_group, exercise_name).await?
                 } else {
                     Vec::new()
                 };
