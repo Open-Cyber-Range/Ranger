@@ -93,6 +93,10 @@ pub async fn deploy_exercise(
         .map_err(|error| {
             error!("Deployment manager actor mailbox error: {}", error);
             ServerResponseError(RangerError::ActixMailBoxError.into())
+        })?
+        .map_err(|error| {
+            error!("Deployment manager actor error: {}", error);
+            ServerResponseError(RangerError::DeploymentFailed.into())
         })?;
     Ok(HttpResponse::Ok().body(format!("{:?}", deployment_uuid)))
 }
