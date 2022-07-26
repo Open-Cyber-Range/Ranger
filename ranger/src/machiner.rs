@@ -151,11 +151,12 @@ pub async fn deploy_switch(
     switcher_client: Addr<NodeClient>,
     exercise_name: &str,
 ) -> Result<NodeIdentifier> {
-    info!("Deploying VM: {}", node_map.0);
+    info!("Deploying Switch: {}", node_map.0);
     switcher_client
-        .send(CreateNode(
-            NodeDeployment::default().initialize_switch(node_map.clone(), exercise_name.to_string())?,
-        ))
+        .send(CreateNode(NodeDeployment::default().initialize_switch(
+            node_map.clone(),
+            exercise_name.to_string(),
+        )?))
         .await?
 }
 
@@ -174,7 +175,6 @@ impl DeploymentManager {
                 .map(|(node, machiner_client)| async move {
                     match node.1.type_field {
                         node::NodeType::VM => {
-                            info!("Deploying VM: {}", node.0);
                             let node_id =
                                 deploy_vm(node.clone(), machiner_client, exercise_name).await?;
                             info!("Deployment of VM {} finished", node.0);
@@ -200,7 +200,6 @@ impl DeploymentManager {
                 .map(|(node, switcher_client)| async move {
                     match node.1.type_field {
                         node::NodeType::Network => {
-                            info!("Deploying Switch: {}", node.0);
                             let node_id =
                                 deploy_switch(node.clone(), switcher_client, exercise_name).await?;
                             info!("Deployment of Switch {} finished", node.0);
