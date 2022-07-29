@@ -1,1 +1,14 @@
-node_deployer_addresses: ["http://localhost:9999"]
+host: localhost
+port: 8085
+deployers:
+  my-machiner-deployer: http://ranger-vmware-machiner:9999
+  my-switch-deployer: http://ranger-vmware-switcher:9998
+  my-template-deployer: http://ranger-vmware-switcher:9997
+
+default_deployment_group: my-cool-group
+deployment_groups:
+  my-cool-group:
+    - my-machiner-deployer
+    - my-switch-deployer
+    - my-template-deployer
+    
