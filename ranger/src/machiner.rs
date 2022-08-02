@@ -90,7 +90,7 @@ impl NodeDeploymentTrait for NodeDeployment {
         Ok(DeploymentParameters {
             name: node.0.clone(),
             exercise_name,
-            template_name: node
+            template_id: node
                 .1
                 .source
                 .ok_or_else(|| anyhow!("Source is missing"))?

@@ -7,7 +7,7 @@ NodeDeployment {
         DeploymentParameters {
             name: "win10",
             exercise_name: "test-exercise",
-            template_name: "windows10",
+            template_id: "windows10",
         },
     ),
     node: Some(
