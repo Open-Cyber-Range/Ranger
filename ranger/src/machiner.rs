@@ -6,7 +6,7 @@ use actix::{
 use anyhow::{anyhow, Ok, Result};
 use futures::{future::try_join_all, Future};
 use log::{error, info};
-use ranger_grpc::{DeploymentParameters, Node, NodeDeployment, NodeIdentifier, NodeType};
+use ranger_grpc::{DeploymentParameters, Node, NodeDeployment, NodeIdentifier, NodeType, Configuration};
 use sdl_parser::{node, Scenario};
 use std::collections::HashMap;
 use uuid::Uuid;
@@ -104,13 +104,25 @@ impl NodeDeploymentTrait for NodeDeployment {
         exercise_name: String,
     ) -> Result<NodeDeployment> {
         let deployment = NodeDeployment {
-            parameters: Some(self.set_deployment_parameters(node, exercise_name)?),
+            parameters: Some(self.set_deployment_parameters(node.clone(), exercise_name)?),
             node: Some(Node {
                 identifier: Some(NodeIdentifier {
                     identifier: None,
                     node_type: NodeType::Vm.into(),
                 }),
-                configuration: None,
+                configuration: Some(Configuration {
+                    cpu: node
+                        .1
+                        .resources
+                        .clone()
+                        .ok_or_else(|| anyhow!("Resources field is missing"))?
+                        .cpu,
+                    ram: node
+                        .1
+                        .resources
+                        .ok_or_else(|| anyhow!("Resources field is missing"))?
+                        .ram,
+                }),
             }),
         };
         Ok(deployment)

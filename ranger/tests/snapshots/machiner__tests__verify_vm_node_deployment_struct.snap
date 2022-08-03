@@ -18,7 +18,12 @@ NodeDeployment {
                     node_type: Vm,
                 },
             ),
-            configuration: None,
+            configuration: Some(
+                Configuration {
+                    cpu: 2,
+                    ram: 4294967296,
+                },
+            ),
         },
     ),
 }
