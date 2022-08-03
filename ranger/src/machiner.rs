@@ -160,18 +160,18 @@ pub async fn deploy_switch(
         .await?
 }
 
-impl DeploymentManager {
-    pub fn deploy_vms(
+impl DeploymentGroup {
+    pub fn deploy_vms<'a>(
+        &self,
         nodes: HashMap<String, node::Node>,
-        deployment_group: DeploymentGroup,
-        exercise_name: &str,
+        exercise_name: &'a str,
     ) -> futures::future::TryJoinAll<
-        impl Future<Output = Result<(NodeIdentifier, String), anyhow::Error>> + '_,
+        impl Future<Output = Result<(NodeIdentifier, String), anyhow::Error>> + 'a,
     > {
         try_join_all(
             nodes
                 .into_iter()
-                .zip(deployment_group.machiners.into_iter().cycle())
+                .zip(self.machiners.clone().into_iter().cycle())
                 .map(|(node, machiner_client)| async move {
                     match node.1.type_field {
                         node::NodeType::VM => {
@@ -186,17 +186,17 @@ impl DeploymentManager {
         )
     }
 
-    pub fn deploy_switches(
+    pub fn deploy_switches<'a>(
+        &self,
         nodes: HashMap<String, node::Node>,
-        deployment_group: DeploymentGroup,
-        exercise_name: &str,
+        exercise_name: &'a str,
     ) -> futures::future::TryJoinAll<
-        impl Future<Output = Result<(NodeIdentifier, String), anyhow::Error>> + '_,
+        impl Future<Output = Result<(NodeIdentifier, String), anyhow::Error>> + 'a,
     > {
         try_join_all(
             nodes
                 .into_iter()
-                .zip(deployment_group.switchers.into_iter().cycle())
+                .zip(self.switchers.clone().into_iter().cycle())
                 .map(|(node, switcher_client)| async move {
                     match node.1.type_field {
                         node::NodeType::Network => {
@@ -224,7 +224,7 @@ impl Handler<CreateDeployment> for DeploymentManager {
                 let exercise_name = format!("{}-{}", scenario.name, deployment_id);
                 let exercise_name = exercise_name.as_str();
                 let node_ids: Vec<(NodeIdentifier, String)> = if let Some(nodes) = scenario.nodes {
-                    DeploymentManager::deploy_vms(nodes, deployment_group, exercise_name).await?
+                    deployment_group.deploy_vms(nodes, exercise_name).await?
                 } else {
                     Vec::new()
                 };

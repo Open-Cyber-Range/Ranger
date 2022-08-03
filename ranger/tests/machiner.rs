@@ -6,7 +6,7 @@ mod tests {
     use actix_web::test;
     use anyhow::{anyhow, Result};
     use ranger::deployers::DeployerGroup;
-    use ranger::machiner::{DeploymentManager, NodeDeploymentTrait};
+    use ranger::machiner::NodeDeploymentTrait;
     use ranger_grpc::NodeDeployment;
     use sdl_parser::test::TEST_SCHEMA;
 
@@ -42,8 +42,7 @@ mod tests {
         );
         let deployment_group = deployer_group.start().await;
 
-        let mut node_identifiers =
-            DeploymentManager::deploy_vms(nodes, deployment_group, "test-exercise").await?;
+        let mut node_identifiers = deployment_group.deploy_vms(nodes, "test-exercise").await?;
         node_identifiers.sort_by_key(|node_name| node_name.1.clone());
         insta::assert_debug_snapshot!(node_identifiers);
         Ok(())
