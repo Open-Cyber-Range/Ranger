@@ -3,7 +3,9 @@ use crate::{
     deployers::get_deployer_groups,
     errors::{RangerError, ServerResponseError},
     machiner::CreateDeployment,
-    templater::template_scenario,
+    templater::{
+        create_node_deployments, filter_node_deployments, seperate_node_deployments_by_type,
+    },
     AppState,
 };
 use actix_web::{
@@ -15,6 +17,7 @@ use actix_web::{
 use log::{error, info};
 use sdl_parser::parse_sdl;
 use serde::Deserialize;
+use uuid::Uuid;
 
 #[post("exercise")]
 pub async fn add_exercise(text: String, app_state: Data<AppState>) -> HttpResponse {
@@ -79,16 +82,36 @@ pub async fn deploy_exercise(
         })?;
     info!("Using deployment group: {}", requested_deployer_group.0);
     let deployment_group = requested_deployer_group.1.start().await;
-    let templated_scenario = template_scenario(scenario, &deployment_group.templaters)
-        .await
-        .map_err(|error| {
-            error!("Templater actor mailbox error: {}", error);
-            ServerResponseError(RangerError::ActixMailBoxError.into())
-        })?;
+    let deployment_id = Uuid::new_v4();
+    let exercise_name = format!("{}-{}", scenario.name, deployment_id);
+    let node_deployment_results = create_node_deployments(
+        scenario,
+        &deployment_group.templaters,
+        exercise_name.as_str(),
+    )
+    .await
+    .map_err(|error| {
+        error!("Templater actor mailbox error: {}", error);
+        ServerResponseError(RangerError::ActixMailBoxError.into())
+    })?;
 
+    let node_deployments = filter_node_deployments(node_deployment_results).map_err(|error| {
+        error!("General error: {}", error);
+        ServerResponseError(RangerError::DeploymentFailed.into())
+    })?;
+    let node_deployments =
+        seperate_node_deployments_by_type(node_deployments).map_err(|error| {
+            error!("General error: {}", error);
+            ServerResponseError(RangerError::DeploymentFailed.into())
+        })?;
     let deployment_uuid = app_state
         .deployment_manager_address
-        .send(CreateDeployment(templated_scenario, deployment_group))
+        .send(CreateDeployment(
+            node_deployments,
+            deployment_group,
+            exercise_name.to_string(),
+            deployment_id,
+        ))
         .await
         .map_err(|error| {
             error!("Deployment manager actor mailbox error: {}", error);

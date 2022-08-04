@@ -2,14 +2,18 @@ use std::collections::HashMap;
 
 use actix::{Actor, Addr, Context, Handler, Message, ResponseFuture};
 use anyhow::{anyhow, Ok, Result};
+use futures::future::join_all;
 use futures::Future;
 use log::error;
+use ranger_grpc::NodeDeployment;
 use ranger_grpc::{
     template_service_client::TemplateServiceClient, Identifier, Source as GrpcSource,
 };
 use sdl_parser::node::Source;
 use sdl_parser::Scenario;
 use tonic::transport::Channel;
+
+use crate::machiner::NodeDeploymentTrait;
 
 #[derive(Message)]
 #[rtype(result = "Result<Identifier, anyhow::Error>")]
@@ -45,48 +49,90 @@ pub fn filter_template_clients(
         .collect::<Vec<Addr<TemplateClient>>>()
 }
 
-async fn update_source_for_deployment(
+async fn get_template_id(
     source: Source,
     templater_address: &Addr<TemplateClient>,
-) -> Result<Source> {
-    let template_id = templater_address
+) -> Result<String> {
+    Ok(templater_address
         .send(CreateTemplate(GrpcSource {
             name: source.name.clone(),
             version: source.version.clone(),
         }))
-        .await??;
-    let source_full_name = format!("{}-{}-{:?}", source.name, &source.version, template_id);
-    let source = Source {
-        name: source_full_name,
-        version: source.version,
-    };
-    Ok(source)
+        .await??
+        .value)
+}
+pub fn seperate_node_deployments_by_type(
+    node_deployments: Vec<NodeDeployment>,
+) -> Result<(Vec<NodeDeployment>, Vec<NodeDeployment>)> {
+    let mut machiner_deployments = vec![];
+    let mut switcher_deployments = vec![];
+    for node_deployment in node_deployments {
+        match node_deployment
+            .clone()
+            .node
+            .ok_or_else(|| anyhow!("Error getting node"))?
+            .identifier
+            .ok_or_else(|| anyhow!("Error getting identifier"))?
+            .node_type()
+        {
+            ranger_grpc::NodeType::Vm => machiner_deployments.push(node_deployment),
+            ranger_grpc::NodeType::Switch => switcher_deployments.push(node_deployment),
+        }
+    }
+    Ok((machiner_deployments, switcher_deployments))
+}
+pub fn filter_node_deployments(
+    node_deployment_results: Vec<Result<NodeDeployment, anyhow::Error>>,
+) -> Result<Vec<NodeDeployment>> {
+    let node_deployments: Vec<NodeDeployment> = node_deployment_results
+        .into_iter()
+        .filter_map(|node_deployment| {
+            node_deployment
+                .map_err(|error| error!("Error creating node deployment: {}", error))
+                .ok()
+        })
+        .collect();
+    if node_deployments.is_empty() {
+        Err(anyhow!("No nodes to deploy"))
+    } else {
+        Ok(node_deployments)
+    }
 }
 
-pub async fn template_scenario(
-    mut scenario: Scenario,
+pub async fn create_node_deployments(
+    scenario: Scenario,
     templaters: &[Addr<TemplateClient>],
-) -> Result<Scenario> {
-    let nodes = scenario
-        .nodes
-        .as_mut()
-        .ok_or_else(|| anyhow!("Nodes not found"))?;
-
+    exercise_name: &str,
+) -> Result<Vec<Result<NodeDeployment>>> {
+    let nodes = scenario.nodes.ok_or_else(|| anyhow!("Nodes not found"))?;
     let templater_address = templaters
         .iter()
         .next()
         .ok_or_else(|| anyhow!("No templater available"))?;
 
-    for (_, node) in nodes.iter_mut() {
+    let node_deployments = join_all(nodes.iter().map(|(node_name, node)| async move {
         let source = node
             .source
             .as_ref()
             .ok_or_else(|| anyhow!("Source not found"))?;
-        let templated_source =
-            update_source_for_deployment(source.clone(), templater_address).await?;
-        node.source = Some(templated_source);
-    }
-    Ok(scenario)
+        let template_id = get_template_id(source.clone(), templater_address).await?;
+        let node_deployment = match node.type_field {
+            sdl_parser::node::NodeType::VM => NodeDeployment::default().initialize_vm(
+                node.clone(),
+                node_name.to_string(),
+                template_id,
+                exercise_name.to_string(),
+            )?,
+            sdl_parser::node::NodeType::Network => NodeDeployment::default().initialize_switch(
+                node_name.to_string(),
+                template_id,
+                exercise_name.to_string(),
+            )?,
+        };
+        Ok::<NodeDeployment>(node_deployment)
+    }))
+    .await;
+    Ok(node_deployments)
 }
 
 impl TemplateClient {

@@ -6,14 +6,20 @@ use actix::{
 use anyhow::{anyhow, Ok, Result};
 use futures::{future::try_join_all, Future};
 use log::{error, info};
-use ranger_grpc::{DeploymentParameters, Node, NodeDeployment, NodeIdentifier, NodeType, Configuration};
-use sdl_parser::{node, Scenario};
+use ranger_grpc::{
+    Configuration, DeploymentParameters, Node, NodeDeployment, NodeIdentifier, NodeType,
+};
 use std::collections::HashMap;
 use uuid::Uuid;
 
 #[derive(Message, Debug)]
 #[rtype(result = "Result<Uuid>")]
-pub struct CreateDeployment(pub(crate) Scenario, pub(crate) DeploymentGroup);
+pub struct CreateDeployment(
+    pub(crate) (Vec<NodeDeployment>, Vec<NodeDeployment>),
+    pub(crate) DeploymentGroup,
+    pub String,
+    pub Uuid,
+);
 
 #[derive(Message, Debug)]
 #[rtype(result = "()")]
@@ -63,65 +69,46 @@ pub fn filter_node_clients(
 }
 
 pub trait NodeDeploymentTrait {
-    fn set_deployment_parameters(
-        &self,
-        node: (String, sdl_parser::node::Node),
-        exercise_name: String,
-    ) -> Result<DeploymentParameters>;
-
     fn initialize_vm(
         &self,
-        node: (String, sdl_parser::node::Node),
+        node: sdl_parser::node::Node,
+        node_name: String,
+        template_id: String,
         exercise_name: String,
     ) -> Result<NodeDeployment>;
 
     fn initialize_switch(
         &self,
-        node: (String, sdl_parser::node::Node),
+        node_name: String,
+        template_id: String,
         exercise_name: String,
     ) -> Result<NodeDeployment>;
 }
 impl NodeDeploymentTrait for NodeDeployment {
-    fn set_deployment_parameters(
-        &self,
-        node: (String, sdl_parser::node::Node),
-        exercise_name: String,
-    ) -> Result<DeploymentParameters> {
-        Ok(DeploymentParameters {
-            name: node.0.clone(),
-            exercise_name,
-            template_id: node
-                .1
-                .source
-                .ok_or_else(|| anyhow!("Source is missing"))?
-                .name,
-        })
-    }
-
     fn initialize_vm(
         &self,
-        node: (String, sdl_parser::node::Node),
+        node: sdl_parser::node::Node,
+        node_name: String,
+        template_id: String,
         exercise_name: String,
     ) -> Result<NodeDeployment> {
+        let resources = node
+            .resources
+            .ok_or_else(|| anyhow!("Resources field is missing"))?;
         let deployment = NodeDeployment {
-            parameters: Some(self.set_deployment_parameters(node.clone(), exercise_name)?),
+            parameters: Some(DeploymentParameters {
+                name: node_name,
+                exercise_name,
+                template_id,
+            }),
             node: Some(Node {
                 identifier: Some(NodeIdentifier {
                     identifier: None,
                     node_type: NodeType::Vm.into(),
                 }),
                 configuration: Some(Configuration {
-                    cpu: node
-                        .1
-                        .resources
-                        .clone()
-                        .ok_or_else(|| anyhow!("Resources field is missing"))?
-                        .cpu,
-                    ram: node
-                        .1
-                        .resources
-                        .ok_or_else(|| anyhow!("Resources field is missing"))?
-                        .ram,
+                    cpu: resources.cpu,
+                    ram: resources.ram,
                 }),
             }),
         };
@@ -130,11 +117,16 @@ impl NodeDeploymentTrait for NodeDeployment {
 
     fn initialize_switch(
         &self,
-        node: (String, sdl_parser::node::Node),
+        node_name: String,
+        template_id: String,
         exercise_name: String,
     ) -> Result<NodeDeployment> {
         Ok(NodeDeployment {
-            parameters: Some(self.set_deployment_parameters(node, exercise_name)?),
+            parameters: Some(DeploymentParameters {
+                name: node_name,
+                exercise_name,
+                template_id,
+            }),
             node: Some(Node {
                 identifier: Some(NodeIdentifier {
                     identifier: None,
@@ -147,78 +139,77 @@ impl NodeDeploymentTrait for NodeDeployment {
 }
 
 pub async fn deploy_vm(
-    node_map: (String, node::Node),
+    node_deployment: NodeDeployment,
     machiner_client: Addr<NodeClient>,
-    exercise_name: &str,
 ) -> Result<NodeIdentifier> {
-    info!("Deploying VM: {}", node_map.0);
-    machiner_client
-        .send(CreateNode(
-            NodeDeployment::default().initialize_vm(node_map.clone(), exercise_name.to_string())?,
-        ))
-        .await?
+    info!(
+        "Deploying VM: {}",
+        node_deployment
+            .parameters
+            .as_ref()
+            .ok_or_else(|| anyhow!("Error getting parameters"))?
+            .name
+    );
+    machiner_client.send(CreateNode(node_deployment)).await?
 }
 pub async fn deploy_switch(
-    node_map: (String, node::Node),
+    node_deployment: NodeDeployment,
     switcher_client: Addr<NodeClient>,
-    exercise_name: &str,
 ) -> Result<NodeIdentifier> {
-    info!("Deploying Switch: {}", node_map.0);
-    switcher_client
-        .send(CreateNode(NodeDeployment::default().initialize_switch(
-            node_map.clone(),
-            exercise_name.to_string(),
-        )?))
-        .await?
+    info!(
+        "Deploying Switch: {}",
+        node_deployment
+            .parameters
+            .as_ref()
+            .ok_or_else(|| anyhow!("Error getting parameters"))?
+            .name
+    );
+    switcher_client.send(CreateNode(node_deployment)).await?
 }
 
 impl DeploymentGroup {
     pub fn deploy_vms<'a>(
         &self,
-        nodes: HashMap<String, node::Node>,
-        exercise_name: &'a str,
+        node_deployment: Vec<NodeDeployment>,
     ) -> futures::future::TryJoinAll<
         impl Future<Output = Result<(NodeIdentifier, String), anyhow::Error>> + 'a,
     > {
         try_join_all(
-            nodes
+            node_deployment
                 .into_iter()
                 .zip(self.machiners.clone().into_iter().cycle())
-                .map(|(node, machiner_client)| async move {
-                    match node.1.type_field {
-                        node::NodeType::VM => {
-                            let node_id =
-                                deploy_vm(node.clone(), machiner_client, exercise_name).await?;
-                            info!("Deployment of VM {} finished", node.0);
-                            Ok::<(NodeIdentifier, String)>((node_id, node.0))
-                        }
-                        _ => Err(anyhow!("Node type not supported for VM deployment")),
-                    }
+                .map(|(node_deployment, machiner_client)| async move {
+                    let node_id = deploy_vm(node_deployment.clone(), machiner_client).await?;
+                    let node_name = &node_deployment
+                        .parameters
+                        .as_ref()
+                        .ok_or_else(|| anyhow!("Error getting parameters"))?
+                        .name;
+                    info!("Deployment of VM {} finished", node_name);
+                    Ok::<(NodeIdentifier, String)>((node_id, node_name.to_owned()))
                 }),
         )
     }
 
     pub fn deploy_switches<'a>(
         &self,
-        nodes: HashMap<String, node::Node>,
-        exercise_name: &'a str,
+        node_deployment: Vec<NodeDeployment>,
     ) -> futures::future::TryJoinAll<
         impl Future<Output = Result<(NodeIdentifier, String), anyhow::Error>> + 'a,
     > {
         try_join_all(
-            nodes
+            node_deployment
                 .into_iter()
                 .zip(self.switchers.clone().into_iter().cycle())
-                .map(|(node, switcher_client)| async move {
-                    match node.1.type_field {
-                        node::NodeType::Network => {
-                            let node_id =
-                                deploy_switch(node.clone(), switcher_client, exercise_name).await?;
-                            info!("Deployment of Switch {} finished", node.0);
-                            Ok::<(NodeIdentifier, String)>((node_id, node.0))
-                        }
-                        _ => Err(anyhow!("Node type not supported for switcher deployment")),
-                    }
+                .map(|(node_deployment, switcher_client)| async move {
+                    let node_id = deploy_switch(node_deployment.clone(), switcher_client).await?;
+                    let node_name = &node_deployment
+                        .parameters
+                        .as_ref()
+                        .ok_or_else(|| anyhow!("Error getting parameters"))?
+                        .name;
+                    info!("Deployment of VM {} finished", node_name);
+                    Ok::<(NodeIdentifier, String)>((node_id, node_name.to_owned()))
                 }),
         )
     }
@@ -228,25 +219,23 @@ impl Handler<CreateDeployment> for DeploymentManager {
     type Result = ResponseActFuture<Self, Result<Uuid>>;
 
     fn handle(&mut self, msg: CreateDeployment, _: &mut Context<Self>) -> Self::Result {
-        let scenario = msg.0.clone();
+        let node_deployments = msg.0;
         let deployment_group = msg.1;
+        let exercise_name = msg.2;
+        let deployment_id = msg.3;
         Box::pin(
             async move {
-                let deployment_id = Uuid::new_v4();
-                let exercise_name = format!("{}-{}", scenario.name, deployment_id);
-                let exercise_name = exercise_name.as_str();
-                let node_ids: Vec<(NodeIdentifier, String)> = if let Some(nodes) = scenario.nodes {
-                    deployment_group.deploy_vms(nodes, exercise_name).await?
-                } else {
-                    Vec::new()
-                };
+                let vm_ids = deployment_group.deploy_vms(node_deployments.0).await?;
+                let switch_ids = deployment_group.deploy_switches(node_deployments.1).await?;
+                let node_ids: Vec<(NodeIdentifier, String)> =
+                    vm_ids.into_iter().chain(switch_ids.into_iter()).collect();
                 Ok((deployment_id, node_ids))
             }
             .into_actor(self)
             .map(move |result, act, _| {
                 if let Result::Ok((deployment_id, node_ids)) = result {
                     act.nodes
-                        .entry(msg.0.name)
+                        .entry(exercise_name)
                         .or_insert_with(HashMap::new)
                         .insert(deployment_id, node_ids.clone());
                     info!(

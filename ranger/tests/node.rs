@@ -26,7 +26,7 @@ mod tests {
                     parameters: Some(DeploymentParameters {
                         name: "some-name".to_string(),
                         exercise_name: "some-exercise".to_string(),
-                        template_id: "debian10".to_string(),
+                        template_id: "some-uuid".to_string(),
                     }),
                     node: Some(Node {
                         identifier: Some(NodeIdentifier {
@@ -63,7 +63,7 @@ mod tests {
                     parameters: Some(DeploymentParameters {
                         name: "some-name".to_string(),
                         exercise_name: "some-exercise".to_string(),
-                        template_id: "debian10".to_string(),
+                        template_id: "some-uuid".to_string(),
                     }),
                     node: Some(Node {
                         identifier: Some(NodeIdentifier {
