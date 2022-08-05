@@ -15,7 +15,7 @@ use uuid::Uuid;
 #[derive(Message, Debug)]
 #[rtype(result = "Result<Uuid>")]
 pub struct CreateDeployment(
-    pub(crate) (Vec<NodeDeployment>, Vec<NodeDeployment>),
+    pub(crate) Vec<(Vec<NodeDeployment>, Vec<NodeDeployment>)>,
     pub(crate) DeploymentGroup,
     pub String,
     pub Uuid,
@@ -219,29 +219,42 @@ impl Handler<CreateDeployment> for DeploymentManager {
     type Result = ResponseActFuture<Self, Result<Uuid>>;
 
     fn handle(&mut self, msg: CreateDeployment, _: &mut Context<Self>) -> Self::Result {
-        let node_deployments = msg.0;
+        let linked_node_deployments = msg.0;
         let deployment_group = msg.1;
         let exercise_name = msg.2;
         let deployment_id = msg.3;
         Box::pin(
             async move {
-                let vm_ids = deployment_group.deploy_vms(node_deployments.0).await?;
-                let switch_ids = deployment_group.deploy_switches(node_deployments.1).await?;
-                let node_ids: Vec<(NodeIdentifier, String)> =
-                    vm_ids.into_iter().chain(switch_ids.into_iter()).collect();
+                let node_ids = try_join_all(linked_node_deployments.into_iter().map(
+                    |node_deployment_group| async {
+                        let vm_ids = deployment_group.deploy_vms(node_deployment_group.0).await?;
+                        let switch_ids = deployment_group
+                            .deploy_switches(node_deployment_group.1)
+                            .await?;
+                        let node_ids = vm_ids.into_iter().chain(switch_ids.into_iter()).collect();
+                        Ok::<Vec<(NodeIdentifier, String)>>(node_ids)
+                    },
+                ))
+                .await?;
                 Ok((deployment_id, node_ids))
             }
             .into_actor(self)
             .map(move |result, act, _| {
-                if let Result::Ok((deployment_id, node_ids)) = result {
-                    act.nodes
-                        .entry(exercise_name)
-                        .or_insert_with(HashMap::new)
-                        .insert(deployment_id, node_ids.clone());
-                    info!(
-                        "Deployment {deployment_id} successful, {:?} nodes deployed",
-                        node_ids.len()
-                    );
+                if let Result::Ok((deployment_id, node_id_groups)) = result {
+                    for node_ids in node_id_groups {
+                        act.nodes
+                            .entry(exercise_name.clone())
+                            .or_insert_with(HashMap::new)
+                            .insert(deployment_id, node_ids.clone());
+                    }
+                    let node_count = act
+                        .nodes
+                        .get(&exercise_name)
+                        .ok_or_else(|| anyhow!("Exercise not found"))?
+                        .get(&deployment_id)
+                        .ok_or_else(|| anyhow!("Deployment id not found"))?
+                        .len();
+                    info!("Deployment {deployment_id} successful, {node_count} nodes deployed");
                     Ok(deployment_id)
                 } else {
                     error!("Deployment failed: {:?}", result.as_ref().err());

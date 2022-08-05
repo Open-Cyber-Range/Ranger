@@ -104,10 +104,12 @@ pub async fn deploy_exercise(
             error!("General error: {}", error);
             ServerResponseError(RangerError::DeploymentFailed.into())
         })?;
+
+    let simulated_scheduler_output = vec![node_deployments];
     let deployment_uuid = app_state
         .deployment_manager_address
         .send(CreateDeployment(
-            node_deployments,
+            simulated_scheduler_output,
             deployment_group,
             exercise_name.to_string(),
             deployment_id,
