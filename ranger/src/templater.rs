@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use actix::{Actor, Addr, Context, Handler, Message, ResponseFuture};
 use anyhow::{anyhow, Ok, Result};
+use async_trait::async_trait;
 use futures::future::join_all;
 use futures::Future;
 use log::error;
@@ -27,6 +28,29 @@ pub struct TemplateClient {
     template_client: TemplateServiceClient<Channel>,
 }
 
+#[async_trait]
+trait DeployerActions<T>
+where
+    Self: Actor,
+{
+    async fn create_template(templater_address: &Addr<Self>, create_info: T) -> Result<String>;
+}
+#[async_trait]
+impl DeployerActions<Source> for TemplateClient {
+    async fn create_template(
+        templater_address: &Addr<TemplateClient>,
+        source: Source,
+    ) -> Result<String> {
+        Ok(templater_address
+            .send(CreateTemplate(GrpcSource {
+                name: source.name.clone(),
+                version: source.version.clone(),
+            }))
+            .await??
+            .value)
+    }
+}
+
 pub fn initiate_template_clients(
     deployers: HashMap<String, String>,
 ) -> Vec<impl Future<Output = Result<Addr<TemplateClient>, anyhow::Error>>> {
@@ -49,18 +73,6 @@ pub fn filter_template_clients(
         .collect::<Vec<Addr<TemplateClient>>>()
 }
 
-async fn get_template_id(
-    source: Source,
-    templater_address: &Addr<TemplateClient>,
-) -> Result<String> {
-    Ok(templater_address
-        .send(CreateTemplate(GrpcSource {
-            name: source.name.clone(),
-            version: source.version.clone(),
-        }))
-        .await??
-        .value)
-}
 pub fn seperate_node_deployments_by_type(
     node_deployments: Vec<NodeDeployment>,
 ) -> Result<(Vec<NodeDeployment>, Vec<NodeDeployment>)> {
@@ -115,7 +127,8 @@ pub async fn create_node_deployments(
             .source
             .as_ref()
             .ok_or_else(|| anyhow!("Source not found"))?;
-        let template_id = get_template_id(source.clone(), templater_address).await?;
+        let template_id =
+            TemplateClient::create_template(templater_address, source.clone()).await?;
         let node_deployment = match node.type_field {
             sdl_parser::node::NodeType::VM => NodeDeployment::default().initialize_vm(
                 node.clone(),
