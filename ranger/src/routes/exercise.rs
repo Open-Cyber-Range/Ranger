@@ -125,5 +125,5 @@ pub async fn deploy_exercise(
             error!("Deployment manager actor error: {}", error);
             ServerResponseError(RangerError::DeploymentFailed.into())
         })?;
-    Ok(HttpResponse::Ok().body(format!("{:?}", deployment_uuid)))
+    Ok(HttpResponse::Ok().body(format!("{deployment_uuid}")))
 }
