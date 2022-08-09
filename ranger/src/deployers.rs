@@ -85,12 +85,12 @@ impl DeployerGroups {
         DeployerGroups(HashMap::new())
     }
 
-    pub fn find(&self, requested_deployer_group: String) -> Option<(&String, &DeployerGroup)> {
+    pub fn find(&self, requested_deployer_group: &str) -> Option<(&String, &DeployerGroup)> {
         let deployer = &self.0;
         deployer.iter().find(|deployer_group| {
             deployer_group
                 .0
-                .eq_ignore_ascii_case(&requested_deployer_group)
+                .eq_ignore_ascii_case(requested_deployer_group)
         })
     }
 

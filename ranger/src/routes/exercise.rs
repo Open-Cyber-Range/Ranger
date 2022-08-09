@@ -39,10 +39,13 @@ pub async fn add_exercise(text: String, app_state: Data<AppState>) -> HttpRespon
         }
     }
 }
-
+fn default_deployment_group_name_query() -> String {
+    "default".to_string()
+}
 #[derive(Debug, Deserialize)]
 pub struct DeploymentGroupNameQuery {
-    deployment_group: Option<String>,
+    #[serde(default = "default_deployment_group_name_query")]
+    deployment_group: String,
 }
 
 #[post("exercise/{scenario_name}/deployment")]
@@ -65,14 +68,13 @@ pub async fn deploy_exercise(
             error!("Scenario not found {}", error);
             ServerResponseError(RangerError::ScenarioNotFound.into())
         })?;
-    let requested_deployer_group_name = name_query
-        .into_inner()
-        .deployment_group
-        .unwrap_or_else(|| "default".to_string());
+    let requested_deployer_group_name = name_query.into_inner().deployment_group;
+    let requested_deployer_group_name = requested_deployer_group_name.as_str();
+
     let deployer_groups = get_deployer_groups(app_state.deployer_grouper_address.clone()).await?;
 
     let requested_deployer_group = deployer_groups
-        .find(requested_deployer_group_name.clone())
+        .find(requested_deployer_group_name)
         .ok_or_else(|| {
             error!(
                 "Deployment group not found: {}",
