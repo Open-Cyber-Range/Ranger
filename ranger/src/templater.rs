@@ -60,17 +60,20 @@ pub fn initiate_template_clients(
         .collect()
 }
 
-pub fn filter_template_clients(
-    nodeclient_results: Vec<Result<Addr<TemplateClient>, anyhow::Error>>,
-) -> Vec<Addr<TemplateClient>> {
-    nodeclient_results
-        .into_iter()
-        .filter_map(|node_client| {
-            node_client
-                .map_err(|error| error!("Error setting up TemplateClient: {}", error))
-                .ok()
-        })
-        .collect::<Vec<Addr<TemplateClient>>>()
+pub type TemplateClientResults = Vec<Result<Addr<TemplateClient>, anyhow::Error>>;
+pub trait TemplateClientFilter {
+    fn filter_template_clients(self) -> Vec<Addr<TemplateClient>>;
+}
+impl TemplateClientFilter for TemplateClientResults {
+    fn filter_template_clients(self) -> Vec<Addr<TemplateClient>> {
+        self.into_iter()
+            .filter_map(|node_client| {
+                node_client
+                    .map_err(|error| error!("Error setting up TemplateClient: {}", error))
+                    .ok()
+            })
+            .collect::<Vec<Addr<TemplateClient>>>()
+    }
 }
 
 pub fn seperate_node_deployments_by_type(

@@ -1,9 +1,9 @@
 use crate::{
     capability::GetCapabilities,
     errors::{RangerError, ServerResponseError},
-    machiner::{filter_node_clients, initiate_node_clients, DeploymentGroup},
+    machiner::{initiate_node_clients, DeploymentGroup, NodeClientFilter},
     node::NodeClient,
-    templater::{filter_template_clients, initiate_template_clients},
+    templater::{initiate_template_clients, TemplateClientFilter},
 };
 
 use actix::{Actor, Addr, Context, Handler, Message, MessageResponse};
@@ -42,9 +42,9 @@ impl DeployerGroup {
         let switchers = join_all(initiate_node_clients(self.switchers.clone())).await;
         let templaters = join_all(initiate_template_clients(self.templaters.clone())).await;
         DeploymentGroup {
-            machiners: filter_node_clients(machiners),
-            switchers: filter_node_clients(switchers),
-            templaters: filter_template_clients(templaters),
+            machiners: machiners.filter_node_clients(),
+            switchers: switchers.filter_node_clients(),
+            templaters: templaters.filter_template_clients(),
         }
     }
 

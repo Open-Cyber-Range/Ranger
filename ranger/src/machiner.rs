@@ -55,17 +55,20 @@ pub fn initiate_node_clients(
         .collect()
 }
 
-pub fn filter_node_clients(
-    nodeclient_results: Vec<Result<Addr<NodeClient>, anyhow::Error>>,
-) -> Vec<Addr<NodeClient>> {
-    nodeclient_results
-        .into_iter()
-        .filter_map(|node_client| {
-            node_client
-                .map_err(|error| error!("Error setting up NodeClient: {}", error))
-                .ok()
-        })
-        .collect::<Vec<Addr<NodeClient>>>()
+pub type NodeClientResults = Vec<Result<Addr<NodeClient>, anyhow::Error>>;
+pub trait NodeClientFilter {
+    fn filter_node_clients(self) -> Vec<Addr<NodeClient>>;
+}
+impl NodeClientFilter for NodeClientResults {
+    fn filter_node_clients(self) -> Vec<Addr<NodeClient>> {
+        self.into_iter()
+            .filter_map(|node_client| {
+                node_client
+                    .map_err(|error| error!("Error setting up NodeClient: {}", error))
+                    .ok()
+            })
+            .collect::<Vec<Addr<NodeClient>>>()
+    }
 }
 
 pub trait NodeDeploymentTrait {
