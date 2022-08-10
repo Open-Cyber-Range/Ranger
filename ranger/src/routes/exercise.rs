@@ -4,7 +4,7 @@ use crate::{
     errors::{RangerError, ServerResponseError},
     machiner::CreateDeployment,
     templater::{
-        create_node_deployments, filter_node_deployments, seperate_node_deployments_by_type,
+        create_node_deployments, filter_node_deployments, separate_node_deployments_by_type,
     },
     AppState,
 };
@@ -102,7 +102,7 @@ pub async fn deploy_exercise(
         ServerResponseError(RangerError::DeploymentFailed.into())
     })?;
     let node_deployments =
-        seperate_node_deployments_by_type(node_deployments).map_err(|error| {
+        separate_node_deployments_by_type(node_deployments).map_err(|error| {
             error!("General error: {}", error);
             ServerResponseError(RangerError::DeploymentFailed.into())
         })?;

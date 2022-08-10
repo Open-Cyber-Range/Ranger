@@ -76,7 +76,7 @@ impl TemplateClientFilter for TemplateClientResults {
     }
 }
 
-pub fn seperate_node_deployments_by_type(
+pub fn separate_node_deployments_by_type(
     node_deployments: Vec<NodeDeployment>,
 ) -> Result<(Vec<NodeDeployment>, Vec<NodeDeployment>)> {
     let mut machiner_deployments = vec![];
