@@ -2,6 +2,7 @@ use actix_web::web::scope;
 use actix_web::{web::Data, App, HttpServer};
 use anyhow::Error;
 use ranger::configuration::read_configuration;
+use ranger::deployers::DeployerGroups;
 use ranger::routes::{
     basic::{status, version},
     deployers::get_deployers,
@@ -21,6 +22,11 @@ async fn main() -> Result<(), Error> {
             configuration.default_deployment_group,
         )
         .await?;
+    DeployerGroups::start_all(
+        app_state.deployer_grouper_address.clone(),
+        app_state.deployment_manager_address.clone(),
+    )
+    .await?;
 
     let app_data = Data::new(app_state);
 

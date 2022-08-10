@@ -1,8 +1,7 @@
 use crate::{
     database::{AddScenario, GetScenario},
-    deployers::FindDeployerGroupByName,
     errors::{RangerError, ServerResponseError},
-    machiner::CreateDeployment,
+    machiner::{CreateDeployment, FindDeploymentGroupByName},
     templater::{
         create_node_deployments, filter_node_deployments, separate_node_deployments_by_type,
     },
@@ -13,7 +12,7 @@ use actix_web::{
     web::{Data, Path, Query},
     Error, HttpResponse,
 };
-
+use anyhow::Result;
 use log::{error, info};
 use sdl_parser::parse_sdl;
 use serde::Deserialize;
@@ -70,9 +69,10 @@ pub async fn deploy_exercise(
         })?;
     let requested_deployer_group_name = name_query.into_inner().deployment_group;
 
-    let deployer_grouper_address = app_state.deployer_grouper_address.clone();
-    let requested_deployer_group = deployer_grouper_address
-        .send(FindDeployerGroupByName(requested_deployer_group_name))
+    let deployment_manager_address = app_state.deployment_manager_address.clone();
+
+    let requested_deployment_group = deployment_manager_address
+        .send(FindDeploymentGroupByName(requested_deployer_group_name))
         .await
         .map_err(|error| {
             error!("DeployerGroup actor mailbox error: {}", error);
@@ -83,13 +83,12 @@ pub async fn deploy_exercise(
             ServerResponseError(RangerError::DeploymentFailed.into())
         })?;
 
-    info!("Using deployment group: {}", requested_deployer_group.0);
-    let deployment_group = requested_deployer_group.1.start().await;
+    info!("Using deployment group: {}", requested_deployment_group.0);
     let deployment_id = Uuid::new_v4();
     let exercise_name = format!("{}-{}", scenario.name, deployment_id);
     let node_deployment_results = create_node_deployments(
         scenario,
-        &deployment_group.templaters,
+        &requested_deployment_group.1.templaters,
         exercise_name.as_str(),
     )
     .await
@@ -115,7 +114,7 @@ pub async fn deploy_exercise(
         .deployment_manager_address
         .send(CreateDeployment(
             simulated_scheduler_output,
-            deployment_group,
+            requested_deployment_group.1,
             exercise_name.to_string(),
             deployment_id,
         ))

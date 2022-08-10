@@ -1,7 +1,9 @@
 use crate::{
     capability::GetCapabilities,
-    errors::{RangerError, ServerResponseError},
-    machiner::{initiate_node_clients, DeploymentGroup, NodeClientFilter},
+    machiner::{
+        initiate_node_clients, AddDeploymentGroups, DeploymentGroup, DeploymentGroups,
+        DeploymentManager, NodeClientFilter,
+    },
     node::NodeClient,
     templater::{initiate_template_clients, TemplateClientFilter},
 };
@@ -21,10 +23,6 @@ pub struct AddDeployerGroups(pub(crate) DeployerGroups);
 #[derive(Message, Debug, PartialEq)]
 #[rtype(result = "DeployerGroups")]
 pub struct GetDeployerGroups;
-
-#[derive(Message, Debug, PartialEq)]
-#[rtype(result = "Result<(String, DeployerGroup)>")]
-pub struct FindDeployerGroupByName(pub(crate) String);
 
 #[derive(Debug, Default, Clone)]
 pub struct Deployer {
@@ -89,6 +87,34 @@ impl DeployerGroups {
         DeployerGroups(HashMap::new())
     }
 
+    pub async fn start_all(
+        deployer_grouper_address: Addr<DeployerGroups>,
+        deployment_manager_address: Addr<DeploymentManager>,
+    ) -> Result<()> {
+        let deployer_groups = deployer_grouper_address.send(GetDeployerGroups).await?;
+        let deployment_actors = join_all(
+            deployer_groups
+                .0
+                .into_iter()
+                .map(|(name, deployer_group)| async move { (name, deployer_group.start().await) }),
+        )
+        .await;
+
+        let mut deployment_groups = DeploymentGroups::new();
+        deployment_actors
+            .iter()
+            .for_each(|(name, deployment_group)| {
+                deployment_groups
+                    .0
+                    .insert(name.to_string(), deployment_group.clone());
+            });
+        deployment_manager_address
+            .send(AddDeploymentGroups(deployment_groups))
+            .await?;
+
+        Ok(())
+    }
+
     pub fn initialize_with_group_names(
         deployment_groups: &HashMap<String, Vec<String>>,
     ) -> DeployerGroups {
@@ -117,19 +143,6 @@ impl Handler<GetDeployerGroups> for DeployerGroups {
     type Result = DeployerGroups;
     fn handle(&mut self, _: GetDeployerGroups, _: &mut Context<Self>) -> Self::Result {
         self.to_owned()
-    }
-}
-
-impl Handler<FindDeployerGroupByName> for DeployerGroups {
-    type Result = Result<(String, DeployerGroup)>;
-    fn handle(&mut self, msg: FindDeployerGroupByName, _: &mut Context<Self>) -> Self::Result {
-        let available_groups = self.to_owned();
-        let deployer = available_groups
-            .0
-            .into_iter()
-            .find(|deployer_group| deployer_group.0.eq_ignore_ascii_case(&msg.0))
-            .ok_or_else(|| anyhow!("DeployerGroup not found"))?;
-        Ok(deployer)
     }
 }
 
@@ -163,16 +176,4 @@ pub async fn get_deployer_capabilities(
         return Err(anyhow!("No deployers found with capabilities"));
     }
     Ok(verified_deployers)
-}
-
-pub async fn get_deployer_groups(
-    deployer_grouper_address: Addr<DeployerGroups>,
-) -> Result<DeployerGroups, ServerResponseError> {
-    deployer_grouper_address
-        .send(GetDeployerGroups)
-        .await
-        .map_err(|error| {
-            error!("DeployerGroup actor mailbox error: {}", error);
-            ServerResponseError(RangerError::ActixMailBoxError.into())
-        })
 }

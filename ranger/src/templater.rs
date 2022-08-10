@@ -53,26 +53,28 @@ impl DeployerActions<Source> for TemplateClient {
 
 pub fn initiate_template_clients(
     deployers: HashMap<String, String>,
-) -> Vec<impl Future<Output = Result<Addr<TemplateClient>, anyhow::Error>>> {
+) -> Vec<impl Future<Output = Result<(String, Addr<TemplateClient>), anyhow::Error>>> {
     deployers
         .into_iter()
-        .map(|(_, ip)| async { Ok::<Addr<TemplateClient>>(TemplateClient::new(ip).await?.start()) })
+        .map(|(name, ip)| async {
+            Ok::<(String, Addr<TemplateClient>)>((name, TemplateClient::new(ip).await?.start()))
+        })
         .collect()
 }
 
-pub type TemplateClientResults = Vec<Result<Addr<TemplateClient>, anyhow::Error>>;
+pub type TemplateClientResults = Vec<Result<(String, Addr<TemplateClient>), anyhow::Error>>;
 pub trait TemplateClientFilter {
-    fn filter_template_clients(self) -> Vec<Addr<TemplateClient>>;
+    fn filter_template_clients(self) -> HashMap<String, Addr<TemplateClient>>;
 }
 impl TemplateClientFilter for TemplateClientResults {
-    fn filter_template_clients(self) -> Vec<Addr<TemplateClient>> {
+    fn filter_template_clients(self) -> HashMap<String, Addr<TemplateClient>> {
         self.into_iter()
             .filter_map(|node_client| {
                 node_client
                     .map_err(|error| error!("Error setting up TemplateClient: {}", error))
                     .ok()
             })
-            .collect::<Vec<Addr<TemplateClient>>>()
+            .collect::<HashMap<String, Addr<TemplateClient>>>()
     }
 }
 
@@ -116,37 +118,35 @@ pub fn filter_node_deployments(
 
 pub async fn create_node_deployments(
     scenario: Scenario,
-    templaters: &[Addr<TemplateClient>],
+    templaters: &HashMap<String, Addr<TemplateClient>>,
     exercise_name: &str,
 ) -> Result<Vec<Result<NodeDeployment>>> {
     let nodes = scenario.nodes.ok_or_else(|| anyhow!("Nodes not found"))?;
-    let templater_address = templaters
-        .iter()
-        .next()
-        .ok_or_else(|| anyhow!("No templater available"))?;
-
-    let node_deployments = join_all(nodes.iter().map(|(node_name, node)| async move {
-        let source = node
-            .source
-            .as_ref()
-            .ok_or_else(|| anyhow!("Source not found"))?;
-        let template_id =
-            TemplateClient::create_template(templater_address, source.clone()).await?;
-        let node_deployment = match node.type_field {
-            sdl_parser::node::NodeType::VM => NodeDeployment::default().initialize_vm(
-                node.clone(),
-                node_name.to_string(),
-                template_id,
-                exercise_name.to_string(),
-            )?,
-            sdl_parser::node::NodeType::Network => NodeDeployment::default().initialize_switch(
-                node_name.to_string(),
-                template_id,
-                exercise_name.to_string(),
-            )?,
-        };
-        Ok::<NodeDeployment>(node_deployment)
-    }))
+    let node_deployments = join_all(nodes.iter().zip(templaters.iter().cycle()).map(
+        |((node_name, node), (_, templater_address))| async move {
+            let source = node
+                .source
+                .as_ref()
+                .ok_or_else(|| anyhow!("Source not found"))?;
+            let template_id =
+                TemplateClient::create_template(templater_address, source.clone()).await?;
+            let node_deployment = match node.type_field {
+                sdl_parser::node::NodeType::VM => NodeDeployment::default().initialize_vm(
+                    node.clone(),
+                    node_name.to_string(),
+                    template_id,
+                    exercise_name.to_string(),
+                )?,
+                sdl_parser::node::NodeType::Network => NodeDeployment::default()
+                    .initialize_switch(
+                        node_name.to_string(),
+                        template_id,
+                        exercise_name.to_string(),
+                    )?,
+            };
+            Ok::<NodeDeployment>(node_deployment)
+        },
+    ))
     .await;
     Ok(node_deployments)
 }

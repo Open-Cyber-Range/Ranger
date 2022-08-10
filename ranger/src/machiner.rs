@@ -1,7 +1,8 @@
 use crate::node::{CreateNode, NodeClient};
 use crate::templater::TemplateClient;
 use actix::{
-    Actor, ActorFutureExt, Addr, Context, Handler, Message, ResponseActFuture, WrapFuture,
+    Actor, ActorFutureExt, Addr, Context, Handler, Message, MessageResponse, ResponseActFuture,
+    WrapFuture,
 };
 use anyhow::{anyhow, Ok, Result};
 use futures::{future::try_join_all, Future};
@@ -27,8 +28,19 @@ pub struct DeleteDeployment(pub(crate) String);
 
 #[derive(Debug, Default, Clone)]
 pub struct DeploymentManager {
-    nodes: HashMap<String, HashMap<Uuid, Vec<(NodeIdentifier, String)>>>,
+    pub nodes: HashMap<String, HashMap<Uuid, Vec<(NodeIdentifier, String)>>>,
+    pub deployment_groups: DeploymentGroups,
 }
+
+#[derive(Debug, Default, Clone)]
+pub struct DeploymentGroup {
+    pub machiners: HashMap<String, Addr<NodeClient>>,
+    pub switchers: HashMap<String, Addr<NodeClient>>,
+    pub templaters: HashMap<String, Addr<TemplateClient>>,
+}
+
+#[derive(Debug, Default, Clone, MessageResponse)]
+pub struct DeploymentGroups(pub HashMap<String, DeploymentGroup>);
 
 impl DeploymentManager {
     pub fn new() -> Self {
@@ -36,38 +48,56 @@ impl DeploymentManager {
     }
 }
 
+#[derive(Clone, Debug, Message)]
+#[rtype(result = "()")]
+pub struct AddDeploymentGroups(pub(crate) DeploymentGroups);
+
+#[derive(Debug, Message, PartialEq)]
+#[rtype(result = "DeploymentGroups")]
+pub struct GetDeploymentGroups;
+
+#[derive(Message, Debug, PartialEq)]
+#[rtype(result = "Result<(String, DeploymentGroup)>")]
+pub struct FindDeploymentGroupByName(pub(crate) String);
+
+impl DeploymentGroups {
+    pub fn new() -> Self {
+        DeploymentGroups(HashMap::new())
+    }
+}
+
 impl Actor for DeploymentManager {
     type Context = Context<Self>;
 }
-#[derive(Debug, Default, Clone)]
-pub struct DeploymentGroup {
-    pub machiners: Vec<Addr<NodeClient>>,
-    pub switchers: Vec<Addr<NodeClient>>,
-    pub templaters: Vec<Addr<TemplateClient>>,
+
+impl Actor for DeploymentGroups {
+    type Context = Context<Self>;
 }
 
 pub fn initiate_node_clients(
     deployers: HashMap<String, String>,
-) -> Vec<impl Future<Output = Result<Addr<NodeClient>, anyhow::Error>>> {
+) -> Vec<impl Future<Output = Result<(String, Addr<NodeClient>), anyhow::Error>>> {
     deployers
         .into_iter()
-        .map(|(_, ip)| async { Ok::<Addr<NodeClient>>(NodeClient::new(ip).await?.start()) })
+        .map(|(name, ip)| async {
+            Ok::<(String, Addr<NodeClient>)>((name, NodeClient::new(ip).await?.start()))
+        })
         .collect()
 }
 
-pub type NodeClientResults = Vec<Result<Addr<NodeClient>, anyhow::Error>>;
+pub type NodeClientResults = Vec<Result<(String, Addr<NodeClient>), anyhow::Error>>;
 pub trait NodeClientFilter {
-    fn filter_node_clients(self) -> Vec<Addr<NodeClient>>;
+    fn filter_node_clients(self) -> HashMap<String, Addr<NodeClient>>;
 }
 impl NodeClientFilter for NodeClientResults {
-    fn filter_node_clients(self) -> Vec<Addr<NodeClient>> {
+    fn filter_node_clients(self) -> HashMap<String, Addr<NodeClient>> {
         self.into_iter()
             .filter_map(|node_client| {
                 node_client
                     .map_err(|error| error!("Error setting up NodeClient: {}", error))
                     .ok()
             })
-            .collect::<Vec<Addr<NodeClient>>>()
+            .collect::<HashMap<String, Addr<NodeClient>>>()
     }
 }
 
@@ -171,18 +201,19 @@ pub async fn deploy_switch(
 }
 
 impl DeploymentGroup {
-    pub fn deploy_vms<'a>(
+    pub fn deploy_vms(
         &self,
         node_deployment: Vec<NodeDeployment>,
     ) -> futures::future::TryJoinAll<
-        impl Future<Output = Result<(NodeIdentifier, String), anyhow::Error>> + 'a,
+        impl Future<Output = Result<(NodeIdentifier, String), anyhow::Error>> + '_,
     > {
         try_join_all(
             node_deployment
                 .into_iter()
-                .zip(self.machiners.clone().into_iter().cycle())
+                .zip(self.machiners.values().into_iter().cycle())
                 .map(|(node_deployment, machiner_client)| async move {
-                    let node_id = deploy_vm(node_deployment.clone(), machiner_client).await?;
+                    let node_id =
+                        deploy_vm(node_deployment.clone(), machiner_client.clone()).await?;
                     let node_name = &node_deployment
                         .parameters
                         .as_ref()
@@ -194,18 +225,19 @@ impl DeploymentGroup {
         )
     }
 
-    pub fn deploy_switches<'a>(
+    pub fn deploy_switches(
         &self,
         node_deployment: Vec<NodeDeployment>,
     ) -> futures::future::TryJoinAll<
-        impl Future<Output = Result<(NodeIdentifier, String), anyhow::Error>> + 'a,
+        impl Future<Output = Result<(NodeIdentifier, String), anyhow::Error>> + '_,
     > {
         try_join_all(
             node_deployment
                 .into_iter()
-                .zip(self.switchers.clone().into_iter().cycle())
+                .zip(self.switchers.values().into_iter().cycle())
                 .map(|(node_deployment, switcher_client)| async move {
-                    let node_id = deploy_switch(node_deployment.clone(), switcher_client).await?;
+                    let node_id =
+                        deploy_switch(node_deployment.clone(), switcher_client.clone()).await?;
                     let node_name = &node_deployment
                         .parameters
                         .as_ref()
@@ -265,5 +297,32 @@ impl Handler<CreateDeployment> for DeploymentManager {
                 }
             }),
         )
+    }
+}
+
+impl Handler<FindDeploymentGroupByName> for DeploymentManager {
+    type Result = Result<(String, DeploymentGroup)>;
+    fn handle(&mut self, msg: FindDeploymentGroupByName, _: &mut Context<Self>) -> Self::Result {
+        let deployment_groups = self.to_owned().deployment_groups;
+        let deployer = deployment_groups
+            .0
+            .into_iter()
+            .find(|deployer_group| deployer_group.0.eq_ignore_ascii_case(&msg.0))
+            .ok_or_else(|| anyhow!("DeploymentGroup not found"))?;
+        Ok(deployer)
+    }
+}
+
+impl Handler<AddDeploymentGroups> for DeploymentManager {
+    type Result = ();
+    fn handle(&mut self, msg: AddDeploymentGroups, _: &mut Context<Self>) -> Self::Result {
+        self.deployment_groups.0.extend(msg.0 .0);
+    }
+}
+
+impl Handler<GetDeploymentGroups> for DeploymentManager {
+    type Result = DeploymentGroups;
+    fn handle(&mut self, _: GetDeploymentGroups, _: &mut Context<Self>) -> Self::Result {
+        self.deployment_groups.to_owned()
     }
 }
