@@ -22,6 +22,10 @@ pub struct AddDeployerGroups(pub(crate) DeployerGroups);
 #[rtype(result = "DeployerGroups")]
 pub struct GetDeployerGroups;
 
+#[derive(Message, Debug, PartialEq)]
+#[rtype(result = "Result<(String, DeployerGroup)>")]
+pub struct FindDeployerGroupByName(pub(crate) String);
+
 #[derive(Debug, Default, Clone)]
 pub struct Deployer {
     pub deployer_name: String,
@@ -85,15 +89,6 @@ impl DeployerGroups {
         DeployerGroups(HashMap::new())
     }
 
-    pub fn find(&self, requested_deployer_group: &str) -> Option<(&String, &DeployerGroup)> {
-        let deployer = &self.0;
-        deployer.iter().find(|deployer_group| {
-            deployer_group
-                .0
-                .eq_ignore_ascii_case(requested_deployer_group)
-        })
-    }
-
     pub fn initialize_with_group_names(
         deployment_groups: &HashMap<String, Vec<String>>,
     ) -> DeployerGroups {
@@ -122,6 +117,19 @@ impl Handler<GetDeployerGroups> for DeployerGroups {
     type Result = DeployerGroups;
     fn handle(&mut self, _: GetDeployerGroups, _: &mut Context<Self>) -> Self::Result {
         self.to_owned()
+    }
+}
+
+impl Handler<FindDeployerGroupByName> for DeployerGroups {
+    type Result = Result<(String, DeployerGroup)>;
+    fn handle(&mut self, msg: FindDeployerGroupByName, _: &mut Context<Self>) -> Self::Result {
+        let available_groups = self.to_owned();
+        let deployer = available_groups
+            .0
+            .into_iter()
+            .find(|deployer_group| deployer_group.0.eq_ignore_ascii_case(&msg.0))
+            .ok_or_else(|| anyhow!("DeployerGroup not found"))?;
+        Ok(deployer)
     }
 }
 

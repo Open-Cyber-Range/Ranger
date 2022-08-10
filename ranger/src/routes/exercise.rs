@@ -1,6 +1,6 @@
 use crate::{
     database::{AddScenario, GetScenario},
-    deployers::get_deployer_groups,
+    deployers::FindDeployerGroupByName,
     errors::{RangerError, ServerResponseError},
     machiner::CreateDeployment,
     templater::{
@@ -69,19 +69,20 @@ pub async fn deploy_exercise(
             ServerResponseError(RangerError::ScenarioNotFound.into())
         })?;
     let requested_deployer_group_name = name_query.into_inner().deployment_group;
-    let requested_deployer_group_name = requested_deployer_group_name.as_str();
 
-    let deployer_groups = get_deployer_groups(app_state.deployer_grouper_address.clone()).await?;
-
-    let requested_deployer_group = deployer_groups
-        .find(requested_deployer_group_name)
-        .ok_or_else(|| {
-            error!(
-                "Deployment group not found: {}",
-                requested_deployer_group_name
-            );
-            ServerResponseError(RangerError::DeployerGroupNotfound.into())
+    let deployer_grouper_address = app_state.deployer_grouper_address.clone();
+    let requested_deployer_group = deployer_grouper_address
+        .send(FindDeployerGroupByName(requested_deployer_group_name))
+        .await
+        .map_err(|error| {
+            error!("DeployerGroup actor mailbox error: {}", error);
+            ServerResponseError(RangerError::ActixMailBoxError.into())
+        })?
+        .map_err(|error| {
+            error!("General error: {}", error);
+            ServerResponseError(RangerError::DeploymentFailed.into())
         })?;
+
     info!("Using deployment group: {}", requested_deployer_group.0);
     let deployment_group = requested_deployer_group.1.start().await;
     let deployment_id = Uuid::new_v4();
