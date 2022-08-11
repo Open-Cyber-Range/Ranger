@@ -16,6 +16,7 @@ use machiner::DeploymentManager;
 
 use std::collections::HashMap;
 
+const DEFAULT_DEPLOYER_GROUP_NAME: &str = "default";
 pub struct AppState {
     pub database_address: Addr<Database>,
     pub deployer_grouper_address: Addr<DeployerGroups>,
@@ -55,9 +56,10 @@ impl AppState {
             .ok_or_else(|| anyhow!("Default group with given name not found"))?
             .clone();
 
-        deployer_groups
-            .0
-            .insert("default".to_string(), default_deployer_group_value);
+        deployer_groups.0.insert(
+            DEFAULT_DEPLOYER_GROUP_NAME.to_string(),
+            default_deployer_group_value,
+        );
 
         self.deployer_grouper_address
             .send(AddDeployerGroups(deployer_groups))

@@ -5,6 +5,7 @@ use actix::{
     WrapFuture,
 };
 use anyhow::{anyhow, Ok, Result};
+use async_trait::async_trait;
 use futures::{future::try_join_all, Future};
 use log::{error, info};
 use ranger_grpc::{
@@ -107,15 +108,17 @@ pub trait NodeDeploymentTrait {
         node: sdl_parser::node::Node,
         node_name: String,
         template_id: String,
-        exercise_name: String,
+        exercise_name: &str,
     ) -> Result<NodeDeployment>;
 
-    fn initialize_switch(
+    fn initialize_switch(&self, node_name: String, exercise_name: &str) -> Result<NodeDeployment>;
+
+    fn create_from_nodes(
         &self,
-        node_name: String,
-        template_id: String,
-        exercise_name: String,
-    ) -> Result<NodeDeployment>;
+        nodes: HashMap<String, sdl_parser::node::Node>,
+        template_id: HashMap<String, String>,
+        exercise_name: &str,
+    ) -> Result<Vec<NodeDeployment>>;
 }
 impl NodeDeploymentTrait for NodeDeployment {
     fn initialize_vm(
@@ -123,7 +126,7 @@ impl NodeDeploymentTrait for NodeDeployment {
         node: sdl_parser::node::Node,
         node_name: String,
         template_id: String,
-        exercise_name: String,
+        exercise_name: &str,
     ) -> Result<NodeDeployment> {
         let resources = node
             .resources
@@ -131,7 +134,7 @@ impl NodeDeploymentTrait for NodeDeployment {
         let deployment = NodeDeployment {
             parameters: Some(DeploymentParameters {
                 name: node_name,
-                exercise_name,
+                exercise_name: exercise_name.to_string(),
                 template_id,
             }),
             node: Some(Node {
@@ -148,17 +151,12 @@ impl NodeDeploymentTrait for NodeDeployment {
         Ok(deployment)
     }
 
-    fn initialize_switch(
-        &self,
-        node_name: String,
-        template_id: String,
-        exercise_name: String,
-    ) -> Result<NodeDeployment> {
+    fn initialize_switch(&self, node_name: String, exercise_name: &str) -> Result<NodeDeployment> {
         Ok(NodeDeployment {
             parameters: Some(DeploymentParameters {
                 name: node_name,
-                exercise_name,
-                template_id,
+                exercise_name: exercise_name.to_string(),
+                template_id: "".to_string(),
             }),
             node: Some(Node {
                 identifier: Some(NodeIdentifier {
@@ -169,35 +167,48 @@ impl NodeDeploymentTrait for NodeDeployment {
             }),
         })
     }
+    fn create_from_nodes(
+        &self,
+        nodes: HashMap<String, sdl_parser::node::Node>,
+        template_id: HashMap<String, String>,
+        exercise_name: &str,
+    ) -> Result<Vec<NodeDeployment>> {
+        nodes
+            .into_iter()
+            .map(|(node_name, node)| {
+                let template_id = template_id
+                    .get(&node_name)
+                    .ok_or_else(|| anyhow!("Template ID for node {} is missing", node_name))?;
+                match node.type_field {
+                    sdl_parser::node::NodeType::VM => {
+                        self.initialize_vm(node, node_name, template_id.to_string(), exercise_name)
+                    }
+                    sdl_parser::node::NodeType::Network => {
+                        self.initialize_switch(node_name, exercise_name)
+                    }
+                }
+            })
+            .collect::<Result<Vec<NodeDeployment>>>()
+    }
 }
 
-pub async fn deploy_vm(
-    node_deployment: NodeDeployment,
-    machiner_client: Addr<NodeClient>,
-) -> Result<NodeIdentifier> {
-    info!(
-        "Deploying VM: {}",
-        node_deployment
-            .parameters
-            .as_ref()
-            .ok_or_else(|| anyhow!("Error getting parameters"))?
-            .name
-    );
-    machiner_client.send(CreateNode(node_deployment)).await?
+#[async_trait]
+pub trait Sender {
+    async fn deploy_node(&self, node_client: Addr<NodeClient>) -> Result<NodeIdentifier>;
 }
-pub async fn deploy_switch(
-    node_deployment: NodeDeployment,
-    switcher_client: Addr<NodeClient>,
-) -> Result<NodeIdentifier> {
-    info!(
-        "Deploying Switch: {}",
-        node_deployment
-            .parameters
-            .as_ref()
-            .ok_or_else(|| anyhow!("Error getting parameters"))?
-            .name
-    );
-    switcher_client.send(CreateNode(node_deployment)).await?
+#[async_trait]
+impl Sender for NodeDeployment {
+    async fn deploy_node(&self, node_client: Addr<NodeClient>) -> Result<NodeIdentifier> {
+        info!(
+            "Deploying VM: {}",
+            &self
+                .parameters
+                .as_ref()
+                .ok_or_else(|| anyhow!("Error getting parameters"))?
+                .name
+        );
+        node_client.send(CreateNode(self.to_owned())).await?
+    }
 }
 
 impl DeploymentGroup {
@@ -212,8 +223,7 @@ impl DeploymentGroup {
                 .into_iter()
                 .zip(self.machiners.values().into_iter().cycle())
                 .map(|(node_deployment, machiner_client)| async move {
-                    let node_id =
-                        deploy_vm(node_deployment.clone(), machiner_client.clone()).await?;
+                    let node_id = node_deployment.deploy_node(machiner_client.clone()).await?;
                     let node_name = &node_deployment
                         .parameters
                         .as_ref()
@@ -236,8 +246,7 @@ impl DeploymentGroup {
                 .into_iter()
                 .zip(self.switchers.values().into_iter().cycle())
                 .map(|(node_deployment, switcher_client)| async move {
-                    let node_id =
-                        deploy_switch(node_deployment.clone(), switcher_client.clone()).await?;
+                    let node_id = node_deployment.deploy_node(switcher_client.clone()).await?;
                     let node_name = &node_deployment
                         .parameters
                         .as_ref()
@@ -289,7 +298,7 @@ impl Handler<CreateDeployment> for DeploymentManager {
                         .get(&deployment_id)
                         .ok_or_else(|| anyhow!("Deployment id not found"))?
                         .len();
-                    info!("Deployment {deployment_id} successful, {node_count} nodes deployed");
+                    info!("Deployment {deployment_id} successful, nodes deployed: {node_count}");
                     Ok(deployment_id)
                 } else {
                     error!("Deployment failed: {:?}", result.as_ref().err());

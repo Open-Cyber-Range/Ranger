@@ -1,10 +1,8 @@
 use crate::{
     database::{AddScenario, GetScenario},
     errors::{RangerError, ServerResponseError},
-    machiner::{CreateDeployment, FindDeploymentGroupByName},
-    templater::{
-        create_node_deployments, filter_node_deployments, separate_node_deployments_by_type,
-    },
+    machiner::{CreateDeployment, FindDeploymentGroupByName, NodeDeploymentTrait},
+    templater::{filter_templation_results, separate_node_deployments_by_type, Templation},
     AppState,
 };
 use actix_web::{
@@ -12,8 +10,9 @@ use actix_web::{
     web::{Data, Path, Query},
     Error, HttpResponse,
 };
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use log::{error, info};
+use ranger_grpc::NodeDeployment;
 use sdl_parser::parse_sdl;
 use serde::Deserialize;
 use uuid::Uuid;
@@ -82,25 +81,35 @@ pub async fn deploy_exercise(
             error!("General error: {}", error);
             ServerResponseError(RangerError::DeploymentFailed.into())
         })?;
-
     info!("Using deployment group: {}", requested_deployment_group.0);
+
     let deployment_id = Uuid::new_v4();
     let exercise_name = format!("{}-{}", scenario.name, deployment_id);
-    let node_deployment_results = create_node_deployments(
-        scenario,
-        &requested_deployment_group.1.templaters,
-        exercise_name.as_str(),
-    )
-    .await
-    .map_err(|error| {
-        error!("Templater actor mailbox error: {}", error);
-        ServerResponseError(RangerError::ActixMailBoxError.into())
-    })?;
+    let exercise_name = exercise_name.as_str();
+    let templation_results = scenario
+        .clone()
+        .template_nodes(&requested_deployment_group.1.templaters)
+        .await
+        .map_err(|error| {
+            error!("General error: {}", error);
+            ServerResponseError(RangerError::DeploymentFailed.into())
+        })?;
+    let template_ids = filter_templation_results(templation_results);
 
-    let node_deployments = filter_node_deployments(node_deployment_results).map_err(|error| {
-        error!("General error: {}", error);
-        ServerResponseError(RangerError::DeploymentFailed.into())
-    })?;
+    let nodes = scenario
+        .clone()
+        .nodes
+        .ok_or_else(|| anyhow!("No nodes found"))
+        .map_err(|error| {
+            error!("General error: {}", error);
+            ServerResponseError(RangerError::DeploymentFailed.into())
+        })?;
+    let node_deployments = NodeDeployment::default()
+        .create_from_nodes(nodes, template_ids, exercise_name)
+        .map_err(|error| {
+            error!("General error: {}", error);
+            ServerResponseError(RangerError::DeploymentFailed.into())
+        })?;
     let node_deployments =
         separate_node_deployments_by_type(node_deployments).map_err(|error| {
             error!("General error: {}", error);

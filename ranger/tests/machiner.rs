@@ -2,12 +2,18 @@ mod common;
 
 #[cfg(test)]
 mod tests {
+    use std::collections::HashMap;
+
     use crate::common::create_mock_vmware_server;
+    use actix::Addr;
     use actix_web::test;
     use anyhow::{anyhow, Result};
+    use futures::future::join_all;
     use ranger::deployers::DeployerGroup;
     use ranger::machiner::NodeDeploymentTrait;
-    use ranger::templater::{create_node_deployments, filter_node_deployments};
+    use ranger::templater::{
+        filter_templation_results, initiate_template_clients, TemplateClient, Templation,
+    };
     use ranger_grpc::NodeDeployment;
     use sdl_parser::test::TEST_SCHEMA;
 
@@ -25,7 +31,7 @@ mod tests {
             node.1,
             node.0,
             "template-id".to_string(),
-            "test-exercise".to_string(),
+            "test-exercise",
         )?;
         insta::assert_debug_snapshot!(deployment);
         Ok(())
@@ -34,8 +40,28 @@ mod tests {
     #[actix_web::test]
     pub async fn mock_deploy_vms() -> Result<()> {
         let scenario = TEST_SCHEMA.scenario.clone();
+        let nodes = scenario
+            .clone()
+            .nodes
+            .ok_or_else(|| anyhow!("TEST: Nodes list is missing"))?;
         let exercise_name = "test-exercise";
-        let templater_address = create_mock_vmware_server().run_template_server()?;
+        let templater_address = format!(
+            "http://{}",
+            create_mock_vmware_server().run_template_server()?
+        );
+        let templater = HashMap::from_iter(vec![(
+            "test-templater".to_string(),
+            templater_address.clone(),
+        )]);
+        let templater_actor_results = join_all(initiate_template_clients(templater)).await;
+        let templater_actor: HashMap<String, Addr<TemplateClient>> =
+            [templater_actor_results.into_iter().next().unwrap().unwrap()]
+                .iter()
+                .cloned()
+                .collect();
+
+        let templation_results = scenario.template_nodes(&templater_actor).await?;
+        let template_ids = filter_templation_results(templation_results);
         let mock_node_server = create_mock_vmware_server().run_node_server()?;
         let mut deployer_group = DeployerGroup::default();
         deployer_group.machiners.insert(
@@ -47,11 +73,8 @@ mod tests {
             format!("http://{}", templater_address),
         );
         let deployment_group = deployer_group.start().await;
-
-        let node_deployment_results =
-            create_node_deployments(scenario, &deployment_group.templaters, exercise_name).await?;
-        let node_deployments = filter_node_deployments(node_deployment_results)?;
-
+        let node_deployments =
+            NodeDeployment::default().create_from_nodes(nodes, template_ids, exercise_name)?;
         let mut node_identifiers = deployment_group.deploy_vms(node_deployments).await?;
         node_identifiers.sort_by_key(|node_name| node_name.1.clone());
         insta::assert_debug_snapshot!(node_identifiers);

@@ -14,8 +14,6 @@ use sdl_parser::node::Source;
 use sdl_parser::Scenario;
 use tonic::transport::Channel;
 
-use crate::machiner::NodeDeploymentTrait;
-
 #[derive(Message)]
 #[rtype(result = "Result<Identifier, anyhow::Error>")]
 pub struct CreateTemplate(pub GrpcSource);
@@ -115,40 +113,61 @@ pub fn filter_node_deployments(
         Ok(node_deployments)
     }
 }
+#[tonic::async_trait]
+pub trait Templation {
+    async fn template_nodes(
+        &self,
+        templaters: &HashMap<String, Addr<TemplateClient>>,
+    ) -> Result<HashMap<String, Result<String>>>;
+}
+#[tonic::async_trait]
+impl Templation for Scenario {
+    async fn template_nodes(
+        &self,
+        templaters: &HashMap<String, Addr<TemplateClient>>,
+    ) -> Result<HashMap<String, Result<String>>> {
+        let nodes = &self
+            .nodes
+            .as_ref()
+            .ok_or_else(|| anyhow!("Nodes not found"))?;
+        let futures = join_all(nodes.iter().zip(templaters.iter().cycle()).map(
+            |((name, node), (_, templater_address))| async {
+                let source = node
+                    .source
+                    .as_ref()
+                    .ok_or_else(|| anyhow!("Source not found"))?;
+                let template_id =
+                    TemplateClient::create_template(templater_address, source.clone()).await;
+                Ok::<(String, Result<String>)>((name.to_string(), template_id))
+            },
+        ))
+        .await;
 
-pub async fn create_node_deployments(
-    scenario: Scenario,
-    templaters: &HashMap<String, Addr<TemplateClient>>,
-    exercise_name: &str,
-) -> Result<Vec<Result<NodeDeployment>>> {
-    let nodes = scenario.nodes.ok_or_else(|| anyhow!("Nodes not found"))?;
-    let node_deployments = join_all(nodes.iter().zip(templaters.iter().cycle()).map(
-        |((node_name, node), (_, templater_address))| async move {
-            let source = node
-                .source
-                .as_ref()
-                .ok_or_else(|| anyhow!("Source not found"))?;
-            let template_id =
-                TemplateClient::create_template(templater_address, source.clone()).await?;
-            let node_deployment = match node.type_field {
-                sdl_parser::node::NodeType::VM => NodeDeployment::default().initialize_vm(
-                    node.clone(),
-                    node_name.to_string(),
-                    template_id,
-                    exercise_name.to_string(),
-                )?,
-                sdl_parser::node::NodeType::Network => NodeDeployment::default()
-                    .initialize_switch(
-                        node_name.to_string(),
-                        template_id,
-                        exercise_name.to_string(),
-                    )?,
-            };
-            Ok::<NodeDeployment>(node_deployment)
-        },
-    ))
-    .await;
-    Ok(node_deployments)
+        let template_ids = futures
+            .into_iter()
+            .filter_map(|result| {
+                result
+                    .map_err(|error| error!("Error creating template: {}", error))
+                    .ok()
+            })
+            .collect();
+
+        Ok(template_ids)
+    }
+}
+
+pub fn filter_templation_results(
+    template_ids: HashMap<String, Result<String>>,
+) -> HashMap<String, String> {
+    template_ids
+        .into_iter()
+        .filter_map(|(name, templation_result)| {
+            templation_result
+                .map_err(|error| error!("Error templating node {name}: {error}"))
+                .ok()
+                .map(|template_id| (name, template_id))
+        })
+        .collect::<HashMap<String, String>>()
 }
 
 impl TemplateClient {
