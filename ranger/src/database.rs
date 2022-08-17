@@ -1,5 +1,5 @@
 use crate::{
-    machiner::{
+    services::deployment::{
         CreateDeployment, DeploymentManager, FindDeploymentGroupByName, NodeDeploymentTrait,
     },
     templater::{filter_templation_results, separate_node_deployments_by_type, Templation},
@@ -71,7 +71,7 @@ impl Deployer for Scenario {
         let node_deployments = separate_node_deployments_by_type(node_deployments)?;
         let vm_deployments = node_deployments.0;
         let switcher_deployments = node_deployments.1;
-        
+
         let simulated_scheduler_output = vec![(vm_deployments, switcher_deployments)];
         let deployment_uuid = deployment_manager_address
             .send(CreateDeployment(

@@ -29,7 +29,7 @@ pub struct DeleteDeployment(pub(crate) String);
 
 #[derive(Debug, Default, Clone)]
 pub struct DeploymentManager {
-    pub nodes: HashMap<String, HashMap<Uuid, Vec<(NodeIdentifier, String)>>>,
+    pub exercises: HashMap<String, HashMap<Uuid, Vec<(NodeIdentifier, String)>>>,
     pub deployment_groups: DeploymentGroups,
 }
 
@@ -286,13 +286,13 @@ impl Handler<CreateDeployment> for DeploymentManager {
             .map(move |result, act, _| {
                 if let Result::Ok((deployment_id, node_id_groups)) = result {
                     for node_ids in node_id_groups {
-                        act.nodes
+                        act.exercises
                             .entry(exercise_name.clone())
                             .or_insert_with(HashMap::new)
                             .insert(deployment_id, node_ids.clone());
                     }
                     let node_count = act
-                        .nodes
+                        .exercises
                         .get(&exercise_name)
                         .ok_or_else(|| anyhow!("Exercise not found"))?
                         .get(&deployment_id)

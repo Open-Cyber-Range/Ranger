@@ -1,10 +1,10 @@
 use crate::{
     capability::GetCapabilities,
-    machiner::{
+    node::NodeClient,
+    services::deployment::{
         initiate_node_clients, AddDeploymentGroups, DeploymentGroup, DeploymentGroups,
         DeploymentManager, NodeClientFilter,
     },
-    node::NodeClient,
     templater::{initiate_template_clients, TemplateClientFilter},
 };
 

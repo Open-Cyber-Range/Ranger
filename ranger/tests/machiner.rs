@@ -10,7 +10,7 @@ mod tests {
     use anyhow::{anyhow, Result};
     use futures::future::join_all;
     use ranger::deployers::DeployerGroup;
-    use ranger::machiner::NodeDeploymentTrait;
+    use ranger::services::deployment::NodeDeploymentTrait;
     use ranger::templater::{
         filter_templation_results, initiate_template_clients, TemplateClient, Templation,
     };

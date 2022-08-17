@@ -3,7 +3,6 @@ pub mod configuration;
 pub mod database;
 pub mod deployers;
 pub mod errors;
-pub mod machiner;
 pub mod node;
 pub mod routes;
 pub mod services;
@@ -13,7 +12,7 @@ use crate::database::Database;
 use actix::{Actor, Addr};
 use anyhow::{anyhow, Result};
 use deployers::{get_deployer_capabilities, AddDeployerGroups, DeployerGroups};
-use machiner::DeploymentManager;
+use services::deployment::DeploymentManager;
 
 use std::collections::HashMap;
 
