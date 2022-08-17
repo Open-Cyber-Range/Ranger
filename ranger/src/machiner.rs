@@ -183,7 +183,7 @@ impl NodeDeploymentTrait for NodeDeployment {
                     sdl_parser::node::NodeType::VM => {
                         self.initialize_vm(node, node_name, template_id.to_string(), exercise_name)
                     }
-                    sdl_parser::node::NodeType::Network => {
+                    sdl_parser::node::NodeType::Switch => {
                         self.initialize_switch(node_name, exercise_name)
                     }
                 }
