@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use actix::{Actor, Addr, Context, Handler, Message, ResponseFuture};
 use anyhow::{anyhow, Ok, Result};
 use async_trait::async_trait;
+use futures::future::join_all;
 use futures::Future;
 use log::error;
 use ranger_grpc::NodeDeployment;
@@ -10,6 +11,7 @@ use ranger_grpc::{
     template_service_client::TemplateServiceClient, Identifier, Source as GrpcSource,
 };
 use sdl_parser::node::Source;
+use sdl_parser::Scenario;
 use tonic::transport::Channel;
 
 #[derive(Message)]
@@ -58,33 +60,23 @@ pub fn initiate_template_clients(
         .collect()
 }
 
-pub fn filter_template_clients(
-    nodeclient_results: Vec<Result<Addr<TemplateClient>, anyhow::Error>>,
-) -> Vec<Addr<TemplateClient>> {
-    nodeclient_results
-        .into_iter()
-        .filter_map(|node_client| {
-            node_client
-                .map_err(|error| error!("Error setting up TemplateClient: {}", error))
-                .ok()
-        })
-        .collect::<Vec<Addr<TemplateClient>>>()
+pub type TemplateClientResults = Vec<Result<(String, Addr<TemplateClient>), anyhow::Error>>;
+pub trait TemplateClientFilter {
+    fn filter_template_clients(self) -> HashMap<String, Addr<TemplateClient>>;
+}
+impl TemplateClientFilter for TemplateClientResults {
+    fn filter_template_clients(self) -> HashMap<String, Addr<TemplateClient>> {
+        self.into_iter()
+            .filter_map(|node_client| {
+                node_client
+                    .map_err(|error| error!("Error setting up TemplateClient: {}", error))
+                    .ok()
+            })
+            .collect::<HashMap<String, Addr<TemplateClient>>>()
+    }
 }
 
-async fn get_template_id(
-    source: Source,
-    templater_address: &Addr<TemplateClient>,
-) -> Result<String> {
-    Ok(templater_address
-        .send(CreateTemplate(GrpcSource {
-            name: source.name.clone(),
-            version: source.version.clone(),
-        }))
-        .await??
-        .value)
-}
-
-pub fn seperate_node_deployments_by_type(
+pub fn separate_node_deployments_by_type(
     node_deployments: Vec<NodeDeployment>,
 ) -> Result<(Vec<NodeDeployment>, Vec<NodeDeployment>)> {
     let mut machiner_deployments = vec![];
@@ -120,6 +112,62 @@ pub fn filter_node_deployments(
     } else {
         Ok(node_deployments)
     }
+}
+#[tonic::async_trait]
+pub trait Templation {
+    async fn template_nodes(
+        &self,
+        templaters: &HashMap<String, Addr<TemplateClient>>,
+    ) -> Result<HashMap<String, Result<String>>>;
+}
+#[tonic::async_trait]
+impl Templation for Scenario {
+    async fn template_nodes(
+        &self,
+        templaters: &HashMap<String, Addr<TemplateClient>>,
+    ) -> Result<HashMap<String, Result<String>>> {
+        let nodes = &self
+            .nodes
+            .as_ref()
+            .ok_or_else(|| anyhow!("Nodes not found"))?;
+        let futures = join_all(nodes.iter().zip(templaters.iter().cycle()).map(
+            |((name, node), (_, templater_address))| async {
+                let source = node
+                    .source
+                    .as_ref()
+                    .ok_or_else(|| anyhow!("Source not found"))?;
+                let template_id =
+                    TemplateClient::create_template(templater_address, source.clone()).await;
+                Ok::<(String, Result<String>)>((name.to_string(), template_id))
+            },
+        ))
+        .await;
+
+        let template_ids = futures
+            .into_iter()
+            .filter_map(|result| {
+                result
+                    .map_err(|error| error!("Error creating template: {}", error))
+                    .ok()
+            })
+            .collect();
+
+        Ok(template_ids)
+    }
+}
+
+pub fn filter_templation_results(
+    template_ids: HashMap<String, Result<String>>,
+) -> HashMap<String, String> {
+    template_ids
+        .into_iter()
+        .filter_map(|(name, templation_result)| {
+            templation_result
+                .map_err(|error| error!("Error templating node {name}: {error}"))
+                .ok()
+                .map(|template_id| (name, template_id))
+        })
+        .collect::<HashMap<String, String>>()
 }
 
 impl TemplateClient {
