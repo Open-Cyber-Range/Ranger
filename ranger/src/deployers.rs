@@ -2,7 +2,7 @@ use crate::{
     capability::GetCapabilities,
     node::NodeClient,
     services::deployment::{
-        initiate_node_clients, AddDeploymentGroups, DeploymentGroup, DeploymentGroups,
+        initiate_node_clients, AddDeploymentGroups, DeploymentGroup, DeploymentGroupMap,
         DeploymentManager, NodeClientFilter,
     },
     templater::{initiate_template_clients, TemplateClientFilter},
@@ -100,13 +100,11 @@ impl DeployerGroups {
         )
         .await;
 
-        let mut deployment_groups = DeploymentGroups::new();
+        let mut deployment_groups: DeploymentGroupMap = HashMap::new();
         deployment_actors
             .iter()
             .for_each(|(name, deployment_group)| {
-                deployment_groups
-                    .0
-                    .insert(name.to_string(), deployment_group.clone());
+                deployment_groups.insert(name.to_string(), deployment_group.clone());
             });
         deployment_manager_address
             .send(AddDeploymentGroups(deployment_groups))

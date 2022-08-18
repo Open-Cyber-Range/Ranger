@@ -7,12 +7,13 @@ pub mod node;
 pub mod routes;
 pub mod services;
 pub mod templater;
+pub mod utilities;
 
 use crate::database::Database;
 use actix::{Actor, Addr};
 use anyhow::{anyhow, Result};
 use deployers::{get_deployer_capabilities, AddDeployerGroups, DeployerGroups};
-use services::deployment::DeploymentManager;
+use services::{deployment::DeploymentManager, scheduler::Scheduler};
 
 use std::collections::HashMap;
 
@@ -25,10 +26,11 @@ pub struct AppState {
 
 impl AppState {
     pub fn new() -> Self {
+        let schduler_address = Scheduler::new().start();
         AppState {
             database_address: Database::new().start(),
             deployer_grouper_address: DeployerGroups::new().start(),
-            deployment_manager_address: DeploymentManager::new().start(),
+            deployment_manager_address: DeploymentManager::new(schduler_address).start(),
         }
     }
 

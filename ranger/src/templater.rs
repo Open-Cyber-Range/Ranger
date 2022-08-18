@@ -114,18 +114,19 @@ pub fn filter_node_deployments(
     }
 }
 #[tonic::async_trait]
-pub trait Templation {
+pub trait Template {
     async fn template_nodes(
         &self,
         templaters: &HashMap<String, Addr<TemplateClient>>,
-    ) -> Result<HashMap<String, Result<String>>>;
+    ) -> Result<HashMap<String, String>>;
 }
+
 #[tonic::async_trait]
-impl Templation for Scenario {
+impl Template for Scenario {
     async fn template_nodes(
         &self,
         templaters: &HashMap<String, Addr<TemplateClient>>,
-    ) -> Result<HashMap<String, Result<String>>> {
+    ) -> Result<HashMap<String, String>> {
         let nodes = &self
             .nodes
             .as_ref()
@@ -146,28 +147,26 @@ impl Templation for Scenario {
         let template_ids = futures
             .into_iter()
             .filter_map(|result| {
-                result
-                    .map_err(|error| error!("Error creating template: {}", error))
-                    .ok()
+                if let std::result::Result::Ok(actor_response) = result {
+                    let request_response = actor_response.1;
+                    if let std::result::Result::Ok(template_id) = request_response {
+                        Some((actor_response.0, template_id))
+                    } else {
+                        error!(
+                            "Failed to create the template: {:?}",
+                            request_response.err()
+                        );
+                        None
+                    }
+                } else {
+                    error!("Actor failed to create the template: {:?}", result.err());
+                    None
+                }
             })
             .collect();
 
         Ok(template_ids)
     }
-}
-
-pub fn filter_templation_results(
-    template_ids: HashMap<String, Result<String>>,
-) -> HashMap<String, String> {
-    template_ids
-        .into_iter()
-        .filter_map(|(name, templation_result)| {
-            templation_result
-                .map_err(|error| error!("Error templating node {name}: {error}"))
-                .ok()
-                .map(|template_id| (name, template_id))
-        })
-        .collect::<HashMap<String, String>>()
 }
 
 impl TemplateClient {

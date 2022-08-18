@@ -1,6 +1,7 @@
 use crate::{
-    database::{AddScenario, Deployer, GetScenario},
+    database::{AddScenario, GetScenario},
     errors::{RangerError, ServerResponseError},
+    services::deployment::CreateDeployment,
     AppState,
 };
 use actix_web::{
@@ -63,12 +64,14 @@ pub async fn deploy_exercise(
             ServerResponseError(RangerError::ScenarioNotFound.into())
         })?;
     let requested_deployer_group_name = name_query.into_inner().deployment_group;
-    let deployment_uuid = scenario
-        .deploy(
-            app_state.deployment_manager_address.clone(),
-            requested_deployer_group_name,
-        )
+    let deployment_uuid = app_state
+        .deployment_manager_address
+        .send(CreateDeployment(requested_deployer_group_name, scenario))
         .await
+        .map_err(|error| {
+            error!("Deployment manager actor mailbox error: {error}");
+            ServerResponseError(RangerError::ActixMailBoxError.into())
+        })?
         .map_err(|error| {
             error!("Deployment error: {error}");
             ServerResponseError(RangerError::DeploymentFailed.into())
