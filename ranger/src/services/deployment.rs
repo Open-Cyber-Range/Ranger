@@ -52,14 +52,6 @@ impl DeploymentManager {
             .get(name)
             .cloned()
             .ok_or_else(|| anyhow!("Deployment group not found"))
-        // let deployment_groups = self.to_owned().deployment_groups;
-        // let deployer = deployment_groups
-        //     .0
-        //     .into_iter()
-        //     .find(|deployer_group| deployer_group.0.eq_ignore_ascii_case(&name))
-        //     .ok_or_else(|| anyhow!("DeploymentGroup not found"))?;
-        // let dep
-        //     Ok(deployer)
     }
 
     async fn deploy(
@@ -79,8 +71,6 @@ impl DeploymentManager {
         let template_id_map = &template_id_map;
         let exercise_name = &exercise_name;
         let deployment_group = &deployment_group;
-        info!("Deploying: {:?}", &deployment_schedule);
-        info!("Template map: {:?}", &template_id_map);
 
         try_join_all(
             deployment_schedule
