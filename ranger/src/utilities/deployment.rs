@@ -37,22 +37,27 @@ where
                 let template_id = template_ids_map
                     .get(node_name)
                     .ok_or_else(|| anyhow!("No template found for node: {}", node_name))?;
-                let links = infranode_map
-                    .get(node_name)
-                    .ok_or_else(|| anyhow!("Infranode not found: {}", node_name))?
-                    .links.clone()
-                    .ok_or_else(|| anyhow!("No links found for node: {}", node_name))?;
-
-                info!("links for node {}: {:?}", node_name, links);
-                Ok(self.new_virtual_machine(display_name, exercise_name, template_id, links))
+                if let Some(infranode) = infranode_map.get(node_name) {
+                    if let Some(links) = infranode.links.clone() {
+                        info!("links for node {}: {:?}", node_name, links);
+                        return Ok(self.new_virtual_machine(
+                            display_name,
+                            exercise_name,
+                            template_id,
+                            links,
+                        ));
+                    }
+                }
+                Ok(self.new_virtual_machine(display_name, exercise_name, template_id, Vec::new()))
             }
             sdl_parser::node::NodeType::Switch => {
-                let links = infranode_map
-                    .get(node_name)
-                    .ok_or_else(|| anyhow!("Infranode not found: {}", node_name))?
-                    .links.clone()
-                    .ok_or_else(|| anyhow!("No links found for node: {}", node_name))?;
-                Ok(self.new_switch(display_name, exercise_name, links))
+                if let Some(infranode) = infranode_map.get(node_name) {
+                    if let Some(links) = infranode.links.clone() {
+                        info!("links for node {}: {:?}", node_name, links);
+                        return Ok(self.new_switch(display_name, exercise_name, links));
+                    }
+                }
+                Ok(self.new_switch(display_name, exercise_name, Vec::new()))
             }
         }
     }
