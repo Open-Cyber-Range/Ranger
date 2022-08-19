@@ -230,23 +230,20 @@ impl Handler<CreateDeployment> for DeploymentManager {
         let scenario = msg.1;
         let requested_deployer_group_name = msg.0;
         info!("Using deployment group: {}", &requested_deployer_group_name);
-        let deployment_group = self
-            .get_deployment_group(&requested_deployer_group_name)
-            .unwrap();
+        let deployment_group_result = self.get_deployment_group(&requested_deployer_group_name);
         let scheduler_address = self.scheduler.clone();
 
         Box::pin(
             async move {
+                let deployment_group = deployment_group_result?;
                 DeploymentManager::deploy(deployment_group, &scenario, scheduler_address).await
             }
             .into_actor(self)
             .map(move |result, _act, _| {
-                if let Result::Ok(deployment_id) = result {
-                    Ok(deployment_id)
-                } else {
+                if result.is_err() {
                     error!("Deployment failed: {:?}", result.as_ref().err());
-                    Err(anyhow!("Deployment failed {:?}", result.err()))
                 }
+                result
             }),
         )
     }
