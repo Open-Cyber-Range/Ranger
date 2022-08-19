@@ -59,8 +59,8 @@ pub async fn deploy_exercise(
             error!("Database actor mailbox error: {error}");
             ServerResponseError(RangerError::ActixMailBoxError.into())
         })?
-        .map_err(|error| {
-            error!("Scenario not found {error}");
+        .map_err(|_| {
+            error!("Scenario not found");
             ServerResponseError(RangerError::ScenarioNotFound.into())
         })?;
     let requested_deployer_group_name = name_query.into_inner().deployment_group;
