@@ -55,7 +55,7 @@ impl DeploymentManager {
     }
 
     async fn deploy(
-        deployment_group: DeploymentGroup,
+        deployment_group: &DeploymentGroup,
         scenario: &Scenario,
         scheduler_address: Addr<Scheduler>,
     ) -> Result<Uuid> {
@@ -64,24 +64,17 @@ impl DeploymentManager {
         let template_id_map = scenario
             .template_nodes(&deployment_group.templaters)
             .await?;
+        let template_id_map_reference = &template_id_map;
 
         let deployment_schedule = scheduler_address
             .send(CreateDeploymentSchedule(scenario.clone()))
             .await??;
-        let template_id_map = &template_id_map;
-        let exercise_name = &exercise_name;
-        let deployment_group = &deployment_group;
+        let exercise_name = exercise_name.as_ref();
 
         try_join_all(
             deployment_schedule
                 .into_iter()
                 .map(move |tranche| async move {
-                    let template_id_map = template_id_map.clone();
-                    let exercise_name = exercise_name.clone();
-
-                    let template_id_map = &template_id_map;
-                    let exercise_name = &exercise_name;
-                    let deployment_group = &deployment_group;
                     try_join_all(tranche.into_iter().map(
                         move |(node_name, display_name, node)| async move {
                             match node.type_field {
@@ -90,7 +83,7 @@ impl DeploymentManager {
                                         .deploy_vms(vec![node.to_deployment(
                                             &node_name,
                                             &display_name,
-                                            template_id_map,
+                                            template_id_map_reference,
                                             exercise_name,
                                         )?])
                                         .await?;
@@ -100,7 +93,7 @@ impl DeploymentManager {
                                         .deploy_switches(vec![node.to_deployment(
                                             &node_name,
                                             &display_name,
-                                            template_id_map,
+                                            template_id_map_reference,
                                             exercise_name,
                                         )?])
                                         .await?;
@@ -236,7 +229,7 @@ impl Handler<CreateDeployment> for DeploymentManager {
         Box::pin(
             async move {
                 let deployment_group = deployment_group_result?;
-                DeploymentManager::deploy(deployment_group, &scenario, scheduler_address).await
+                DeploymentManager::deploy(&deployment_group, &scenario, scheduler_address).await
             }
             .into_actor(self)
             .map(move |result, _act, _| {
