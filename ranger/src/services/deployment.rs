@@ -61,10 +61,12 @@ impl DeploymentManager {
     ) -> Result<Uuid> {
         let deployment_id = Uuid::new_v4();
         let exercise_name = format!("{}-{}", scenario.name, deployment_id);
+        
         let template_id_map = scenario
-            .template_nodes(&deployment_group.templaters)
-            .await?;
+        .template_nodes(&deployment_group.templaters)
+        .await?;
         let template_id_map_reference = &template_id_map;
+        let infranode_map = &scenario.clone().infrastructure.unwrap();
 
         let deployment_schedule = scheduler_address
             .send(CreateDeploymentSchedule(scenario.clone()))
@@ -84,6 +86,7 @@ impl DeploymentManager {
                                             &node_name,
                                             &display_name,
                                             template_id_map_reference,
+                                            infranode_map,
                                             exercise_name,
                                         )?])
                                         .await?;
@@ -94,6 +97,7 @@ impl DeploymentManager {
                                             &node_name,
                                             &display_name,
                                             template_id_map_reference,
+                                            infranode_map,
                                             exercise_name,
                                         )?])
                                         .await?;
