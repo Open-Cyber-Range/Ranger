@@ -7,25 +7,6 @@
           {
                "type": "lldb",
                "request": "launch",
-               "name": "Debug unit tests in library 'ranger'",
-               "cargo": {
-                    "args": [
-                         "test",
-                         "--no-run",
-                         "--lib",
-                         "--package=ranger"
-                    ],
-                    "filter": {
-                         "name": "ranger",
-                         "kind": "lib"
-                    }
-               },
-               "args": ["config.yml"],
-               "cwd": "${workspaceFolder}"
-          },
-          {
-               "type": "lldb",
-               "request": "launch",
                "name": "Debug executable 'ranger'",
                "cargo": {
                     "args": [
@@ -38,8 +19,13 @@
                          "kind": "bin"
                     }
                },
-               "args": ["config.yml"],
-               "cwd": "${workspaceFolder}"
+               "args": [
+                    "config.yml"
+               ],
+               "cwd": "${workspaceFolder}",
+               "initCommands": [
+                    "settings set target.disable-aslr false"
+               ]
           },
           {
                "type": "lldb",
@@ -63,6 +49,27 @@
           {
                "type": "lldb",
                "request": "launch",
+               "name": "Debug unit tests in library 'ranger'",
+               "cargo": {
+                    "args": [
+                         "test",
+                         "--no-run",
+                         "--lib",
+                         "--package=ranger"
+                    ],
+                    "filter": {
+                         "name": "ranger",
+                         "kind": "lib"
+                    }
+               },
+               "args": [
+                    "config.yml"
+               ],
+               "cwd": "${workspaceFolder}"
+          },
+          {
+               "type": "lldb",
+               "request": "launch",
                "name": "Debug integration test 'node'",
                "cargo": {
                     "args": [
@@ -74,25 +81,6 @@
                     "filter": {
                          "name": "node",
                          "kind": "test"
-                    }
-               },
-               "args": [],
-               "cwd": "${workspaceFolder}"
-          },
-          {
-               "type": "lldb",
-               "request": "launch",
-               "name": "Debug unit tests in library 'ranger-grpc'",
-               "cargo": {
-                    "args": [
-                         "test",
-                         "--no-run",
-                         "--lib",
-                         "--package=ranger-grpc"
-                    ],
-                    "filter": {
-                         "name": "ranger-grpc",
-                         "kind": "lib"
                     }
                },
                "args": [],

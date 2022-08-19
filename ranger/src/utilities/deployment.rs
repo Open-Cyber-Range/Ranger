@@ -33,7 +33,7 @@ where
                 let template_id = template_ids_map
                     .get(node_name)
                     .ok_or_else(|| anyhow!("No template found for node: {}", node_name))?;
-                Ok(self.new_virtual_machine(display_name, template_id, exercise_name))
+                Ok(self.new_virtual_machine(display_name, exercise_name, template_id))
             }
             sdl_parser::node::NodeType::Switch => Ok(self.new_switch(display_name, exercise_name)),
         }
