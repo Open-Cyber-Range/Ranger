@@ -61,10 +61,9 @@ impl DeploymentManager {
     ) -> Result<Uuid> {
         let deployment_id = Uuid::new_v4();
         let exercise_name = format!("{}-{}", scenario.name, deployment_id);
-        
         let template_id_map = scenario
-        .template_nodes(&deployment_group.templaters)
-        .await?;
+            .template_nodes(&deployment_group.templaters)
+            .await?;
         let template_id_map_reference = &template_id_map;
         let infranode_map = &scenario.clone().infrastructure.unwrap();
 
@@ -73,46 +72,41 @@ impl DeploymentManager {
             .await??;
         let exercise_name = exercise_name.as_ref();
 
-        try_join_all(
-            deployment_schedule
-                .into_iter()
-                .map(move |tranche| async move {
-                    try_join_all(tranche.into_iter().map(
-                        move |(node_name, display_name, node)| async move {
-                            match node.type_field {
-                                NodeType::VM => {
-                                    deployment_group
-                                        .deploy_vms(vec![node.to_deployment(
-                                            &node_name,
-                                            &display_name,
-                                            template_id_map_reference,
-                                            infranode_map,
-                                            exercise_name,
-                                        )?])
-                                        .await?;
-                                }
-                                NodeType::Switch => {
-                                    deployment_group
-                                        .deploy_switches(vec![node.to_deployment(
-                                            &node_name,
-                                            &display_name,
-                                            template_id_map_reference,
-                                            infranode_map,
-                                            exercise_name,
-                                        )?])
-                                        .await?;
-                                }
+        for tranche in deployment_schedule.iter() {
+            try_join_all(
+                tranche
+                    .iter()
+                    .map(move |(node_name, display_name, node)| async move {
+                        match node.type_field {
+                            NodeType::VM => {
+                                deployment_group
+                                    .deploy_vms(vec![node.to_deployment(
+                                        node_name,
+                                        display_name,
+                                        template_id_map_reference,
+                                        infranode_map,
+                                        exercise_name,
+                                    )?])
+                                    .await?;
                             }
-                            info!("Node: {node_name} successful");
-                            Ok::<()>(())
-                        },
-                    ))
-                    .await?;
-
-                    Ok::<()>(())
-                }),
-        )
-        .await?;
+                            NodeType::Switch => {
+                                deployment_group
+                                    .deploy_switches(vec![node.to_deployment(
+                                        node_name,
+                                        display_name,
+                                        template_id_map_reference,
+                                        infranode_map,
+                                        exercise_name,
+                                    )?])
+                                    .await?;
+                            }
+                        }
+                        info!("Node: {node_name} successful");
+                        Ok::<()>(())
+                    }),
+            )
+            .await?;
+        }
         info!("Deployment {deployment_id} successful");
         Ok(deployment_id)
     }
@@ -237,6 +231,7 @@ impl Handler<CreateDeployment> for DeploymentManager {
             }
             .into_actor(self)
             .map(move |result, _act, _| {
+
                 if result.is_err() {
                     error!("Deployment failed: {:?}", result.as_ref().err());
                 }
