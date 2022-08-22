@@ -23,6 +23,13 @@ impl Scheduler {
 pub struct CreateDeploymentSchedule(pub(crate) Scenario);
 
 impl CreateDeploymentSchedule {
+    fn create_node_name(node: &Node, node_name: String, count: u32) -> String {
+        match node.type_field {
+            NodeType::VM => format!("{node_name}-{count}"),
+            _ => node_name,
+        }
+    }
+
     pub fn generate(&self) -> Result<Vec<Vec<(String, String, Node)>>> {
         let scenario = &self.0;
         let dependencies = scenario.get_dependencies()?;
@@ -40,10 +47,7 @@ impl CreateDeploymentSchedule {
                             for n in 0..infra_value.count {
                                 new_tranche.push((
                                     node_name.to_string(),
-                                    match node_value.type_field {
-                                        NodeType::VM => format!("{node_name}-{n}"),
-                                        _ => node_name.to_string(),
-                                    },
+                                    Self::create_node_name(node_value, node_name.clone(), n),
                                     node_value.clone(),
                                 ));
                             }
