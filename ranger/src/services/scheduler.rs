@@ -5,16 +5,11 @@ use sdl_parser::{
     Scenario,
 };
 
+#[derive(Default)]
 pub struct Scheduler;
 
 impl Actor for Scheduler {
     type Context = actix::Context<Self>;
-}
-
-impl Default for Scheduler {
-    fn default() -> Self {
-        Self::new()
-    }
 }
 
 impl Scheduler {
