@@ -1,9 +1,6 @@
 use actix::{Actor, Handler, Message};
 use anyhow::{anyhow, Ok, Result};
-use sdl_parser::{
-    node::{Node, NodeType},
-    Scenario,
-};
+use sdl_parser::{infrastructure::InfraNode, node::Node, Scenario};
 
 #[derive(Default)]
 pub struct Scheduler;
@@ -23,10 +20,10 @@ impl Scheduler {
 pub struct CreateDeploymentSchedule(pub(crate) Scenario);
 
 impl CreateDeploymentSchedule {
-    fn create_node_name(node: &Node, node_name: String, count: u32) -> String {
-        match node.type_field {
-            NodeType::VM => format!("{node_name}-{count}"),
-            _ => node_name,
+    fn create_node_name(infra_node: &InfraNode, node_name: String, count: u32) -> String {
+        match infra_node.count {
+            0 | 1 => node_name,
+            _ => format!("{}-{}", node_name, count),
         }
     }
 
@@ -47,7 +44,7 @@ impl CreateDeploymentSchedule {
                             for n in 0..infra_value.count {
                                 new_tranche.push((
                                     node_name.to_string(),
-                                    Self::create_node_name(node_value, node_name.clone(), n),
+                                    Self::create_node_name(infra_value, node_name.clone(), n),
                                     node_value.clone(),
                                 ));
                             }

@@ -2,6 +2,7 @@ use actix::prelude::*;
 use actix::{Actor, Handler, Message};
 use anyhow::{Ok, Result};
 use ranger_grpc::capability_client::CapabilityClient;
+use ranger_grpc::Capabilities;
 use ranger_grpc::{node_service_client::NodeServiceClient, NodeDeployment, NodeIdentifier};
 use tonic::transport::Channel;
 
@@ -15,7 +16,7 @@ pub struct DeleteNode(pub NodeIdentifier);
 
 pub struct NodeClient {
     node_client: NodeServiceClient<Channel>,
-    pub capability_client: CapabilityClient<Channel>,
+    capability_client: CapabilityClient<Channel>,
 }
 
 impl NodeClient {
@@ -59,6 +60,25 @@ impl Handler<DeleteNode> for NodeClient {
                 return Err(anyhow::anyhow!("{:?}", status));
             }
             Ok(())
+        })
+    }
+}
+
+#[derive(Message, Debug)]
+#[rtype(result = "Result<Capabilities, anyhow::Error>")]
+pub struct GetCapabilities;
+
+impl Handler<GetCapabilities> for NodeClient {
+    type Result = ResponseFuture<Result<Capabilities>>;
+
+    fn handle(&mut self, _: GetCapabilities, _: &mut Context<Self>) -> Self::Result {
+        let mut client = self.capability_client.clone();
+        Box::pin(async move {
+            let result = client.get_capabilities(tonic::Request::new(())).await;
+            if let Err(status) = result {
+                return Err(anyhow::anyhow!("{:?}", status));
+            }
+            Ok(result?.into_inner())
         })
     }
 }

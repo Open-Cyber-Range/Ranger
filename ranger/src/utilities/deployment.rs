@@ -57,6 +57,8 @@ where
                         return Ok(self.new_switch(display_name, exercise_name, links));
                     }
                 }
+                let test = self.new_switch(display_name, exercise_name, Vec::new());
+                info!("test: {:?}", test);
                 Ok(self.new_switch(display_name, exercise_name, Vec::new()))
             }
         }

@@ -1,5 +1,5 @@
 use crate::{
-    capability::GetCapabilities,
+    node::GetCapabilities,
     node::NodeClient,
     services::deployment::{
         initiate_node_clients, AddDeploymentGroups, DeploymentGroup, DeploymentGroupMap,

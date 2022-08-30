@@ -167,6 +167,32 @@ impl Sender for NodeDeployment {
 }
 
 impl DeploymentGroup {
+    pub fn execute_node_deployment(
+        &self,
+        node_deployment: Vec<NodeDeployment>,
+    ) -> futures::future::TryJoinAll<
+        impl Future<Output = Result<(NodeIdentifier, String), anyhow::Error>> + '_,
+    > {
+        try_join_all(
+            node_deployment
+                .into_iter()
+                .zip(self.machiners.values().into_iter().cycle())
+                .zip(self.switchers.values().into_iter().cycle())
+                .map(
+                    |((node_deployment, machiner_client), switcher_client)| async move {
+                        let node_id = node_deployment.deploy_node(machiner_client.clone()).await?;
+                        let node_name = &node_deployment
+                            .parameters
+                            .as_ref()
+                            .ok_or_else(|| anyhow!("Error getting parameters"))?
+                            .name;
+                        info!("Deployment of VM {} finished", node_name);
+                        Ok::<(NodeIdentifier, String)>((node_id, node_name.to_owned()))
+                    },
+                ),
+        )
+    }
+
     pub fn deploy_vms(
         &self,
         node_deployment: Vec<NodeDeployment>,
@@ -231,7 +257,6 @@ impl Handler<CreateDeployment> for DeploymentManager {
             }
             .into_actor(self)
             .map(move |result, _act, _| {
-
                 if result.is_err() {
                     error!("Deployment failed: {:?}", result.as_ref().err());
                 }
