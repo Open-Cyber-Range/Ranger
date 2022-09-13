@@ -1,11 +1,7 @@
-use actix_web::web::Data;
 use anyhow::Result;
 use lazy_static::lazy_static;
 use rand::Rng;
-use ranger::{
-    configuration::Configuration,
-    AppState,
-};
+use ranger::configuration::Configuration;
 use ranger_grpc::{
     capability_server::{Capability as CapabilityService, CapabilityServer},
     node_service_server::{NodeService, NodeServiceServer},
