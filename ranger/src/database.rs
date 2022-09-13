@@ -1,11 +1,8 @@
 use actix::{Actor, Context, Handler, Message};
 use anyhow::{anyhow, Result};
-use rand::Rng;
 use sdl_parser::{parse_sdl, Scenario};
 use serde::{Deserialize, Deserializer, Serialize};
-use std::{
-    collections::{hash_map::Entry::Vacant, HashMap},
-};
+use std::collections::{hash_map::Entry::Vacant, HashMap};
 use uuid::Uuid;
 
 fn default_uuid() -> Vec<u8> {
@@ -19,7 +16,10 @@ where
     let s = String::deserialize(d).unwrap();
     match parse_sdl(&s) {
         Ok(schema) => Ok(schema.scenario),
-        Err(e) => Err(serde::de::Error::custom(format!("Parse error {} for {}", e, s))),
+        Err(e) => Err(serde::de::Error::custom(format!(
+            "Parse error {} for {}",
+            e, s
+        ))),
     }
 }
 
@@ -35,17 +35,10 @@ pub struct Exercise {
 impl Exercise {
     pub fn new(name: String, scenario: Scenario) -> Self {
         Self {
-            uuid: (default_uuid()),
-            name: (name),
-            scenario: (scenario),
+            uuid: default_uuid(),
+            name,
+            scenario,
         }
-    }
-
-    pub fn create_test_exercise(scenario: Scenario) -> Self {
-        let mut rng = rand::thread_rng();
-        let random_num: u8 = rng.gen_range(0..100);
-        let exercise_name = "test_exercise_".to_string() + &random_num.to_string();
-        Exercise::new(exercise_name, scenario)
     }
 }
 
@@ -99,12 +92,20 @@ mod tests {
     use crate::database::{AddExercise, Database, Exercise, GetExercise};
     use actix::{Actor, System};
     use anyhow::Result;
-    use sdl_parser::test::TEST_SCHEMA;
+    use rand::Rng;
+    use sdl_parser::{test::TEST_SCHEMA, Scenario};
+
+    fn create_test_exercise(scenario: Scenario) -> Exercise {
+        let mut rng = rand::thread_rng();
+        let random_num: u8 = rng.gen_range(0..100);
+        let exercise_name = "test_exercise_".to_string() + &random_num.to_string();
+        Exercise::new(exercise_name, scenario)
+    }
 
     #[test]
     fn add_test_exercise() -> Result<()> {
         let system = System::new();
-        let exercise = Exercise::create_test_exercise(TEST_SCHEMA.scenario.clone());
+        let exercise = create_test_exercise(TEST_SCHEMA.scenario.clone());
 
         system.block_on(async {
             let database_address = Database::new().start();
@@ -117,7 +118,7 @@ mod tests {
     #[test]
     fn get_test_exercise() -> Result<()> {
         let system = System::new();
-        let exercise = Exercise::create_test_exercise(TEST_SCHEMA.scenario.clone());
+        let exercise = create_test_exercise(TEST_SCHEMA.scenario.clone());
 
         let result = system.block_on(async {
             let database_address = Database::new().start();
