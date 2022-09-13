@@ -1,5 +1,5 @@
 use crate::{
-    database::{AddScenario, GetScenario},
+    database::{AddExercise, Exercise, GetExercise},
     errors::{RangerError, ServerResponseError},
     machiner::{CreateDeployment, DeploymentManager},
     AppState,
@@ -7,44 +7,32 @@ use crate::{
 use actix::Actor;
 use actix_web::{
     post,
-    web::{Data, Path},
+    web::{Data, Json, Path},
     Error, HttpResponse,
 };
-
+use anyhow::Result;
 use log::error;
-use sdl_parser::parse_sdl;
 
 #[post("exercise")]
-pub async fn add_exercise(text: String, app_state: Data<AppState>) -> HttpResponse {
-    match parse_sdl(&text) {
-        Ok(schema) => {
-            if let Err(error) = app_state
-                .database_address
-                .send(AddScenario(schema.scenario))
-                .await
-            {
-                error!("Database actor mailbox error: {}", error);
-                return HttpResponse::InternalServerError().finish();
-            }
-            HttpResponse::Ok().body("Ok")
-        }
-        Err(error) => {
-            error!("Failed to parse SDL: {}", error);
-            HttpResponse::BadRequest().finish()
-        }
+pub async fn add_exercise(app_state: Data<AppState>, exercise: Json<Exercise>) -> HttpResponse {
+    let exercise = exercise.into_inner();
+    if let Err(error) = app_state.database_address.send(AddExercise(exercise)).await {
+        error!("Database actor mailbox error: {}", error);
+        return HttpResponse::InternalServerError().finish();
     }
+    HttpResponse::Ok().body("Ok")
 }
 
-#[post("exercise/{scenario_name}/deployment")]
+#[post("exercise/{exercise_name}/deployment")]
 pub async fn deploy_exercise(
-    path_variables: Path<String>,
     app_state: Data<AppState>,
+    path_variables: Path<String>,
 ) -> Result<HttpResponse, Error> {
-    let scenario_name = path_variables.into_inner();
-    log::info!("Adding scenario: {}", scenario_name);
-    let scenario = app_state
+    let exercise_name = path_variables.into_inner();
+    log::info!("Adding exercise: {}", exercise_name);
+    let exercise = app_state
         .database_address
-        .send(GetScenario(scenario_name))
+        .send(GetExercise(exercise_name))
         .await
         .map_err(|error| {
             error!("Database actor mailbox error: {}", error);
@@ -63,7 +51,7 @@ pub async fn deploy_exercise(
         })?
         .start();
     deployment_address
-        .send(CreateDeployment(scenario))
+        .send(CreateDeployment(exercise.scenario))
         .await
         .map_err(|error| {
             error!("Database actor mailbox error: {}", error);
