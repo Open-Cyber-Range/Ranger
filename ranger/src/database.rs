@@ -9,16 +9,16 @@ fn default_uuid() -> Vec<u8> {
     Uuid::new_v4().into_bytes().to_vec()
 }
 
-pub fn deserialize<'de, D>(d: D) -> Result<Scenario, D::Error>
+pub fn deserialize<'de, D>(deserializer: D) -> Result<Scenario, D::Error>
 where
     D: Deserializer<'de>,
 {
-    let s = String::deserialize(d).unwrap();
-    match parse_sdl(&s) {
+    let schema_sdl = String::deserialize(deserializer).unwrap();
+    match parse_sdl(&schema_sdl) {
         Ok(schema) => Ok(schema.scenario),
-        Err(e) => Err(serde::de::Error::custom(format!(
+        Err(parsing_error) => Err(serde::de::Error::custom(format!(
             "Parse error {} for {}",
-            e, s
+            parsing_error, schema_sdl
         ))),
     }
 }
