@@ -1,6 +1,6 @@
 use crate::{
-    database::{AddExercise, Exercise, GetExercise},
     errors::{RangerError, ServerResponseError},
+    exercise::{AddExercise, Exercise, GetExercise},
     machiner::{CreateDeployment, DeploymentManager},
     AppState,
 };
@@ -12,27 +12,36 @@ use actix_web::{
 };
 use anyhow::Result;
 use log::error;
+use uuid::Uuid;
 
 #[post("exercise")]
-pub async fn add_exercise(app_state: Data<AppState>, exercise: Json<Exercise>) -> HttpResponse {
+pub async fn add_exercise(
+    app_state: Data<AppState>,
+    exercise: Json<Exercise>,
+) -> Result<Json<Exercise>, ServerResponseError> {
     let exercise = exercise.into_inner();
-    if let Err(error) = app_state.database_address.send(AddExercise(exercise)).await {
+    if let Err(error) = app_state
+        .database_address
+        .send(AddExercise(exercise.clone()))
+        .await
+    {
         error!("Database actor mailbox error: {}", error);
-        return HttpResponse::InternalServerError().finish();
+        return Err(ServerResponseError(RangerError::ActixMailBoxError.into()));
     }
-    HttpResponse::Ok().body("Ok")
+    Ok(Json(exercise))
 }
 
-#[post("exercise/{exercise_name}/deployment")]
+#[post("exercise/{exercise_uuid}/deployment")]
 pub async fn deploy_exercise(
     app_state: Data<AppState>,
     path_variables: Path<String>,
 ) -> Result<HttpResponse, Error> {
-    let exercise_name = path_variables.into_inner();
-    log::info!("Adding exercise: {}", exercise_name);
+    let exercise_uuid = path_variables.into_inner();
+    log::info!("Adding exercise: {}", exercise_uuid);
+    let parsed_uuid = Uuid::parse_str(&exercise_uuid).unwrap();
     let exercise = app_state
         .database_address
-        .send(GetExercise(exercise_name))
+        .send(GetExercise(parsed_uuid))
         .await
         .map_err(|error| {
             error!("Database actor mailbox error: {}", error);
@@ -51,7 +60,7 @@ pub async fn deploy_exercise(
         })?
         .start();
     deployment_address
-        .send(CreateDeployment(exercise.scenario))
+        .send(CreateDeployment(exercise.scenario.clone()))
         .await
         .map_err(|error| {
             error!("Database actor mailbox error: {}", error);
@@ -61,5 +70,5 @@ pub async fn deploy_exercise(
             error!("Failed to deploy scenario: {}", error);
             ServerResponseError(RangerError::DeploymentFailed.into())
         })?;
-    Ok(HttpResponse::Ok().body("Ok"))
+    Ok(HttpResponse::Ok().body(format!("{:?}", exercise)))
 }

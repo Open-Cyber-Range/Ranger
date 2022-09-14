@@ -1,9 +1,10 @@
 pub mod capability;
 pub mod configuration;
 pub mod database;
-pub mod machiner;
 pub mod deployers;
 pub mod errors;
+pub mod exercise;
+pub mod machiner;
 pub mod node;
 pub mod routes;
 

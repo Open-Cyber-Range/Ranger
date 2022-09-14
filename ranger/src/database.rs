@@ -1,58 +1,12 @@
-use actix::{Actor, Context, Handler, Message};
+use crate::exercise::{AddExercise, Exercise, GetExercise};
+use actix::{Actor, Context, Handler};
 use anyhow::{anyhow, Result};
-use sdl_parser::{parse_sdl, Scenario};
-use serde::{Deserialize, Deserializer, Serialize};
 use std::collections::{hash_map::Entry::Vacant, HashMap};
 use uuid::Uuid;
 
-fn default_uuid() -> Vec<u8> {
-    Uuid::new_v4().into_bytes().to_vec()
-}
-
-pub fn deserialize<'de, D>(deserializer: D) -> Result<Scenario, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    let schema_sdl = String::deserialize(deserializer).unwrap();
-    match parse_sdl(&schema_sdl) {
-        Ok(schema) => Ok(schema.scenario),
-        Err(parsing_error) => Err(serde::de::Error::custom(format!(
-            "Parse error {} for {}",
-            parsing_error, schema_sdl
-        ))),
-    }
-}
-
-#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-pub struct Exercise {
-    #[serde(default = "default_uuid")]
-    uuid: Vec<u8>,
-    name: String,
-    #[serde(deserialize_with = "deserialize")]
-    pub scenario: Scenario,
-}
-
-impl Exercise {
-    pub fn new(name: String, scenario: Scenario) -> Self {
-        Self {
-            uuid: default_uuid(),
-            name,
-            scenario,
-        }
-    }
-}
-
-#[derive(Message, Debug)]
-#[rtype(result = "()")]
-pub struct AddExercise(pub Exercise);
-
-#[derive(Message, Debug)]
-#[rtype(result = "Result<Exercise>")]
-pub struct GetExercise(pub String);
-
 #[derive(Default, PartialEq)]
 pub struct Database {
-    exercises: HashMap<String, Exercise>,
+    exercises: HashMap<Uuid, Exercise>,
 }
 impl Database {
     pub fn new() -> Self {
@@ -68,10 +22,11 @@ impl Handler<AddExercise> for Database {
     type Result = ();
 
     fn handle(&mut self, msg: AddExercise, _: &mut Context<Self>) -> Self::Result {
-        if let Vacant(e) = self.exercises.entry(msg.0.name.clone()) {
-            e.insert(msg.0);
-        } else {
-            log::error!("This exercise already exists in the database");
+        match self.exercises.entry(msg.0.uuid) {
+            Vacant(entry) => {
+                entry.insert(msg.0);
+            }
+            _ => log::error!("This exercise already exists in the database"),
         }
     }
 }
@@ -126,9 +81,7 @@ mod tests {
                 .send(AddExercise(exercise.clone()))
                 .await
                 .unwrap();
-            let result = database_address
-                .send(GetExercise(exercise.name.clone()))
-                .await;
+            let result = database_address.send(GetExercise(exercise.uuid)).await;
             result?
         })?;
         assert_eq!(exercise, result);
