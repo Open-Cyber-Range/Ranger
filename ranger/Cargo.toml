@@ -53,14 +53,11 @@ tokio = { version = "1", features = [
   "net",
   "rt",
 ] }
-tonic = "0.7"
+tonic = "0.8"
+uuid = { version = "1.1", features = ["v4", "serde"] }
 
 [dev-dependencies]
 actix-rt = "2"
 sdl-parser = { git = "ssh://git@code.ex.c-lab.ee/open-cyber-range/public/sdl-parser", branch = "feature/even-better-sdl", features = [
   "test",
 ] }
-
-[dependencies.uuid]
-version = "1.1"
-features = ["v4"]

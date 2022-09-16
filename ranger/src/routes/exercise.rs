@@ -1,18 +1,20 @@
 use crate::{
     database::{AddScenario, GetScenario},
-    errors::{RangerError, ServerResponseError},
+    errors::RangerError,
     services::deployment::CreateDeployment,
+    utilities::default_uuid,
     AppState,
 };
 use actix_web::{
     post,
-    web::{Data, Path, Query},
-    Error, HttpResponse,
+    web::{Data, Json, Path},
+    HttpResponse,
 };
 use anyhow::Result;
 use log::{error, info};
 use sdl_parser::parse_sdl;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 #[post("exercise")]
 pub async fn add_exercise(text: String, app_state: Data<AppState>) -> HttpResponse {
@@ -34,48 +36,53 @@ pub async fn add_exercise(text: String, app_state: Data<AppState>) -> HttpRespon
         }
     }
 }
-fn default_deployment_group_name_query() -> String {
-    "default".to_string()
-}
-#[derive(Debug, Deserialize)]
-pub struct DeploymentGroupNameQuery {
-    #[serde(default = "default_deployment_group_name_query")]
-    deployment_group: String,
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct Deployment {
+    #[serde(default = "default_uuid")]
+    pub id: Uuid,
+    pub name: String,
+    pub deployment_group: Option<String>,
 }
 
 #[post("exercise/{scenario_name}/deployment")]
 pub async fn deploy_exercise(
     path_variables: Path<String>,
     app_state: Data<AppState>,
-    name_query: Query<DeploymentGroupNameQuery>,
-) -> Result<HttpResponse, Error> {
-    let scenario_name = path_variables.into_inner();
-    info!("Deploying scenario: {scenario_name}");
+    deployment: Json<Deployment>,
+) -> Result<Json<Deployment>, RangerError> {
+    let deployment = deployment.into_inner();
+    let exercise_name = path_variables.into_inner();
+    info!("Deploying scenario: {exercise_name}");
     let scenario = app_state
         .database_address
-        .send(GetScenario(scenario_name))
+        .send(GetScenario(exercise_name.clone()))
         .await
         .map_err(|error| {
             error!("Database actor mailbox error: {error}");
-            ServerResponseError(RangerError::ActixMailBoxError.into())
+            RangerError::ActixMailBoxError
         })?
         .map_err(|_| {
             error!("Scenario not found");
-            ServerResponseError(RangerError::ScenarioNotFound.into())
+            RangerError::ScenarioNotFound
         })?;
-    let requested_deployer_group_name = name_query.into_inner().deployment_group;
-    let deployment_uuid = app_state
+
+    app_state
         .deployment_manager_address
-        .send(CreateDeployment(requested_deployer_group_name, scenario))
+        .send(CreateDeployment(
+            scenario,
+            deployment.clone(),
+            exercise_name.to_string(),
+        ))
         .await
         .map_err(|error| {
             error!("Deployment manager actor mailbox error: {error}");
-            ServerResponseError(RangerError::ActixMailBoxError.into())
+            RangerError::ActixMailBoxError
         })?
         .map_err(|error| {
             error!("Deployment error: {error}");
-            ServerResponseError(RangerError::DeploymentFailed.into())
+            RangerError::DeploymentFailed
         })?;
 
-    Ok(HttpResponse::Ok().body(format!("{deployment_uuid}")))
+    Ok(Json(deployment))
 }

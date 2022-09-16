@@ -15,8 +15,8 @@ impl Scheduler {
     }
 }
 
-#[derive(Message, Debug, PartialEq)]
-#[rtype(result = "Result<Vec<Vec<(String, String, Node)>>>")]
+#[derive(Message, Debug, PartialEq, Eq)]
+#[rtype(result = "Result<Vec<Vec<(String, Node, InfraNode)>>>")]
 pub struct CreateDeploymentSchedule(pub(crate) Scenario);
 
 impl CreateDeploymentSchedule {
@@ -27,14 +27,14 @@ impl CreateDeploymentSchedule {
         }
     }
 
-    pub fn generate(&self) -> Result<Vec<Vec<(String, String, Node)>>> {
+    pub fn generate(&self) -> Result<Vec<Vec<(String, Node, InfraNode)>>> {
         let scenario = &self.0;
         let dependencies = scenario.get_dependencies()?;
         let tranches = dependencies.generate_tranches()?;
 
         if let Some(infrastructure) = &scenario.infrastructure {
             if let Some(nodes) = &scenario.nodes {
-                let mut node_deployments: Vec<Vec<(String, String, Node)>> = Vec::new();
+                let mut node_deployments: Vec<Vec<(String, Node, InfraNode)>> = Vec::new();
                 tranches.iter().try_for_each(|tranche| {
                     let mut new_tranche = Vec::new();
                     tranche.iter().try_for_each(|node_name| {
@@ -43,9 +43,9 @@ impl CreateDeploymentSchedule {
                                 nodes.get(node_name).ok_or_else(|| anyhow!("Node value"))?;
                             for n in 0..infra_value.count {
                                 new_tranche.push((
-                                    node_name.to_string(),
                                     Self::create_node_name(infra_value, node_name.clone(), n),
                                     node_value.clone(),
+                                    infra_value.clone(),
                                 ));
                             }
                         }
@@ -63,7 +63,7 @@ impl CreateDeploymentSchedule {
 }
 
 impl Handler<CreateDeploymentSchedule> for Scheduler {
-    type Result = Result<Vec<Vec<(String, String, Node)>>>;
+    type Result = Result<Vec<Vec<(String, Node, InfraNode)>>>;
 
     fn handle(&mut self, message: CreateDeploymentSchedule, _: &mut Self::Context) -> Self::Result {
         message.generate()

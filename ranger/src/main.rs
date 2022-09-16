@@ -1,32 +1,29 @@
+use actix::Actor;
 use actix_web::web::scope;
 use actix_web::{web::Data, App, HttpServer};
 use anyhow::Error;
 use ranger::configuration::read_configuration;
-use ranger::deployers::DeployerGroups;
 use ranger::routes::{
     basic::{status, version},
-    deployers::get_deployers,
     exercise::{add_exercise, deploy_exercise},
 };
+use ranger::services::deployer::{DeployerDistribution, DeployerFactory};
 use ranger::AppState;
 
 #[actix_web::main]
 async fn main() -> Result<(), Error> {
     env_logger::init();
     let configuration = read_configuration(std::env::args().collect())?;
-    let app_state = AppState::new();
-    app_state
-        .add_initial_deployergroups(
-            configuration.deployment_groups,
-            configuration.deployers,
-            configuration.default_deployment_group,
-        )
-        .await?;
-    DeployerGroups::start_all(
-        app_state.deployer_grouper_address.clone(),
-        app_state.deployment_manager_address.clone(),
+    let deployer_factory = DeployerFactory::new(&configuration.deployers)
+        .await?
+        .start();
+    let deployer_distributor = DeployerDistribution::new(
+        deployer_factory,
+        configuration.deployers.keys().cloned().collect(),
     )
-    .await?;
+    .await?
+    .start();
+    let app_state = AppState::new(&configuration, &deployer_distributor);
 
     let app_data = Data::new(app_state);
 
@@ -38,7 +35,6 @@ async fn main() -> Result<(), Error> {
             .service(
                 scope("/api/v1")
                     .service(add_exercise)
-                    .service(get_deployers)
                     .service(deploy_exercise),
             )
     })

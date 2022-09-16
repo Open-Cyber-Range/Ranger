@@ -11,7 +11,7 @@ pub struct AddScenario(pub Scenario);
 #[rtype(result = "Result<Scenario>")]
 pub struct GetScenario(pub String);
 
-#[derive(Default, PartialEq)]
+#[derive(Default, PartialEq, Eq)]
 pub struct Database {
     scenarios: HashMap<String, Scenario>,
 }

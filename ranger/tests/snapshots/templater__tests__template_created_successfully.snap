@@ -1,7 +1,0 @@
----
-source: ranger/tests/templater.rs
-expression: template_id
----
-Identifier {
-    value: "Some UUID",
-}
