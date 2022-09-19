@@ -1,3 +1,7 @@
-use tonic::include_proto;
+pub mod pb {
+    #![allow(clippy::derive_partial_eq_without_eq)]
 
-include_proto!("_");
+    tonic::include_proto!("_");
+}
+
+pub use pb::*;
