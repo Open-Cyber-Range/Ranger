@@ -4,7 +4,7 @@ use sdl_parser::{parse_sdl, Scenario};
 use serde::{Deserialize, Deserializer, Serialize};
 use uuid::Uuid;
 
-#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
 pub struct Exercise {
     #[serde(default = "default_uuid")]
     pub uuid: Uuid,

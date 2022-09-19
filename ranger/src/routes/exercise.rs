@@ -1,5 +1,4 @@
 use crate::{
-    database::{AddScenario, GetScenario},
     errors::RangerError,
     exercise::{AddExercise, Exercise, GetExercise},
     services::deployment::CreateDeployment,
@@ -9,11 +8,9 @@ use crate::{
 use actix_web::{
     post,
     web::{Data, Json, Path},
-    Error, HttpResponse,
 };
 use anyhow::Result;
-use log::{error, info};
-use sdl_parser::parse_sdl;
+use log::error;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -21,7 +18,7 @@ use uuid::Uuid;
 pub async fn add_exercise(
     app_state: Data<AppState>,
     exercise: Json<Exercise>,
-) -> Result<Json<Exercise>, ServerResponseError> {
+) -> Result<Json<Exercise>, RangerError> {
     let exercise = exercise.into_inner();
     if let Err(error) = app_state
         .database_address
@@ -29,7 +26,7 @@ pub async fn add_exercise(
         .await
     {
         error!("Database actor mailbox error: {}", error);
-        return Err(ServerResponseError(RangerError::ActixMailBoxError.into()));
+        return Err(RangerError::ActixMailBoxError);
     }
     Ok(Json(exercise))
 }
@@ -48,6 +45,7 @@ pub async fn deploy_exercise(
     app_state: Data<AppState>,
     deployment: Json<Deployment>,
 ) -> Result<Json<Deployment>, RangerError> {
+    let deployment = deployment.into_inner();
     let exercise_uuid = path_variables.into_inner();
     log::info!("Adding exercise: {}", exercise_uuid);
     let parsed_uuid = Uuid::parse_str(&exercise_uuid).unwrap();
@@ -67,9 +65,9 @@ pub async fn deploy_exercise(
     app_state
         .deployment_manager_address
         .send(CreateDeployment(
-            scenario,
+            exercise.scenario,
             deployment.clone(),
-            exercise_name.to_string(),
+            exercise.name,
         ))
         .await
         .map_err(|error| {
