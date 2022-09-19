@@ -6,20 +6,30 @@ services:
     command: /bin/sh -c "while sleep 1000; do :; done"
     volumes:
       - ..:/workspace:cached
+      - ./.deputy/configuration.toml:/home/vscode/.deputy/configuration.toml
     user: vscode
 
   ranger-vmware-machiner:
     image: nexus.ex.c-lab.ee:8003/ranger-vmware-machiner:latest
     volumes:
       - ./configs/ranger-vmware-machiner.yml:/etc/opt/ranger/ranger-vmware-machiner/config.yml
-    ports:
-      - "9999:9999"
     restart: unless-stopped
 
   ranger-vmware-switcher:
     image: nexus.ex.c-lab.ee:8003/ranger-vmware-switcher:latest
     volumes:
       - ./configs/ranger-vmware-switcher.yml:/etc/opt/ranger/ranger-vmware-switcher/config.yml
-    ports:
-      - "9998:9998"
+    restart: unless-stopped
+
+  ranger-vmware-templater:
+    image: nexus.ex.c-lab.ee:8003/ranger-vmware-templater:latest
+    volumes:
+      - ./configs/ranger-vmware-templater.yml:/etc/opt/ranger/ranger-vmware-templater/config.yml
+      - ./.deputy/configuration.toml:/root/.deputy/configuration.toml
+    restart: unless-stopped
+
+  deputy-package-server-repository-combo:
+    image: nexus.ex.c-lab.ee:8003/deputy-package-server-repository-combo:latest
+    environment:
+      - RUST_LOG=debug
     restart: unless-stopped

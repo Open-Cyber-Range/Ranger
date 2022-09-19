@@ -11,3 +11,4 @@ deployment_groups:
     - my-machiner-deployer
     - my-switch-deployer
     - my-template-deployer
+    

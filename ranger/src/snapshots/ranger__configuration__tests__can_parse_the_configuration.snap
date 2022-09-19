@@ -8,6 +8,7 @@ deployers:
   my-machiner-deployer: "http://ranger-vmware-machiner:9999"
   my-switch-deployer: "http://ranger-vmware-switcher:9999"
   ungrouped-deployer: "http://some-vmware-deployer:9999"
+default_deployment_group: my-cool-group
 deployment_groups:
   my-cool-group:
     - my-machiner-deployer

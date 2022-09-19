@@ -4,7 +4,7 @@ use anyhow::{anyhow, Result};
 use std::collections::{hash_map::Entry::Vacant, HashMap};
 use uuid::Uuid;
 
-#[derive(Default, PartialEq)]
+#[derive(Default, PartialEq, Eq)]
 pub struct Database {
     exercises: HashMap<Uuid, Exercise>,
 }

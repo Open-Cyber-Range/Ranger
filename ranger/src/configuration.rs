@@ -1,13 +1,23 @@
+use crate::constants::default_deployment_group_name;
 use anyhow::{Error, Result};
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, fs::read_to_string};
 
-#[derive(Debug, Default, Serialize, Deserialize)]
+pub type AddressBook = HashMap<String, String>;
+pub type DeploymentGroupMap = HashMap<String, Vec<String>>;
+
+fn deployment_group_name() -> String {
+    default_deployment_group_name().to_string()
+}
+
+#[derive(Debug, Default, Serialize, Deserialize, Clone)]
 pub struct Configuration {
     pub host: String,
     pub port: u16,
-    pub deployers: HashMap<String, String>,
-    pub deployment_groups: HashMap<String, Vec<String>>,
+    pub deployers: AddressBook,
+    #[serde(default = "deployment_group_name")]
+    pub default_deployment_group: String,
+    pub deployment_groups: DeploymentGroupMap,
 }
 
 pub fn read_configuration(arguments: Vec<String>) -> Result<Configuration> {
@@ -43,6 +53,7 @@ mod tests {
                     my-switch-deployer: http://ranger-vmware-switcher:9999
                     ungrouped-deployer: http://some-vmware-deployer:9999
 
+                default_deployment_group: my-cool-group
                 deployment_groups:
                     my-cool-group:
                         - my-machiner-deployer
