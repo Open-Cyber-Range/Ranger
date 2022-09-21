@@ -2,7 +2,7 @@ use crate::{
     errors::RangerError,
     models::{AddExercise, Deployment, Exercise, GetExercise},
     services::deployment::CreateDeployment,
-    utilities::Validation,
+    utilities::{create_mailbox_error_handler, Validation},
     AppState,
 };
 use actix_web::{
@@ -45,10 +45,7 @@ pub async fn deploy_exercise(
         .database_address
         .send(GetExercise(parsed_uuid))
         .await
-        .map_err(|error| {
-            error!("Database actor mailbox error: {error}");
-            RangerError::ActixMailBoxError
-        })?
+        .map_err(create_mailbox_error_handler("Database"))?
         .map_err(|_| {
             error!("Scenario not found");
             RangerError::ScenarioNotFound
@@ -67,10 +64,7 @@ pub async fn deploy_exercise(
             exercise.name,
         ))
         .await
-        .map_err(|error| {
-            error!("Deployment manager actor mailbox error: {error}");
-            RangerError::ActixMailBoxError
-        })?
+        .map_err(create_mailbox_error_handler("Deployment manager"))?
         .map_err(|error| {
             error!("Deployment error: {error}");
             RangerError::DeploymentFailed
