@@ -2,7 +2,7 @@ use crate::{
     errors::RangerError,
     models::{AddExercise, Exercise, GetExercise},
     services::deployment::CreateDeployment,
-    utilities::default_uuid,
+    utilities::{default_uuid, Validation},
     AppState,
 };
 use actix_web::{
@@ -20,6 +20,7 @@ pub async fn add_exercise(
     exercise: Json<Exercise>,
 ) -> Result<Json<Exercise>, RangerError> {
     let exercise = exercise.into_inner();
+    exercise.validate()?;
     if let Err(error) = app_state
         .database_address
         .send(AddExercise(exercise.clone()))

@@ -1,6 +1,5 @@
 use crate::{errors::RangerError, utilities::Validation};
 use actix::Message;
-use actix_web::ResponseError;
 use anyhow::Result;
 use sdl_parser::{parse_sdl, Scenario};
 use serde::{Deserialize, Deserializer, Serialize};
@@ -17,9 +16,9 @@ pub struct Exercise {
 }
 
 impl Validation for Exercise {
-    fn validate(&self) -> StdResult<(), Box<dyn ResponseError>> {
+    fn validate(&self) -> StdResult<(), RangerError> {
         if self.name.len() > 20 {
-            return Err(Box::new(RangerError::ExeciseNameTooLong));
+            return Err(RangerError::ExeciseNameTooLong);
         }
         Ok(())
     }

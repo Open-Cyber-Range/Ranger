@@ -1,7 +1,5 @@
-use actix_web::ResponseError;
+use crate::errors::RangerError;
 
 pub trait Validation {
-    fn validate(&self) -> Result<(), Box<dyn ResponseError>>
-    where
-        Self: Sized;
+    fn validate(&self) -> Result<(), RangerError>;
 }
