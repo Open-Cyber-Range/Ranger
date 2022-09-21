@@ -1,6 +1,6 @@
 use crate::{
     errors::RangerError,
-    exercise::{AddExercise, Exercise, GetExercise},
+    models::{AddExercise, Exercise, GetExercise},
     services::deployment::CreateDeployment,
     utilities::default_uuid,
     AppState,

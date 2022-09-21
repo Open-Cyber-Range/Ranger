@@ -2,7 +2,7 @@ pub mod configuration;
 mod constants;
 pub mod database;
 pub mod errors;
-pub mod exercise;
+pub mod models;
 pub mod routes;
 pub mod services;
 pub(crate) mod utilities;

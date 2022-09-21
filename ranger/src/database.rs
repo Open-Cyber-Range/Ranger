@@ -1,4 +1,4 @@
-use crate::exercise::{AddExercise, Exercise, GetExercise};
+use crate::models::{AddExercise, Exercise, GetExercise};
 use actix::{Actor, Context, Handler};
 use anyhow::{anyhow, Result};
 use std::collections::{hash_map::Entry::Vacant, HashMap};
