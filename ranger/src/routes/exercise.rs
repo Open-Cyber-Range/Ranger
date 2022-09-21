@@ -1,8 +1,8 @@
 use crate::{
     errors::RangerError,
-    models::{AddExercise, Exercise, GetExercise},
+    models::{AddExercise, Deployment, Exercise, GetExercise},
     services::deployment::CreateDeployment,
-    utilities::{default_uuid, Validation},
+    utilities::Validation,
     AppState,
 };
 use actix_web::{
@@ -11,7 +11,6 @@ use actix_web::{
 };
 use anyhow::Result;
 use log::error;
-use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 #[post("exercise")]
@@ -32,14 +31,6 @@ pub async fn add_exercise(
     Ok(Json(exercise))
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct Deployment {
-    #[serde(default = "default_uuid")]
-    pub id: Uuid,
-    pub name: String,
-    pub deployment_group: Option<String>,
-}
-
 #[post("exercise/{exercise_uuid}/deployment")]
 pub async fn deploy_exercise(
     path_variables: Path<String>,
@@ -48,7 +39,7 @@ pub async fn deploy_exercise(
 ) -> Result<Json<Deployment>, RangerError> {
     let deployment = deployment.into_inner();
     let exercise_uuid = path_variables.into_inner();
-    log::info!("Adding exercise: {}", exercise_uuid);
+
     let parsed_uuid = Uuid::parse_str(&exercise_uuid).unwrap();
     let exercise = app_state
         .database_address
@@ -62,6 +53,11 @@ pub async fn deploy_exercise(
             error!("Scenario not found");
             RangerError::ScenarioNotFound
         })?;
+    log::info!(
+        "Adding deployment {} for exercise {}",
+        exercise.name,
+        deployment.name
+    );
 
     app_state
         .deployment_manager_address

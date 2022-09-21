@@ -1,4 +1,4 @@
-use crate::{errors::RangerError, utilities::Validation};
+use crate::{constants::MAX_EXERCISE_NAME_LENGTH, errors::RangerError, utilities::Validation};
 use actix::Message;
 use anyhow::Result;
 use sdl_parser::{parse_sdl, Scenario};
@@ -17,7 +17,7 @@ pub struct Exercise {
 
 impl Validation for Exercise {
     fn validate(&self) -> StdResult<(), RangerError> {
-        if self.name.len() > 20 {
+        if self.name.len() > MAX_EXERCISE_NAME_LENGTH {
             return Err(RangerError::ExeciseNameTooLong);
         }
         Ok(())
