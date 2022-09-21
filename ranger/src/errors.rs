@@ -13,6 +13,8 @@ pub enum RangerError {
     DeploymentFailed,
     #[error("DeployerGroup not found")]
     DeployerGroupNotfound,
+    #[error("Exercise name too long")]
+    ExeciseNameTooLong,
 }
 
 impl ResponseError for RangerError {
@@ -20,6 +22,7 @@ impl ResponseError for RangerError {
         match self {
             RangerError::ScenarioNotFound => StatusCode::NOT_FOUND,
             RangerError::DeployerGroupNotfound => StatusCode::NOT_FOUND,
+            RangerError::ExeciseNameTooLong => StatusCode::UNPROCESSABLE_ENTITY,
             _ => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }

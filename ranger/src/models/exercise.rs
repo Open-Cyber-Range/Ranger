@@ -1,7 +1,10 @@
+use crate::{errors::RangerError, utilities::Validation};
 use actix::Message;
+use actix_web::ResponseError;
 use anyhow::Result;
 use sdl_parser::{parse_sdl, Scenario};
 use serde::{Deserialize, Deserializer, Serialize};
+use std::result::Result as StdResult;
 use uuid::Uuid;
 
 #[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
@@ -11,6 +14,15 @@ pub struct Exercise {
     pub name: String,
     #[serde(deserialize_with = "deserialize_scenario")]
     pub scenario: Scenario,
+}
+
+impl Validation for Exercise {
+    fn validate(&self) -> StdResult<(), Box<dyn ResponseError>> {
+        if self.name.len() > 20 {
+            return Err(Box::new(RangerError::ExeciseNameTooLong));
+        }
+        Ok(())
+    }
 }
 
 impl Exercise {
