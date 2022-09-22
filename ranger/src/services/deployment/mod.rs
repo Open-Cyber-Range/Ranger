@@ -5,7 +5,7 @@ mod template;
 use super::deployer::DeployerDistribution;
 use crate::services::deployment::template::DeployableTemplates;
 use crate::services::scheduler::Scheduler;
-use crate::{routes::exercise::Deployment, services::deployment::node::DeployableNodes};
+use crate::{models::Deployment, services::deployment::node::DeployableNodes};
 use actix::{
     Actor, ActorFutureExt, Addr, Context, Handler, Message, ResponseActFuture, WrapFuture,
 };

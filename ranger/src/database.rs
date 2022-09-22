@@ -1,19 +1,12 @@
-use actix::{Actor, Context, Handler, Message};
+use crate::models::{AddExercise, Exercise, GetExercise};
+use actix::{Actor, Context, Handler};
 use anyhow::{anyhow, Result};
-use sdl_parser::Scenario;
 use std::collections::{hash_map::Entry::Vacant, HashMap};
-
-#[derive(Message, Debug)]
-#[rtype(result = "()")]
-pub struct AddScenario(pub Scenario);
-
-#[derive(Message, Debug)]
-#[rtype(result = "Result<Scenario>")]
-pub struct GetScenario(pub String);
+use uuid::Uuid;
 
 #[derive(Default, PartialEq, Eq)]
 pub struct Database {
-    scenarios: HashMap<String, Scenario>,
+    exercises: HashMap<Uuid, Exercise>,
 }
 impl Database {
     pub fn new() -> Self {
@@ -25,44 +18,53 @@ impl Actor for Database {
     type Context = Context<Self>;
 }
 
-impl Handler<AddScenario> for Database {
+impl Handler<AddExercise> for Database {
     type Result = ();
 
-    fn handle(&mut self, msg: AddScenario, _: &mut Context<Self>) -> Self::Result {
-        if let Vacant(e) = self.scenarios.entry(msg.0.name.clone()) {
-            e.insert(msg.0);
-        } else {
-            log::error!("This scenario already exists in the database");
+    fn handle(&mut self, msg: AddExercise, _: &mut Context<Self>) -> Self::Result {
+        match self.exercises.entry(msg.0.uuid) {
+            Vacant(entry) => {
+                entry.insert(msg.0);
+            }
+            _ => log::error!("This exercise already exists in the database"),
         }
     }
 }
 
-impl Handler<GetScenario> for Database {
-    type Result = Result<Scenario>;
+impl Handler<GetExercise> for Database {
+    type Result = Result<Exercise>;
 
-    fn handle(&mut self, msg: GetScenario, _: &mut Context<Self>) -> Self::Result {
-        match self.scenarios.get(&msg.0) {
-            Some(scenario) => Ok(scenario.to_owned()),
-            None => Err(anyhow!("Scenario not found")),
+    fn handle(&mut self, msg: GetExercise, _: &mut Context<Self>) -> Self::Result {
+        match self.exercises.get(&msg.0) {
+            Some(exercise) => Ok(exercise.to_owned()),
+            None => Err(anyhow!("Exercise not found")),
         }
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::database::{AddScenario, Database, GetScenario};
+    use crate::database::{AddExercise, Database, Exercise, GetExercise};
     use actix::{Actor, System};
     use anyhow::Result;
-    use sdl_parser::test::TEST_SCHEMA;
+    use rand::Rng;
+    use sdl_parser::{test::TEST_SCHEMA, Scenario};
+
+    fn create_test_exercise(scenario: Scenario) -> Exercise {
+        let mut rng = rand::thread_rng();
+        let random_num: u8 = rng.gen_range(0..100);
+        let exercise_name = "test_exercise_".to_string() + &random_num.to_string();
+        Exercise::new(exercise_name, scenario)
+    }
 
     #[test]
     fn add_test_exercise() -> Result<()> {
         let system = System::new();
+        let exercise = create_test_exercise(TEST_SCHEMA.scenario.clone());
+
         system.block_on(async {
             let database_address = Database::new().start();
-            let result = database_address
-                .send(AddScenario(TEST_SCHEMA.scenario.clone()))
-                .await;
+            let result = database_address.send(AddExercise(exercise)).await;
             assert!(result.is_ok());
         });
         Ok(())
@@ -71,18 +73,18 @@ mod tests {
     #[test]
     fn get_test_exercise() -> Result<()> {
         let system = System::new();
+        let exercise = create_test_exercise(TEST_SCHEMA.scenario.clone());
+
         let result = system.block_on(async {
             let database_address = Database::new().start();
             database_address
-                .send(AddScenario(TEST_SCHEMA.scenario.clone()))
+                .send(AddExercise(exercise.clone()))
                 .await
                 .unwrap();
-            let result = database_address
-                .send(GetScenario("test-scenario".to_string()))
-                .await;
+            let result = database_address.send(GetExercise(exercise.uuid)).await;
             result?
         })?;
-        assert_eq!(TEST_SCHEMA.scenario, result);
+        assert_eq!(exercise, result);
         Ok(())
     }
 }

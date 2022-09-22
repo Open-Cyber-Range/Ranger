@@ -1,6 +1,6 @@
 use super::ledger::{CreateEntry, GetEntry};
 use super::Ledger;
-use crate::routes::exercise::Deployment;
+use crate::models::Deployment;
 use crate::services::client::{Deployable, DeploymentInfo};
 use crate::services::deployer::{Deploy, DeployerDistribution};
 use crate::services::scheduler::{CreateDeploymentSchedule, Scheduler};
