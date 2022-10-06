@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link } from "react-router-dom";
 import { Alignment, Navbar as Nav } from '@blueprintjs/core';
 
