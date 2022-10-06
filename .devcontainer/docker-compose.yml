@@ -2,7 +2,7 @@ version: '3'
 
 services:
   ranger:
-    image: nexus.ocr.cr14.net:8003/rust-development:latest
+    image: nexus.ocr.cr14.net:8003/ranger-development:latest
     command: /bin/sh -c "while sleep 1000; do :; done"
     volumes:
       - ..:/workspace:cached
