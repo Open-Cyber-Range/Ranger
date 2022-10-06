@@ -1,7 +1,7 @@
-import React from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import axios from 'axios';
-import { Button, Label } from '@blueprintjs/core';
+import { Button, Intent, Label } from '@blueprintjs/core';
+import { AppToaster } from "../components/toaster";
 
 const styles = {
     container: {
@@ -25,18 +25,25 @@ type Exercise = {
 
 const ExerciseForm = () => {
 
-    const { register, handleSubmit } = useForm<Exercise>();
-    const onSubmit: SubmitHandler<Exercise> = async exercise => {
-        console.log(exercise);
+    const { register, handleSubmit, formState: { errors } } = useForm<Exercise>();
 
+    const onSubmit: SubmitHandler<Exercise> = async exercise => {
         await axios.post('api/v1/exercise', JSON.stringify(exercise), {
             headers: {
                 'Content-Type': 'application/json'
             },
         }).then((response) => {
-            console.log(response.data);
+            AppToaster.show({
+                icon: "tick",
+                intent: Intent.SUCCESS,
+                message: "Added exercise with uuid: " + response.data.uuid
+            });
         }).catch((error) => {
-            console.log(error.response.data);
+            AppToaster.show({
+                icon: "warning-sign",
+                intent: Intent.DANGER,
+                message: "Can't add exercise: " + error.response.data
+            });
         });
     };
 
@@ -48,7 +55,7 @@ const ExerciseForm = () => {
                     Exercise name
                     <input
                         placeholder="exercise-1"
-                        {...register("name", { required: true })}
+                        {...register("name")}
                         style={styles.input}
                     />
                 </Label>
@@ -56,7 +63,7 @@ const ExerciseForm = () => {
                     Scenario yaml
                     <textarea
                         placeholder="scenario: ..."
-                        {...register('scenario', { required: true })}
+                        {...register('scenario')}
                         style={styles.textArea}
                     />
                 </Label>
@@ -64,7 +71,6 @@ const ExerciseForm = () => {
             </form>
         </div>
     );
-
 }
 
 export default ExerciseForm;
