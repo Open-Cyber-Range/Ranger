@@ -1,14 +1,20 @@
 import React from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import axios from 'axios';
+import { Button, Label } from '@blueprintjs/core';
 
 const styles = {
     container: {
-        width: "80%",
-        margin: "0 auto",
+        width: "50%",
     },
     input: {
         width: "100%",
+        margin: "10px",
+    },
+    textArea: {
+        width: "100%",
+        margin: "10px",
+        height: "200px",
     },
 };
 
@@ -19,7 +25,7 @@ type Exercise = {
 
 const ExerciseForm = () => {
 
-    const { register, handleSubmit, formState: { errors } } = useForm<Exercise>();
+    const { register, handleSubmit } = useForm<Exercise>();
     const onSubmit: SubmitHandler<Exercise> = async exercise => {
         console.log(exercise);
 
@@ -36,12 +42,25 @@ const ExerciseForm = () => {
 
     return (
         <div style={styles.container} >
-            <h4>Add exercise </h4>
+            <h3>Add new exercise</h3>
             <form className="ExerciseForm" onSubmit={handleSubmit(onSubmit)} >
-                <input placeholder="Exercise name" {...register("name", { required: true })} />
-                <textarea {...register('scenario', { required: true })} placeholder="Scenario yaml" style={styles.input} />
-                {errors.scenario && <p role="alert">{errors.scenario?.message}</p>}
-                <button type="submit" > Submit </button>
+                <Label>
+                    Exercise name
+                    <input
+                        placeholder="exercise-1"
+                        {...register("name", { required: true })}
+                        style={styles.input}
+                    />
+                </Label>
+                <Label>
+                    Scenario yaml
+                    <textarea
+                        placeholder="scenario: ..."
+                        {...register('scenario', { required: true })}
+                        style={styles.textArea}
+                    />
+                </Label>
+                <Button type="submit" > Submit </Button>
             </form>
         </div>
     );
