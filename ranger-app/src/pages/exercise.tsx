@@ -28,21 +28,17 @@ const ExerciseForm = () => {
   const {register, handleSubmit, formState: {errors}} = useForm<Exercise>();
 
   const onSubmit: SubmitHandler<Exercise> = async exercise => {
-    await axios.post('api/v1/exercise', JSON.stringify(exercise), {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    }).then(response => {
+    await axios.post('api/v1/exercise').then(response => {
       AppToaster.show({
         icon: 'tick',
         intent: Intent.SUCCESS,
-        message: 'Added exercise with uuid: ' + response.data.uuid,
+        message: 'Exercise added!',
       });
     }).catch(error => {
       AppToaster.show({
         icon: 'warning-sign',
         intent: Intent.DANGER,
-        message: 'Can\'t add exercise: ' + error.response.data,
+        message: 'Failed to add the exercise',
       });
     });
   };
