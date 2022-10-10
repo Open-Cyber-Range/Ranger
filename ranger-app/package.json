@@ -67,9 +67,12 @@
       "unicorn/filename-case": [
         "error",
         {
-          "case": "pascalCase",
+          "cases": {
+            "pascalCase": true
+          },
           "ignore": [
-            ".test."
+            ".test.",
+            ".ts"
           ]
         }
       ]
