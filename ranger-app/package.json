@@ -24,7 +24,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "lint": "xo"
   },
   "eslintConfig": {
     "extends": [
@@ -44,5 +45,11 @@
       "last 1 safari version"
     ]
   },
-  "proxy": "http://localhost:8085"
+  "proxy": "http://localhost:8085",
+  "devDependencies": {
+    "xo": "^0.52.4"
+  },
+  "xo": {
+    "space": true
+  }
 }
