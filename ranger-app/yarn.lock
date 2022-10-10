@@ -2230,7 +2230,7 @@
   dependencies:
     "@types/yargs-parser" "*"
 
-"@typescript-eslint/eslint-plugin@*":
+"@typescript-eslint/eslint-plugin@^5.35.1":
   version "5.39.0"
   resolved "https://registry.yarnpkg.com/@typescript-eslint/eslint-plugin/-/eslint-plugin-5.39.0.tgz#778b2d9e7f293502c7feeea6c74dca8eb3e67511"
   integrity sha512-xVfKOkBm5iWMNGKQ2fwX5GVgBuHmZBO1tCRwXmY5oAIsPscfwm2UADDuNB8ZVYCtpQvJK4xpjrK7jEhcJ0zY9A==
@@ -2265,7 +2265,7 @@
   dependencies:
     "@typescript-eslint/utils" "5.38.0"
 
-"@typescript-eslint/parser@*":
+"@typescript-eslint/parser@^5.35.1":
   version "5.39.0"
   resolved "https://registry.yarnpkg.com/@typescript-eslint/parser/-/parser-5.39.0.tgz#93fa0bc980a3a501e081824f6097f7ca30aaa22b"
   integrity sha512-PhxLjrZnHShe431sBAGHaNe6BDdxAASDySgsBCGxcBecVCi8NQWxQZMcizNA4g0pN51bBAn/FUfkWG3SDVcGlA==
@@ -4277,7 +4277,7 @@ eslint-config-react-app@^7.0.1:
     eslint-plugin-react-hooks "^4.3.0"
     eslint-plugin-testing-library "^5.0.1"
 
-eslint-config-xo-typescript@*:
+eslint-config-xo-typescript@^0.53.0:
   version "0.53.0"
   resolved "https://registry.yarnpkg.com/eslint-config-xo-typescript/-/eslint-config-xo-typescript-0.53.0.tgz#702be21ea0dfcb124903c5f723d023b1fdeb0da2"
   integrity sha512-IJ1n70egMPTou/41HoGGFbLf/2WCsVW5lSUxOSklrR8T1221fMRPVJxIVZ3evr8R+N5wR6uzg/0uzSymwWA5Bg==
