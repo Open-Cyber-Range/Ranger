@@ -50,6 +50,29 @@
     "xo": "^0.52.4"
   },
   "xo": {
-    "space": true
+    "space": true,
+    "rules": {
+      "import/extensions": [
+        "error",
+        "never"
+      ],
+      "n/file-extension-in-import": [
+        "error",
+        "never",
+        {
+          ".css": "always"
+        }
+      ],
+      "prefer-template": "error",
+      "unicorn/filename-case": [
+        "error",
+        {
+          "case": "pascalCase",
+          "ignore": [
+            ".test."
+          ]
+        }
+      ]
+    }
   }
 }
