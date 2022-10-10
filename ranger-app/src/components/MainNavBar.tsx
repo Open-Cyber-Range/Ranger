@@ -1,7 +1,7 @@
 import {Link} from 'react-router-dom';
 import {Alignment, Navbar} from '@blueprintjs/core';
 
-const HomePageNavbar = () => (
+const MainNavbar = () => (
   <Navbar fixedToTop={true}>
     <Navbar.Group align={Alignment.LEFT}>
       <Navbar.Heading>Ranger</Navbar.Heading>
@@ -16,4 +16,4 @@ const HomePageNavbar = () => (
   </Navbar >
 );
 
-export default HomePageNavbar;
+export default MainNavbar;

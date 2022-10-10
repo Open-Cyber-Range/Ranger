@@ -1,14 +1,14 @@
 import './App.css';
 import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
-import ExerciseForm from './pages/exercise';
-import HomePageNavbar from './components/navbar';
-import Home from './pages/home';
+import ExerciseForm from './pages/Exercise';
+import MainNavbar from './components/MainNavBar';
+import Home from './pages/Home';
 
 function App() {
   return (
     <div className='App'>
       <Router>
-        {<HomePageNavbar />}
+        {<MainNavbar />}
 
         <div className='App-header'>
           <Routes>

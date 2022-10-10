@@ -2,7 +2,7 @@ import type {SubmitHandler} from 'react-hook-form';
 import {useForm} from 'react-hook-form';
 import axios from 'axios';
 import {Button, Intent, Label} from '@blueprintjs/core';
-import {AppToaster} from '../components/toaster';
+import {AppToaster} from '../components/Toaster';
 
 const styles = {
   container: {
