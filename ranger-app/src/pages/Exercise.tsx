@@ -10,7 +10,7 @@ type Exercise = {
 };
 
 const ExerciseForm = () => {
-  const {register, handleSubmit, control, formState: {errors}} = useForm<Exercise>({
+  const {handleSubmit, control, formState: {errors}} = useForm<Exercise>({
     defaultValues: {
       name: '',
       scenario: '',
