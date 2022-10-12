@@ -1,8 +1,14 @@
 import type {SubmitHandler} from 'react-hook-form';
 import {useForm, Controller} from 'react-hook-form';
 import axios from 'axios';
-import {Button, FormGroup, InputGroup, Intent, Label, TextArea} from '@blueprintjs/core';
+import {Button, FormGroup, InputGroup, Intent, TextArea} from '@blueprintjs/core';
+import styled from 'styled-components';
 import {AppToaster} from '../components/Toaster';
+
+const ExerciseWrapper = styled.form`
+  padding: 2rem;
+  max-width: 50rem;
+`;
 
 type Exercise = {
   name: string;
@@ -10,7 +16,7 @@ type Exercise = {
 };
 
 const ExerciseForm = () => {
-  const {handleSubmit, control, formState: {errors}} = useForm<Exercise>({
+  const {handleSubmit, control} = useForm<Exercise>({
     defaultValues: {
       name: '',
       scenario: '',
@@ -19,7 +25,7 @@ const ExerciseForm = () => {
 
   const onSubmit: SubmitHandler<Exercise> = async exercise => {
     try {
-      const response = await axios.post<Exercise>('api/v1/exercise', exercise);
+      await axios.post<Exercise>('api/v1/exercise', exercise);
       AppToaster.show({
         icon: 'tick',
         intent: Intent.SUCCESS,
@@ -35,7 +41,7 @@ const ExerciseForm = () => {
   };
 
   return (
-    <div >
+    <ExerciseWrapper >
       <h3>Add new exercise</h3>
       <form className='ExerciseForm' onSubmit={handleSubmit(onSubmit)} >
         <Controller
@@ -85,7 +91,7 @@ const ExerciseForm = () => {
         />
         <Button type='submit' intent='primary'> Submit </Button>
       </form>
-    </div>
+    </ExerciseWrapper>
   );
 };
 
