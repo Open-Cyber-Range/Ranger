@@ -5,7 +5,7 @@ import {Button, FormGroup, InputGroup, Intent, TextArea} from '@blueprintjs/core
 import styled from 'styled-components';
 import {AppToaster} from '../components/Toaster';
 
-const ExerciseWrapper = styled.form`
+const ExerciseWrapper = styled.div`
   padding: 2rem;
   max-width: 50rem;
 `;
