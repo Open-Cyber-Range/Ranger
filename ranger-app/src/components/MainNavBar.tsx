@@ -9,8 +9,8 @@ const MainNavbar = () => (
       <Link role='button' className='bp4-button bp4-minimal bp4-icon-home' to='/'>
         Home
       </Link>
-      <Link role='button' className='bp4-button bp4-minimal bp4-icon-document' to='/exercise'>
-        Exercise
+      <Link role='button' className='bp4-button bp4-minimal bp4-icon-document' to='/exercises'>
+        Exercises
       </Link>
     </Navbar.Group>
   </Navbar >
