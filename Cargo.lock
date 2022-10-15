@@ -903,14 +903,13 @@ dependencies = [
 
 [[package]]
 name = "iana-time-zone"
-version = "0.1.48"
+version = "0.1.50"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "237a0714f28b1ee39ccec0770ccb544eb02c9ef2c82bb096230eefcffa6468b0"
+checksum = "fd911b35d940d2bd0bea0f9100068e5b97b51a1cbe13d13382f132e0365257a0"
 dependencies = [
  "android_system_properties",
  "core-foundation-sys",
  "js-sys",
- "once_cell",
  "wasm-bindgen",
  "winapi",
 ]
@@ -1477,7 +1476,7 @@ checksum = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
 [[package]]
 name = "sdl-parser"
 version = "0.8.0"
-source = "git+ssh://git@code.ex.c-lab.ee/open-cyber-range/public/sdl-parser?branch=feature/even-better-sdl#6cbdbedf469df19733bb7654c1b9811df5d4e3a1"
+source = "git+ssh://git@code.ocr.cr14.net/open-cyber-range/public/sdl-parser?branch=feature/even-better-sdl#6cbdbedf469df19733bb7654c1b9811df5d4e3a1"
 dependencies = [
  "anyhow",
  "bytesize",

@@ -1,14 +1,18 @@
-import React from 'react';
 import './App.css';
-import { Button } from "@blueprintjs/core";
+import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
+import ExerciseForm from './pages/Exercise';
+import MainNavbar from './components/MainNavBar';
+import Home from './pages/Home';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <Button text="Click me" />
-      </header>
-    </div >
+    <Router>
+      {<MainNavbar />}
+      <Routes>
+        <Route path='/' element={<Home />} />
+        <Route path='/exercises' element={<ExerciseForm />} />
+      </Routes>
+    </Router>
   );
 }
 

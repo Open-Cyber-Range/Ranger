@@ -5,6 +5,20 @@
      "version": "0.2.0",
      "configurations": [
           {
+               "name": "Launch Edge",
+               "request": "launch",
+               "type": "msedge",
+               "url": "http://localhost:3000",
+               "webRoot": "${workspaceFolder}/ranger-app"
+          },
+          {
+               "name": "Attach to Edge",
+               "port": 3000,
+               "request": "attach",
+               "type": "msedge",
+               "webRoot": "${workspaceFolder}/ranger-app"
+          },
+          {
                "type": "lldb",
                "request": "launch",
                "name": "Debug executable 'ranger'",
