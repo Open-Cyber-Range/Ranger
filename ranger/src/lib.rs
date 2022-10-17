@@ -4,6 +4,7 @@ pub mod database;
 pub mod errors;
 pub mod models;
 pub mod routes;
+pub(crate) mod schema;
 pub mod services;
 pub(crate) mod utilities;
 
