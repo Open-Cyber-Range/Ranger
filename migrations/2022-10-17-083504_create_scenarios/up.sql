@@ -1,0 +1,8 @@
+CREATE TABLE scenarios (
+    id BINARY(32) NOT NULL,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP,
+    PRIMARY KEY (id)
+);
