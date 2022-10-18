@@ -1,7 +1,7 @@
 CREATE TABLE deployments (
     id BINARY(16) NOT NULL,
     name TEXT NOT NULL,
-    scenario_id BINARY(32) NOT NULL,
+    scenario_id BINARY(16) NOT NULL,
     exercise_id BINARY(16) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL ON UPDATE CURRENT_TIMESTAMP,
