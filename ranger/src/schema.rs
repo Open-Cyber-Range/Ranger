@@ -8,7 +8,7 @@ diesel::table! {
         exercise_id -> Binary,
         created_at -> Timestamp,
         updated_at -> Timestamp,
-        deleted_at -> Timestamp,
+        deleted_at -> Nullable<Timestamp>,
     }
 }
 
@@ -19,7 +19,7 @@ diesel::table! {
         scenario_id -> Binary,
         created_at -> Timestamp,
         updated_at -> Timestamp,
-        deleted_at -> Timestamp,
+        deleted_at -> Nullable<Timestamp>,
     }
 }
 
@@ -29,7 +29,7 @@ diesel::table! {
         content -> Text,
         created_at -> Timestamp,
         updated_at -> Timestamp,
-        deleted_at -> Timestamp,
+        deleted_at -> Nullable<Timestamp>,
     }
 }
 
