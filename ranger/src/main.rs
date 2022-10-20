@@ -1,30 +1,18 @@
-use actix::Actor;
 use actix_web::web::scope;
 use actix_web::{web::Data, App, HttpServer};
 use anyhow::Error;
-use ranger::configuration::read_configuration;
+use ranger::app_setup;
 use ranger::routes::{
     basic::{status, version},
-    exercise::{add_exercise, deploy_exercise},
+    exercise::{add_exercise, delete_exercise},
+    scenario::{add_scenario, delete_scenario},
 };
-use ranger::services::deployer::{DeployerDistribution, DeployerFactory};
-use ranger::AppState;
 
 #[actix_web::main]
 async fn main() -> Result<(), Error> {
     env_logger::init();
-    let configuration = read_configuration(std::env::args().collect())?;
-    let deployer_factory = DeployerFactory::new(&configuration.deployers)
-        .await?
-        .start();
-    let deployer_distributor = DeployerDistribution::new(
-        deployer_factory,
-        configuration.deployers.keys().cloned().collect(),
-    )
-    .await?
-    .start();
-    let app_state = AppState::new(&configuration, &deployer_distributor);
 
+    let (host, port, app_state) = app_setup(std::env::args().collect()).await?;
     let app_data = Data::new(app_state);
 
     HttpServer::new(move || {
@@ -34,11 +22,13 @@ async fn main() -> Result<(), Error> {
             .service(version)
             .service(
                 scope("/api/v1")
+                    .service(add_scenario)
+                    .service(delete_scenario)
                     .service(add_exercise)
-                    .service(deploy_exercise),
+                    .service(delete_exercise),
             )
     })
-    .bind((configuration.host, configuration.port))?
+    .bind((host, port))?
     .run()
     .await?;
     Ok(())

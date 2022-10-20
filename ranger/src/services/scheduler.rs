@@ -29,7 +29,7 @@ impl CreateDeploymentSchedule {
 
     pub fn generate(&self) -> Result<Vec<Vec<(String, Node, InfraNode)>>> {
         let scenario = &self.0;
-        let dependencies = scenario.get_dependencies()?;
+        let dependencies = scenario.get_node_dependencies()?;
         let tranches = dependencies.generate_tranches()?;
 
         if let Some(infrastructure) = &scenario.infrastructure {

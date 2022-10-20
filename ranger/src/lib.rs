@@ -1,18 +1,20 @@
-pub mod configuration;
+pub(crate) mod configuration;
 mod constants;
-pub mod database;
 pub mod errors;
 pub mod models;
 pub mod routes;
 pub(crate) mod schema;
-pub mod services;
+pub(crate) mod services;
 pub(crate) mod utilities;
 
-use crate::database::Database;
+use crate::services::database::Database;
 use actix::{Actor, Addr};
-use configuration::Configuration;
+use anyhow::Result;
+use configuration::{read_configuration, Configuration};
 use services::{
-    deployer::DeployerDistribution, deployment::DeploymentManager, scheduler::Scheduler,
+    deployer::{DeployerDistribution, DeployerFactory},
+    deployment::DeploymentManager,
+    scheduler::Scheduler,
 };
 
 pub struct AppState {
@@ -25,10 +27,11 @@ impl AppState {
     pub fn new(
         configuration: &configuration::Configuration,
         distributor: &Addr<DeployerDistribution>,
+        database: &Addr<Database>,
     ) -> Self {
         let schduler_address = Scheduler::new().start();
         AppState {
-            database_address: Database::new().start(),
+            database_address: database.clone(),
             deployment_manager_address: DeploymentManager::new(
                 schduler_address,
                 distributor.clone(),
@@ -39,4 +42,32 @@ impl AppState {
             configuration: configuration.to_owned(),
         }
     }
+}
+
+pub async fn app_setup(environment_arguments: Vec<String>) -> Result<(String, u16, AppState)> {
+    let configuration = read_configuration(environment_arguments)?;
+    let deployer_factory = DeployerFactory::new(&configuration.deployers)
+        .await
+        .unwrap_or_else(|error| panic!("Failed to create deployer distribution: {error}"))
+        .start();
+
+    let deployer_distributor = DeployerDistribution::new(
+        deployer_factory,
+        configuration.deployers.keys().cloned().collect(),
+    )
+    .await
+    .unwrap_or_else(|error| panic!("Failed to create deployer distribution: {error}"))
+    .start();
+
+    let database = Database::try_new(&configuration.database_url)
+        .unwrap_or_else(|error| {
+            panic!(
+                "Failed to create database connection to {} due to: {error}",
+                &configuration.database_url
+            )
+        })
+        .start();
+
+    let app_state = AppState::new(&configuration, &deployer_distributor, &database);
+    Ok((configuration.host, configuration.port, app_state))
 }

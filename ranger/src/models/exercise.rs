@@ -1,21 +1,26 @@
-use crate::{constants::MAX_EXERCISE_NAME_LENGTH, errors::RangerError, utilities::Validation};
-use actix::Message;
-use anyhow::Result;
-use sdl_parser::{parse_sdl, Scenario};
-use serde::{Deserialize, Deserializer, Serialize};
+use super::helpers::uuid::Uuid;
+use crate::{
+    constants::MAX_EXERCISE_NAME_LENGTH,
+    errors::RangerError,
+    schema::exercises,
+    services::database::{All, AllExisting, SelectById, SoftDeleteById},
+    utilities::Validation,
+};
+use chrono::NaiveDateTime;
+use diesel::{ExpressionMethods, Insertable, QueryDsl, Queryable, Selectable, SelectableHelper};
+use serde::{Deserialize, Serialize};
 use std::result::Result as StdResult;
-use uuid::Uuid;
 
-#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
-pub struct Exercise {
-    #[serde(default = "default_uuid")]
-    pub uuid: Uuid,
+#[derive(Insertable, Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
+#[diesel(table_name = exercises)]
+pub struct NewExercise {
+    #[serde(default = "Uuid::random")]
+    pub id: Uuid,
     pub name: String,
-    #[serde(deserialize_with = "deserialize_scenario")]
-    pub scenario: Scenario,
+    pub scenario_id: Uuid,
 }
 
-impl Validation for Exercise {
+impl Validation for NewExercise {
     fn validate(&self) -> StdResult<(), RangerError> {
         if self.name.len() > MAX_EXERCISE_NAME_LENGTH {
             return Err(RangerError::ExeciseNameTooLong);
@@ -24,38 +29,36 @@ impl Validation for Exercise {
     }
 }
 
+#[derive(Queryable, Selectable, Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
+#[diesel(table_name = exercises)]
+pub struct Exercise {
+    #[serde(default = "Uuid::random")]
+    pub id: Uuid,
+    pub name: String,
+    pub scenario_id: Uuid,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
+}
+
 impl Exercise {
-    pub fn new(name: String, scenario: Scenario) -> Self {
-        Self {
-            uuid: default_uuid(),
-            name,
-            scenario,
-        }
+    fn all_with_deleted() -> All<exercises::table, Self> {
+        exercises::table.select(Self::as_select())
+    }
+
+    pub fn all() -> AllExisting<exercises::table, exercises::deleted_at, Self> {
+        Self::all_with_deleted().filter(exercises::deleted_at.is_null())
+    }
+
+    pub fn by_id(
+        id: Uuid,
+    ) -> SelectById<exercises::table, exercises::id, exercises::deleted_at, Self> {
+        Self::all().filter(exercises::id.eq(id))
+    }
+
+    pub fn soft_delete(
+        id: Uuid,
+    ) -> SoftDeleteById<exercises::id, exercises::deleted_at, exercises::table> {
+        diesel::update(exercises::table.filter(exercises::id.eq(id)))
+            .set(exercises::deleted_at.eq(diesel::dsl::now))
     }
 }
-
-fn default_uuid() -> Uuid {
-    Uuid::new_v4()
-}
-
-pub fn deserialize_scenario<'de, D>(deserializer: D) -> Result<Scenario, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    let schema_sdl = String::deserialize(deserializer).unwrap();
-    match parse_sdl(&schema_sdl) {
-        Ok(schema) => Ok(schema.scenario),
-        Err(parsing_error) => Err(serde::de::Error::custom(format!(
-            "Parse error {} for {}",
-            parsing_error, schema_sdl
-        ))),
-    }
-}
-
-#[derive(Message, Debug)]
-#[rtype(result = "()")]
-pub struct AddExercise(pub Exercise);
-
-#[derive(Message, Debug)]
-#[rtype(result = "Result<Exercise>")]
-pub struct GetExercise(pub Uuid);

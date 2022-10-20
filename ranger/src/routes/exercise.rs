@@ -1,65 +1,100 @@
 use crate::{
     errors::RangerError,
-    models::{AddExercise, Deployment, Exercise, GetExercise},
-    services::deployment::CreateDeployment,
-    utilities::{create_mailbox_error_handler, Validation},
+    models::{helpers::uuid::Uuid, Deployment, Exercise, NewDeployment, NewExercise},
+    services::{
+        database::{
+            deployment::CreateDeployment,
+            exercise::{CreateExercise, DeleteExercise, GetExercise},
+            scenario::GetScenario,
+        },
+        deployment::StartDeployment,
+    },
+    utilities::{create_database_error_handler, create_mailbox_error_handler, Validation},
     AppState,
 };
 use actix_web::{
-    post,
+    delete, post,
     web::{Data, Json, Path},
 };
 use anyhow::Result;
 use log::error;
-use uuid::Uuid;
+use sdl_parser::Schema;
 
 #[post("exercise")]
 pub async fn add_exercise(
     app_state: Data<AppState>,
-    exercise: Json<Exercise>,
+    exercise: Json<NewExercise>,
 ) -> Result<Json<Exercise>, RangerError> {
     let exercise = exercise.into_inner();
     exercise.validate()?;
-    if let Err(error) = app_state
+
+    let exercise = app_state
         .database_address
-        .send(AddExercise(exercise.clone()))
+        .send(CreateExercise(exercise))
         .await
-    {
-        error!("Database actor mailbox error: {}", error);
-        return Err(RangerError::ActixMailBoxError);
-    }
+        .map_err(create_mailbox_error_handler("Database"))?
+        .map_err(create_database_error_handler("Create exercise"))?;
+
     Ok(Json(exercise))
 }
 
-#[post("exercise/{exercise_uuid}/deployment")]
-pub async fn deploy_exercise(
-    path_variables: Path<String>,
+#[delete("exercise/{exercise_uuid}")]
+pub async fn delete_exercise(
+    path_variables: Path<Uuid>,
     app_state: Data<AppState>,
-    deployment: Json<Deployment>,
+) -> Result<String, RangerError> {
+    let exercise_uuid = path_variables.into_inner();
+    app_state
+        .database_address
+        .send(DeleteExercise(exercise_uuid))
+        .await
+        .map_err(create_mailbox_error_handler("Database"))?
+        .map_err(create_database_error_handler("Delete exercise"))?;
+
+    Ok(exercise_uuid.to_string())
+}
+
+#[post("exercise/{exercise_uuid}/deployment")]
+pub async fn add_deployment(
+    path_variables: Path<Uuid>,
+    app_state: Data<AppState>,
+    deployment: Json<NewDeployment>,
 ) -> Result<Json<Deployment>, RangerError> {
     let deployment = deployment.into_inner();
     let exercise_uuid = path_variables.into_inner();
 
-    let parsed_uuid = Uuid::parse_str(&exercise_uuid).unwrap();
     let exercise = app_state
         .database_address
-        .send(GetExercise(parsed_uuid))
+        .send(GetExercise(exercise_uuid))
         .await
         .map_err(create_mailbox_error_handler("Database"))?
-        .map_err(|_| {
-            error!("Scenario not found");
-            RangerError::ScenarioNotFound
-        })?;
+        .map_err(create_database_error_handler("Create exercise"))?;
+    let scenario = app_state
+        .database_address
+        .send(GetScenario(exercise.scenario_id))
+        .await
+        .map_err(create_mailbox_error_handler("Database"))?
+        .map_err(create_database_error_handler("Create exercise"))?;
+    let schema = Schema::from_yaml(&scenario.content).map_err(|error| {
+        error!("Deployment error: {error}");
+        RangerError::DeploymentFailed
+    })?;
     log::info!(
         "Adding deployment {} for exercise {}",
         exercise.name,
         deployment.name
     );
+    let deployment = app_state
+        .database_address
+        .send(CreateDeployment(deployment))
+        .await
+        .map_err(create_mailbox_error_handler("Deployment"))?
+        .map_err(create_database_error_handler("Create deployment"))?;
 
     app_state
         .deployment_manager_address
-        .send(CreateDeployment(
-            exercise.scenario,
+        .send(StartDeployment(
+            schema.scenario,
             deployment.clone(),
             exercise.name,
         ))

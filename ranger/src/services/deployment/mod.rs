@@ -72,17 +72,17 @@ impl Actor for DeploymentManager {
 
 #[derive(Message, Debug)]
 #[rtype(result = "Result<()>")]
-pub struct CreateDeployment(
+pub struct StartDeployment(
     pub(crate) Scenario,
     pub(crate) Deployment,
     pub(crate) String,
 );
 
-impl Handler<CreateDeployment> for DeploymentManager {
+impl Handler<StartDeployment> for DeploymentManager {
     type Result = ResponseActFuture<Self, Result<()>>;
 
-    fn handle(&mut self, msg: CreateDeployment, _: &mut Context<Self>) -> Self::Result {
-        let CreateDeployment(scenario, deployment, exercise_name) = msg;
+    fn handle(&mut self, msg: StartDeployment, _: &mut Context<Self>) -> Self::Result {
+        let StartDeployment(scenario, deployment, exercise_name) = msg;
         let requested_deployer_group_name = deployment
             .deployment_group
             .clone()
@@ -129,4 +129,4 @@ impl Handler<CreateDeployment> for DeploymentManager {
 
 #[derive(Message, Debug)]
 #[rtype(result = "()")]
-pub struct DeleteDeployment(pub(crate) String);
+pub struct TearDownDeployment(pub(crate) String);

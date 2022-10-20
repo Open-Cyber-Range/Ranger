@@ -12,8 +12,11 @@ use ranger_grpc::capabilities::DeployerTypes;
 use ranger_grpc::{
     Configuration, DeploySwitch, DeployVirtualMachine, MetaInfo, Switch, VirtualMachine,
 };
-use sdl_parser::node::{Node, NodeType, Source};
-use sdl_parser::Scenario;
+use sdl_parser::{
+    common::Source,
+    node::{Node, NodeType},
+    Scenario,
+};
 
 impl Deployable
     for (

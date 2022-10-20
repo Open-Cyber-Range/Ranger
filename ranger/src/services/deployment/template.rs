@@ -9,10 +9,7 @@ use async_trait::async_trait;
 use futures::future::try_join_all;
 use log::debug;
 use ranger_grpc::{capabilities::DeployerTypes, Source as GrpcSource};
-use sdl_parser::{
-    node::{NodeType, Source as SDLSource},
-    Scenario,
-};
+use sdl_parser::{common::Source as SDLSource, node::NodeType, Scenario};
 
 impl Deployable for SDLSource {
     fn try_to_deployment_command(&self) -> Result<Box<dyn DeploymentInfo>> {
