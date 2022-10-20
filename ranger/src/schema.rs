@@ -4,6 +4,7 @@ diesel::table! {
     deployments (id) {
         id -> Binary,
         name -> Text,
+        deployment_group -> Nullable<Text>,
         scenario_id -> Binary,
         exercise_id -> Binary,
         created_at -> Timestamp,
