@@ -11,4 +11,4 @@ deployment_groups:
     - my-machiner-deployer
     - my-switch-deployer
     - my-template-deployer
-    
+database_url: mysql://mysql_user:mysql_pass@mariadb:3306/ranger

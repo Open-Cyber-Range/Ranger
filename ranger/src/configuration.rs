@@ -18,6 +18,7 @@ pub struct Configuration {
     #[serde(default = "deployment_group_name")]
     pub default_deployment_group: String,
     pub deployment_groups: DeploymentGroupMap,
+    pub database_url: String,
 }
 
 pub fn read_configuration(arguments: Vec<String>) -> Result<Configuration> {
@@ -58,6 +59,7 @@ mod tests {
                     my-cool-group:
                         - my-machiner-deployer
                         - my-switch-deployer
+                database_url: mysql://user:pass@mariadb:3306/app-database
                 "#
         )?;
         let arguments = vec![String::from("program-name"), path_string];
