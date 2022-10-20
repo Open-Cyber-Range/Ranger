@@ -32,7 +32,8 @@ actix-web = "4"
 actix-http = { version = "3", features = ["http2", "ws"] }
 anyhow = "1"
 async-trait = "0.1"
-diesel = { version = "2", features = ["mysql"] }
+chrono = "0.4"
+diesel = { version = "2", features = ["mysql", "r2d2", "chrono"] }
 env_logger = "0.9"
 futures = "0.3"
 insta = { version = "1", features = ["redactions", "yaml"] }
