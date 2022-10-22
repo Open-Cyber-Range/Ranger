@@ -1,8 +1,9 @@
 CREATE TABLE deployments (
     id BINARY(16) NOT NULL,
-    name TEXT NOT NULL,
-    deployment_group TEXT,
-    sdl_schema LONGTEXT,
+    name TINYTEXT NOT NULL,
+    deployment_group TINYTEXT,
+    sdl_schema LONGTEXT NOT NULL,
+    exercise_id BINARY(16) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP NULL DEFAULT NULL,
