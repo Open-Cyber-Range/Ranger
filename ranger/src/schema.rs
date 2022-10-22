@@ -1,6 +1,17 @@
 // @generated automatically by Diesel CLI.
 
 diesel::table! {
+    deployment_elements (id) {
+        id -> Binary,
+        deployment_id -> Binary,
+        handler_reference -> Tinytext,
+        deployer_type -> Tinytext,
+        created_at -> Timestamp,
+        deleted_at -> Nullable<Timestamp>,
+    }
+}
+
+diesel::table! {
     deployments (id) {
         id -> Binary,
         name -> Tinytext,
@@ -24,9 +35,11 @@ diesel::table! {
     }
 }
 
+diesel::joinable!(deployment_elements -> deployments (deployment_id));
 diesel::joinable!(deployments -> exercises (exercise_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
+    deployment_elements,
     deployments,
     exercises,
 );
