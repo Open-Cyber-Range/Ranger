@@ -1,6 +1,5 @@
 pub(crate) mod deployment;
 pub(crate) mod exercise;
-pub(crate) mod scenario;
 
 use crate::models::helpers::uuid::Uuid;
 use actix::Actor;

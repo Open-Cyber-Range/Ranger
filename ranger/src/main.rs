@@ -4,8 +4,7 @@ use anyhow::Error;
 use ranger::app_setup;
 use ranger::routes::{
     basic::{status, version},
-    exercise::{add_exercise, delete_exercise},
-    scenario::{add_scenario, delete_scenario},
+    exercise::{add_exercise, add_exercise_deployment, delete_exercise},
 };
 
 #[actix_web::main]
@@ -22,8 +21,7 @@ async fn main() -> Result<(), Error> {
             .service(version)
             .service(
                 scope("/api/v1")
-                    .service(add_scenario)
-                    .service(delete_scenario)
+                    .service(add_exercise_deployment)
                     .service(add_exercise)
                     .service(delete_exercise),
             )

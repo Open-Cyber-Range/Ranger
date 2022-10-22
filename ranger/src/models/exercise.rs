@@ -17,7 +17,7 @@ pub struct NewExercise {
     #[serde(default = "Uuid::random")]
     pub id: Uuid,
     pub name: String,
-    pub scenario_id: Uuid,
+    pub sdl_schema: Option<String>,
 }
 
 impl Validation for NewExercise {
@@ -35,7 +35,7 @@ pub struct Exercise {
     #[serde(default = "Uuid::random")]
     pub id: Uuid,
     pub name: String,
-    pub scenario_id: Uuid,
+    pub sdl_schema: Option<String>,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
 }

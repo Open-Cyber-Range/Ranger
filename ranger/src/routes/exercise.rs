@@ -5,7 +5,6 @@ use crate::{
         database::{
             deployment::CreateDeployment,
             exercise::{CreateExercise, DeleteExercise, GetExercise},
-            scenario::GetScenario,
         },
         deployment::StartDeployment,
     },
@@ -55,7 +54,7 @@ pub async fn delete_exercise(
 }
 
 #[post("exercise/{exercise_uuid}/deployment")]
-pub async fn add_deployment(
+pub async fn add_exercise_deployment(
     path_variables: Path<Uuid>,
     app_state: Data<AppState>,
     deployment: Json<NewDeployment>,
@@ -69,13 +68,8 @@ pub async fn add_deployment(
         .await
         .map_err(create_mailbox_error_handler("Database"))?
         .map_err(create_database_error_handler("Create exercise"))?;
-    let scenario = app_state
-        .database_address
-        .send(GetScenario(exercise.scenario_id))
-        .await
-        .map_err(create_mailbox_error_handler("Database"))?
-        .map_err(create_database_error_handler("Create exercise"))?;
-    let schema = Schema::from_yaml(&scenario.content).map_err(|error| {
+
+    let schema = Schema::from_yaml(&deployment.sdl_schema).map_err(|error| {
         error!("Deployment error: {error}");
         RangerError::DeploymentFailed
     })?;

@@ -17,7 +17,7 @@ pub struct NewDeployment {
     #[serde(default = "Uuid::random")]
     pub id: Uuid,
     pub name: String,
-    pub scenario_id: Uuid,
+    pub sdl_schema: String,
     pub deployment_group: Option<String>,
 }
 
@@ -36,7 +36,7 @@ pub struct Deployment {
     #[serde(default = "Uuid::random")]
     pub id: Uuid,
     pub name: String,
-    pub scenario_id: Uuid,
+    pub sdl_schema: String,
     pub deployment_group: Option<String>,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
