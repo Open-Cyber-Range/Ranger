@@ -4,9 +4,10 @@ diesel::table! {
     deployment_elements (id) {
         id -> Binary,
         deployment_id -> Binary,
-        handler_reference -> Tinytext,
+        scenario_reference -> Tinytext,
+        handler_reference -> Nullable<Tinytext>,
         deployer_type -> Tinytext,
-        teared_down -> Bool,
+        status -> Tinytext,
         created_at -> Timestamp,
         deleted_at -> Nullable<Timestamp>,
     }
