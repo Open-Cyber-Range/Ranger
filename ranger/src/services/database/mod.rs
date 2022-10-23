@@ -8,8 +8,9 @@ use diesel::{
     dsl::now,
     helper_types::{AsSelect, Eq, Filter, IsNull, Select, Update},
     mysql::{Mysql, MysqlConnection},
+    query_builder::InsertStatement,
     r2d2::{ConnectionManager, Pool, PooledConnection},
-    sql_function,
+    sql_function, Insertable,
 };
 
 sql_function! (fn current_timestamp() -> Timestamp);
@@ -22,6 +23,7 @@ pub type SelectById<Table, Id, DeletedAtColumn, T> =
 type UpdateDeletedAt<DeletedAtColumn> = Eq<DeletedAtColumn, now>;
 pub type SoftDeleteById<Id, DeleteAtColumn, Table> =
     Update<ById<Id, Table>, UpdateDeletedAt<DeleteAtColumn>>;
+pub type Create<Type, Table> = InsertStatement<Table, <Type as Insertable<Table>>::Values>;
 
 pub struct Database {
     connection_pool: Pool<ConnectionManager<MysqlConnection>>,

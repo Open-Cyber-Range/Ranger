@@ -21,6 +21,12 @@ pub struct NewDeployment {
     pub deployment_group: Option<String>,
 }
 
+impl NewDeployment {
+    pub fn create_insert(&self) -> Create<&Self, deployments::table> {
+        diesel::insert_into(deployments::table).values(self)
+    }
+}
+
 impl Validation for NewDeployment {
     fn validate(&self) -> Result<(), RangerError> {
         if self.name.len() > MAX_DEPLOYMENT_NAME_LENGTH {
@@ -53,10 +59,8 @@ pub struct DeploymentElement {
     pub created_at: NaiveDateTime,
 }
 
-type CreateElement<'a> = Create<&'a DeploymentElement, deployment_elements::table>;
-
 impl DeploymentElement {
-    pub fn create_insert(&self) -> CreateElement {
+    pub fn create_insert(&self) -> Create<&Self, deployment_elements::table> {
         diesel::insert_into(deployment_elements::table).values(self)
     }
 }

@@ -1,10 +1,9 @@
 use super::Database;
 use crate::models::helpers::uuid::Uuid;
 use crate::models::{Exercise, NewExercise};
-use crate::schema::exercises;
 use actix::{Handler, Message};
 use anyhow::Result;
-use diesel::{insert_into, RunQueryDsl};
+use diesel::RunQueryDsl;
 
 #[derive(Message)]
 #[rtype(result = "Result<Exercise>")]
@@ -17,9 +16,7 @@ impl Handler<CreateExercise> for Database {
         let new_exercise = msg.0;
         let mut connection = self.get_connection()?;
 
-        insert_into(exercises::table)
-            .values(&new_exercise)
-            .execute(&mut connection)?;
+        new_exercise.create_insert().execute(&mut connection)?;
         let exercise = Exercise::by_id(new_exercise.id).first(&mut connection)?;
 
         Ok(exercise)

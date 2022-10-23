@@ -3,11 +3,13 @@ use crate::{
     constants::MAX_EXERCISE_NAME_LENGTH,
     errors::RangerError,
     schema::exercises,
-    services::database::{All, AllExisting, SelectById, SoftDeleteById},
+    services::database::{All, AllExisting, Create, SelectById, SoftDeleteById},
     utilities::Validation,
 };
 use chrono::NaiveDateTime;
-use diesel::{ExpressionMethods, Insertable, QueryDsl, Queryable, Selectable, SelectableHelper};
+use diesel::{
+    insert_into, ExpressionMethods, Insertable, QueryDsl, Queryable, Selectable, SelectableHelper,
+};
 use serde::{Deserialize, Serialize};
 use std::result::Result as StdResult;
 
@@ -18,6 +20,12 @@ pub struct NewExercise {
     pub id: Uuid,
     pub name: String,
     pub sdl_schema: Option<String>,
+}
+
+impl NewExercise {
+    pub fn create_insert(&self) -> Create<&Self, exercises::table> {
+        insert_into(exercises::table).values(self)
+    }
 }
 
 impl Validation for NewExercise {

@@ -1,10 +1,9 @@
 use super::Database;
 use crate::models::helpers::uuid::Uuid;
 use crate::models::{Deployment, NewDeployment};
-use crate::schema::deployments;
 use actix::{Handler, Message};
 use anyhow::Result;
-use diesel::{insert_into, RunQueryDsl};
+use diesel::RunQueryDsl;
 
 #[derive(Message)]
 #[rtype(result = "Result<Deployment>")]
@@ -17,9 +16,7 @@ impl Handler<CreateDeployment> for Database {
         let new_deployment = msg.0;
         let mut connection = self.get_connection()?;
 
-        insert_into(deployments::table)
-            .values(&new_deployment)
-            .execute(&mut connection)?;
+        new_deployment.create_insert().execute(&mut connection)?;
         let deployment = Deployment::by_id(new_deployment.id).first(&mut connection)?;
 
         Ok(deployment)
