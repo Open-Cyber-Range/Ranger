@@ -6,6 +6,7 @@ diesel::table! {
         deployment_id -> Binary,
         handler_reference -> Tinytext,
         deployer_type -> Tinytext,
+        teared_down -> Bool,
         created_at -> Timestamp,
         deleted_at -> Nullable<Timestamp>,
     }

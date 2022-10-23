@@ -1,8 +1,8 @@
 use crate::{
     constants::MAX_DEPLOYMENT_NAME_LENGTH,
     errors::RangerError,
-    schema::deployments,
-    services::database::{All, AllExisting, SelectById, SoftDeleteById},
+    schema::{deployment_elements, deployments},
+    services::database::{All, AllExisting, Create, SelectById, SoftDeleteById},
     utilities::Validation,
 };
 use chrono::NaiveDateTime;
@@ -40,6 +40,25 @@ pub struct Deployment {
     pub deployment_group: Option<String>,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
+}
+
+#[derive(Insertable, Queryable, Selectable, Clone, Debug, Deserialize, Serialize)]
+#[diesel(table_name = deployment_elements)]
+pub struct DeploymentElement {
+    pub id: Uuid,
+    pub deployment_id: Uuid,
+    pub handler_reference: String,
+    pub deployer_type: String,
+    pub teared_down: bool,
+    pub created_at: NaiveDateTime,
+}
+
+type CreateElement<'a> = Create<&'a DeploymentElement, deployment_elements::table>;
+
+impl DeploymentElement {
+    pub fn create_insert(&self) -> CreateElement {
+        diesel::insert_into(deployment_elements::table).values(self)
+    }
 }
 
 impl Deployment {
