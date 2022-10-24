@@ -35,6 +35,7 @@ impl AppState {
             deployment_manager_address: DeploymentManager::new(
                 schduler_address,
                 distributor.clone(),
+                database.clone(),
                 configuration.deployment_groups.clone(),
                 configuration.default_deployment_group.to_string(),
             )

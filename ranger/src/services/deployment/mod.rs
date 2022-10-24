@@ -2,10 +2,12 @@ mod ledger;
 mod node;
 mod template;
 
-use super::deployer::DeployerDistribution;
-use crate::services::deployment::template::DeployableTemplates;
-use crate::services::scheduler::Scheduler;
-use crate::{models::Deployment, services::deployment::node::DeployableNodes};
+use super::{database::Database, deployer::DeployerDistribution};
+use crate::{
+    models::Deployment,
+    services::deployment::node::DeployableNodes,
+    services::{deployment::template::DeployableTemplates, scheduler::Scheduler},
+};
 use actix::{
     Actor, ActorFutureExt, Addr, Context, Handler, Message, ResponseActFuture, WrapFuture,
 };
@@ -19,6 +21,7 @@ use std::collections::HashMap;
 pub struct DeploymentManager {
     scheduler: Addr<Scheduler>,
     distributor: Addr<DeployerDistribution>,
+    database: Addr<Database>,
     deployment_group: HashMap<String, Vec<String>>,
     default_deployment_group: String,
 }
@@ -27,13 +30,15 @@ impl DeploymentManager {
     pub fn new(
         scheduler: Addr<Scheduler>,
         distributor: Addr<DeployerDistribution>,
-        real_deployment_group: HashMap<String, Vec<String>>,
+        database: Addr<Database>,
+        deployment_group: HashMap<String, Vec<String>>,
         default_deployment_group: String,
     ) -> Self {
         Self {
             scheduler,
             distributor,
-            deployment_group: real_deployment_group,
+            database,
+            deployment_group,
             default_deployment_group,
         }
     }

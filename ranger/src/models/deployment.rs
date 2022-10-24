@@ -6,7 +6,10 @@ use crate::{
     utilities::Validation,
 };
 use chrono::NaiveDateTime;
-use diesel::{ExpressionMethods, Insertable, QueryDsl, Queryable, Selectable, SelectableHelper};
+use diesel::{
+    sql_types::Text, AsExpression, ExpressionMethods, FromSqlRow, Insertable, QueryDsl, Queryable,
+    Selectable, SelectableHelper,
+};
 use serde::{Deserialize, Serialize};
 
 use super::helpers::uuid::Uuid;
@@ -48,14 +51,24 @@ pub struct Deployment {
     pub updated_at: NaiveDateTime,
 }
 
+#[derive(Clone, Debug, PartialEq, FromSqlRow, AsExpression, Eq, Deserialize, Serialize)]
+#[diesel(sql_type = Text)]
+pub enum ElementStatus {
+    Ongoing,
+    Success,
+    Failed,
+    Removed,
+}
+
 #[derive(Insertable, Queryable, Selectable, Clone, Debug, Deserialize, Serialize)]
 #[diesel(table_name = deployment_elements)]
 pub struct DeploymentElement {
     pub id: Uuid,
     pub deployment_id: Uuid,
-    pub handler_reference: String,
+    pub scenario_reference: String,
+    pub handler_reference: Option<String>,
     pub deployer_type: String,
-    pub teared_down: bool,
+    pub status: ElementStatus,
     pub created_at: NaiveDateTime,
 }
 
