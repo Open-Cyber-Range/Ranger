@@ -1,6 +1,6 @@
 use super::Database;
 use crate::models::helpers::uuid::Uuid;
-use crate::models::{Deployment, NewDeployment};
+use crate::models::{Deployment, DeploymentElement, NewDeployment, ScenarioReference};
 use actix::{Handler, Message};
 use anyhow::Result;
 use diesel::RunQueryDsl;
@@ -54,5 +54,76 @@ impl Handler<DeleteDeployment> for Database {
         Deployment::soft_delete(id).execute(&mut connection)?;
 
         Ok(id)
+    }
+}
+
+#[derive(Message)]
+#[rtype(result = "Result<DeploymentElement>")]
+pub struct CreateDeploymentElement(pub DeploymentElement);
+
+impl Handler<CreateDeploymentElement> for Database {
+    type Result = Result<DeploymentElement>;
+
+    fn handle(&mut self, msg: CreateDeploymentElement, _ctx: &mut Self::Context) -> Self::Result {
+        let new_deployment_element = msg.0;
+        let mut connection = self.get_connection()?;
+
+        new_deployment_element
+            .create_insert()
+            .execute(&mut connection)?;
+        let deployment_element =
+            DeploymentElement::by_id(new_deployment_element.id).first(&mut connection)?;
+
+        Ok(deployment_element)
+    }
+}
+
+#[derive(Message)]
+#[rtype(result = "Result<DeploymentElement>")]
+pub struct UpdateDeploymentElement(pub DeploymentElement);
+
+impl Handler<UpdateDeploymentElement> for Database {
+    type Result = Result<DeploymentElement>;
+
+    fn handle(&mut self, msg: UpdateDeploymentElement, _ctx: &mut Self::Context) -> Self::Result {
+        let new_deployment_element = msg.0;
+        let mut connection = self.get_connection()?;
+
+        new_deployment_element
+            .create_update()
+            .execute(&mut connection)?;
+        let deployment_element =
+            DeploymentElement::by_id(new_deployment_element.id).first(&mut connection)?;
+
+        Ok(deployment_element)
+    }
+}
+
+#[derive(Message)]
+#[rtype(result = "Result<DeploymentElement>")]
+pub struct GetDeploymentElementByDeploymentIdByScenarioReference(
+    pub Uuid,
+    pub Box<dyn ScenarioReference>,
+);
+
+impl Handler<GetDeploymentElementByDeploymentIdByScenarioReference> for Database {
+    type Result = Result<DeploymentElement>;
+
+    fn handle(
+        &mut self,
+        msg: GetDeploymentElementByDeploymentIdByScenarioReference,
+        _ctx: &mut Self::Context,
+    ) -> Self::Result {
+        let deployment_id = msg.0;
+        let scenario_reference = msg.1;
+        let mut connection = self.get_connection()?;
+
+        let deployment_element = DeploymentElement::by_deployer_id_by_scenario_reference(
+            deployment_id,
+            scenario_reference,
+        )
+        .first(&mut connection)?;
+
+        Ok(deployment_element)
     }
 }

@@ -1,7 +1,11 @@
-use super::ledger::{CreateEntry, GetEntry};
-use super::Ledger;
-use crate::models::Deployment;
+use crate::models::helpers::uuid::Uuid;
+use crate::models::{Deployment, DeploymentElement, ElementStatus};
 use crate::services::client::{Deployable, DeploymentInfo};
+use crate::services::database::deployment::{
+    CreateDeploymentElement, GetDeploymentElementByDeploymentIdByScenarioReference,
+    UpdateDeploymentElement,
+};
+use crate::services::database::Database;
 use crate::services::deployer::{Deploy, DeployerDistribution};
 use crate::services::scheduler::{CreateDeploymentSchedule, Scheduler};
 use actix::Addr;
@@ -65,18 +69,27 @@ pub trait DeployableNodes {
         &'a self,
         distributor_address: &'a Addr<DeployerDistribution>,
         scheduler_address: &'a Addr<Scheduler>,
-        ledger_address: &'a Addr<Ledger>,
+        database_address: &'a Addr<Database>,
         exercise_name: &'a str,
         deployment: &'a Deployment,
         deployers: &'a [String],
     ) -> Result<()>;
 }
 
-async fn get_template_id(source: &Option<Source>, ledger: &Addr<Ledger>) -> Result<Option<String>> {
+async fn get_template_id(
+    deployment_id: Uuid,
+    source: &Option<Source>,
+    database_address: &Addr<Database>,
+) -> Result<Option<String>> {
     if let Some(source) = source {
-        let template_id = ledger.send(GetEntry(Box::new(source.to_owned()))).await??;
+        let deployment_element = database_address
+            .send(GetDeploymentElementByDeploymentIdByScenarioReference(
+                deployment_id,
+                Box::new(source.to_owned()),
+            ))
+            .await??;
 
-        return Ok(Some(template_id));
+        return Ok(deployment_element.handler_reference);
     }
     Ok(None)
 }
@@ -87,7 +100,7 @@ impl DeployableNodes for Scenario {
         &'a self,
         distributor_address: &'a Addr<DeployerDistribution>,
         scheduler_address: &'a Addr<Scheduler>,
-        ledger_address: &'a Addr<Ledger>,
+        database_address: &'a Addr<Database>,
         exercise_name: &'a str,
         deployment: &'a Deployment,
         deployers: &'a [String],
@@ -100,16 +113,36 @@ impl DeployableNodes for Scenario {
                 tranche
                     .iter()
                     .map(|(unique_name, node, infra_node)| async move {
+                        let deployer_type = match node.type_field {
+                            sdl_parser::node::NodeType::VM => DeployerTypes::VirtualMachine,
+                            sdl_parser::node::NodeType::Switch => DeployerTypes::Switch,
+                        };
+                        let mut deployment_element = database_address
+                            .send(CreateDeploymentElement(DeploymentElement::new(
+                                deployment.id,
+                                Box::new(unique_name.to_string()),
+                                deployer_type,
+                            )))
+                            .await??;
                         let links =
                             try_join_all(infra_node.links.clone().unwrap_or_default().iter().map(
                                 |link_name| async move {
-                                    ledger_address
-                                        .send(GetEntry(Box::new(link_name.to_string())))
-                                        .await?
+                                    let deployment_element = database_address
+                                        .send(
+                                            GetDeploymentElementByDeploymentIdByScenarioReference(
+                                                deployment.id,
+                                                Box::new(link_name.to_string()),
+                                            ),
+                                        )
+                                        .await??;
+                                    deployment_element
+                                        .handler_reference
+                                        .ok_or_else(|| anyhow!("Handler reference not found"))
                                 },
                             ))
                             .await?;
-                        let template_id = get_template_id(&node.source, ledger_address).await?;
+                        let template_id =
+                            get_template_id(deployment.id, &node.source, database_address).await?;
                         let command = (
                             unique_name.clone(),
                             node.clone(),
@@ -120,17 +153,12 @@ impl DeployableNodes for Scenario {
                         )
                             .try_to_deployment_command()?;
                         let id = distributor_address
-                            .send(Deploy(
-                                match node.type_field {
-                                    sdl_parser::node::NodeType::VM => DeployerTypes::VirtualMachine,
-                                    sdl_parser::node::NodeType::Switch => DeployerTypes::Switch,
-                                },
-                                command,
-                                deployers.to_owned(),
-                            ))
+                            .send(Deploy(deployer_type, command, deployers.to_owned()))
                             .await??;
-                        ledger_address
-                            .send(CreateEntry(Box::new(unique_name.to_string()), id))
+                        deployment_element.status = ElementStatus::Success;
+                        deployment_element.handler_reference = Some(id);
+                        database_address
+                            .send(UpdateDeploymentElement(deployment_element))
                             .await??;
                         Ok(())
                     })

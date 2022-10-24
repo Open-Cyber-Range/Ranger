@@ -1,7 +1,13 @@
-use super::{ledger::CreateEntry, Ledger};
-use crate::services::{
-    client::{Deployable, DeploymentInfo},
-    deployer::{Deploy, DeployerDistribution},
+use crate::{
+    models::{Deployment, DeploymentElement, ElementStatus},
+    services::{
+        client::{Deployable, DeploymentInfo},
+        database::{
+            deployment::{CreateDeploymentElement, UpdateDeploymentElement},
+            Database,
+        },
+        deployer::{Deploy, DeployerDistribution},
+    },
 };
 use actix::Addr;
 use anyhow::{anyhow, Ok, Result};
@@ -26,7 +32,8 @@ pub trait DeployableTemplates {
         &self,
         deployer_distributor: &Addr<DeployerDistribution>,
         deployers: &[String],
-        ledger: &Addr<Ledger>,
+        database_address: &Addr<Database>,
+        deployment: &Deployment,
     ) -> Result<()>;
 }
 
@@ -36,7 +43,8 @@ impl DeployableTemplates for Scenario {
         &self,
         deployer_distributor: &Addr<DeployerDistribution>,
         deployers: &[String],
-        ledger: &Addr<Ledger>,
+        database_address: &Addr<Database>,
+        deployment: &Deployment,
     ) -> Result<()> {
         let nodes = self
             .nodes
@@ -52,6 +60,14 @@ impl DeployableTemplates for Scenario {
                         .as_ref()
                         .ok_or_else(|| anyhow!("Source not found"))?;
 
+                    let mut deployment_element = database_address
+                        .send(CreateDeploymentElement(DeploymentElement::new(
+                            deployment.id,
+                            Box::new(source.to_owned()),
+                            DeployerTypes::Template,
+                        )))
+                        .await??;
+
                     let template_id = deployer_distributor
                         .send(Deploy(
                             DeployerTypes::Template,
@@ -63,8 +79,11 @@ impl DeployableTemplates for Scenario {
                         "Template {} deployed with template id {}",
                         name, template_id
                     );
-                    ledger
-                        .send(CreateEntry(Box::new(source.clone()), template_id))
+                    deployment_element.status = ElementStatus::Success;
+                    deployment_element.handler_reference = Some(template_id);
+
+                    database_address
+                        .send(UpdateDeploymentElement(deployment_element))
                         .await??;
 
                     Ok::<()>(())

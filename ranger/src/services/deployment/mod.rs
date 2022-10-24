@@ -1,4 +1,3 @@
-mod ledger;
 mod node;
 mod template;
 
@@ -12,7 +11,6 @@ use actix::{
     Actor, ActorFutureExt, Addr, Context, Handler, Message, ResponseActFuture, WrapFuture,
 };
 use anyhow::{anyhow, Ok, Result};
-use ledger::Ledger;
 use log::{error, info};
 use sdl_parser::Scenario;
 use std::collections::HashMap;
@@ -48,18 +46,18 @@ impl DeploymentManager {
         scenario: &Scenario,
         scheduler_address: &Addr<Scheduler>,
         distributor_address: &Addr<DeployerDistribution>,
+        database_address: &Addr<Database>,
         exercise_name: &str,
         deployment: &Deployment,
-    ) -> Result<Addr<Ledger>> {
-        let ledger = Ledger::new().start();
+    ) -> Result<()> {
         scenario
-            .deploy_templates(distributor_address, deployers, &ledger)
+            .deploy_templates(distributor_address, deployers, database_address, deployment)
             .await?;
         scenario
             .deploy_nodes(
                 distributor_address,
                 scheduler_address,
-                &ledger,
+                database_address,
                 exercise_name,
                 deployment,
                 deployers,
@@ -67,7 +65,7 @@ impl DeploymentManager {
             .await?;
 
         info!("Deployment {} successful", deployment.name);
-        Ok(ledger)
+        Ok(())
     }
 }
 
@@ -106,6 +104,7 @@ impl Handler<StartDeployment> for DeploymentManager {
         info!("Using deployment group: {}", &requested_deployer_group_name);
         let scheduler_address = self.scheduler.clone();
         let distributor_address = self.distributor.clone();
+        let database_address = self.database.clone();
 
         Box::pin(
             async move {
@@ -115,6 +114,7 @@ impl Handler<StartDeployment> for DeploymentManager {
                     &scenario,
                     &scheduler_address,
                     &distributor_address,
+                    &database_address,
                     &exercise_name,
                     &deployment,
                 )
