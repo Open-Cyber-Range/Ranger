@@ -2,7 +2,7 @@ use actix_web::web::scope;
 use actix_web::{web::Data, App, HttpServer};
 use anyhow::Error;
 use ranger::app_setup;
-use ranger::routes::exercise::update_exercise;
+use ranger::routes::exercise::{delete_exercise_deployment, update_exercise};
 use ranger::routes::{
     basic::{status, version},
     exercise::{add_exercise, add_exercise_deployment, delete_exercise},
@@ -23,6 +23,7 @@ async fn main() -> Result<(), Error> {
             .service(
                 scope("/api/v1")
                     .service(add_exercise_deployment)
+                    .service(delete_exercise_deployment)
                     .service(add_exercise)
                     .service(delete_exercise)
                     .service(update_exercise),

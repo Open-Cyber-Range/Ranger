@@ -15,6 +15,7 @@ where
     T: Sized,
 {
     async fn deploy(&mut self, deployment_struct: T) -> Result<String>;
+    async fn undeploy(&mut self, handler_reference: String) -> Result<()>;
 }
 
 pub trait DeploymentInfo

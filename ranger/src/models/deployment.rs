@@ -2,7 +2,9 @@ use crate::{
     constants::MAX_DEPLOYMENT_NAME_LENGTH,
     errors::RangerError,
     schema::{deployment_elements, deployments},
-    services::database::{All, Create, FilterExisting, SelectById, SoftDeleteById, UpdateById},
+    services::database::{
+        All, Create, FilterExisting, SelectById, SoftDelete, SoftDeleteById, UpdateById,
+    },
     utilities::Validation,
 };
 use chrono::NaiveDateTime;
@@ -105,11 +107,13 @@ pub struct DeploymentElement {
     pub status: ElementStatus,
 }
 
+type ByDeploymentId<T> = Filter<
+    FilterExisting<T, deployment_elements::deleted_at>,
+    Eq<deployment_elements::deployment_id, Uuid>,
+>;
+
 type ByDeploymentIdByScenarioReference<T> = Filter<
-    Filter<
-        FilterExisting<All<deployment_elements::table, T>, deployment_elements::deleted_at>,
-        Eq<deployment_elements::deployment_id, Uuid>,
-    >,
+    ByDeploymentId<All<deployment_elements::table, T>>,
     Eq<deployment_elements::scenario_reference, String>,
 >;
 
@@ -133,7 +137,7 @@ impl DeploymentElement {
         deployment_elements::table.select(DeploymentElement::as_select())
     }
 
-    pub fn all(
+    fn all(
     ) -> FilterExisting<All<deployment_elements::table, Self>, deployment_elements::deleted_at>
     {
         Self::all_with_deleted().filter(deployment_elements::deleted_at.is_null())
@@ -148,6 +152,12 @@ impl DeploymentElement {
         Self,
     > {
         Self::all().filter(deployment_elements::id.eq(id))
+    }
+
+    pub fn by_deployment_id(
+        deployment_id: Uuid,
+    ) -> ByDeploymentId<All<deployment_elements::table, Self>> {
+        Self::all().filter(deployment_elements::deployment_id.eq(deployment_id))
     }
 
     pub fn by_deployer_id_by_scenario_reference(
@@ -193,10 +203,20 @@ impl Deployment {
         Self::all().filter(deployments::id.eq(id))
     }
 
+    pub fn soft_delete_elements(
+        &self,
+    ) -> SoftDelete<ByDeploymentId<deployment_elements::table>, deployment_elements::deleted_at>
+    {
+        diesel::update(deployment_elements::table)
+            .filter(deployment_elements::deleted_at.is_null())
+            .filter(deployment_elements::deployment_id.eq(self.id))
+            .set(deployment_elements::deleted_at.eq(diesel::dsl::now))
+    }
+
     pub fn soft_delete(
-        id: Uuid,
+        &self,
     ) -> SoftDeleteById<deployments::id, deployments::deleted_at, deployments::table> {
-        diesel::update(deployments::table.filter(deployments::id.eq(id)))
+        diesel::update(deployments::table.filter(deployments::id.eq(self.id)))
             .set(deployments::deleted_at.eq(diesel::dsl::now))
     }
 }

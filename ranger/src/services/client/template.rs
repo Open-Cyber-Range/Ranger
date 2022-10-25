@@ -48,6 +48,15 @@ impl DeploymentClient<Box<dyn DeploymentInfo>> for Addr<TemplateClient> {
 
         Ok(id)
     }
+
+    async fn undeploy(&mut self, handler_reference: String) -> Result<()> {
+        let undeploy = DeleteTemplate(Identifier {
+            value: handler_reference,
+        });
+        self.send(undeploy).await??;
+
+        Ok(())
+    }
 }
 
 #[derive(Message)]

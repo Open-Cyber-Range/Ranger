@@ -15,16 +15,14 @@ use diesel::{
 
 sql_function! (fn current_timestamp() -> Timestamp);
 
-//Target All<Table, T>
-
 pub type All<Table, T> = Select<Table, AsSelect<T, Mysql>>;
 pub type FilterExisting<Target, DeletedAtColumn> = Filter<Target, IsNull<DeletedAtColumn>>;
 pub type ById<Id, R> = Filter<R, Eq<Id, Uuid>>;
 pub type SelectById<Table, Id, DeletedAtColumn, T> =
     ById<Id, FilterExisting<All<Table, T>, DeletedAtColumn>>;
 type UpdateDeletedAt<DeletedAtColumn> = Eq<DeletedAtColumn, now>;
-pub type SoftDeleteById<Id, DeleteAtColumn, Table> =
-    Update<ById<Id, Table>, UpdateDeletedAt<DeleteAtColumn>>;
+pub type SoftDelete<L, DeletedAtColumn> = Update<L, UpdateDeletedAt<DeletedAtColumn>>;
+pub type SoftDeleteById<Id, DeleteAtColumn, Table> = SoftDelete<ById<Id, Table>, DeleteAtColumn>;
 pub type UpdateById<Id, DeletedAtColumn, Table, T> =
     Update<FilterExisting<ById<Id, Table>, DeletedAtColumn>, T>;
 pub type Create<Type, Table> = InsertStatement<Table, <Type as Insertable<Table>>::Values>;

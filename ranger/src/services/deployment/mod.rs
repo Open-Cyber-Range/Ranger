@@ -1,7 +1,12 @@
 mod node;
 mod template;
 
-use super::{database::Database, deployer::DeployerDistribution};
+use self::node::RemoveableNodes;
+
+use super::{
+    database::{deployment::GetDeploymentElementByDeploymentId, Database},
+    deployer::DeployerDistribution,
+};
 use crate::{
     models::Deployment,
     services::deployment::node::DeployableNodes,
@@ -67,6 +72,23 @@ impl DeploymentManager {
         info!("Deployment {} successful", deployment.name);
         Ok(())
     }
+
+    fn get_delpoyment_group(&self, deployment: &Deployment) -> String {
+        let name = deployment
+            .deployment_group
+            .clone()
+            .unwrap_or_else(|| self.default_deployment_group.clone());
+        log::debug!("Using deployment group: {}", &name);
+        name
+    }
+
+    fn get_deloyers(&self, deployment: &Deployment) -> Result<Vec<String>> {
+        let group = self.get_delpoyment_group(deployment);
+        self.deployment_group
+            .get(group.as_str())
+            .ok_or_else(|| anyhow!("No deployment group found for {}", group))
+            .cloned()
+    }
 }
 
 impl Actor for DeploymentManager {
@@ -86,22 +108,8 @@ impl Handler<StartDeployment> for DeploymentManager {
 
     fn handle(&mut self, msg: StartDeployment, _: &mut Context<Self>) -> Self::Result {
         let StartDeployment(scenario, deployment, exercise_name) = msg;
-        let requested_deployer_group_name = deployment
-            .deployment_group
-            .clone()
-            .unwrap_or_else(|| self.default_deployment_group.clone());
 
-        let deployers_result = self
-            .deployment_group
-            .get(requested_deployer_group_name.as_str())
-            .ok_or_else(|| {
-                anyhow!(
-                    "No deployment group found for {}",
-                    requested_deployer_group_name
-                )
-            })
-            .cloned();
-        info!("Using deployment group: {}", &requested_deployer_group_name);
+        let deployers_result = self.get_deloyers(&deployment);
         let scheduler_address = self.scheduler.clone();
         let distributor_address = self.distributor.clone();
         let database_address = self.database.clone();
@@ -133,5 +141,36 @@ impl Handler<StartDeployment> for DeploymentManager {
 }
 
 #[derive(Message, Debug)]
-#[rtype(result = "()")]
-pub struct TearDownDeployment(pub(crate) String);
+#[rtype(result = "Result<()>")]
+pub struct RemoveDeployment(pub(crate) Deployment);
+
+impl Handler<RemoveDeployment> for DeploymentManager {
+    type Result = ResponseActFuture<Self, Result<()>>;
+
+    fn handle(&mut self, msg: RemoveDeployment, _: &mut Context<Self>) -> Self::Result {
+        let RemoveDeployment(deployment) = msg;
+        let database_address = self.database.clone();
+        let distributor_address = self.distributor.clone();
+        let deployers_result = self.get_deloyers(&deployment);
+        Box::pin(
+            async move {
+                let deployers = deployers_result?;
+                let deployment_elements = database_address
+                    .send(GetDeploymentElementByDeploymentId(deployment.id))
+                    .await??;
+                deployment_elements
+                    .undeploy_nodes(&distributor_address, &database_address, &deployers)
+                    .await?;
+                Ok(())
+            }
+            .into_actor(self)
+            .map(move |result, _act, _| {
+                if result.is_err() {
+                    error!("Deployment failed: {:?}", result.as_ref().err());
+                    return Err(anyhow!("Deployment failed"));
+                }
+                Ok(())
+            }),
+        )
+    }
+}
