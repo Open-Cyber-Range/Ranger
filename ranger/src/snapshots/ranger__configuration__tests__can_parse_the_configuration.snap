@@ -13,4 +13,5 @@ deployment_groups:
   my-cool-group:
     - my-machiner-deployer
     - my-switch-deployer
+database_url: "mysql://user:pass@mariadb:3306/app-database"
 
