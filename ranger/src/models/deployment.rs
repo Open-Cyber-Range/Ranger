@@ -2,12 +2,12 @@ use crate::{
     constants::MAX_DEPLOYMENT_NAME_LENGTH,
     errors::RangerError,
     schema::{deployment_elements, deployments},
-    services::database::{All, Create, FilterExisting, SelectById, SoftDeleteById},
+    services::database::{All, Create, FilterExisting, SelectById, SoftDeleteById, UpdateById},
     utilities::Validation,
 };
 use chrono::NaiveDateTime;
 use diesel::{
-    helper_types::{Eq, Filter, FindBy, Update},
+    helper_types::{Eq, Filter},
     sql_types::Text,
     AsChangeset, AsExpression, ExpressionMethods, FromSqlRow, Identifiable, Insertable, QueryDsl,
     Queryable, Selectable, SelectableHelper,
@@ -165,8 +165,16 @@ impl DeploymentElement {
 
     pub fn create_update(
         &self,
-    ) -> Update<FindBy<deployment_elements::table, deployment_elements::id, &Uuid>, &Self> {
-        diesel::update(self).set(self)
+    ) -> UpdateById<
+        deployment_elements::id,
+        deployment_elements::deleted_at,
+        deployment_elements::table,
+        &Self,
+    > {
+        diesel::update(deployment_elements::table)
+            .filter(deployment_elements::id.eq(self.id))
+            .filter(deployment_elements::deleted_at.is_null())
+            .set(self)
     }
 }
 

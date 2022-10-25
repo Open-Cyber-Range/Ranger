@@ -89,9 +89,12 @@ impl Handler<UpdateDeploymentElement> for Database {
         let new_deployment_element = msg.0;
         let mut connection = self.get_connection()?;
 
-        new_deployment_element
+        let updated_rows = new_deployment_element
             .create_update()
             .execute(&mut connection)?;
+        if updated_rows != 1 {
+            return Err(anyhow::anyhow!("Deployment element not found"));
+        }
         let deployment_element =
             DeploymentElement::by_id(new_deployment_element.id).first(&mut connection)?;
 

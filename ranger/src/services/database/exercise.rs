@@ -56,7 +56,7 @@ impl Handler<UpdateExercise> for Database {
         let updated_rows = update_exercise
             .create_update(uuid)
             .execute(&mut connection)?;
-        if updated_rows == 0 {
+        if updated_rows != 1 {
             return Err(anyhow!(RECORD_NOT_FOUND));
         }
         let exercise = Exercise::by_id(uuid).first(&mut connection)?;
