@@ -1,6 +1,8 @@
 use crate::{
     errors::RangerError,
-    models::{helpers::uuid::Uuid, Deployment, Exercise, NewDeployment, NewExercise},
+    models::{
+        helpers::uuid::Uuid, Deployment, Exercise, NewDeployment, NewExercise, UpdateExercise,
+    },
     services::{
         database::{
             deployment::CreateDeployment,
@@ -12,7 +14,7 @@ use crate::{
     AppState,
 };
 use actix_web::{
-    delete, post,
+    delete, post, put,
     web::{Data, Json, Path},
 };
 use anyhow::Result;
@@ -33,6 +35,27 @@ pub async fn add_exercise(
         .await
         .map_err(create_mailbox_error_handler("Database"))?
         .map_err(create_database_error_handler("Create exercise"))?;
+
+    Ok(Json(exercise))
+}
+
+#[put("exercise/{exercise_uuid}")]
+pub async fn update_exercise(
+    path_variables: Path<Uuid>,
+    update_exercise: Json<UpdateExercise>,
+    app_state: Data<AppState>,
+) -> Result<Json<Exercise>, RangerError> {
+    let exercise_uuid = path_variables.into_inner();
+    let update_exercise = update_exercise.into_inner();
+    let exercise = app_state
+        .database_address
+        .send(crate::services::database::exercise::UpdateExercise(
+            exercise_uuid,
+            update_exercise,
+        ))
+        .await
+        .map_err(create_mailbox_error_handler("Database"))?
+        .map_err(create_database_error_handler("Update exercise"))?;
 
     Ok(Json(exercise))
 }

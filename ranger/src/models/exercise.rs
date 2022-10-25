@@ -3,12 +3,13 @@ use crate::{
     constants::MAX_EXERCISE_NAME_LENGTH,
     errors::RangerError,
     schema::exercises,
-    services::database::{All, AllExisting, Create, SelectById, SoftDeleteById},
+    services::database::{All, Create, FilterExisting, SelectById, SoftDeleteById, UpdateById},
     utilities::Validation,
 };
 use chrono::NaiveDateTime;
 use diesel::{
-    insert_into, ExpressionMethods, Insertable, QueryDsl, Queryable, Selectable, SelectableHelper,
+    insert_into, AsChangeset, ExpressionMethods, Insertable, QueryDsl, Queryable, Selectable,
+    SelectableHelper,
 };
 use serde::{Deserialize, Serialize};
 use std::result::Result as StdResult;
@@ -53,7 +54,7 @@ impl Exercise {
         exercises::table.select(Self::as_select())
     }
 
-    pub fn all() -> AllExisting<exercises::table, exercises::deleted_at, Self> {
+    pub fn all() -> FilterExisting<All<exercises::table, Self>, exercises::deleted_at> {
         Self::all_with_deleted().filter(exercises::deleted_at.is_null())
     }
 
@@ -64,9 +65,28 @@ impl Exercise {
     }
 
     pub fn soft_delete(
-        id: Uuid,
+        &self,
     ) -> SoftDeleteById<exercises::id, exercises::deleted_at, exercises::table> {
-        diesel::update(exercises::table.filter(exercises::id.eq(id)))
+        diesel::update(exercises::table.filter(exercises::id.eq(self.id)))
             .set(exercises::deleted_at.eq(diesel::dsl::now))
+    }
+}
+
+#[derive(AsChangeset, Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
+#[diesel(table_name = exercises)]
+pub struct UpdateExercise {
+    pub name: String,
+    pub sdl_schema: Option<String>,
+}
+
+impl UpdateExercise {
+    pub fn create_update(
+        &self,
+        id: Uuid,
+    ) -> UpdateById<exercises::id, exercises::deleted_at, exercises::table, &Self> {
+        diesel::update(exercises::table)
+            .filter(exercises::id.eq(id))
+            .filter(exercises::deleted_at.is_null())
+            .set(self)
     }
 }

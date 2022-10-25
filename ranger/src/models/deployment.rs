@@ -2,15 +2,15 @@ use crate::{
     constants::MAX_DEPLOYMENT_NAME_LENGTH,
     errors::RangerError,
     schema::{deployment_elements, deployments},
-    services::database::{All, AllExisting, Create, SelectById, SoftDeleteById},
+    services::database::{All, Create, FilterExisting, SelectById, SoftDeleteById},
     utilities::Validation,
 };
 use chrono::NaiveDateTime;
 use diesel::{
-    helper_types::{Eq, Filter, Update},
+    helper_types::{Eq, Filter, FindBy, Update},
     sql_types::Text,
-    AsChangeset, AsExpression, ExpressionMethods, FromSqlRow, Insertable, QueryDsl, Queryable,
-    Selectable, SelectableHelper,
+    AsChangeset, AsExpression, ExpressionMethods, FromSqlRow, Identifiable, Insertable, QueryDsl,
+    Queryable, Selectable, SelectableHelper,
 };
 use ranger_grpc::capabilities::DeployerTypes;
 use serde::{Deserialize, Serialize};
@@ -84,7 +84,17 @@ impl ScenarioReference for String {
 
 pub type BoxedScenarioReference = Box<dyn ScenarioReference>;
 
-#[derive(Insertable, Queryable, Selectable, Clone, Debug, Deserialize, Serialize, AsChangeset)]
+#[derive(
+    Insertable,
+    Identifiable,
+    Queryable,
+    Selectable,
+    Clone,
+    Debug,
+    Deserialize,
+    Serialize,
+    AsChangeset,
+)]
 #[diesel(table_name = deployment_elements)]
 pub struct DeploymentElement {
     pub id: Uuid,
@@ -97,7 +107,7 @@ pub struct DeploymentElement {
 
 type ByDeploymentIdByScenarioReference<T> = Filter<
     Filter<
-        AllExisting<deployment_elements::table, deployment_elements::deleted_at, T>,
+        FilterExisting<All<deployment_elements::table, T>, deployment_elements::deleted_at>,
         Eq<deployment_elements::deployment_id, Uuid>,
     >,
     Eq<deployment_elements::scenario_reference, String>,
@@ -123,7 +133,9 @@ impl DeploymentElement {
         deployment_elements::table.select(DeploymentElement::as_select())
     }
 
-    pub fn all() -> AllExisting<deployment_elements::table, deployment_elements::deleted_at, Self> {
+    pub fn all(
+    ) -> FilterExisting<All<deployment_elements::table, Self>, deployment_elements::deleted_at>
+    {
         Self::all_with_deleted().filter(deployment_elements::deleted_at.is_null())
     }
 
@@ -151,8 +163,10 @@ impl DeploymentElement {
         diesel::insert_into(deployment_elements::table).values(self)
     }
 
-    pub fn create_update(&self) -> Update<deployment_elements::table, &Self> {
-        diesel::update(deployment_elements::table).set(self)
+    pub fn create_update(
+        &self,
+    ) -> Update<FindBy<deployment_elements::table, deployment_elements::id, &Uuid>, &Self> {
+        diesel::update(self).set(self)
     }
 }
 
@@ -161,7 +175,7 @@ impl Deployment {
         deployments::table.select(Deployment::as_select())
     }
 
-    pub fn all() -> AllExisting<deployments::table, deployments::deleted_at, Self> {
+    pub fn all() -> FilterExisting<All<deployments::table, Self>, deployments::deleted_at> {
         Self::all_with_deleted().filter(deployments::deleted_at.is_null())
     }
 
