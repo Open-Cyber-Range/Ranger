@@ -42,6 +42,21 @@ impl Handler<GetExercise> for Database {
 }
 
 #[derive(Message)]
+#[rtype(result = "Result<Vec<Exercise>>")]
+pub struct GetExercises;
+
+impl Handler<GetExercises> for Database {
+    type Result = Result<Vec<Exercise>>;
+
+    fn handle(&mut self, _: GetExercises, _ctx: &mut Self::Context) -> Self::Result {
+        let mut connection = self.get_connection()?;
+        let exercises = Exercise::all().load(&mut connection)?;
+
+        Ok(exercises)
+    }
+}
+
+#[derive(Message)]
 #[rtype(result = "Result<Exercise>")]
 pub struct UpdateExercise(pub Uuid, pub crate::models::UpdateExercise);
 
