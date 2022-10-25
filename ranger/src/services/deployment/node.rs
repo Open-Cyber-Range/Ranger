@@ -1,3 +1,4 @@
+use crate::models::helpers::deployer_type::DeployerType;
 use crate::models::helpers::uuid::Uuid;
 use crate::models::{Deployment, DeploymentElement, ElementStatus};
 use crate::services::client::{Deployable, DeploymentInfo};
@@ -6,7 +7,7 @@ use crate::services::database::deployment::{
     UpdateDeploymentElement,
 };
 use crate::services::database::Database;
-use crate::services::deployer::{Deploy, DeployerDistribution};
+use crate::services::deployer::{Deploy, DeployerDistribution, UnDeploy};
 use crate::services::scheduler::{CreateDeploymentSchedule, Scheduler};
 use actix::Addr;
 use anyhow::{anyhow, Ok, Result};
@@ -166,6 +167,52 @@ impl DeployableNodes for Scenario {
             )
             .await?;
         }
+        Ok(())
+    }
+}
+
+#[async_trait]
+pub trait RemoveableNodes {
+    async fn undeploy_nodes<'a>(
+        &'a self,
+        distributor_address: &'a Addr<DeployerDistribution>,
+        database_address: &'a Addr<Database>,
+        deployers: &'a [String],
+    ) -> Result<()>;
+}
+
+#[async_trait]
+impl RemoveableNodes for Vec<DeploymentElement> {
+    async fn undeploy_nodes<'a>(
+        &'a self,
+        distributor_address: &'a Addr<DeployerDistribution>,
+        database_address: &'a Addr<Database>,
+        deployers: &'a [String],
+    ) -> Result<()> {
+        try_join_all(self.iter().map(|element| async move {
+            match element.deployer_type {
+                DeployerType(DeployerTypes::VirtualMachine | DeployerTypes::Switch) => {
+                    if let Some(handler_reference) = &element.handler_reference {
+                        distributor_address
+                            .send(UnDeploy(
+                                element.deployer_type.0,
+                                handler_reference.to_string(),
+                                deployers.to_owned(),
+                            ))
+                            .await??;
+                        let mut element_update = element.clone();
+                        element_update.status = ElementStatus::Removed;
+                        database_address
+                            .send(UpdateDeploymentElement(element_update))
+                            .await??;
+                        return Ok(());
+                    }
+                    Err(anyhow!("Handler reference not found"))
+                }
+                _ => Ok(()),
+            }
+        }))
+        .await?;
         Ok(())
     }
 }

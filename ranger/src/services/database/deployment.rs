@@ -50,8 +50,9 @@ impl Handler<DeleteDeployment> for Database {
         let id = msg.0;
         let mut connection = self.get_connection()?;
 
-        Deployment::by_id(id).first(&mut connection)?;
-        Deployment::soft_delete(id).execute(&mut connection)?;
+        let deployment = Deployment::by_id(id).first(&mut connection)?;
+        deployment.soft_delete_elements().execute(&mut connection)?;
+        deployment.soft_delete().execute(&mut connection)?;
 
         Ok(id)
     }
@@ -128,5 +129,27 @@ impl Handler<GetDeploymentElementByDeploymentIdByScenarioReference> for Database
         .first(&mut connection)?;
 
         Ok(deployment_element)
+    }
+}
+
+#[derive(Message)]
+#[rtype(result = "Result<Vec<DeploymentElement>>")]
+pub struct GetDeploymentElementByDeploymentId(pub Uuid);
+
+impl Handler<GetDeploymentElementByDeploymentId> for Database {
+    type Result = Result<Vec<DeploymentElement>>;
+
+    fn handle(
+        &mut self,
+        msg: GetDeploymentElementByDeploymentId,
+        _ctx: &mut Self::Context,
+    ) -> Self::Result {
+        let deployment_id = msg.0;
+        let mut connection = self.get_connection()?;
+
+        let deployment_elements =
+            DeploymentElement::by_deployment_id(deployment_id).load(&mut connection)?;
+
+        Ok(deployment_elements)
     }
 }

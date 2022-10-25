@@ -29,6 +29,15 @@ impl DeploymentClient<Box<dyn DeploymentInfo>> for Addr<SwitchClient> {
 
         Ok(id)
     }
+
+    async fn undeploy(&mut self, handler_reference: String) -> Result<()> {
+        let undeploy = DeleteSwitch(Identifier {
+            value: handler_reference,
+        });
+        self.send(undeploy).await??;
+
+        Ok(())
+    }
 }
 
 pub struct SwitchClient(SwitchServiceClient<Channel>);

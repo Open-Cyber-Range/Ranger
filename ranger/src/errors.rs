@@ -11,6 +11,8 @@ pub enum RangerError {
     ActixMailBoxError,
     #[error("Failed to deploy scenario")]
     DeploymentFailed,
+    #[error("Failed to undeploy exercise")]
+    UndeploymentFailed,
     #[error("DeployerGroup not found")]
     DeployerGroupNotfound,
     #[error("Exercise name too long")]

@@ -31,6 +31,15 @@ impl DeploymentClient<Box<dyn DeploymentInfo>> for Addr<VirtualMachineClient> {
 
         Ok(id)
     }
+
+    async fn undeploy(&mut self, handler_reference: String) -> Result<()> {
+        let undeploy = DeleteVirtualMachine(Identifier {
+            value: handler_reference,
+        });
+        self.send(undeploy).await??;
+
+        Ok(())
+    }
 }
 
 pub struct VirtualMachineClient(VirtualMachineServiceClient<Channel>);
