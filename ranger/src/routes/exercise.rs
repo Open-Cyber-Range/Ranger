@@ -47,7 +47,7 @@ pub async fn get_exercises(app_state: Data<AppState>) -> Result<Json<Vec<Exercis
         .send(GetExercises)
         .await
         .map_err(create_mailbox_error_handler("Database"))?
-        .map_err(create_database_error_handler("Create exercise"))?;
+        .map_err(create_database_error_handler("Get exercises"))?;
 
     Ok(Json(exercises))
 }
