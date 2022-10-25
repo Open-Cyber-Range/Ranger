@@ -6,7 +6,7 @@ use crate::{
     services::{
         database::{
             deployment::{CreateDeployment, DeleteDeployment, GetDeployment},
-            exercise::{CreateExercise, DeleteExercise, GetExercise},
+            exercise::{CreateExercise, DeleteExercise, GetExercise, GetExercises},
         },
         deployment::{RemoveDeployment, StartDeployment},
     },
@@ -14,7 +14,7 @@ use crate::{
     AppState,
 };
 use actix_web::{
-    delete, post, put,
+    delete, get, post, put,
     web::{Data, Json, Path},
 };
 use anyhow::Result;
@@ -38,6 +38,18 @@ pub async fn add_exercise(
     log::debug!("Created exercise: {}", exercise.id);
 
     Ok(Json(exercise))
+}
+
+#[get("exercise")]
+pub async fn get_exercises(app_state: Data<AppState>) -> Result<Json<Vec<Exercise>>, RangerError> {
+    let exercises = app_state
+        .database_address
+        .send(GetExercises)
+        .await
+        .map_err(create_mailbox_error_handler("Database"))?
+        .map_err(create_database_error_handler("Create exercise"))?;
+
+    Ok(Json(exercises))
 }
 
 #[put("exercise/{exercise_uuid}")]
