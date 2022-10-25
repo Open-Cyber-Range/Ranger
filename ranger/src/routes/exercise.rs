@@ -35,6 +35,7 @@ pub async fn add_exercise(
         .await
         .map_err(create_mailbox_error_handler("Database"))?
         .map_err(create_database_error_handler("Create exercise"))?;
+    log::debug!("Created exercise: {}", exercise.id);
 
     Ok(Json(exercise))
 }
@@ -56,6 +57,7 @@ pub async fn update_exercise(
         .await
         .map_err(create_mailbox_error_handler("Database"))?
         .map_err(create_database_error_handler("Update exercise"))?;
+    log::debug!("Updated exercise: {}", exercise_uuid);
 
     Ok(Json(exercise))
 }
@@ -72,6 +74,7 @@ pub async fn delete_exercise(
         .await
         .map_err(create_mailbox_error_handler("Database"))?
         .map_err(create_database_error_handler("Delete exercise"))?;
+    log::debug!("Deleted exercise {}", exercise_uuid);
 
     Ok(exercise_uuid.to_string())
 }
@@ -96,7 +99,7 @@ pub async fn add_exercise_deployment(
         error!("Deployment error: {error}");
         RangerError::DeploymentFailed
     })?;
-    log::info!(
+    log::debug!(
         "Adding deployment {} for exercise {}",
         exercise.name,
         deployment.name
