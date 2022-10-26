@@ -1,7 +1,7 @@
 mod validation;
 
 use crate::{
-    constants::{FOREIGN_KEY_CONSTRAINT_FAILS, RECORD_NOT_FOUND},
+    constants::{DUPLICATE_ENTRY, FOREIGN_KEY_CONSTRAINT_FAILS, RECORD_NOT_FOUND},
     errors::RangerError,
 };
 use actix::MailboxError;
@@ -25,6 +25,8 @@ pub fn create_database_error_handler(
             return RangerError::DatabaseConflict;
         } else if error_string.contains(RECORD_NOT_FOUND) {
             return RangerError::DatabaseRecordNotFound;
+        } else if error_string.contains(DUPLICATE_ENTRY) {
+            return RangerError::DatabaseConflict;
         }
         RangerError::DatabaseUnexpected
     }
