@@ -2,7 +2,6 @@
 import {Button, Card} from '@blueprintjs/core';
 import type {ReactElement, ReactNode} from 'react';
 import {useState, useEffect} from 'react';
-import './ExerciseCard.css';
 import axios from 'axios';
 import {useNavigate} from 'react-router-dom';
 
