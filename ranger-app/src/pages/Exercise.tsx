@@ -4,6 +4,7 @@ import axios from 'axios';
 import {Button, FormGroup, InputGroup, Intent, TextArea} from '@blueprintjs/core';
 import styled from 'styled-components';
 import {AppToaster} from '../components/Toaster';
+import ListExercises from '../components/ExerciseCard';
 
 const ExerciseWrapper = styled.div`
   padding: 2rem;
@@ -90,6 +91,7 @@ const ExerciseForm = () => {
           }}
         />
         <Button type='submit' intent='primary'> Submit </Button>
+        <ListExercises />
       </form>
     </ExerciseWrapper>
   );
