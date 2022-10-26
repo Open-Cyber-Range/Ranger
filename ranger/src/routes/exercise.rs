@@ -1,12 +1,15 @@
 use crate::{
     errors::RangerError,
     models::{
-        helpers::uuid::Uuid, Deployment, Exercise, NewDeployment, NewDeploymentResource,
-        NewExercise, UpdateExercise,
+        helpers::uuid::Uuid, Deployment, DeploymentElement, Exercise, NewDeployment,
+        NewDeploymentResource, NewExercise, UpdateExercise,
     },
     services::{
         database::{
-            deployment::{CreateDeployment, DeleteDeployment, GetDeployment},
+            deployment::{
+                CreateDeployment, DeleteDeployment, GetDeployment,
+                GetDeploymentElementByDeploymentId,
+            },
             exercise::{CreateExercise, DeleteExercise, GetExercise, GetExercises},
         },
         deployment::{RemoveDeployment, StartDeployment},
@@ -165,4 +168,26 @@ pub async fn delete_exercise_deployment(
         .map_err(create_database_error_handler("Delete deployment"))?;
 
     Ok(deployment_uuid.to_string())
+}
+
+#[get("exercise/{exercise_uuid}/deployment/{deployment_uuid}/deployment_element")]
+pub async fn get_exercise_deployment_elements(
+    path_variables: Path<(Uuid, Uuid)>,
+    app_state: Data<AppState>,
+) -> Result<Json<Vec<DeploymentElement>>, RangerError> {
+    let (_, deployment_uuid) = path_variables.into_inner();
+    let deployment = app_state
+        .database_address
+        .send(GetDeployment(deployment_uuid))
+        .await
+        .map_err(create_mailbox_error_handler("Database"))?
+        .map_err(create_database_error_handler("Get deployment"))?;
+    let elements = app_state
+        .database_address
+        .send(GetDeploymentElementByDeploymentId(deployment.id))
+        .await
+        .map_err(create_mailbox_error_handler("Database"))?
+        .map_err(create_database_error_handler("Get deployment elements"))?;
+
+    Ok(Json(elements))
 }
