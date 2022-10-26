@@ -82,6 +82,7 @@ pub enum ElementStatus {
     Success,
     Failed,
     Removed,
+    RemoveFailed,
 }
 
 pub trait ScenarioReference

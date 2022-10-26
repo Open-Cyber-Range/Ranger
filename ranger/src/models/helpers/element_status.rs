@@ -22,6 +22,7 @@ impl FromSql<Text, Mysql> for ElementStatus {
                 "success" => Ok(ElementStatus::Success),
                 "failed" => Ok(ElementStatus::Failed),
                 "removed" => Ok(ElementStatus::Removed),
+                "removefailed" => Ok(ElementStatus::RemoveFailed),
                 _ => Err("Invalid element status".into()),
             };
         }
@@ -42,6 +43,7 @@ impl ToSql<Text, Mysql> for ElementStatus {
             ElementStatus::Success => "success",
             ElementStatus::Failed => "failed",
             ElementStatus::Removed => "removed",
+            ElementStatus::RemoveFailed => "removefailed",
         });
         out.write_all(value.as_bytes())?;
         Ok(IsNull::No)

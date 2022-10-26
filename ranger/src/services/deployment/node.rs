@@ -205,19 +205,31 @@ impl RemoveableNodes for Vec<DeploymentElement> {
             match element.deployer_type {
                 DeployerType(DeployerTypes::VirtualMachine | DeployerTypes::Switch) => {
                     if let Some(handler_reference) = &element.handler_reference {
-                        distributor_address
+                        let mut element_update = element.clone();
+
+                        return match distributor_address
                             .send(UnDeploy(
                                 element.deployer_type.0,
                                 handler_reference.to_string(),
                                 deployers.to_owned(),
                             ))
-                            .await??;
-                        let mut element_update = element.clone();
-                        element_update.status = ElementStatus::Removed;
-                        database_address
-                            .send(UpdateDeploymentElement(element_update))
-                            .await??;
-                        return Ok(());
+                            .await?
+                        {
+                            anyhow::Result::Ok(_) => {
+                                element_update.status = ElementStatus::Removed;
+                                database_address
+                                    .send(UpdateDeploymentElement(element_update))
+                                    .await??;
+                                Ok(())
+                            }
+                            Err(error) => {
+                                element_update.status = ElementStatus::RemoveFailed;
+                                database_address
+                                    .send(UpdateDeploymentElement(element_update))
+                                    .await??;
+                                Err(error)
+                            }
+                        };
                     }
                     Err(anyhow!("Handler reference not found"))
                 }
