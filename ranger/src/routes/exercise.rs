@@ -127,17 +127,11 @@ pub async fn add_exercise_deployment(
 
     app_state
         .deployment_manager_address
-        .send(StartDeployment(
+        .do_send(StartDeployment(
             schema.scenario,
             deployment.clone(),
             exercise.name,
-        ))
-        .await
-        .map_err(create_mailbox_error_handler("Deployment manager"))?
-        .map_err(|error| {
-            error!("Deployment error: {error}");
-            RangerError::DeploymentFailed
-        })?;
+        ));
 
     Ok(Json(deployment))
 }
