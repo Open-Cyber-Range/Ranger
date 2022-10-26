@@ -8,5 +8,6 @@ CREATE TABLE deployments (
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP NULL DEFAULT NULL,
     PRIMARY KEY (id),
-    FOREIGN KEY (exercise_id) REFERENCES exercises(id)
+    FOREIGN KEY (exercise_id) REFERENCES exercises(id),
+    UNIQUE (name)
 );
