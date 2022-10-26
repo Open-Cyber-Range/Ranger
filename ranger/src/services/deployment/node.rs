@@ -153,15 +153,27 @@ impl DeployableNodes for Scenario {
                             template_id,
                         )
                             .try_to_deployment_command()?;
-                        let id = distributor_address
+
+                        match distributor_address
                             .send(Deploy(deployer_type, command, deployers.to_owned()))
-                            .await??;
-                        deployment_element.status = ElementStatus::Success;
-                        deployment_element.handler_reference = Some(id);
-                        database_address
-                            .send(UpdateDeploymentElement(deployment_element))
-                            .await??;
-                        Ok(())
+                            .await?
+                        {
+                            anyhow::Result::Ok(id) => {
+                                deployment_element.status = ElementStatus::Success;
+                                deployment_element.handler_reference = Some(id);
+                                database_address
+                                    .send(UpdateDeploymentElement(deployment_element))
+                                    .await??;
+                                Ok(())
+                            }
+                            Err(error) => {
+                                deployment_element.status = ElementStatus::Failed;
+                                database_address
+                                    .send(UpdateDeploymentElement(deployment_element))
+                                    .await??;
+                                Err(error)
+                            }
+                        }
                     })
                     .collect::<Vec<_>>(),
             )
