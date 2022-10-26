@@ -32,7 +32,7 @@ impl NewExercise {
 impl Validation for NewExercise {
     fn validate(&self) -> StdResult<(), RangerError> {
         if self.name.len() > MAX_EXERCISE_NAME_LENGTH {
-            return Err(RangerError::ExeciseNameTooLong);
+            return Err(RangerError::ExerciseNameTooLong);
         }
         Ok(())
     }
