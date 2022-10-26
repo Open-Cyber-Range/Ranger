@@ -32,7 +32,7 @@ export const List: <T>({
   </>
 );
 
-export function CardRender(exercise: ExerciseCard) {
+export function cardRender(exercise: ExerciseCard) {
   const [isOpen, setIsOpen] = useState(true);
   const [style, setStyle] = useState('shrunk');
   const navigate = useNavigate();
@@ -93,7 +93,7 @@ function ListDeployments() {
   }, []);
 
   return (
-    <List items={payload} render={exercise => CardRender(exercise) }/> // eslint-disable-line new-cap
+    <List items={payload} render={exercise => cardRender(exercise) }/>
 
   );
 }
