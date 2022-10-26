@@ -1,7 +1,8 @@
 use crate::{
     errors::RangerError,
     models::{
-        helpers::uuid::Uuid, Deployment, Exercise, NewDeployment, NewExercise, UpdateExercise,
+        helpers::uuid::Uuid, Deployment, Exercise, NewDeployment, NewDeploymentResource,
+        NewExercise, UpdateExercise,
     },
     services::{
         database::{
@@ -95,14 +96,15 @@ pub async fn delete_exercise(
 pub async fn add_exercise_deployment(
     path_variables: Path<Uuid>,
     app_state: Data<AppState>,
-    deployment: Json<NewDeployment>,
+    deployment_resource: Json<NewDeploymentResource>,
 ) -> Result<Json<Deployment>, RangerError> {
-    let deployment = deployment.into_inner();
-    let exercise_uuid = path_variables.into_inner();
+    let deployment_resource = deployment_resource.into_inner();
+    let exercise_id = path_variables.into_inner();
+    let deployment = NewDeployment::new(deployment_resource, exercise_id);
 
     let exercise = app_state
         .database_address
-        .send(GetExercise(exercise_uuid))
+        .send(GetExercise(exercise_id))
         .await
         .map_err(create_mailbox_error_handler("Database"))?
         .map_err(create_database_error_handler("Create exercise"))?;

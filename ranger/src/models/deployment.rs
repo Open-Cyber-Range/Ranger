@@ -19,17 +19,36 @@ use serde::{Deserialize, Serialize};
 
 use super::helpers::{deployer_type::DeployerType, uuid::Uuid};
 
-#[derive(Clone, Debug, Deserialize, Serialize, Insertable)]
-#[diesel(table_name = deployments)]
-pub struct NewDeployment {
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct NewDeploymentResource {
     #[serde(default = "Uuid::random")]
     pub id: Uuid,
     pub name: String,
-    pub sdl_schema: String,
     pub deployment_group: Option<String>,
+    pub sdl_schema: String,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize, Insertable)]
+#[diesel(table_name = deployments)]
+pub struct NewDeployment {
+    pub id: Uuid,
+    pub name: String,
+    pub deployment_group: Option<String>,
+    pub sdl_schema: String,
+    pub exercise_id: Uuid,
 }
 
 impl NewDeployment {
+    pub fn new(resource: NewDeploymentResource, exercise_id: Uuid) -> Self {
+        Self {
+            id: resource.id,
+            name: resource.name,
+            deployment_group: resource.deployment_group,
+            sdl_schema: resource.sdl_schema,
+            exercise_id,
+        }
+    }
+
     pub fn create_insert(&self) -> Create<&Self, deployments::table> {
         diesel::insert_into(deployments::table).values(self)
     }
@@ -47,11 +66,11 @@ impl Validation for NewDeployment {
 #[derive(Queryable, Selectable, Clone, Debug, Deserialize, Serialize)]
 #[diesel(table_name = deployments)]
 pub struct Deployment {
-    #[serde(default = "Uuid::random")]
     pub id: Uuid,
     pub name: String,
-    pub sdl_schema: String,
     pub deployment_group: Option<String>,
+    pub sdl_schema: String,
+    pub exercise_id: Uuid,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
 }
