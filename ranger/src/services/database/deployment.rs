@@ -1,8 +1,9 @@
 use super::Database;
 use crate::models::helpers::uuid::Uuid;
 use crate::models::{Deployment, DeploymentElement, NewDeployment, ScenarioReference};
-use actix::{Handler, Message};
-use anyhow::Result;
+use actix::{Handler, Message, ResponseActFuture, WrapFuture};
+use actix_web::web::block;
+use anyhow::{Ok, Result};
 use diesel::RunQueryDsl;
 
 #[derive(Message)]
@@ -10,16 +11,27 @@ use diesel::RunQueryDsl;
 pub struct CreateDeployment(pub NewDeployment);
 
 impl Handler<CreateDeployment> for Database {
-    type Result = Result<Deployment>;
+    type Result = ResponseActFuture<Self, Result<Deployment>>;
 
     fn handle(&mut self, msg: CreateDeployment, _ctx: &mut Self::Context) -> Self::Result {
         let new_deployment = msg.0;
-        let mut connection = self.get_connection()?;
+        let connection_result = self.get_connection();
 
-        new_deployment.create_insert().execute(&mut connection)?;
-        let deployment = Deployment::by_id(new_deployment.id).first(&mut connection)?;
+        Box::pin(
+            async move {
+                let mut connection = connection_result?;
+                let deployment = block(move || {
+                    new_deployment.create_insert().execute(&mut connection)?;
+                    let deployment = Deployment::by_id(new_deployment.id).first(&mut connection)?;
 
-        Ok(deployment)
+                    Ok(deployment)
+                })
+                .await??;
+
+                Ok(deployment)
+            }
+            .into_actor(self),
+        )
     }
 }
 
@@ -28,14 +40,25 @@ impl Handler<CreateDeployment> for Database {
 pub struct GetDeployment(pub Uuid);
 
 impl Handler<GetDeployment> for Database {
-    type Result = Result<Deployment>;
+    type Result = ResponseActFuture<Self, Result<Deployment>>;
 
     fn handle(&mut self, msg: GetDeployment, _ctx: &mut Self::Context) -> Self::Result {
         let id = msg.0;
-        let mut connection = self.get_connection()?;
+        let connection_result = self.get_connection();
 
-        let deployment = Deployment::by_id(id).first(&mut connection)?;
-        Ok(deployment)
+        Box::pin(
+            async move {
+                let mut connection = connection_result?;
+                let deployment = block(move || {
+                    let deployment = Deployment::by_id(id).first(&mut connection)?;
+                    Ok(deployment)
+                })
+                .await??;
+
+                Ok(deployment)
+            }
+            .into_actor(self),
+        )
     }
 }
 
@@ -44,17 +67,28 @@ impl Handler<GetDeployment> for Database {
 pub struct DeleteDeployment(pub Uuid);
 
 impl Handler<DeleteDeployment> for Database {
-    type Result = Result<Uuid>;
+    type Result = ResponseActFuture<Self, Result<Uuid>>;
 
     fn handle(&mut self, msg: DeleteDeployment, _ctx: &mut Self::Context) -> Self::Result {
         let id = msg.0;
-        let mut connection = self.get_connection()?;
+        let connection_result = self.get_connection();
 
-        let deployment = Deployment::by_id(id).first(&mut connection)?;
-        deployment.soft_delete_elements().execute(&mut connection)?;
-        deployment.soft_delete().execute(&mut connection)?;
+        Box::pin(
+            async move {
+                let mut connection = connection_result?;
+                let id = block(move || {
+                    let deployment = Deployment::by_id(id).first(&mut connection)?;
+                    deployment.soft_delete_elements().execute(&mut connection)?;
+                    deployment.soft_delete().execute(&mut connection)?;
 
-        Ok(id)
+                    Ok(id)
+                })
+                .await??;
+
+                Ok(id)
+            }
+            .into_actor(self),
+        )
     }
 }
 
@@ -63,19 +97,30 @@ impl Handler<DeleteDeployment> for Database {
 pub struct CreateDeploymentElement(pub DeploymentElement);
 
 impl Handler<CreateDeploymentElement> for Database {
-    type Result = Result<DeploymentElement>;
+    type Result = ResponseActFuture<Self, Result<DeploymentElement>>;
 
     fn handle(&mut self, msg: CreateDeploymentElement, _ctx: &mut Self::Context) -> Self::Result {
         let new_deployment_element = msg.0;
-        let mut connection = self.get_connection()?;
+        let connection_result = self.get_connection();
 
-        new_deployment_element
-            .create_insert()
-            .execute(&mut connection)?;
-        let deployment_element =
-            DeploymentElement::by_id(new_deployment_element.id).first(&mut connection)?;
+        Box::pin(
+            async move {
+                let mut connection = connection_result?;
+                let deployment_element = block(move || {
+                    new_deployment_element
+                        .create_insert()
+                        .execute(&mut connection)?;
+                    let deployment_element = DeploymentElement::by_id(new_deployment_element.id)
+                        .first(&mut connection)?;
 
-        Ok(deployment_element)
+                    Ok(deployment_element)
+                })
+                .await??;
+
+                Ok(deployment_element)
+            }
+            .into_actor(self),
+        )
     }
 }
 
@@ -84,22 +129,32 @@ impl Handler<CreateDeploymentElement> for Database {
 pub struct UpdateDeploymentElement(pub DeploymentElement);
 
 impl Handler<UpdateDeploymentElement> for Database {
-    type Result = Result<DeploymentElement>;
+    type Result = ResponseActFuture<Self, Result<DeploymentElement>>;
 
     fn handle(&mut self, msg: UpdateDeploymentElement, _ctx: &mut Self::Context) -> Self::Result {
         let new_deployment_element = msg.0;
-        let mut connection = self.get_connection()?;
+        let connection_result = self.get_connection();
 
-        let updated_rows = new_deployment_element
-            .create_update()
-            .execute(&mut connection)?;
-        if updated_rows != 1 {
-            return Err(anyhow::anyhow!("Deployment element not found"));
-        }
-        let deployment_element =
-            DeploymentElement::by_id(new_deployment_element.id).first(&mut connection)?;
+        Box::pin(
+            async move {
+                let mut connection = connection_result?;
+                let deployment_element = block(move || {
+                    let updated_rows = new_deployment_element
+                        .create_update()
+                        .execute(&mut connection)?;
+                    if updated_rows != 1 {
+                        return Err(anyhow::anyhow!("Deployment element not found"));
+                    }
 
-        Ok(deployment_element)
+                    Ok(DeploymentElement::by_id(new_deployment_element.id)
+                        .first(&mut connection)?)
+                })
+                .await??;
+
+                Ok(deployment_element)
+            }
+            .into_actor(self),
+        )
     }
 }
 
@@ -111,7 +166,7 @@ pub struct GetDeploymentElementByDeploymentIdByScenarioReference(
 );
 
 impl Handler<GetDeploymentElementByDeploymentIdByScenarioReference> for Database {
-    type Result = Result<DeploymentElement>;
+    type Result = ResponseActFuture<Self, Result<DeploymentElement>>;
 
     fn handle(
         &mut self,
@@ -120,15 +175,24 @@ impl Handler<GetDeploymentElementByDeploymentIdByScenarioReference> for Database
     ) -> Self::Result {
         let deployment_id = msg.0;
         let scenario_reference = msg.1;
-        let mut connection = self.get_connection()?;
+        let connection_result = self.get_connection();
 
-        let deployment_element = DeploymentElement::by_deployer_id_by_scenario_reference(
-            deployment_id,
-            scenario_reference,
+        Box::pin(
+            async move {
+                let mut connection = connection_result?;
+                let deployment_element = block(move || {
+                    DeploymentElement::by_deployer_id_by_scenario_reference(
+                        deployment_id,
+                        scenario_reference,
+                    )
+                    .first(&mut connection)
+                })
+                .await??;
+
+                Ok(deployment_element)
+            }
+            .into_actor(self),
         )
-        .first(&mut connection)?;
-
-        Ok(deployment_element)
     }
 }
 
@@ -137,7 +201,7 @@ impl Handler<GetDeploymentElementByDeploymentIdByScenarioReference> for Database
 pub struct GetDeploymentElementByDeploymentId(pub Uuid);
 
 impl Handler<GetDeploymentElementByDeploymentId> for Database {
-    type Result = Result<Vec<DeploymentElement>>;
+    type Result = ResponseActFuture<Self, Result<Vec<DeploymentElement>>>;
 
     fn handle(
         &mut self,
@@ -145,11 +209,22 @@ impl Handler<GetDeploymentElementByDeploymentId> for Database {
         _ctx: &mut Self::Context,
     ) -> Self::Result {
         let deployment_id = msg.0;
-        let mut connection = self.get_connection()?;
+        let connection_result = self.get_connection();
 
-        let deployment_elements =
-            DeploymentElement::by_deployment_id(deployment_id).load(&mut connection)?;
+        Box::pin(
+            async move {
+                let mut connection = connection_result?;
+                let deployment_elements = block(move || {
+                    let deployment_elements =
+                        DeploymentElement::by_deployment_id(deployment_id).load(&mut connection)?;
 
-        Ok(deployment_elements)
+                    Ok(deployment_elements)
+                })
+                .await??;
+
+                Ok(deployment_elements)
+            }
+            .into_actor(self),
+        )
     }
 }
