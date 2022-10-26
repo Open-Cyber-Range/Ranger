@@ -68,25 +68,35 @@ impl DeployableTemplates for Scenario {
                         )))
                         .await??;
 
-                    let template_id = deployer_distributor
+                    match deployer_distributor
                         .send(Deploy(
                             DeployerTypes::Template,
                             source.try_to_deployment_command()?,
                             deployers.to_owned(),
                         ))
-                        .await??;
-                    debug!(
-                        "Template {} deployed with template id {}",
-                        name, template_id
-                    );
-                    deployment_element.status = ElementStatus::Success;
-                    deployment_element.handler_reference = Some(template_id);
+                        .await?
+                    {
+                        anyhow::Result::Ok(template_id) => {
+                            debug!(
+                                "Template {} deployed with template id {}",
+                                name, template_id
+                            );
+                            deployment_element.status = ElementStatus::Success;
+                            deployment_element.handler_reference = Some(template_id);
 
-                    database_address
-                        .send(UpdateDeploymentElement(deployment_element))
-                        .await??;
-
-                    Ok::<()>(())
+                            database_address
+                                .send(UpdateDeploymentElement(deployment_element))
+                                .await??;
+                            Ok::<()>(())
+                        }
+                        Err(error) => {
+                            deployment_element.status = ElementStatus::Failed;
+                            database_address
+                                .send(UpdateDeploymentElement(deployment_element))
+                                .await??;
+                            Err(error)
+                        }
+                    }
                 }),
         )
         .await?;
