@@ -34,7 +34,7 @@ export const List: <T>({
   </>
 );
 
-export function cardRender(exercise: ExerciseCard) {
+export function CardRender(exercise: ExerciseCard) {
   const navigate = useNavigate();
 
   const routeChange = () => {
