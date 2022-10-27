@@ -32,6 +32,8 @@ actix-web = "4"
 actix-http = { version = "3", features = ["http2", "ws"] }
 anyhow = "1"
 async-trait = "0.1"
+chrono = "0.4"
+diesel = { version = "2", features = ["mysql", "r2d2", "chrono"] }
 env_logger = "0.9"
 futures = "0.3"
 insta = { version = "1", features = ["redactions", "yaml"] }
@@ -39,7 +41,7 @@ log = "0.4"
 lazy_static = "1.4"
 rand = "0.8"
 ranger-grpc = { path = "../ranger-grpc" }
-sdl-parser = { git = "ssh://git@code.ocr.cr14.net/open-cyber-range/public/sdl-parser", branch = "feature/even-better-sdl" }
+sdl-parser = { git = "ssh://git@code.ocr.cr14.net/open-cyber-range/public/sdl-parser", branch = "master" }
 serde = { version = "1.0", features = ["derive"] }
 serde_yaml = "0.9"
 semver = "1"
@@ -58,6 +60,6 @@ uuid = { version = "1.1", features = ["v4", "serde"] }
 
 [dev-dependencies]
 actix-rt = "2"
-sdl-parser = { git = "ssh://git@code.ocr.cr14.net/open-cyber-range/public/sdl-parser", branch = "feature/even-better-sdl", features = [
+sdl-parser = { git = "ssh://git@code.ocr.cr14.net/open-cyber-range/public/sdl-parser", branch = "master", features = [
   "test",
 ] }

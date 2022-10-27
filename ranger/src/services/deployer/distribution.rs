@@ -128,7 +128,7 @@ impl DeployerDistribution {
 }
 
 #[derive(Message)]
-#[rtype(result = "Result<String, anyhow::Error>")]
+#[rtype(result = "Result<String>")]
 pub struct Deploy(
     pub DeployerTypes,
     pub Box<dyn DeploymentInfo>,
@@ -148,9 +148,36 @@ impl Handler<Deploy> for DeployerDistribution {
         Box::pin(
             async move {
                 let (mut deployment_client, best_deployer) = client_result?;
-                let vm_id = deployment_client.deploy(deployment).await?;
+                let handler_reference_id = deployment_client.deploy(deployment).await?;
 
-                Ok((vm_id, best_deployer))
+                Ok((handler_reference_id, best_deployer))
+            }
+            .into_actor(self)
+            .map(Self::release_deployer_closure),
+        )
+    }
+}
+
+#[derive(Message)]
+#[rtype(result = "Result<()>")]
+pub struct UnDeploy(pub DeployerTypes, pub String, pub Vec<String>);
+
+impl Handler<UnDeploy> for DeployerDistribution {
+    type Result = ResponseActFuture<Self, Result<()>>;
+
+    fn handle(&mut self, msg: UnDeploy, _ctx: &mut Self::Context) -> Self::Result {
+        let deployment_type = msg.0;
+        let handler_reference_id = msg.1;
+        let potential_deployers = msg.2;
+
+        let client_result = self.get_client(potential_deployers, deployment_type);
+
+        Box::pin(
+            async move {
+                let (mut deployment_client, best_deployer) = client_result?;
+                deployment_client.undeploy(handler_reference_id).await?;
+
+                Ok(((), best_deployer))
             }
             .into_actor(self)
             .map(Self::release_deployer_closure),

@@ -11,12 +11,24 @@ pub enum RangerError {
     ActixMailBoxError,
     #[error("Failed to deploy scenario")]
     DeploymentFailed,
+    #[error("Failed to undeploy exercise")]
+    UndeploymentFailed,
     #[error("DeployerGroup not found")]
     DeployerGroupNotfound,
     #[error("Exercise name too long")]
-    ExeciseNameTooLong,
+    ExerciseNameTooLong,
     #[error("Deployment name too long")]
     DeploymentNameTooLong,
+    #[error("Failed to parse uuid")]
+    UuidParsingFailed,
+    #[error("Failed to parse scenario")]
+    ScenarioParsingFailed,
+    #[error("Internal server error")]
+    DatabaseUnexpected,
+    #[error("Conflict")]
+    DatabaseConflict,
+    #[error("Not found")]
+    DatabaseRecordNotFound,
 }
 
 impl ResponseError for RangerError {
@@ -24,8 +36,12 @@ impl ResponseError for RangerError {
         match self {
             RangerError::ScenarioNotFound => StatusCode::NOT_FOUND,
             RangerError::DeployerGroupNotfound => StatusCode::NOT_FOUND,
-            RangerError::ExeciseNameTooLong => StatusCode::UNPROCESSABLE_ENTITY,
+            RangerError::ExerciseNameTooLong => StatusCode::UNPROCESSABLE_ENTITY,
             RangerError::DeploymentNameTooLong => StatusCode::UNPROCESSABLE_ENTITY,
+            RangerError::UuidParsingFailed => StatusCode::UNPROCESSABLE_ENTITY,
+            RangerError::ScenarioParsingFailed => StatusCode::UNPROCESSABLE_ENTITY,
+            RangerError::DatabaseConflict => StatusCode::CONFLICT,
+            RangerError::DatabaseRecordNotFound => StatusCode::NOT_FOUND,
             _ => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }

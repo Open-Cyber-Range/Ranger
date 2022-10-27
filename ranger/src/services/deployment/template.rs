@@ -1,7 +1,13 @@
-use super::{ledger::CreateEntry, Ledger};
-use crate::services::{
-    client::{Deployable, DeploymentInfo},
-    deployer::{Deploy, DeployerDistribution},
+use crate::{
+    models::{Deployment, DeploymentElement, ElementStatus},
+    services::{
+        client::{Deployable, DeploymentInfo},
+        database::{
+            deployment::{CreateDeploymentElement, UpdateDeploymentElement},
+            Database,
+        },
+        deployer::{Deploy, DeployerDistribution},
+    },
 };
 use actix::Addr;
 use anyhow::{anyhow, Ok, Result};
@@ -9,10 +15,7 @@ use async_trait::async_trait;
 use futures::future::try_join_all;
 use log::debug;
 use ranger_grpc::{capabilities::DeployerTypes, Source as GrpcSource};
-use sdl_parser::{
-    node::{NodeType, Source as SDLSource},
-    Scenario,
-};
+use sdl_parser::{common::Source as SDLSource, node::NodeType, Scenario};
 
 impl Deployable for SDLSource {
     fn try_to_deployment_command(&self) -> Result<Box<dyn DeploymentInfo>> {
@@ -29,7 +32,8 @@ pub trait DeployableTemplates {
         &self,
         deployer_distributor: &Addr<DeployerDistribution>,
         deployers: &[String],
-        ledger: &Addr<Ledger>,
+        database_address: &Addr<Database>,
+        deployment: &Deployment,
     ) -> Result<()>;
 }
 
@@ -39,7 +43,8 @@ impl DeployableTemplates for Scenario {
         &self,
         deployer_distributor: &Addr<DeployerDistribution>,
         deployers: &[String],
-        ledger: &Addr<Ledger>,
+        database_address: &Addr<Database>,
+        deployment: &Deployment,
     ) -> Result<()> {
         let nodes = self
             .nodes
@@ -55,22 +60,43 @@ impl DeployableTemplates for Scenario {
                         .as_ref()
                         .ok_or_else(|| anyhow!("Source not found"))?;
 
-                    let template_id = deployer_distributor
+                    let mut deployment_element = database_address
+                        .send(CreateDeploymentElement(DeploymentElement::new(
+                            deployment.id,
+                            Box::new(source.to_owned()),
+                            DeployerTypes::Template,
+                        )))
+                        .await??;
+
+                    match deployer_distributor
                         .send(Deploy(
                             DeployerTypes::Template,
                             source.try_to_deployment_command()?,
                             deployers.to_owned(),
                         ))
-                        .await??;
-                    debug!(
-                        "Template {} deployed with template id {}",
-                        name, template_id
-                    );
-                    ledger
-                        .send(CreateEntry(Box::new(source.clone()), template_id))
-                        .await??;
+                        .await?
+                    {
+                        anyhow::Result::Ok(template_id) => {
+                            debug!(
+                                "Template {} deployed with template id {}",
+                                name, template_id
+                            );
+                            deployment_element.status = ElementStatus::Success;
+                            deployment_element.handler_reference = Some(template_id);
 
-                    Ok::<()>(())
+                            database_address
+                                .send(UpdateDeploymentElement(deployment_element))
+                                .await??;
+                            Ok::<()>(())
+                        }
+                        Err(error) => {
+                            deployment_element.status = ElementStatus::Failed;
+                            database_address
+                                .send(UpdateDeploymentElement(deployment_element))
+                                .await??;
+                            Err(error)
+                        }
+                    }
                 }),
         )
         .await?;

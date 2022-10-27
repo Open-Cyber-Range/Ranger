@@ -12,7 +12,8 @@
     "github.copilot",
     "eamodio.gitlens",
     "samverschueren.linter-xo",
-    "styled-components.vscode-styled-components"
+    "styled-components.vscode-styled-components",
+    "mtxr.sqltools-driver-mysql"
   ],
   "workspaceFolder": "/workspace",
   "remoteUser": "vscode",
