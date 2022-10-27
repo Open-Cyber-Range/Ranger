@@ -1,12 +1,12 @@
 import React from 'react';
 
-const DeploymentList = () =>  (
-    <h1>I am list, believe me</h1>
-  );
+const DeploymentList = () => (
+  <h1>I am list, believe me</h1>
+);
 
 export default DeploymentList;
 
-// import {Button, Card} from '@blueprintjs/core';
+// Import {Button, Card} from '@blueprintjs/core';
 // import type {ReactElement, ReactNode} from 'react';
 // import {useState, useEffect} from 'react';
 // import axios from 'axios';

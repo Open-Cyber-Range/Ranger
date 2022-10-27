@@ -1,79 +1,44 @@
-
-import {Button, Card} from '@blueprintjs/core';
-import type {ReactElement, ReactNode} from 'react';
-import {useState, useEffect} from 'react';
-import axios from 'axios';
+import React from 'react';
+import {Button, Card, H2} from '@blueprintjs/core';
 import {useNavigate} from 'react-router-dom';
+import type {Exercise} from 'src/models/Exercise';
+import styled from 'styled-components';
 
-export type ExerciseCard = {
-  id: number;
-  open?: boolean;
-  name: string;
-  content: string;
-};
+const CardRow = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+`;
 
-export type Deployment = {
-  id: number;
-  exerciseName: string;
-  name: string;
-};
+const ActionButtons = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  > button {
+    margin-left: 1rem;
+  }
+`;
 
-export const List: <T>({
-  items,
-  render,
-}: {
-  items: T[];
-  render: (item: T) => ReactNode;
-
-}) => ReactElement = ({items, render}) => (
-  <>
-    {items.map((item, index) => (
-      <div key={index}>{render(item)}</div>
-    ))}
-  </>
-);
-
-export function CardRender(exercise: ExerciseCard) {
+const ExerciseCard = ({exercise}: {exercise: Exercise}) => {
   const navigate = useNavigate();
 
   const routeChange = () => {
-    const path = exercise.name;
-    navigate(path);
+    navigate(exercise.id);
   };
 
   return (
-    <div className='wrapper'>
-      <Card interactive={true} elevation={2} >
-        <div className='float-right' >
-          <Button intent='primary' onClick={routeChange}>
+    <Card interactive elevation={2}>
+      <CardRow>
+        <H2>{exercise.name}</H2>
+        <ActionButtons>
+          <Button large intent='primary' onClick={routeChange}>
             View
           </Button>
-          <div className='divider' />
-          <Button intent='danger'> Delete</Button>
-        </div>
-        {exercise.name}  <br/>
-      </Card>
-    </div>
-
+          <Button large intent='danger'> Delete</Button>
+        </ActionButtons>
+      </CardRow>
+    </Card>
   );
-}
+};
 
-function ListExercises() {
-  const [payload, setPayload] = useState<ExerciseCard[]>([]);
-
-  useEffect(() => {
-    const fetchData = async () => (axios.get('api/v1/exercise'));
-    fetchData().then(response => {
-      setPayload(response.data);
-    }).catch(error => {
-      throw new Error('Error retrieving exercise data');
-    });
-  }, []);
-
-  return (
-    <List items={payload} render={exercise => CardRender(exercise) }/> // eslint-disable-line new-cap
-
-  );
-}
-
-export default ListExercises;
+export default ExerciseCard;

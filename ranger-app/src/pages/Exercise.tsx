@@ -1,15 +1,11 @@
+import React from 'react';
 import type {SubmitHandler} from 'react-hook-form';
 import {useForm, Controller} from 'react-hook-form';
 import axios from 'axios';
-import {Button, FormGroup, InputGroup, Intent, TextArea} from '@blueprintjs/core';
-import styled from 'styled-components';
+import {Button, FormGroup, H2, InputGroup, Intent, TextArea} from '@blueprintjs/core';
 import {AppToaster} from '../components/Toaster';
-import ListExercises from '../components/ExerciseCard';
-
-const ExerciseWrapper = styled.div`
-  padding: 2rem;
-  max-width: 50rem;
-`;
+import ExerciseList from '../components/Exercise/List';
+import PageHolder from '../components/PageHolder';
 
 type Exercise = {
   name: string;
@@ -42,9 +38,9 @@ const ExerciseForm = () => {
   };
 
   return (
-    <ExerciseWrapper >
-      <h3>Add new exercise</h3>
-      <form className='ExerciseForm' onSubmit={handleSubmit(onSubmit)} >
+    <PageHolder>
+      <H2>Add new exercise</H2>
+      <form className='ExerciseForm' onSubmit={handleSubmit(onSubmit)}>
         <Controller
           control={control}
           name='name'
@@ -54,13 +50,13 @@ const ExerciseForm = () => {
             return (
               <FormGroup labelFor='execise-name' labelInfo='(required)' helperText={error?.message} intent={intent} label='Exercise name'>
                 <InputGroup
+                  large
                   intent={intent}
                   value={value}
-                  onChange={onChange}
-                  onBlur={onBlur}
                   inputRef={ref}
                   id='execise-name'
-                  large
+                  onChange={onChange}
+                  onBlur={onBlur}
                 />
               </FormGroup>
             );
@@ -75,25 +71,25 @@ const ExerciseForm = () => {
             return (
               <FormGroup labelFor='scenario' labelInfo='(required)' helperText={error?.message} intent={intent} label='Scenario SDL'>
                 <TextArea
-                  intent={intent}
-                  value={value}
-                  onChange={onChange}
-                  onBlur={onBlur}
-                  inputRef={ref}
-                  id='scenario'
                   small
                   fill
                   growVertically
+                  intent={intent}
+                  value={value}
+                  inputRef={ref}
+                  id='scenario'
                   rows={20}
+                  onChange={onChange}
+                  onBlur={onBlur}
                 />
               </FormGroup>
             );
           }}
         />
         <Button type='submit' intent='primary'> Submit </Button>
-        <ListExercises />
+        <ExerciseList/>
       </form>
-    </ExerciseWrapper>
+    </PageHolder>
   );
 };
 

@@ -48,9 +48,9 @@ const DeploymentForm = () => {
 
   return (
     <ExerciseWrapper>
-      herro  " {parameters.exerciseName} "
+      herro  &quot;{parameters.exerciseName}&quot;
       <div>
-        <form className='DeploymentForm' onSubmit={handleSubmit(onSubmit)} >
+        <form onSubmit={handleSubmit(onSubmit)}>
           <Controller
             control={control}
             name='name'
@@ -60,13 +60,13 @@ const DeploymentForm = () => {
               return (
                 <FormGroup labelFor='deployment-name' labelInfo='(required)' helperText={error?.message} intent={intent} label='Deployment name'>
                   <InputGroup
+                    large
                     intent={intent}
                     value={value}
-                    onChange={onChange}
-                    onBlur={onBlur}
                     inputRef={ref}
                     id='deployment-name'
-                    large
+                    onChange={onChange}
+                    onBlur={onBlur}
                   />
                 </FormGroup>
               );
@@ -76,7 +76,7 @@ const DeploymentForm = () => {
           <Button type='submit' intent='primary'> Add </Button>
         </form>
         <br/>
-        <ListDeployments />
+        <ListDeployments/>
       </div>
     </ExerciseWrapper>
   );
