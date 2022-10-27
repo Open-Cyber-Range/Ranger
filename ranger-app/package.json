@@ -29,12 +29,6 @@
     "eject": "react-scripts eject",
     "lint": "xo"
   },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
   "browserslist": {
     "production": [
       ">0.2%",
@@ -49,10 +43,23 @@
   },
   "proxy": "http://localhost:8085",
   "devDependencies": {
+    "eslint-config-xo-react": "^0.27.0",
+    "eslint-plugin-react": "^7.31.10",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-unused-imports": "^2.0.0",
     "xo": "^0.52.4"
   },
   "xo": {
     "space": true,
+    "plugins": [
+      "react",
+      "unused-imports"
+    ],
+    "extends": [
+      "plugin:react/recommended",
+      "plugin:react/jsx-runtime",
+      "xo-react"
+    ],
     "rules": {
       "import/extensions": [
         "error",
@@ -77,7 +84,24 @@
             ".ts"
           ]
         }
-      ]
+      ],
+      "react/function-component-definition": [
+        2,
+        {
+          "namedComponents": "arrow-function"
+        }
+      ],
+      "unused-imports/no-unused-imports": "error",
+      "unused-imports/no-unused-vars": [
+        "error",
+        {
+          "vars": "all",
+          "varsIgnorePattern": "^_",
+          "args": "after-used",
+          "argsIgnorePattern": "^_"
+        }
+      ],
+      "no-console": "error"
     }
   }
 }
