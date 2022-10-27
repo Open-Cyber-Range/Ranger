@@ -20,6 +20,7 @@ use serde::{Deserialize, Serialize};
 use super::helpers::{deployer_type::DeployerType, uuid::Uuid};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct NewDeploymentResource {
     #[serde(default = "Uuid::random")]
     pub id: Uuid,
@@ -29,6 +30,7 @@ pub struct NewDeploymentResource {
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize, Insertable)]
+#[serde(rename_all = "camelCase")]
 #[diesel(table_name = deployments)]
 pub struct NewDeployment {
     pub id: Uuid,
@@ -64,6 +66,7 @@ impl Validation for NewDeployment {
 }
 
 #[derive(Queryable, Selectable, Clone, Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 #[diesel(table_name = deployments)]
 pub struct Deployment {
     pub id: Uuid,

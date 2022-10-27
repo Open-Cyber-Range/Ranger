@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@blueprintjs/core": "^4.10.1",
+    "@reduxjs/toolkit": "^1.8.6",
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^13.0.0",
     "@testing-library/user-event": "^13.2.1",
@@ -16,6 +17,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.36.1",
+    "react-redux": "^8.0.4",
     "react-router-dom": "^6.4.1",
     "react-scripts": "5.0.1",
     "styled-components": "^5.3.6",
@@ -28,12 +30,6 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "lint": "xo"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
   },
   "browserslist": {
     "production": [
@@ -49,10 +45,27 @@
   },
   "proxy": "http://localhost:8085",
   "devDependencies": {
+    "eslint-config-xo-react": "^0.27.0",
+    "eslint-plugin-import-newlines": "^1.2.3",
+    "eslint-plugin-no-relative-import-paths": "^1.4.0",
+    "eslint-plugin-react": "^7.31.10",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-unused-imports": "^2.0.0",
     "xo": "^0.52.4"
   },
   "xo": {
     "space": true,
+    "plugins": [
+      "react",
+      "unused-imports",
+      "no-relative-import-paths",
+      "import-newlines"
+    ],
+    "extends": [
+      "plugin:react/recommended",
+      "plugin:react/jsx-runtime",
+      "xo-react"
+    ],
     "rules": {
       "import/extensions": [
         "error",
@@ -77,6 +90,49 @@
             ".ts"
           ]
         }
+      ],
+      "react/function-component-definition": [
+        2,
+        {
+          "namedComponents": "arrow-function"
+        }
+      ],
+      "unused-imports/no-unused-imports": "error",
+      "unused-imports/no-unused-vars": [
+        "error",
+        {
+          "vars": "all",
+          "varsIgnorePattern": "^_",
+          "args": "after-used",
+          "argsIgnorePattern": "^_"
+        }
+      ],
+      "no-console": "error",
+      "no-relative-import-paths/no-relative-import-paths": [
+        "error",
+        {
+          "allowSameFolder": true
+        }
+      ],
+      "max-len": [
+        "error",
+        {
+          "code": 80
+        }
+      ],
+      "react/jsx-max-props-per-line": [
+        "error",
+        {
+          "maximum": {
+            "single": 4,
+            "multi": 1
+          }
+        }
+      ],
+      "import-newlines/enforce": [
+        "error",
+        4,
+        80
       ]
     }
   }
