@@ -2,10 +2,11 @@ import React, {useState} from 'react';
 import {Button, Dialog, H2, InputGroup} from '@blueprintjs/core';
 
 const NameDialog = (
-  {isOpen, title, onSumbit, onCancel}:
+  {isOpen, title, placeholder, onSumbit, onCancel}:
   {
     isOpen: boolean;
     title: string;
+    placeholder?: string;
     onSumbit: (name: string) => void;
     onCancel: () => void;
   },
@@ -29,6 +30,7 @@ const NameDialog = (
           large
           value={name}
           leftIcon='graph'
+          placeholder={placeholder ?? 'Name'}
           onChange={event => {
             setName(event.target.value);
           }}/>
