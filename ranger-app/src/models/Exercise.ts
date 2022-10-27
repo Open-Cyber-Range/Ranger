@@ -1,11 +1,11 @@
 
 type NewExercise = {
-  id: string;
   name: string;
   sdlSchema?: string;
 };
 
 type Exercise = {
+  id: string;
   createdAt: string;
   updatedAt: string;
 } & NewExercise;

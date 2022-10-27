@@ -44,6 +44,8 @@
   "proxy": "http://localhost:8085",
   "devDependencies": {
     "eslint-config-xo-react": "^0.27.0",
+    "eslint-plugin-import-newlines": "^1.2.3",
+    "eslint-plugin-no-relative-import-paths": "^1.4.0",
     "eslint-plugin-react": "^7.31.10",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-unused-imports": "^2.0.0",
@@ -53,7 +55,9 @@
     "space": true,
     "plugins": [
       "react",
-      "unused-imports"
+      "unused-imports",
+      "no-relative-import-paths",
+      "import-newlines"
     ],
     "extends": [
       "plugin:react/recommended",
@@ -101,7 +105,33 @@
           "argsIgnorePattern": "^_"
         }
       ],
-      "no-console": "error"
+      "no-console": "error",
+      "no-relative-import-paths/no-relative-import-paths": [
+        "error",
+        {
+          "allowSameFolder": true
+        }
+      ],
+      "max-len": [
+        "error",
+        {
+          "code": 80
+        }
+      ],
+      "react/jsx-max-props-per-line": [
+        "error",
+        {
+          "maximum": {
+            "single": 4,
+            "multi": 1
+          }
+        }
+      ],
+      "import-newlines/enforce": [
+        "error",
+        4,
+        80
+      ]
     }
   }
 }

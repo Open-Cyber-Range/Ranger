@@ -7,10 +7,18 @@ const MainNavbar = () => (
     <Navbar.Group align={Alignment.LEFT}>
       <Navbar.Heading>Ranger</Navbar.Heading>
       <Navbar.Divider/>
-      <Link role='button' className='bp4-button bp4-minimal bp4-icon-home' to='/'>
+      <Link
+        role='button'
+        className='bp4-button bp4-minimal bp4-icon-home'
+        to='/'
+      >
         Home
       </Link>
-      <Link role='button' className='bp4-button bp4-minimal bp4-icon-document' to='/exercises'>
+      <Link
+        role='button'
+        className='bp4-button bp4-minimal bp4-icon-document'
+        to='/exercises'
+      >
         Exercises
       </Link>
     </Navbar.Group>

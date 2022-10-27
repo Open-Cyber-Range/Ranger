@@ -5,8 +5,8 @@ import type {SubmitHandler} from 'react-hook-form';
 import {Controller, useForm} from 'react-hook-form';
 import {useParams} from 'react-router-dom';
 import styled from 'styled-components';
-import ListDeployments from '../components/DeploymentCard';
-import {AppToaster} from '../components/Toaster';
+import ListDeployments from 'src/components/DeploymentCard';
+import {AppToaster} from 'src/components/Toaster';
 
 const ExerciseWrapper = styled.div`
   padding: 2rem;
@@ -55,10 +55,18 @@ const DeploymentForm = () => {
             control={control}
             name='name'
             rules={{required: 'Deployment must have a name'}}
-            render={({field: {onChange, onBlur, ref, value}, fieldState: {error}}) => {
+            render={({
+              field: {onChange, onBlur, ref, value}, fieldState: {error},
+            }) => {
               const intent = error ? Intent.DANGER : Intent.NONE;
               return (
-                <FormGroup labelFor='deployment-name' labelInfo='(required)' helperText={error?.message} intent={intent} label='Deployment name'>
+                <FormGroup
+                  labelFor='deployment-name'
+                  labelInfo='(required)'
+                  helperText={error?.message}
+                  intent={intent}
+                  label='Deployment name'
+                >
                   <InputGroup
                     large
                     intent={intent}

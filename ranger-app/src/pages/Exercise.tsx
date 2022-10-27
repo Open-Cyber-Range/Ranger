@@ -1,28 +1,28 @@
-import React from 'react';
-import type {SubmitHandler} from 'react-hook-form';
-import {useForm, Controller} from 'react-hook-form';
+import React, {useState} from 'react';
+import {Button, H2, Intent} from '@blueprintjs/core';
+import List from 'src/components/Exercise/List';
+import NameDialog from 'src/components/NameDialog';
+import PageHolder from 'src/components/PageHolder';
+import styled from 'styled-components';
 import axios from 'axios';
-import {Button, FormGroup, H2, InputGroup, Intent, TextArea} from '@blueprintjs/core';
-import {AppToaster} from '../components/Toaster';
-import ExerciseList from '../components/Exercise/List';
-import PageHolder from '../components/PageHolder';
+import {AppToaster} from 'src/components/Toaster';
+import type {NewExercise} from 'src/models/Exercise';
 
-type Exercise = {
-  name: string;
-  scenario: string;
-};
+const Header = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-bottom: 4rem;
+`;
 
-const ExerciseForm = () => {
-  const {handleSubmit, control} = useForm<Exercise>({
-    defaultValues: {
-      name: '',
-      scenario: '',
-    },
-  });
-
-  const onSubmit: SubmitHandler<Exercise> = async exercise => {
+const Exercise = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const addNewExercise = async (name: string) => {
     try {
-      await axios.post<Exercise>('api/v1/exercise', exercise);
+      const exercise: NewExercise = {
+        name,
+      };
+      await axios.post<NewExercise>('api/v1/exercise', exercise);
       AppToaster.show({
         icon: 'tick',
         intent: Intent.SUCCESS,
@@ -39,58 +39,30 @@ const ExerciseForm = () => {
 
   return (
     <PageHolder>
-      <H2>Add new exercise</H2>
-      <form className='ExerciseForm' onSubmit={handleSubmit(onSubmit)}>
-        <Controller
-          control={control}
-          name='name'
-          rules={{required: 'Exercise must have a name'}}
-          render={({field: {onChange, onBlur, ref, value}, fieldState: {error}}) => {
-            const intent = error ? Intent.DANGER : Intent.NONE;
-            return (
-              <FormGroup labelFor='execise-name' labelInfo='(required)' helperText={error?.message} intent={intent} label='Exercise name'>
-                <InputGroup
-                  large
-                  intent={intent}
-                  value={value}
-                  inputRef={ref}
-                  id='execise-name'
-                  onChange={onChange}
-                  onBlur={onBlur}
-                />
-              </FormGroup>
-            );
-          }}
-        />
-        <Controller
-          control={control}
-          name='scenario'
-          rules={{required: 'Exercise must have a scenario'}}
-          render={({field: {onChange, onBlur, ref, value}, fieldState: {error}}) => {
-            const intent = error ? Intent.DANGER : Intent.NONE;
-            return (
-              <FormGroup labelFor='scenario' labelInfo='(required)' helperText={error?.message} intent={intent} label='Scenario SDL'>
-                <TextArea
-                  small
-                  fill
-                  growVertically
-                  intent={intent}
-                  value={value}
-                  inputRef={ref}
-                  id='scenario'
-                  rows={20}
-                  onChange={onChange}
-                  onBlur={onBlur}
-                />
-              </FormGroup>
-            );
-          }}
-        />
-        <Button type='submit' intent='primary'> Submit </Button>
-        <ExerciseList/>
-      </form>
+      <Header>
+        <H2>Exercises</H2>
+        <Button
+          large
+          icon='add'
+          intent='success'
+          text='Add new exercise'
+          onClick={() => {
+            setIsOpen(true);
+          }}/>
+      </Header>
+      <NameDialog
+        title='Add exercise'
+        isOpen={isOpen}
+        onCancel={() => {
+          setIsOpen(false);
+        }}
+        onSumbit={async value => {
+          setIsOpen(false);
+          await addNewExercise(value);
+        }}/>
+      <List/>
     </PageHolder>
   );
 };
 
-export default ExerciseForm;
+export default Exercise;
