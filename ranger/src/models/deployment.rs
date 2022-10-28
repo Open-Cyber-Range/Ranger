@@ -226,6 +226,13 @@ impl Deployment {
         Self::all().filter(deployments::id.eq(id))
     }
 
+    pub fn by_exercise_id(
+        id: Uuid,
+    ) -> SelectById<deployments::table, deployments::exercise_id, deployments::deleted_at, Self>
+    {
+        Self::all().filter(deployments::exercise_id.eq(id))
+    }
+
     pub fn soft_delete_elements(
         &self,
     ) -> SoftDelete<ByDeploymentId<deployment_elements::table>, deployment_elements::deleted_at>
