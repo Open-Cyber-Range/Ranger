@@ -133,6 +133,24 @@
         "error",
         4,
         80
+      ],
+      "@typescript-eslint/naming-convention": [
+        "error",
+        {
+          "selector": "variable",
+          "modifiers": [
+            "const",
+            "exported",
+            "global"
+          ],
+          "types": [
+            "string",
+            "number"
+          ],
+          "format": [
+            "UPPER_CASE"
+          ]
+        }
       ]
     }
   }
