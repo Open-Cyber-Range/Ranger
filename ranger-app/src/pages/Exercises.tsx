@@ -1,22 +1,13 @@
-import React, {useState} from 'react';
-import {Button, H2, Intent} from '@blueprintjs/core';
+import React from 'react';
+import {Intent} from '@blueprintjs/core';
 import List from 'src/components/Exercise/List';
-import NameDialog from 'src/components/NameDialog';
 import PageHolder from 'src/components/PageHolder';
-import styled from 'styled-components';
 import {AppToaster} from 'src/components/Toaster';
 import type {NewExercise} from 'src/models/Exercise';
 import {useAddExerciseMutation} from 'src/slices/apiSlice';
-
-const Header = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  margin-bottom: 4rem;
-`;
+import Header from 'src/components/Header';
 
 const Exercise = () => {
-  const [isOpen, setIsOpen] = useState(false);
   const [addExercise, _newExercise] = useAddExerciseMutation();
   const addNewExercise = async (name: string) => {
     try {
@@ -41,26 +32,12 @@ const Exercise = () => {
 
   return (
     <PageHolder>
-      <Header>
-        <H2>Exercises</H2>
-        <Button
-          large
-          icon='add'
-          intent='success'
-          text='Add new exercise'
-          onClick={() => {
-            setIsOpen(true);
-          }}/>
-      </Header>
-      <NameDialog
-        title='Add exercise'
-        isOpen={isOpen}
-        onCancel={() => {
-          setIsOpen(false);
-        }}
-        onSumbit={async value => {
-          setIsOpen(false);
-          await addNewExercise(value);
+      <Header
+        headerTitle='Exercises'
+        dialogTitle='Add Exercise'
+        buttonTitle='Add Exercise'
+        onSubmit={async name => {
+          await addNewExercise(name);
         }}/>
       <List/>
     </PageHolder>

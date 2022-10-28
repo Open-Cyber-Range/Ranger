@@ -10,4 +10,6 @@ type Exercise = {
   updatedAt: string;
 } & NewExercise;
 
-export type {NewExercise, Exercise};
+type UpdateExercise = NewExercise;
+
+export type {NewExercise, Exercise, UpdateExercise};

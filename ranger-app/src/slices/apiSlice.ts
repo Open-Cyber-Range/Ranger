@@ -1,7 +1,7 @@
 import {createApi, fetchBaseQuery} from '@reduxjs/toolkit/query/react';
 import {BASE_URL} from 'src/constants';
-import type {Deployment} from 'src/models/Deployment';
-import type {Exercise, NewExercise} from 'src/models/Exercise';
+import type {Deployment, NewDeployment} from 'src/models/Deployment';
+import type {Exercise, NewExercise, UpdateExercise} from 'src/models/Exercise';
 
 export const apiSlice = createApi({
   reducerPath: 'api',
@@ -13,17 +13,30 @@ export const apiSlice = createApi({
     getExercise: builder.query<Exercise, string>({
       query: exerciseId => `/exercise/${exerciseId}`,
     }),
-    getDeployments: builder.query<Deployment[], string>({
-      query: exerciseId => `/exercise/${exerciseId}/deployment`,
-    }),
     addExercise: builder.mutation<Exercise, NewExercise>({
       query: newExercise => ({
         url: '/exercise', method: 'POST', body: newExercise,
       }),
     }),
-    updateExercise: builder.mutation<Exercise, Exercise>({
-      query: exercise => ({
-        url: '/exercise', method: 'PUT', body: exercise,
+    updateExercise: builder.mutation<Exercise, {
+      exerciseUpdate: UpdateExercise; exerciseId: string;
+    }>({
+      query: ({exerciseUpdate, exerciseId}) => ({
+        url: `/exercise/${exerciseId}`, method: 'PUT', body: exerciseUpdate,
+      }),
+    }),
+    getDeployments: builder.query<Deployment[], string>({
+      query: exerciseId => `/exercise/${exerciseId}/deployment`,
+    }),
+    addDeployment: builder
+      .mutation<Deployment,
+    {
+      newDeployment: NewDeployment; exerciseId: string;
+    }>({
+      query: ({newDeployment, exerciseId}) => ({
+        url: `/exercise/${exerciseId}/deployment`,
+        method: 'POST',
+        body: newDeployment,
       }),
     }),
   }),
@@ -32,7 +45,8 @@ export const apiSlice = createApi({
 export const {
   useGetExerciseQuery,
   useGetExercisesQuery,
-  useGetDeploymentsQuery,
   useAddExerciseMutation,
   useUpdateExerciseMutation,
+  useGetDeploymentsQuery,
+  useAddDeploymentMutation,
 } = apiSlice;

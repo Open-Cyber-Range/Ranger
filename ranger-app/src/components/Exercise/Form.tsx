@@ -9,22 +9,25 @@ import {
   TextArea,
 } from '@blueprintjs/core';
 import {AppToaster} from 'src/components/Toaster';
-import type {Exercise} from 'src/models/Exercise';
+import type {Exercise, UpdateExercise} from 'src/models/Exercise';
 import {useUpdateExerciseMutation} from 'src/slices/apiSlice';
 
 const ExerciseForm = ({exercise}: {exercise: Exercise}) => {
-  const {handleSubmit, control} = useForm<Exercise>({
-    defaultValues: exercise,
+  const {handleSubmit, control} = useForm<UpdateExercise>({
+    defaultValues: {
+      name: exercise.name,
+      sdlSchema: exercise.sdlSchema ?? '',
+    },
   });
   const [updateExercise, _newExercise] = useUpdateExerciseMutation();
 
-  const onSubmit: SubmitHandler<Exercise> = async updatedExercise => {
+  const onSubmit: SubmitHandler<UpdateExercise> = async exerciseUpdate => {
     try {
-      await updateExercise(updatedExercise);
+      await updateExercise({exerciseUpdate, exerciseId: exercise.id});
       AppToaster.show({
         icon: 'tick',
         intent: Intent.SUCCESS,
-        message: `Exercise "${updatedExercise.name}" added`,
+        message: `Exercise "${exerciseUpdate.name}" updated`,
       });
     } catch {
       AppToaster.show({
