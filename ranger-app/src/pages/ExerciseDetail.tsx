@@ -54,7 +54,7 @@ const ExerciseDetail = () => {
   if (exercise && deployments) {
     return (
       <PageHolder>
-        <h2>  Exercise name:  {exercise.name}</h2>
+        <h2>{exercise.name}</h2>
 
         <ExerciseForm exercise={exercise}/>
         <br/>
