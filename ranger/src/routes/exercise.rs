@@ -78,6 +78,25 @@ pub async fn update_exercise(
     Ok(Json(exercise))
 }
 
+#[get("exercise/{exercise_uuid}")]
+pub async fn get_exercise(
+    path_variables: Path<Uuid>,
+    app_state: Data<AppState>,
+) -> Result<Json<Exercise>, RangerError> {
+    let exercise_uuid = path_variables.into_inner();
+    let exercise = app_state
+        .database_address
+        .send(crate::services::database::exercise::GetExercise(
+            exercise_uuid,
+        ))
+        .await
+        .map_err(create_mailbox_error_handler("Database"))?
+        .map_err(create_database_error_handler("Get exercise"))?;
+    log::debug!("Get exercise: {}", exercise_uuid);
+
+    Ok(Json(exercise))
+}
+
 #[delete("exercise/{exercise_uuid}")]
 pub async fn delete_exercise(
     path_variables: Path<Uuid>,

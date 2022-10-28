@@ -3,7 +3,8 @@ use actix_web::{web::Data, App, HttpServer};
 use anyhow::Error;
 use ranger::app_setup;
 use ranger::routes::exercise::{
-    delete_exercise_deployment, get_exercise_deployment_elements, get_exercises, update_exercise,
+    delete_exercise_deployment, get_exercise, get_exercise_deployment_elements,
+    get_exercise_deployments, get_exercises, update_exercise,
 };
 use ranger::routes::{
     basic::{status, version},
@@ -25,12 +26,14 @@ async fn main() -> Result<(), Error> {
             .service(
                 scope("/api/v1")
                     .service(get_exercise_deployment_elements)
+                    .service(get_exercise_deployments)
                     .service(add_exercise_deployment)
                     .service(delete_exercise_deployment)
                     .service(get_exercises)
                     .service(add_exercise)
                     .service(delete_exercise)
-                    .service(update_exercise),
+                    .service(update_exercise)
+                    .service(get_exercise),
             )
     })
     .bind((host, port))?

@@ -4,9 +4,9 @@ import List from 'src/components/Exercise/List';
 import NameDialog from 'src/components/NameDialog';
 import PageHolder from 'src/components/PageHolder';
 import styled from 'styled-components';
-import axios from 'axios';
 import {AppToaster} from 'src/components/Toaster';
 import type {NewExercise} from 'src/models/Exercise';
+import {useAddExerciseMutation} from 'src/slices/apiSlice';
 
 const Header = styled.div`
   display: flex;
@@ -17,12 +17,14 @@ const Header = styled.div`
 
 const Exercise = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [addExercise, _newExercise] = useAddExerciseMutation();
   const addNewExercise = async (name: string) => {
     try {
       const exercise: NewExercise = {
         name,
       };
-      await axios.post<NewExercise>('api/v1/exercise', exercise);
+      await addExercise(exercise);
+
       AppToaster.show({
         icon: 'tick',
         intent: Intent.SUCCESS,
