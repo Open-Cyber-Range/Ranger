@@ -8,7 +8,7 @@ use crate::{
         database::{
             deployment::{
                 CreateDeployment, DeleteDeployment, GetDeployment,
-                GetDeploymentElementByDeploymentId,
+                GetDeploymentElementByDeploymentId, GetDeployments,
             },
             exercise::{CreateExercise, DeleteExercise, GetExercise, GetExercises},
         },
@@ -74,6 +74,25 @@ pub async fn update_exercise(
         .map_err(create_mailbox_error_handler("Database"))?
         .map_err(create_database_error_handler("Update exercise"))?;
     log::debug!("Updated exercise: {}", exercise_uuid);
+
+    Ok(Json(exercise))
+}
+
+#[get("exercise/{exercise_uuid}")]
+pub async fn get_exercise(
+    path_variables: Path<Uuid>,
+    app_state: Data<AppState>,
+) -> Result<Json<Exercise>, RangerError> {
+    let exercise_uuid = path_variables.into_inner();
+    let exercise = app_state
+        .database_address
+        .send(crate::services::database::exercise::GetExercise(
+            exercise_uuid,
+        ))
+        .await
+        .map_err(create_mailbox_error_handler("Database"))?
+        .map_err(create_database_error_handler("Get exercise"))?;
+    log::debug!("Get exercise: {}", exercise_uuid);
 
     Ok(Json(exercise))
 }
@@ -190,4 +209,20 @@ pub async fn get_exercise_deployment_elements(
         .map_err(create_database_error_handler("Get deployment elements"))?;
 
     Ok(Json(elements))
+}
+
+#[get("exercise/{exercise_uuid}/deployment")]
+pub async fn get_exercise_deployments(
+    path_variables: Path<Uuid>,
+    app_state: Data<AppState>,
+) -> Result<Json<Vec<Deployment>>, RangerError> {
+    let exercise_uuid = path_variables.into_inner();
+    let deployments = app_state
+        .database_address
+        .send(GetDeployments(exercise_uuid))
+        .await
+        .map_err(create_mailbox_error_handler("Database"))?
+        .map_err(create_database_error_handler("Get deployments"))?;
+
+    Ok(Json(deployments))
 }

@@ -1,7 +1,6 @@
 import React from 'react';
 import type {SubmitHandler} from 'react-hook-form';
 import {useForm, Controller} from 'react-hook-form';
-import axios from 'axios';
 import {
   Button,
   FormGroup,
@@ -10,23 +9,25 @@ import {
   TextArea,
 } from '@blueprintjs/core';
 import {AppToaster} from 'src/components/Toaster';
-import type {NewExercise} from 'src/models/Exercise';
+import type {Exercise, UpdateExercise} from 'src/models/Exercise';
+import {useUpdateExerciseMutation} from 'src/slices/apiSlice';
 
-const ExerciseForm = () => {
-  const {handleSubmit, control} = useForm<NewExercise>({
+const ExerciseForm = ({exercise}: {exercise: Exercise}) => {
+  const {handleSubmit, control} = useForm<UpdateExercise>({
     defaultValues: {
-      name: '',
-      sdlSchema: '',
+      name: exercise.name,
+      sdlSchema: exercise.sdlSchema ?? '',
     },
   });
+  const [updateExercise, _newExercise] = useUpdateExerciseMutation();
 
-  const onSubmit: SubmitHandler<NewExercise> = async exercise => {
+  const onSubmit: SubmitHandler<UpdateExercise> = async exerciseUpdate => {
     try {
-      await axios.post<NewExercise>('api/v1/exercise', exercise);
+      await updateExercise({exerciseUpdate, exerciseId: exercise.id});
       AppToaster.show({
         icon: 'tick',
         intent: Intent.SUCCESS,
-        message: `Exercise "${exercise.name}" added`,
+        message: `Exercise "${exerciseUpdate.name}" updated`,
       });
     } catch {
       AppToaster.show({

@@ -27,13 +27,10 @@ const ExerciseCard = ({exercise}: {exercise: Exercise}) => {
   };
 
   return (
-    <Card interactive elevation={2}>
+    <Card interactive elevation={2} onClick={routeChange}>
       <CardRow>
         <H2>{exercise.name}</H2>
         <ActionButtons>
-          <Button large intent='primary' onClick={routeChange}>
-            View
-          </Button>
           <Button large intent='danger'> Delete</Button>
         </ActionButtons>
       </CardRow>

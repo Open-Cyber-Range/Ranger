@@ -1,10 +1,10 @@
 import React from 'react';
 
-const DeploymentList = () => (
+const DeploymentList1 = () => (
   <h1>I am list, believe me</h1>
 );
 
-export default DeploymentList;
+export default DeploymentList1;
 
 // Import {Button, Card} from '@blueprintjs/core';
 // import type {ReactElement, ReactNode} from 'react';

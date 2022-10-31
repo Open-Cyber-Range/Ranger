@@ -75,6 +75,7 @@ impl Exercise {
 }
 
 #[derive(AsChangeset, Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 #[diesel(table_name = exercises)]
 pub struct UpdateExercise {
     pub name: String,

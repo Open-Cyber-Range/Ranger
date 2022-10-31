@@ -36,6 +36,33 @@ impl Handler<CreateDeployment> for Database {
 }
 
 #[derive(Message)]
+#[rtype(result = "Result<Vec<Deployment>>")]
+pub struct GetDeployments(pub Uuid);
+
+impl Handler<GetDeployments> for Database {
+    type Result = ResponseActFuture<Self, Result<Vec<Deployment>>>;
+
+    fn handle(&mut self, msg: GetDeployments, _ctx: &mut Self::Context) -> Self::Result {
+        let id = msg.0;
+        let connection_result = self.get_connection();
+
+        Box::pin(
+            async move {
+                let mut connection = connection_result?;
+                let deployments = block(move || {
+                    let deployments = Deployment::by_exercise_id(id).load(&mut connection)?;
+                    Ok(deployments)
+                })
+                .await??;
+
+                Ok(deployments)
+            }
+            .into_actor(self),
+        )
+    }
+}
+
+#[derive(Message)]
 #[rtype(result = "Result<Deployment>")]
 pub struct GetDeployment(pub Uuid);
 
