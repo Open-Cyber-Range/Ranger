@@ -6,8 +6,10 @@ import {AppToaster} from 'src/components/Toaster';
 import type {NewExercise} from 'src/models/Exercise';
 import {useAddExerciseMutation} from 'src/slices/apiSlice';
 import Header from 'src/components/Header';
+import {useTranslation} from 'react-i18next';
 
 const Exercise = () => {
+  const {t} = useTranslation();
   const [addExercise, _newExercise] = useAddExerciseMutation();
   const addNewExercise = async (name: string) => {
     try {
@@ -33,7 +35,7 @@ const Exercise = () => {
   return (
     <PageHolder>
       <Header
-        headerTitle='Exercises'
+        headerTitle={t('exercises.title')}
         dialogTitle='Add Exercise'
         buttonTitle='Add Exercise'
         onSubmit={async name => {

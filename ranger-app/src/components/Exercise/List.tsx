@@ -15,6 +15,7 @@ const Wrapper = styled.div`
 const ExerciseList = () => {
   const {
     data: potentialExercises,
+
   } = useGetExercisesQuery();
   const exercises = potentialExercises ?? [];
 
