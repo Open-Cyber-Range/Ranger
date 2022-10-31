@@ -16,18 +16,19 @@ const Exercise = () => {
       const exercise: NewExercise = {
         name,
       };
+      const exerciseName = exercise.name;
       await addExercise(exercise);
 
       AppToaster.show({
         icon: 'tick',
         intent: Intent.SUCCESS,
-        message: `Exercise "${exercise.name}" added`,
+        message: t('exercises.addingSuccess', {exerciseName}),
       });
     } catch {
       AppToaster.show({
         icon: 'warning-sign',
         intent: Intent.DANGER,
-        message: 'Failed to add the exercise',
+        message: t('exercises.addingFail'),
       });
     }
   };
@@ -36,8 +37,8 @@ const Exercise = () => {
     <PageHolder>
       <Header
         headerTitle={t('exercises.title')}
-        dialogTitle='Add Exercise'
-        buttonTitle='Add Exercise'
+        dialogTitle={t('exercises.add')}
+        buttonTitle={t('exercises.add')}
         onSubmit={async name => {
           await addNewExercise(name);
         }}/>

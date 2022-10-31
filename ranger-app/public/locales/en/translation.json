@@ -1,9 +1,9 @@
 {
+  "homepage": "Welcome to Ranger!",
   "exercises": {
-    "title": "Exercises"
-  },
-  "description": {
-    "part1": "To get started, edit <1>src/App.js</1> and save to reload.",
-    "part2": "Switch language between english and german using buttons above."
+    "title": "Exercises",
+    "add": "Add exercise",
+    "addingSuccess": "Exercise {{exerciseName}} added",
+    "addingFail": "Failed to add the exercise"
   }
 }
