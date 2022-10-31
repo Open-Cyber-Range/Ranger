@@ -14,8 +14,10 @@ import type {NewDeployment} from 'src/models/Deployment';
 import {Intent} from '@blueprintjs/core';
 import {AppToaster} from 'src/components/Toaster';
 import Header from 'src/components/Header';
+import {useTranslation} from 'react-i18next';
 
 const ExerciseDetail = () => {
+  const {t} = useTranslation();
   const {exerciseId} = useParams<ExerciseDetailRouteParameters>();
   const {data: deployments} = useGetDeploymentsQuery(exerciseId ?? skipToken);
   const {data: exercise} = useGetExerciseQuery(exerciseId ?? skipToken);
@@ -28,25 +30,26 @@ const ExerciseDetail = () => {
           name,
           sdlSchema: exercise.sdlSchema,
         };
+        const newDeploymentName = newDeployment.name;
         await addDeployment({newDeployment, exerciseId: exercise.id});
 
         AppToaster.show({
           icon: 'tick',
           intent: Intent.SUCCESS,
-          message: `Deployment "${newDeployment.name}" added`,
+          message: t('deployments.addingSuccess', {newDeploymentName}),
         });
       } catch {
         AppToaster.show({
           icon: 'warning-sign',
           intent: Intent.DANGER,
-          message: 'Failed to add the deployment',
+          message: t('deployments.addingFail'),
         });
       }
     } else {
       AppToaster.show({
         icon: 'warning-sign',
         intent: Intent.DANGER,
-        message: 'Exercise must have an sdl-schema',
+        message: t('deployments.sdlMissing'),
       });
     }
   };
@@ -60,9 +63,9 @@ const ExerciseDetail = () => {
         <br/>
 
         <Header
-          headerTitle='Deployments'
-          dialogTitle='Add Deployment'
-          buttonTitle='Add Deployment'
+          headerTitle={t('deployments.title')}
+          dialogTitle={t('deployments.add')}
+          buttonTitle={t('deployments.add')}
           onSubmit={async name => {
             await addNewDeployment(name);
           }}/>

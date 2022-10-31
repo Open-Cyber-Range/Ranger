@@ -5,10 +5,10 @@ const Home = () => {
   const {t} = useTranslation();
 
   return (
-  <div style={{padding: 20}}>
-    <h2>{t('homepage')}</h2>
-  </div>
-);
+    <div style={{padding: 20}}>
+      <h2>{t('homepage')}</h2>
+    </div>
+  );
 };
 
 export default Home;
