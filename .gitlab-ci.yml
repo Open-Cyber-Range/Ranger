@@ -38,20 +38,6 @@ build-frontend:
   only:
     - master
 
-build-x86-64bit-windows-release:
-  stage: build
-  dependencies:
-    - build-frontend
-  needs: ["lint-and-test", "build-frontend"]
-  image: $DOCKER_REGISTRY_PULL/rust-builder
-  before_script:
-    - git config --global url."https://gitlab+deploy-token-2:${OCR_DEPLOY_TOKEN_PASSWORD}@code.ocr.cr14.net/open-cyber-range/public/sdl-parser.git/".insteadOf "ssh://git@code.ocr.cr14.net/open-cyber-range/public/sdl-parser"
-    - git clone https://gitlab+deploy-token-2:${OCR_DEPLOY_TOKEN_PASSWORD}@code.ocr.cr14.net/open-cyber-range/public/sdl-parser.git
-  script:
-    - cargo build --release --target x86_64-pc-windows-gnu
-  only:
-    - master
-
 build-and-upload-x86-64bit-linux-release-for-ranger:
   stage: build
   dependencies:
