@@ -15,14 +15,14 @@ const MainNavbar = () => {
           className='bp4-button bp4-minimal bp4-icon-home'
           to='/'
         >
-          {t('common.home')}
+          {t('menu.home')}
         </Link>
         <Link
           role='button'
           className='bp4-button bp4-minimal bp4-icon-document'
           to='/exercises'
         >
-          {t('common.exercises')}
+          {t('menu.exercises')}
         </Link>
       </Navbar.Group>
     </Navbar>
