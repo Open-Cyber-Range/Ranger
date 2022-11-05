@@ -1,7 +1,7 @@
 import React from 'react';
 import {Button, Card, H2} from '@blueprintjs/core';
 import {useNavigate} from 'react-router-dom';
-import type {Exercise} from 'src/models/Exercise';
+import type {Exercise} from 'src/models/exercise';
 import styled from 'styled-components';
 
 const CardRow = styled.div`
