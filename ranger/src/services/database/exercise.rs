@@ -2,6 +2,7 @@ use super::Database;
 use crate::constants::RECORD_NOT_FOUND;
 use crate::models::helpers::uuid::Uuid;
 use crate::models::{Exercise, NewExercise};
+use crate::services::websocket::SocketExerciseUpdate;
 use actix::{Handler, Message, ResponseActFuture, WrapFuture};
 use actix_web::web::block;
 use anyhow::{anyhow, Ok, Result};
@@ -102,6 +103,7 @@ impl Handler<UpdateExercise> for Database {
         let uuid = msg.0;
         let update_exercise = msg.1;
         let connection_result = self.get_connection();
+        let websocket_manager = self.websocket_manager_address.clone();
 
         Box::pin(
             async move {
@@ -114,6 +116,10 @@ impl Handler<UpdateExercise> for Database {
                         return Err(anyhow!(RECORD_NOT_FOUND));
                     }
                     let exercise = Exercise::by_id(uuid).first(&mut connection)?;
+                    websocket_manager.do_send(SocketExerciseUpdate(
+                        exercise.id,
+                        (exercise.id, exercise.id, update_exercise).into(),
+                    ));
 
                     Ok(exercise)
                 })

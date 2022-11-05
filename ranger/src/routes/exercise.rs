@@ -8,19 +8,22 @@ use crate::{
         database::{
             deployment::{
                 CreateDeployment, DeleteDeployment, GetDeployment,
-                GetDeploymentElementByDeploymentId,
+                GetDeploymentElementByDeploymentId, GetDeployments,
             },
             exercise::{CreateExercise, DeleteExercise, GetExercise, GetExercises},
         },
         deployment::{RemoveDeployment, StartDeployment},
+        websocket::ExerciseWebsocket,
     },
     utilities::{create_database_error_handler, create_mailbox_error_handler, Validation},
     AppState,
 };
 use actix_web::{
     delete, get, post, put,
-    web::{Data, Json, Path},
+    web::{Data, Json, Path, Payload},
+    Error, HttpRequest, HttpResponse,
 };
+use actix_web_actors::ws;
 use anyhow::Result;
 use log::error;
 use sdl_parser::Schema;
@@ -68,12 +71,31 @@ pub async fn update_exercise(
         .database_address
         .send(crate::services::database::exercise::UpdateExercise(
             exercise_uuid,
-            update_exercise,
+            update_exercise.clone(),
         ))
         .await
         .map_err(create_mailbox_error_handler("Database"))?
         .map_err(create_database_error_handler("Update exercise"))?;
     log::debug!("Updated exercise: {}", exercise_uuid);
+
+    Ok(Json(exercise))
+}
+
+#[get("exercise/{exercise_uuid}")]
+pub async fn get_exercise(
+    path_variables: Path<Uuid>,
+    app_state: Data<AppState>,
+) -> Result<Json<Exercise>, RangerError> {
+    let exercise_uuid = path_variables.into_inner();
+    let exercise = app_state
+        .database_address
+        .send(crate::services::database::exercise::GetExercise(
+            exercise_uuid,
+        ))
+        .await
+        .map_err(create_mailbox_error_handler("Database"))?
+        .map_err(create_database_error_handler("Get exercise"))?;
+    log::debug!("Get exercise: {}", exercise_uuid);
 
     Ok(Json(exercise))
 }
@@ -133,7 +155,7 @@ pub async fn add_exercise_deployment(
         .do_send(StartDeployment(
             schema.scenario,
             deployment.clone(),
-            exercise.name,
+            exercise,
         ));
 
     Ok(Json(deployment))
@@ -144,7 +166,7 @@ pub async fn delete_exercise_deployment(
     path_variables: Path<(Uuid, Uuid)>,
     app_state: Data<AppState>,
 ) -> Result<String, RangerError> {
-    let (_, deployment_uuid) = path_variables.into_inner();
+    let (exercise_uuid, deployment_uuid) = path_variables.into_inner();
     let deployment = app_state
         .database_address
         .send(GetDeployment(deployment_uuid))
@@ -153,7 +175,7 @@ pub async fn delete_exercise_deployment(
         .map_err(create_database_error_handler("Get deployment"))?;
     app_state
         .deployment_manager_address
-        .send(RemoveDeployment(deployment))
+        .send(RemoveDeployment(exercise_uuid, deployment))
         .await
         .map_err(create_mailbox_error_handler("Deployment manager"))?
         .map_err(|error| {
@@ -190,4 +212,35 @@ pub async fn get_exercise_deployment_elements(
         .map_err(create_database_error_handler("Get deployment elements"))?;
 
     Ok(Json(elements))
+}
+
+#[get("exercise/{exercise_uuid}/deployment")]
+pub async fn get_exercise_deployments(
+    path_variables: Path<Uuid>,
+    app_state: Data<AppState>,
+) -> Result<Json<Vec<Deployment>>, RangerError> {
+    let exercise_uuid = path_variables.into_inner();
+    let deployments = app_state
+        .database_address
+        .send(GetDeployments(exercise_uuid))
+        .await
+        .map_err(create_mailbox_error_handler("Database"))?
+        .map_err(create_database_error_handler("Get deployments"))?;
+
+    Ok(Json(deployments))
+}
+
+#[get("exercise/{exercise_uuid}/websocket")]
+pub async fn subscribe_to_exercise(
+    req: HttpRequest,
+    path_variables: Path<Uuid>,
+    app_state: Data<AppState>,
+    stream: Payload,
+) -> Result<HttpResponse, Error> {
+    let exercise_uuid = path_variables.into_inner();
+    log::debug!("Subscribing websocket to exercise {}", exercise_uuid);
+    let manager_address = app_state.websocket_manager_address.clone();
+    let exercise_socket = ExerciseWebsocket::new(exercise_uuid, manager_address);
+
+    ws::start(exercise_socket, &req, stream)
 }

@@ -196,6 +196,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "actix-web-actors"
+version = "4.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "31efe7896f3933ce03dd4710be560254272334bb321a18fd8ff62b1a557d9d19"
+dependencies = [
+ "actix",
+ "actix-codec",
+ "actix-http",
+ "actix-web",
+ "bytes",
+ "bytestring",
+ "futures-core",
+ "pin-project-lite",
+ "tokio",
+]
+
+[[package]]
 name = "actix-web-codegen"
 version = "4.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -611,6 +628,17 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
+]
+
+[[package]]
+name = "diesel_migrations"
+version = "2.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e9ae22beef5e9d6fab9225ddb073c1c6c1a7a6ded5019d5da11d1e5c5adc34e2"
+dependencies = [
+ "diesel",
+ "migrations_internals",
+ "migrations_macros",
 ]
 
 [[package]]
@@ -1100,6 +1128,27 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2dffe52ecf27772e601905b7522cb4ef790d2cc203488bbd0e2fe85fcb74566d"
 
 [[package]]
+name = "migrations_internals"
+version = "2.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c493c09323068c01e54c685f7da41a9ccf9219735c3766fbfd6099806ea08fbc"
+dependencies = [
+ "serde",
+ "toml",
+]
+
+[[package]]
+name = "migrations_macros"
+version = "2.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8a8ff27a350511de30cdabb77147501c36ef02e0451d957abea2f30caffb2b58"
+dependencies = [
+ "migrations_internals",
+ "proc-macro2",
+ "quote",
+]
+
+[[package]]
 name = "mime"
 version = "0.3.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1473,10 +1522,12 @@ dependencies = [
  "actix-http",
  "actix-rt",
  "actix-web",
+ "actix-web-actors",
  "anyhow",
  "async-trait",
  "chrono",
  "diesel",
+ "diesel_migrations",
  "env_logger",
  "futures",
  "insta",
@@ -1487,6 +1538,7 @@ dependencies = [
  "sdl-parser",
  "semver",
  "serde",
+ "serde_json",
  "serde_yaml",
  "tempfile",
  "thiserror",
@@ -1888,6 +1940,15 @@ dependencies = [
  "pin-project-lite",
  "tokio",
  "tracing",
+]
+
+[[package]]
+name = "toml"
+version = "0.5.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8d82e1a7758622a465f8cee077614c73484dac5b836c02ff6a40d5d1010324d7"
+dependencies = [
+ "serde",
 ]
 
 [[package]]

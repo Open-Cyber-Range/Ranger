@@ -15,12 +15,14 @@ use services::{
     deployer::{DeployerDistribution, DeployerFactory},
     deployment::DeploymentManager,
     scheduler::Scheduler,
+    websocket::WebSocketManager,
 };
 
 pub struct AppState {
     pub database_address: Addr<Database>,
     pub deployment_manager_address: Addr<DeploymentManager>,
     pub configuration: Configuration,
+    pub websocket_manager_address: Addr<WebSocketManager>,
 }
 
 impl AppState {
@@ -28,6 +30,7 @@ impl AppState {
         configuration: &configuration::Configuration,
         distributor: &Addr<DeployerDistribution>,
         database: &Addr<Database>,
+        websocket_manager: &Addr<WebSocketManager>,
     ) -> Self {
         let schduler_address = Scheduler::new().start();
         AppState {
@@ -41,6 +44,7 @@ impl AppState {
             )
             .start(),
             configuration: configuration.to_owned(),
+            websocket_manager_address: websocket_manager.clone(),
         }
     }
 }
@@ -60,7 +64,8 @@ pub async fn app_setup(environment_arguments: Vec<String>) -> Result<(String, u1
     .unwrap_or_else(|error| panic!("Failed to create deployer distribution: {error}"))
     .start();
 
-    let database = Database::try_new(&configuration.database_url)
+    let websocket_manager = WebSocketManager::new().start();
+    let database = Database::try_new(&configuration.database_url, &websocket_manager)
         .unwrap_or_else(|error| {
             panic!(
                 "Failed to create database connection to {} due to: {error}",
@@ -69,6 +74,11 @@ pub async fn app_setup(environment_arguments: Vec<String>) -> Result<(String, u1
         })
         .start();
 
-    let app_state = AppState::new(&configuration, &deployer_distributor, &database);
+    let app_state = AppState::new(
+        &configuration,
+        &deployer_distributor,
+        &database,
+        &websocket_manager,
+    );
     Ok((configuration.host, configuration.port, app_state))
 }

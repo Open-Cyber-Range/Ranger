@@ -15,6 +15,7 @@ use serde::{Deserialize, Serialize};
 use std::result::Result as StdResult;
 
 #[derive(Insertable, Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 #[diesel(table_name = exercises)]
 pub struct NewExercise {
     #[serde(default = "Uuid::random")]
@@ -39,6 +40,7 @@ impl Validation for NewExercise {
 }
 
 #[derive(Queryable, Selectable, Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 #[diesel(table_name = exercises)]
 pub struct Exercise {
     #[serde(default = "Uuid::random")]
@@ -73,6 +75,7 @@ impl Exercise {
 }
 
 #[derive(AsChangeset, Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 #[diesel(table_name = exercises)]
 pub struct UpdateExercise {
     pub name: String,
@@ -90,3 +93,5 @@ impl UpdateExercise {
             .set(self)
     }
 }
+
+//type UpdateExerciseWebS = UpdateExercise;
