@@ -1,3 +1,4 @@
+import humanInterval from 'human-interval';
 import {useEffect, useRef, useState} from 'react';
 import {BASE_URL} from 'src/constants';
 import type {WebsocketWrapper} from 'src/models/websocket';
@@ -89,13 +90,20 @@ const useExerciseStreaming = (exerciseId?: string) => {
       );
 
       websocket.current.addEventListener('message', websocketHandler(dispatch));
+      let timeout: NodeJS.Timeout | undefined;
       websocket.current.addEventListener('close', () => {
-        setConnect(true);
+        timeout = setTimeout(() => {
+          setConnect(true);
+        }, humanInterval('3 seconds'));
       });
 
       const thisInstance = websocket.current;
       setConnect(false);
       return () => {
+        if (timeout) {
+          clearTimeout(timeout);
+        }
+
         thisInstance.close();
       };
     }
