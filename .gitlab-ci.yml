@@ -1,0 +1,71 @@
+stages:
+  - build
+
+variables:
+  GIT_SUBMODULE_STRATEGY: normal
+
+lint-and-test:
+  stage: build
+  image: $DOCKER_REGISTRY_PULL/rust-builder
+  before_script:
+    - git config --global url."https://gitlab+deploy-token-2:${OCR_DEPLOY_TOKEN_PASSWORD}@code.ocr.cr14.net/open-cyber-range/public/sdl-parser.git/".insteadOf "ssh://git@code.ocr.cr14.net/open-cyber-range/public/sdl-parser"
+    - git clone https://gitlab+deploy-token-2:${OCR_DEPLOY_TOKEN_PASSWORD}@code.ocr.cr14.net/open-cyber-range/public/sdl-parser.git
+  script:
+    - cargo clippy -- -Dwarnings
+    - cargo build --verbose
+    - cargo tarpaulin --skip-clean --verbose --out Xml
+  coverage: '/^\d+.\d+% coverage/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage/cobertura-coverage.xml
+  only:
+    - develop
+    - master
+    - merge_requests
+
+build-frontend:
+  stage: build
+  needs: ["lint-and-test"]
+  image: $DOCKER_REGISTRY_PULL/frontend-builder
+  script:
+    - cd ranger-app
+    - yarn
+    - yarn build
+    - cargo build --release --target x86_64-pc-windows-gnu
+  artifacts:
+    paths:
+      - ranger-app/build
+  only:
+    - master
+
+build-x86-64bit-windows-release:
+  stage: build
+  dependencies:
+    - build-frontend
+  needs: ["lint-and-test"]
+  image: $DOCKER_REGISTRY_PULL/rust-builder
+  before_script:
+    - git config --global url."https://gitlab+deploy-token-2:${OCR_DEPLOY_TOKEN_PASSWORD}@code.ocr.cr14.net/open-cyber-range/public/sdl-parser.git/".insteadOf "ssh://git@code.ocr.cr14.net/open-cyber-range/public/sdl-parser"
+    - git clone https://gitlab+deploy-token-2:${OCR_DEPLOY_TOKEN_PASSWORD}@code.ocr.cr14.net/open-cyber-range/public/sdl-parser.git
+  script:
+    - cargo build --release --target x86_64-pc-windows-gnu
+  only:
+    - master
+
+build-and-upload-x86-64bit-linux-release-for-ranger:
+  stage: build
+  dependencies:
+    - build-frontend
+  needs: ["lint-and-test"]
+  image: $DOCKER_REGISTRY_PULL/rust-builder
+  before_script:
+    - git config --global url."https://gitlab+deploy-token-2:${OCR_DEPLOY_TOKEN_PASSWORD}@code.ocr.cr14.net/open-cyber-range/public/sdl-parser.git/".insteadOf "ssh://git@code.ocr.cr14.net/open-cyber-range/public/sdl-parser"
+    - git clone https://gitlab+deploy-token-2:${OCR_DEPLOY_TOKEN_PASSWORD}@code.ocr.cr14.net/open-cyber-range/public/sdl-parser.git
+  script:
+    - cargo deb --target x86_64-unknown-linux-gnu -p ranger
+    - DEB_FILE=$(find ./target/x86_64-unknown-linux-gnu/debian/ -maxdepth 1 -type f -name "*.deb")
+    - 'curl -u $OCR_DEPLOYMENT_USER:$OCR_DEPLOYMENT_PASSWORD -X POST -H "Content-Type: multipart/form-data" --data-binary "@$DEB_FILE" $OCR_APT_REPOSITORY'
+  only:
+    - master

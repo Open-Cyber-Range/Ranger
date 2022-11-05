@@ -1,0 +1,167 @@
+{
+  "name": "ranger-app",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@blueprintjs/core": "^4.11.5",
+    "@blueprintjs/popover2": "^1.8.0",
+    "@monaco-editor/react": "^4.4.6",
+    "@popperjs/core": "^2.11.6",
+    "@reduxjs/toolkit": "^1.8.6",
+    "@testing-library/jest-dom": "^5.14.1",
+    "@testing-library/react": "^13.0.0",
+    "@testing-library/user-event": "^13.2.1",
+    "@types/jest": "^27.0.1",
+    "@types/node": "^16.7.13",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "@types/styled-components": "^5.1.26",
+    "i18next": "^22.0.4",
+    "i18next-browser-languagedetector": "^7.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-hook-form": "^7.36.1",
+    "react-i18next": "^12.0.0",
+    "human-interval": "^2.0.1",
+    "react-popper": "^2.3.0",
+    "react-redux": "^8.0.4",
+    "react-router-dom": "^6.4.1",
+    "react-scripts": "5.0.1",
+    "styled-components": "^5.3.6",
+    "typescript": "^4.4.2",
+    "web-vitals": "^2.1.0"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "lint": "xo"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "proxy": "http://localhost:8085",
+  "devDependencies": {
+    "cra-bundle-analyzer": "^0.1.1",
+    "eslint-config-xo-react": "^0.27.0",
+    "eslint-plugin-import-newlines": "^1.2.3",
+    "eslint-plugin-no-relative-import-paths": "^1.4.0",
+    "eslint-plugin-react": "^7.31.10",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-unused-imports": "^2.0.0",
+    "xo": "^0.52.4"
+  },
+  "xo": {
+    "space": true,
+    "plugins": [
+      "react",
+      "unused-imports",
+      "no-relative-import-paths",
+      "import-newlines"
+    ],
+    "extends": [
+      "plugin:react/recommended",
+      "plugin:react/jsx-runtime",
+      "xo-react"
+    ],
+    "rules": {
+      "import/extensions": [
+        "error",
+        "never"
+      ],
+      "n/file-extension-in-import": [
+        "error",
+        "never",
+        {
+          ".css": "always"
+        }
+      ],
+      "prefer-template": "error",
+      "unicorn/filename-case": [
+        "error",
+        {
+          "cases": {
+            "pascalCase": true
+          },
+          "ignore": [
+            ".test.",
+            ".ts"
+          ]
+        }
+      ],
+      "react/function-component-definition": [
+        2,
+        {
+          "namedComponents": "arrow-function"
+        }
+      ],
+      "unused-imports/no-unused-imports": "error",
+      "unused-imports/no-unused-vars": [
+        "error",
+        {
+          "vars": "all",
+          "varsIgnorePattern": "^_",
+          "args": "after-used",
+          "argsIgnorePattern": "^_"
+        }
+      ],
+      "no-console": "error",
+      "no-relative-import-paths/no-relative-import-paths": [
+        "error",
+        {
+          "allowSameFolder": true
+        }
+      ],
+      "max-len": [
+        "error",
+        {
+          "code": 80
+        }
+      ],
+      "react/jsx-max-props-per-line": [
+        "error",
+        {
+          "maximum": {
+            "single": 4,
+            "multi": 1
+          }
+        }
+      ],
+      "import-newlines/enforce": [
+        "error",
+        4,
+        80
+      ],
+      "@typescript-eslint/naming-convention": [
+        "error",
+        {
+          "selector": "variable",
+          "modifiers": [
+            "const",
+            "exported",
+            "global"
+          ],
+          "types": [
+            "string",
+            "number"
+          ],
+          "format": [
+            "UPPER_CASE"
+          ]
+        }
+      ],
+      "no-plusplus": "error",
+      "prefer-const": "error"
+    }
+  }
+}
