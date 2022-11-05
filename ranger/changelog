@@ -1,0 +1,6 @@
+ranger (0.2.0) stretch; urgency=medium
+
+  * Initial Release
+  * Adds web application support
+
+ -- Kaarel Allemann <kaarel.allemann@cr14.ee>  Sat, 05 Nov 2022 19:23:51 +0200
