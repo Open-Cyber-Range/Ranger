@@ -7,12 +7,14 @@ import type {Exercise, UpdateExercise} from 'src/models/exercise';
 import {useUpdateExerciseMutation} from 'src/slices/apiSlice';
 import Editor from '@monaco-editor/react';
 import styled from 'styled-components';
+import {useTranslation} from 'react-i18next';
 
 const EditorHolder = styled.div`
   height: 40vh;
 `;
 
 const ExerciseForm = ({exercise}: {exercise: Exercise}) => {
+  const {t} = useTranslation();
   const {handleSubmit, control} = useForm<UpdateExercise>({
     defaultValues: {
       name: exercise.name,
@@ -54,7 +56,7 @@ const ExerciseForm = ({exercise}: {exercise: Exercise}) => {
               labelInfo='(required)'
               helperText={error?.message}
               intent={intent}
-              label='Exercise name'
+              label={t('exercises.name')}
             >
               <InputGroup
                 large
@@ -81,7 +83,7 @@ const ExerciseForm = ({exercise}: {exercise: Exercise}) => {
               labelFor='sdl-schema'
               helperText={error?.message}
               intent={intent}
-              label='Scenario SDL'
+              label={t('exercises.scenarioSDL')}
             >
               <EditorHolder>
                 <Editor
@@ -98,7 +100,7 @@ const ExerciseForm = ({exercise}: {exercise: Exercise}) => {
         large
         type='submit'
         intent='primary'
-      > Submit
+      >{t('common.submit')}
       </Button>
     </form>
 

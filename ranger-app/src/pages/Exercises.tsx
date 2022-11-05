@@ -17,10 +17,15 @@ const Exercise = () => {
       };
       const exercise = await addExercise(newExercise).unwrap();
       if (exercise) {
-        toastSuccess(`Exercise "${exercise.name}" added`);
+        toastSuccess(t(
+          'exercises.addingSuccess',
+          {exerciseName: exercise.name},
+        ));
       }
     } catch {
-      toastWarning('Failed to add the exercise');
+      toastWarning(t(
+        'exercises.addingFail',
+      ));
     }
   };
 

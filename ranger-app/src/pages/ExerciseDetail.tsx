@@ -8,6 +8,7 @@ import {
   useGetExerciseQuery,
 } from 'src/slices/apiSlice';
 import {skipToken} from '@reduxjs/toolkit/dist/query';
+import {useTranslation} from 'react-i18next';
 import ExerciseForm from 'src/components/Exercise/Form';
 import DeploymentList from 'src/components/Deployment/List';
 import type {NewDeployment} from 'src/models/deployment';
@@ -16,6 +17,7 @@ import Header from 'src/components/Header';
 import useExerciseStreaming from 'src/hooks/useExerciseStreaming';
 
 const ExerciseDetail = () => {
+  const {t} = useTranslation();
   const {exerciseId} = useParams<ExerciseDetailRouteParameters>();
   const {data: deployments} = useGetDeploymentsQuery(exerciseId ?? skipToken);
   const {data: exercise} = useGetExerciseQuery(exerciseId ?? skipToken);
@@ -35,13 +37,18 @@ const ExerciseDetail = () => {
         }).unwrap();
 
         if (deployment) {
-          toastSuccess(`Deployment "${newDeployment.name}" added`);
+          toastSuccess(
+            t(
+              'deployments.addingSuccess',
+              {newDeploymentName: newDeployment.name},
+            ),
+          );
         }
       } catch {
-        toastWarning('Failed to add the deployment');
+        toastWarning(t('deployments.addingFail'));
       }
     } else {
-      toastWarning('Exercise must have an sdl-schema');
+      toastWarning(t('deployments.sdlMissing'));
     }
   };
 
@@ -54,9 +61,9 @@ const ExerciseDetail = () => {
         <br/>
 
         <Header
-          headerTitle='Deployments'
-          dialogTitle='Add Deployment'
-          buttonTitle='Add Deployment'
+          headerTitle={t('deployments.title')}
+          dialogTitle={t('deployments.title')}
+          buttonTitle={t('deployments.add')}
           onSubmit={async name => {
             await addNewDeployment(name);
           }}/>

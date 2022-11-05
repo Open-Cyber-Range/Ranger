@@ -3,6 +3,7 @@ import {Button, Card, H2} from '@blueprintjs/core';
 import {useNavigate} from 'react-router-dom';
 import type {Exercise} from 'src/models/exercise';
 import styled from 'styled-components';
+import {useTranslation} from 'react-i18next';
 
 const CardRow = styled.div`
   display: flex;
@@ -20,6 +21,7 @@ const ActionButtons = styled.div`
 `;
 
 const ExerciseCard = ({exercise}: {exercise: Exercise}) => {
+  const {t} = useTranslation();
   const navigate = useNavigate();
 
   const routeChange = () => {
@@ -31,7 +33,7 @@ const ExerciseCard = ({exercise}: {exercise: Exercise}) => {
       <CardRow>
         <H2>{exercise.name}</H2>
         <ActionButtons>
-          <Button large intent='danger'> Delete</Button>
+          <Button large intent='danger'>{t('common.delete')}</Button>
         </ActionButtons>
       </CardRow>
     </Card>
