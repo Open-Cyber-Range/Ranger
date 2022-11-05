@@ -12,8 +12,7 @@ lint-and-test:
     - git clone https://gitlab+deploy-token-2:${OCR_DEPLOY_TOKEN_PASSWORD}@code.ocr.cr14.net/open-cyber-range/public/sdl-parser.git
   script:
     - cargo clippy -- -Dwarnings
-    - cargo build --verbose
-    - cargo tarpaulin --skip-clean --verbose --out Xml
+    - cargo tarpaulin --skip-clean --out Xml
   coverage: '/^\d+.\d+% coverage/'
   artifacts:
     reports:
