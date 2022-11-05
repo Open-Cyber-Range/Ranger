@@ -1,3 +1,4 @@
+import humanInterval from 'human-interval';
 import {useEffect, useRef, useState} from 'react';
 import {BASE_URL} from 'src/constants';
 import type {WebsocketWrapper} from 'src/models/websocket';
@@ -75,31 +76,40 @@ const websocketHandler = (
 const useExerciseStreaming = (exerciseId?: string) => {
   const dispatch = useAppDispatch();
   const websocket = useRef<WebSocket | undefined>();
-  const [connect, setConnect] = useState<boolean>(true);
+  const [trigger, setTrigger] = useState<boolean>(true);
 
   useEffect(() => {
     if (
       exerciseId
-      && connect
-      && (websocket.current === undefined || websocket.current?.CLOSING
-      || websocket.current?.CLOSED)
+      && (
+        websocket.current === undefined
+        || websocket.current.readyState !== WebSocket.OPEN
+      )
     ) {
       websocket.current = new WebSocket(
         `ws://localhost:3000${BASE_URL}/exercise/${exerciseId}/websocket`,
       );
 
       websocket.current.addEventListener('message', websocketHandler(dispatch));
+      let timeout: NodeJS.Timeout | undefined;
       websocket.current.addEventListener('close', () => {
-        setConnect(true);
+        timeout = setTimeout(() => {
+          if (websocket.current?.readyState !== WebSocket.OPEN) {
+            setTrigger(!trigger);
+          }
+        }, humanInterval('3 seconds'));
       });
 
       const thisInstance = websocket.current;
-      setConnect(false);
       return () => {
+        if (timeout) {
+          clearTimeout(timeout);
+        }
+
         thisInstance.close();
       };
     }
-  }, [dispatch, exerciseId, connect, setConnect]);
+  }, [dispatch, exerciseId, trigger, setTrigger]);
 };
 
 export default useExerciseStreaming;

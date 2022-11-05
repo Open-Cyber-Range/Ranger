@@ -16,10 +16,13 @@
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
     "@types/styled-components": "^5.1.26",
-    "human-interval": "^2.0.1",
+    "i18next": "^22.0.4",
+    "i18next-browser-languagedetector": "^7.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.36.1",
+    "react-i18next": "^12.0.0",
+    "human-interval": "^2.0.1",
     "react-popper": "^2.3.0",
     "react-redux": "^8.0.4",
     "react-router-dom": "^6.4.1",
@@ -141,18 +144,6 @@
       ],
       "@typescript-eslint/naming-convention": [
         "error",
-        {
-          "selector": "memberLike",
-          "format": [
-            "camelCase"
-          ]
-        },
-        {
-          "selector": "enumMember",
-          "format": [
-            "PascalCase"
-          ]
-        },
         {
           "selector": "variable",
           "modifiers": [

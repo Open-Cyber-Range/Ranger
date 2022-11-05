@@ -7,6 +7,7 @@ import {
   useGetDeploymentElementsQuery,
 } from 'src/slices/apiSlice';
 import {toastSuccess, toastWarning} from 'src/components/Toaster';
+import {useTranslation} from 'react-i18next';
 import StatusBar from './ProgressBar';
 import Tags from './Tags';
 
@@ -35,6 +36,7 @@ const Status = styled.div`
 `;
 
 const DeploymentCard = ({deployment}: {deployment: Deployment}) => {
+  const {t} = useTranslation();
   const [deleteDeployment, _deploymentId] = useDeleteDeploymentMutation();
   const deleteCurrentDeployment = async () => {
     try {
@@ -43,10 +45,12 @@ const DeploymentCard = ({deployment}: {deployment: Deployment}) => {
         deploymentId: deployment.id}).unwrap();
 
       if (response === deployment.id) {
-        toastSuccess(`Deployment "${deployment.name}" deleted`);
+        toastSuccess(t('deployments.deleteSuccess', {
+          deploymentName: deployment.name,
+        }));
       }
     } catch {
-      toastWarning('Failed to delete the deployment');
+      toastWarning(t('deployments.deleteFail'));
     }
   };
 
@@ -71,7 +75,7 @@ const DeploymentCard = ({deployment}: {deployment: Deployment}) => {
             onClick={async () => {
               await deleteCurrentDeployment();
             }}
-          > Delete
+          > {t('common.delete')}
           </Button>
         </ActionButtons>
       </CardRow>

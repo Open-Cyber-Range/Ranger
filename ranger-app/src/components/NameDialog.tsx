@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
 import {Button, Dialog, H2, InputGroup} from '@blueprintjs/core';
+import {useTranslation} from 'react-i18next';
 
 const NameDialog = (
   {isOpen, title, placeholder, onSumbit, onCancel}:
@@ -11,6 +12,7 @@ const NameDialog = (
     onCancel: () => void;
   },
 ) => {
+  const {t} = useTranslation();
   const [name, setName] = useState('');
 
   return (
@@ -41,7 +43,7 @@ const NameDialog = (
           <Button
             large
             intent='primary'
-            text='Add'
+            text={t('common.add')}
             onClick={() => {
               if (name !== '') {
                 onSumbit(name);

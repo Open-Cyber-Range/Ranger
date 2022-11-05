@@ -5,8 +5,10 @@ import {toastSuccess, toastWarning} from 'src/components/Toaster';
 import type {NewExercise} from 'src/models/exercise';
 import {useAddExerciseMutation} from 'src/slices/apiSlice';
 import Header from 'src/components/Header';
+import {useTranslation} from 'react-i18next';
 
 const Exercise = () => {
+  const {t} = useTranslation();
   const [addExercise, _newExercise] = useAddExerciseMutation();
   const addNewExercise = async (name: string) => {
     try {
@@ -15,19 +17,24 @@ const Exercise = () => {
       };
       const exercise = await addExercise(newExercise).unwrap();
       if (exercise) {
-        toastSuccess(`Exercise "${exercise.name}" added`);
+        toastSuccess(t(
+          'exercises.addingSuccess',
+          {exerciseName: exercise.name},
+        ));
       }
     } catch {
-      toastWarning('Failed to add the exercise');
+      toastWarning(t(
+        'exercises.addingFail',
+      ));
     }
   };
 
   return (
     <PageHolder>
       <Header
-        headerTitle='Exercises'
-        dialogTitle='Add Exercise'
-        buttonTitle='Add Exercise'
+        headerTitle={t('exercises.title')}
+        dialogTitle={t('exercises.add')}
+        buttonTitle={t('exercises.add')}
         onSubmit={async name => {
           await addNewExercise(name);
         }}/>
