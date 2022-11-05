@@ -9,5 +9,5 @@ CREATE TABLE deployments (
     deleted_at TIMESTAMP NULL DEFAULT NULL,
     PRIMARY KEY (id),
     FOREIGN KEY (exercise_id) REFERENCES exercises(id),
-    UNIQUE (name)
+    UNIQUE (name, exercise_id)
 );

@@ -20,6 +20,7 @@ use serde::{Deserialize, Serialize};
 use super::helpers::{deployer_type::DeployerType, uuid::Uuid};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct NewDeploymentResource {
     #[serde(default = "Uuid::random")]
     pub id: Uuid,
@@ -29,6 +30,7 @@ pub struct NewDeploymentResource {
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize, Insertable)]
+#[serde(rename_all = "camelCase")]
 #[diesel(table_name = deployments)]
 pub struct NewDeployment {
     pub id: Uuid,
@@ -64,6 +66,7 @@ impl Validation for NewDeployment {
 }
 
 #[derive(Queryable, Selectable, Clone, Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 #[diesel(table_name = deployments)]
 pub struct Deployment {
     pub id: Uuid,
@@ -118,6 +121,7 @@ pub type BoxedScenarioReference = Box<dyn ScenarioReference>;
     AsChangeset,
 )]
 #[diesel(table_name = deployment_elements)]
+#[serde(rename_all = "camelCase")]
 pub struct DeploymentElement {
     pub id: Uuid,
     pub deployment_id: Uuid,
@@ -221,6 +225,13 @@ impl Deployment {
         id: Uuid,
     ) -> SelectById<deployments::table, deployments::id, deployments::deleted_at, Self> {
         Self::all().filter(deployments::id.eq(id))
+    }
+
+    pub fn by_exercise_id(
+        id: Uuid,
+    ) -> SelectById<deployments::table, deployments::exercise_id, deployments::deleted_at, Self>
+    {
+        Self::all().filter(deployments::exercise_id.eq(id))
     }
 
     pub fn soft_delete_elements(

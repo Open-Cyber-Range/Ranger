@@ -8,7 +8,7 @@ use super::{
     deployer::DeployerDistribution,
 };
 use crate::{
-    models::Deployment,
+    models::{helpers::uuid::Uuid, Deployment, Exercise},
     services::deployment::node::DeployableNodes,
     services::{deployment::template::DeployableTemplates, scheduler::Scheduler},
 };
@@ -52,18 +52,24 @@ impl DeploymentManager {
         scheduler_address: &Addr<Scheduler>,
         distributor_address: &Addr<DeployerDistribution>,
         database_address: &Addr<Database>,
-        exercise_name: &str,
+        exercise: &Exercise,
         deployment: &Deployment,
     ) -> Result<()> {
         scenario
-            .deploy_templates(distributor_address, deployers, database_address, deployment)
+            .deploy_templates(
+                distributor_address,
+                deployers,
+                database_address,
+                deployment,
+                exercise,
+            )
             .await?;
         scenario
             .deploy_nodes(
                 distributor_address,
                 scheduler_address,
                 database_address,
-                exercise_name,
+                exercise,
                 deployment,
                 deployers,
             )
@@ -100,14 +106,14 @@ impl Actor for DeploymentManager {
 pub struct StartDeployment(
     pub(crate) Scenario,
     pub(crate) Deployment,
-    pub(crate) String,
+    pub(crate) Exercise,
 );
 
 impl Handler<StartDeployment> for DeploymentManager {
     type Result = ResponseActFuture<Self, Result<()>>;
 
     fn handle(&mut self, msg: StartDeployment, _: &mut Context<Self>) -> Self::Result {
-        let StartDeployment(scenario, deployment, exercise_name) = msg;
+        let StartDeployment(scenario, deployment, exercise) = msg;
 
         let deployers_result = self.get_deloyers(&deployment);
         let scheduler_address = self.scheduler.clone();
@@ -123,7 +129,7 @@ impl Handler<StartDeployment> for DeploymentManager {
                     &scheduler_address,
                     &distributor_address,
                     &database_address,
-                    &exercise_name,
+                    &exercise,
                     &deployment,
                 )
                 .await
@@ -142,13 +148,13 @@ impl Handler<StartDeployment> for DeploymentManager {
 
 #[derive(Message, Debug)]
 #[rtype(result = "Result<()>")]
-pub struct RemoveDeployment(pub(crate) Deployment);
+pub struct RemoveDeployment(pub Uuid, pub(crate) Deployment);
 
 impl Handler<RemoveDeployment> for DeploymentManager {
     type Result = ResponseActFuture<Self, Result<()>>;
 
     fn handle(&mut self, msg: RemoveDeployment, _: &mut Context<Self>) -> Self::Result {
-        let RemoveDeployment(deployment) = msg;
+        let RemoveDeployment(exercise_id, deployment) = msg;
         let database_address = self.database.clone();
         let distributor_address = self.distributor.clone();
         let deployers_result = self.get_deloyers(&deployment);
@@ -159,7 +165,12 @@ impl Handler<RemoveDeployment> for DeploymentManager {
                     .send(GetDeploymentElementByDeploymentId(deployment.id))
                     .await??;
                 deployment_elements
-                    .undeploy_nodes(&distributor_address, &database_address, &deployers)
+                    .undeploy_nodes(
+                        &distributor_address,
+                        &database_address,
+                        &deployers,
+                        &exercise_id,
+                    )
                     .await?;
                 Ok(())
             }

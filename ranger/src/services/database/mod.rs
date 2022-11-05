@@ -1,8 +1,8 @@
 pub(crate) mod deployment;
 pub(crate) mod exercise;
 
-use crate::models::helpers::uuid::Uuid;
-use actix::Actor;
+use crate::{models::helpers::uuid::Uuid, utilities::run_migrations};
+use actix::{Actor, Addr};
 use anyhow::{anyhow, Result};
 use diesel::{
     dsl::now,
@@ -12,6 +12,8 @@ use diesel::{
     r2d2::{ConnectionManager, Pool, PooledConnection},
     sql_function, Insertable,
 };
+
+use super::websocket::WebSocketManager;
 
 sql_function! (fn current_timestamp() -> Timestamp);
 
@@ -28,6 +30,7 @@ pub type UpdateById<Id, DeletedAtColumn, Table, T> =
 pub type Create<Type, Table> = InsertStatement<Table, <Type as Insertable<Table>>::Values>;
 
 pub struct Database {
+    websocket_manager_address: Addr<WebSocketManager>,
     connection_pool: Pool<ConnectionManager<MysqlConnection>>,
 }
 
@@ -36,12 +39,20 @@ impl Actor for Database {
 }
 
 impl Database {
-    pub fn try_new(database_url: &str) -> Result<Self> {
+    pub fn try_new(database_url: &str, websocket_manager: &Addr<WebSocketManager>) -> Result<Self> {
         let manager = ConnectionManager::<MysqlConnection>::new(database_url);
+        let connection_pool = Pool::builder()
+            .build(manager)
+            .map_err(|error| anyhow!("Failed to create database connection pool: {}", error))?;
+        let mut connection = connection_pool
+            .get()
+            .map_err(|error| anyhow!("Failed to get database connection: {}", error))?;
+
+        run_migrations(&mut connection)
+            .map_err(|error| anyhow!("Failed to run database migrations: {}", error))?;
         Ok(Self {
-            connection_pool: Pool::builder()
-                .build(manager)
-                .map_err(|error| anyhow!("Failed to create database connection pool: {}", error))?,
+            connection_pool,
+            websocket_manager_address: websocket_manager.clone(),
         })
     }
 
