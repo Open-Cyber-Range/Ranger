@@ -1,9 +1,8 @@
 import React from 'react';
-import {Intent} from '@blueprintjs/core';
 import List from 'src/components/Exercise/List';
 import PageHolder from 'src/components/PageHolder';
-import {AppToaster} from 'src/components/Toaster';
-import type {NewExercise} from 'src/models/Exercise';
+import {toastSuccess, toastWarning} from 'src/components/Toaster';
+import type {NewExercise} from 'src/models/exercise';
 import {useAddExerciseMutation} from 'src/slices/apiSlice';
 import Header from 'src/components/Header';
 import {useTranslation} from 'react-i18next';
@@ -13,23 +12,15 @@ const Exercise = () => {
   const [addExercise, _newExercise] = useAddExerciseMutation();
   const addNewExercise = async (name: string) => {
     try {
-      const exercise: NewExercise = {
+      const newExercise: NewExercise = {
         name,
       };
-      const exerciseName = exercise.name;
-      await addExercise(exercise);
-
-      AppToaster.show({
-        icon: 'tick',
-        intent: Intent.SUCCESS,
-        message: t('exercises.addingSuccess', {exerciseName}),
-      });
+      const exercise = await addExercise(newExercise).unwrap();
+      if (exercise) {
+        toastSuccess(`Exercise "${exercise.name}" added`);
+      }
     } catch {
-      AppToaster.show({
-        icon: 'warning-sign',
-        intent: Intent.DANGER,
-        message: t('exercises.addingFail'),
-      });
+      toastWarning('Failed to add the exercise');
     }
   };
 

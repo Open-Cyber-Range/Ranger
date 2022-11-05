@@ -8,7 +8,7 @@ Use VSCode and [devcontainers](https://code.visualstudio.com/docs/remote/contain
 
 Use `cargo install cargo-insta` to have access to snapshot tooling under `cargo insta` command.
 
-Use `cargo install diesel-cli` to have access to database management (setup, migrations, etc.) under `diesel` command.
+Use `cargo install diesel_cli` to have access to database management (setup, migrations, etc.) under `diesel` command.
 
 #### Setup
 

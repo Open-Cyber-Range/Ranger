@@ -1,6 +1,6 @@
 import React from 'react';
 import {useParams} from 'react-router-dom';
-import type {ExerciseDetailRouteParameters} from 'src/models/Routes';
+import type {ExerciseDetailRouteParameters} from 'src/models/routes';
 import PageHolder from 'src/components/PageHolder';
 import {
   useAddDeploymentMutation,
@@ -10,17 +10,16 @@ import {
 import {skipToken} from '@reduxjs/toolkit/dist/query';
 import ExerciseForm from 'src/components/Exercise/Form';
 import DeploymentList from 'src/components/Deployment/List';
-import type {NewDeployment} from 'src/models/Deployment';
-import {Intent} from '@blueprintjs/core';
-import {AppToaster} from 'src/components/Toaster';
+import type {NewDeployment} from 'src/models/deployment';
+import {toastSuccess, toastWarning} from 'src/components/Toaster';
 import Header from 'src/components/Header';
-import {useTranslation} from 'react-i18next';
+import useExerciseStreaming from 'src/hooks/useExerciseStreaming';
 
 const ExerciseDetail = () => {
-  const {t} = useTranslation();
   const {exerciseId} = useParams<ExerciseDetailRouteParameters>();
   const {data: deployments} = useGetDeploymentsQuery(exerciseId ?? skipToken);
   const {data: exercise} = useGetExerciseQuery(exerciseId ?? skipToken);
+  useExerciseStreaming(exerciseId);
 
   const [addDeployment, _newDeployment] = useAddDeploymentMutation();
   const addNewDeployment = async (name: string) => {
@@ -30,27 +29,19 @@ const ExerciseDetail = () => {
           name,
           sdlSchema: exercise.sdlSchema,
         };
-        const newDeploymentName = newDeployment.name;
-        await addDeployment({newDeployment, exerciseId: exercise.id});
+        const deployment = await addDeployment({
+          newDeployment,
+          exerciseId: exercise.id,
+        }).unwrap();
 
-        AppToaster.show({
-          icon: 'tick',
-          intent: Intent.SUCCESS,
-          message: t('deployments.addingSuccess', {newDeploymentName}),
-        });
+        if (deployment) {
+          toastSuccess(`Deployment "${newDeployment.name}" added`);
+        }
       } catch {
-        AppToaster.show({
-          icon: 'warning-sign',
-          intent: Intent.DANGER,
-          message: t('deployments.addingFail'),
-        });
+        toastWarning('Failed to add the deployment');
       }
     } else {
-      AppToaster.show({
-        icon: 'warning-sign',
-        intent: Intent.DANGER,
-        message: t('deployments.sdlMissing'),
-      });
+      toastWarning('Exercise must have an sdl-schema');
     }
   };
 
@@ -63,9 +54,9 @@ const ExerciseDetail = () => {
         <br/>
 
         <Header
-          headerTitle={t('deployments.title')}
-          dialogTitle={t('deployments.add')}
-          buttonTitle={t('deployments.add')}
+          headerTitle='Deployments'
+          dialogTitle='Add Deployment'
+          buttonTitle='Add Deployment'
           onSubmit={async name => {
             await addNewDeployment(name);
           }}/>

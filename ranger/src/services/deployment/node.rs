@@ -1,6 +1,6 @@
 use crate::models::helpers::deployer_type::DeployerType;
 use crate::models::helpers::uuid::Uuid;
-use crate::models::{Deployment, DeploymentElement, ElementStatus};
+use crate::models::{Deployment, DeploymentElement, ElementStatus, Exercise};
 use crate::services::client::{Deployable, DeploymentInfo};
 use crate::services::database::deployment::{
     CreateDeploymentElement, GetDeploymentElementByDeploymentIdByScenarioReference,
@@ -71,7 +71,7 @@ pub trait DeployableNodes {
         distributor_address: &'a Addr<DeployerDistribution>,
         scheduler_address: &'a Addr<Scheduler>,
         database_address: &'a Addr<Database>,
-        exercise_name: &'a str,
+        exercise: &'a Exercise,
         deployment: &'a Deployment,
         deployers: &'a [String],
     ) -> Result<()>;
@@ -102,7 +102,7 @@ impl DeployableNodes for Scenario {
         distributor_address: &'a Addr<DeployerDistribution>,
         scheduler_address: &'a Addr<Scheduler>,
         database_address: &'a Addr<Database>,
-        exercise_name: &'a str,
+        exercise: &'a Exercise,
         deployment: &'a Deployment,
         deployers: &'a [String],
     ) -> Result<()> {
@@ -119,11 +119,14 @@ impl DeployableNodes for Scenario {
                             sdl_parser::node::NodeType::Switch => DeployerTypes::Switch,
                         };
                         let mut deployment_element = database_address
-                            .send(CreateDeploymentElement(DeploymentElement::new(
-                                deployment.id,
-                                Box::new(unique_name.to_string()),
-                                deployer_type,
-                            )))
+                            .send(CreateDeploymentElement(
+                                exercise.id,
+                                DeploymentElement::new(
+                                    deployment.id,
+                                    Box::new(unique_name.to_string()),
+                                    deployer_type,
+                                ),
+                            ))
                             .await??;
                         let links =
                             try_join_all(infra_node.links.clone().unwrap_or_default().iter().map(
@@ -148,7 +151,7 @@ impl DeployableNodes for Scenario {
                             unique_name.clone(),
                             node.clone(),
                             deployment.to_owned(),
-                            exercise_name.to_string(),
+                            exercise.name.to_string(),
                             links,
                             template_id,
                         )
@@ -162,14 +165,14 @@ impl DeployableNodes for Scenario {
                                 deployment_element.status = ElementStatus::Success;
                                 deployment_element.handler_reference = Some(id);
                                 database_address
-                                    .send(UpdateDeploymentElement(deployment_element))
+                                    .send(UpdateDeploymentElement(exercise.id, deployment_element))
                                     .await??;
                                 Ok(())
                             }
                             Err(error) => {
                                 deployment_element.status = ElementStatus::Failed;
                                 database_address
-                                    .send(UpdateDeploymentElement(deployment_element))
+                                    .send(UpdateDeploymentElement(exercise.id, deployment_element))
                                     .await??;
                                 Err(error)
                             }
@@ -190,6 +193,7 @@ pub trait RemoveableNodes {
         distributor_address: &'a Addr<DeployerDistribution>,
         database_address: &'a Addr<Database>,
         deployers: &'a [String],
+        exercise_id: &'a Uuid,
     ) -> Result<()>;
 }
 
@@ -200,6 +204,7 @@ impl RemoveableNodes for Vec<DeploymentElement> {
         distributor_address: &'a Addr<DeployerDistribution>,
         database_address: &'a Addr<Database>,
         deployers: &'a [String],
+        exercise_id: &'a Uuid,
     ) -> Result<()> {
         try_join_all(self.iter().map(|element| async move {
             match element.deployer_type {
@@ -218,14 +223,20 @@ impl RemoveableNodes for Vec<DeploymentElement> {
                             anyhow::Result::Ok(_) => {
                                 element_update.status = ElementStatus::Removed;
                                 database_address
-                                    .send(UpdateDeploymentElement(element_update))
+                                    .send(UpdateDeploymentElement(
+                                        exercise_id.to_owned(),
+                                        element_update,
+                                    ))
                                     .await??;
                                 Ok(())
                             }
                             Err(error) => {
                                 element_update.status = ElementStatus::RemoveFailed;
                                 database_address
-                                    .send(UpdateDeploymentElement(element_update))
+                                    .send(UpdateDeploymentElement(
+                                        exercise_id.to_owned(),
+                                        element_update,
+                                    ))
                                     .await??;
                                 Err(error)
                             }

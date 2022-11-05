@@ -121,6 +121,7 @@ pub type BoxedScenarioReference = Box<dyn ScenarioReference>;
     AsChangeset,
 )]
 #[diesel(table_name = deployment_elements)]
+#[serde(rename_all = "camelCase")]
 pub struct DeploymentElement {
     pub id: Uuid,
     pub deployment_id: Uuid,

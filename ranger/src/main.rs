@@ -4,7 +4,7 @@ use anyhow::Error;
 use ranger::app_setup;
 use ranger::routes::exercise::{
     delete_exercise_deployment, get_exercise, get_exercise_deployment_elements,
-    get_exercise_deployments, get_exercises, update_exercise,
+    get_exercise_deployments, get_exercises, subscribe_to_exercise, update_exercise,
 };
 use ranger::routes::{
     basic::{status, version},
@@ -29,6 +29,7 @@ async fn main() -> Result<(), Error> {
                     .service(get_exercise_deployments)
                     .service(add_exercise_deployment)
                     .service(delete_exercise_deployment)
+                    .service(subscribe_to_exercise)
                     .service(get_exercises)
                     .service(add_exercise)
                     .service(delete_exercise)

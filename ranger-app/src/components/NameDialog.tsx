@@ -27,6 +27,7 @@ const NameDialog = (
       </div>
       <div className='bp4-dialog-body'>
         <InputGroup
+          autoFocus
           large
           value={name}
           leftIcon='graph'

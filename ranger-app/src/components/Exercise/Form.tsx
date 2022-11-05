@@ -1,16 +1,16 @@
 import React from 'react';
 import type {SubmitHandler} from 'react-hook-form';
 import {useForm, Controller} from 'react-hook-form';
-import {
-  Button,
-  FormGroup,
-  InputGroup,
-  Intent,
-  TextArea,
-} from '@blueprintjs/core';
+import {Button, FormGroup, InputGroup, Intent} from '@blueprintjs/core';
 import {AppToaster} from 'src/components/Toaster';
-import type {Exercise, UpdateExercise} from 'src/models/Exercise';
+import type {Exercise, UpdateExercise} from 'src/models/exercise';
 import {useUpdateExerciseMutation} from 'src/slices/apiSlice';
+import Editor from '@monaco-editor/react';
+import styled from 'styled-components';
+
+const EditorHolder = styled.div`
+  height: 40vh;
+`;
 
 const ExerciseForm = ({exercise}: {exercise: Exercise}) => {
   const {handleSubmit, control} = useForm<UpdateExercise>({
@@ -72,31 +72,24 @@ const ExerciseForm = ({exercise}: {exercise: Exercise}) => {
       <Controller
         control={control}
         name='sdlSchema'
-        rules={{required: 'Exercise must have a SDL schema'}}
         render={({
-          field: {onChange, onBlur, ref, value}, fieldState: {error},
+          field: {onChange, value}, fieldState: {error},
         }) => {
           const intent = error ? Intent.DANGER : Intent.NONE;
           return (
             <FormGroup
               labelFor='sdl-schema'
-              labelInfo='(required)'
               helperText={error?.message}
               intent={intent}
               label='Scenario SDL'
             >
-              <TextArea
-                small
-                fill
-                growVertically
-                intent={intent}
-                value={value}
-                inputRef={ref}
-                id='sdl-schema'
-                rows={20}
-                onChange={onChange}
-                onBlur={onBlur}
-              />
+              <EditorHolder>
+                <Editor
+                  value={value}
+                  defaultLanguage='yaml'
+                  onChange={onChange}
+                />
+              </EditorHolder>
             </FormGroup>
           );
         }}

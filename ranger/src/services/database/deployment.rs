@@ -1,6 +1,7 @@
 use super::Database;
 use crate::models::helpers::uuid::Uuid;
 use crate::models::{Deployment, DeploymentElement, NewDeployment, ScenarioReference};
+use crate::services::websocket::{SocketDeployment, SocketDeploymentElement};
 use actix::{Handler, Message, ResponseActFuture, WrapFuture};
 use actix_web::web::block;
 use anyhow::{Ok, Result};
@@ -16,6 +17,7 @@ impl Handler<CreateDeployment> for Database {
     fn handle(&mut self, msg: CreateDeployment, _ctx: &mut Self::Context) -> Self::Result {
         let new_deployment = msg.0;
         let connection_result = self.get_connection();
+        let websocket_manager = self.websocket_manager_address.clone();
 
         Box::pin(
             async move {
@@ -23,7 +25,10 @@ impl Handler<CreateDeployment> for Database {
                 let deployment = block(move || {
                     new_deployment.create_insert().execute(&mut connection)?;
                     let deployment = Deployment::by_id(new_deployment.id).first(&mut connection)?;
-
+                    websocket_manager.do_send(SocketDeployment(
+                        deployment.exercise_id,
+                        (deployment.exercise_id, deployment.id, deployment.clone()).into(),
+                    ));
                     Ok(deployment)
                 })
                 .await??;
@@ -121,14 +126,15 @@ impl Handler<DeleteDeployment> for Database {
 
 #[derive(Message)]
 #[rtype(result = "Result<DeploymentElement>")]
-pub struct CreateDeploymentElement(pub DeploymentElement);
+pub struct CreateDeploymentElement(pub Uuid, pub DeploymentElement);
 
 impl Handler<CreateDeploymentElement> for Database {
     type Result = ResponseActFuture<Self, Result<DeploymentElement>>;
 
     fn handle(&mut self, msg: CreateDeploymentElement, _ctx: &mut Self::Context) -> Self::Result {
-        let new_deployment_element = msg.0;
+        let CreateDeploymentElement(exercise_uuid, new_deployment_element) = msg;
         let connection_result = self.get_connection();
+        let websocket_manager = self.websocket_manager_address.clone();
 
         Box::pin(
             async move {
@@ -139,6 +145,16 @@ impl Handler<CreateDeploymentElement> for Database {
                         .execute(&mut connection)?;
                     let deployment_element = DeploymentElement::by_id(new_deployment_element.id)
                         .first(&mut connection)?;
+                    websocket_manager.do_send(SocketDeploymentElement(
+                        exercise_uuid,
+                        (
+                            exercise_uuid,
+                            deployment_element.id,
+                            deployment_element.clone(),
+                            false,
+                        )
+                            .into(),
+                    ));
 
                     Ok(deployment_element)
                 })
@@ -153,14 +169,15 @@ impl Handler<CreateDeploymentElement> for Database {
 
 #[derive(Message)]
 #[rtype(result = "Result<DeploymentElement>")]
-pub struct UpdateDeploymentElement(pub DeploymentElement);
+pub struct UpdateDeploymentElement(pub Uuid, pub DeploymentElement);
 
 impl Handler<UpdateDeploymentElement> for Database {
     type Result = ResponseActFuture<Self, Result<DeploymentElement>>;
 
     fn handle(&mut self, msg: UpdateDeploymentElement, _ctx: &mut Self::Context) -> Self::Result {
-        let new_deployment_element = msg.0;
+        let UpdateDeploymentElement(exercise_uuid, new_deployment_element) = msg;
         let connection_result = self.get_connection();
+        let websocket_manager = self.websocket_manager_address.clone();
 
         Box::pin(
             async move {
@@ -172,6 +189,16 @@ impl Handler<UpdateDeploymentElement> for Database {
                     if updated_rows != 1 {
                         return Err(anyhow::anyhow!("Deployment element not found"));
                     }
+                    websocket_manager.do_send(SocketDeploymentElement(
+                        exercise_uuid,
+                        (
+                            exercise_uuid,
+                            new_deployment_element.id,
+                            new_deployment_element.clone(),
+                            true,
+                        )
+                            .into(),
+                    ));
 
                     Ok(DeploymentElement::by_id(new_deployment_element.id)
                         .first(&mut connection)?)

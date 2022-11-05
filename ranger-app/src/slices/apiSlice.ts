@@ -1,7 +1,11 @@
 import {createApi, fetchBaseQuery} from '@reduxjs/toolkit/query/react';
 import {BASE_URL} from 'src/constants';
-import type {Deployment, NewDeployment} from 'src/models/Deployment';
-import type {Exercise, NewExercise, UpdateExercise} from 'src/models/Exercise';
+import type {
+  Deployment,
+  DeploymentElement,
+  NewDeployment,
+} from 'src/models/deployment';
+import type {Exercise, NewExercise, UpdateExercise} from 'src/models/exercise';
 
 export const apiSlice = createApi({
   reducerPath: 'api',
@@ -55,6 +59,22 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: [{type: 'Deployment', id: 'LIST'}],
     }),
+    deleteDeployment: builder
+      .mutation<string, {exerciseId: string; deploymentId: string}>({
+      query: ({exerciseId, deploymentId}) => ({
+        url: `/exercise/${exerciseId}/deployment/${deploymentId}`,
+        method: 'DELETE',
+        responseHandler: async response => response.text(),
+
+      }),
+      invalidatesTags: (result, error, {deploymentId}) =>
+        [{type: 'Deployment', id: deploymentId}],
+    }),
+    getDeploymentElements: builder
+      .query<DeploymentElement[], {exerciseId: string; deploymentId: string}>({
+      query: ({exerciseId, deploymentId}) =>
+        `/exercise/${exerciseId}/deployment/${deploymentId}/deployment_element`,
+    }),
   }),
 });
 
@@ -65,4 +85,6 @@ export const {
   useUpdateExerciseMutation,
   useGetDeploymentsQuery,
   useAddDeploymentMutation,
+  useDeleteDeploymentMutation,
+  useGetDeploymentElementsQuery,
 } = apiSlice;
