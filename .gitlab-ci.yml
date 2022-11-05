@@ -25,8 +25,25 @@ lint-and-test:
     - master
     - merge_requests
 
+build-frontend:
+  stage: build
+  needs: ["lint-and-test"]
+  image: $DOCKER_REGISTRY_PULL/frontend-builder
+  script:
+    - cd ranger-app
+    - yarn
+    - yarn build
+    - cargo build --release --target x86_64-pc-windows-gnu
+  artifacts:
+    paths:
+      - ranger-app/build
+  only:
+    - master
+
 build-x86-64bit-windows-release:
   stage: build
+  dependencies:
+    - build-frontend
   needs: ["lint-and-test"]
   image: $DOCKER_REGISTRY_PULL/rust-builder
   before_script:
@@ -39,6 +56,8 @@ build-x86-64bit-windows-release:
 
 build-and-upload-x86-64bit-linux-release-for-ranger:
   stage: build
+  dependencies:
+    - build-frontend
   needs: ["lint-and-test"]
   image: $DOCKER_REGISTRY_PULL/rust-builder
   before_script:

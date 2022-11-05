@@ -7,8 +7,8 @@ edition = "2021"
 
 [package.metadata.deb]
 name = "ranger"
-maintainer = "Madis-Mikk Remmet <developers@cr14.ee>"
-copyright = "2022, CR14 <info@cr14.ee>"
+maintainer = "C14 developers <developers@cr14.ee>"
+copyright = "MIT"
 depends = "$auto, systemd"
 section = "utility"
 priority = "optional"
@@ -21,6 +21,26 @@ assets = [
   [
     "assets/default-production-config.yml",
     "/etc/opt/ranger/ranger/config.yml",
+    "644",
+  ],
+  [
+    "../ranger-app/build/static/css/*",
+    "/etc/opt/ranger/ranger-app/static/css",
+    "644",
+  ],
+  [
+    "../ranger-app/build/static/js/*",
+    "/etc/opt/ranger/ranger-app/static/js",
+    "644",
+  ],
+  [
+    "../ranger-app/build/static/media/*",
+    "/etc/opt/ranger/ranger-app/static/media",
+    "644",
+  ],
+  [
+    "../ranger-app/build/*",
+    "/etc/opt/ranger/ranger-app/",
     "644",
   ],
 ]
