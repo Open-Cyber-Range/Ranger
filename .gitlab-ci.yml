@@ -32,7 +32,6 @@ build-frontend:
     - cd ranger-app
     - yarn
     - yarn build
-    - cargo build --release --target x86_64-pc-windows-gnu
   artifacts:
     paths:
       - ranger-app/build
