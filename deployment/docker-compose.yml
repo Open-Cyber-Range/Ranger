@@ -26,19 +26,19 @@ services:
   ranger-vmware-machiner:
     image: nexus.ocr.cr14.net:8003/ranger-vmware-machiner:latest
     volumes:
-      - ../../handler-configs/ranger-vmware-machiner.yml:/etc/opt/ranger/ranger-vmware-machiner/config.yml
+      - ../handler-configs/ranger-vmware-machiner.yml:/etc/opt/ranger/ranger-vmware-machiner/config.yml
     restart: unless-stopped
 
   ranger-vmware-switcher:
     image: nexus.ocr.cr14.net:8003/ranger-vmware-switcher:latest
     volumes:
-      - ../../handler-configs/ranger-vmware-switcher.yml:/etc/opt/ranger/ranger-vmware-switcher/config.yml
+      - ../handler-configs/ranger-vmware-switcher.yml:/etc/opt/ranger/ranger-vmware-switcher/config.yml
     restart: unless-stopped
 
   ranger-vmware-templater:
     image: nexus.ocr.cr14.net:8003/ranger-vmware-templater:latest
     volumes:
-      - ../../handler-configs/ranger-vmware-templater.yml:/etc/opt/ranger/ranger-vmware-templater/config.yml
+      - ../handler-configs/ranger-vmware-templater.yml:/etc/opt/ranger/ranger-vmware-templater/config.yml
       - ./.deputy/configuration.toml:/root/.deputy/configuration.toml
     restart: unless-stopped
 
