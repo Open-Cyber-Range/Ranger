@@ -77,12 +77,12 @@ release-to-internal-network:
     - mkdir -p ~/.ssh
     - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
 
-    - ssh -t service@deputy.ocr.cr14.net "docker kill $(docker ps -q) || echo 'No containers to kill'"
-    - ssh -t service@deputy.ocr.cr14.net "sudo rm -rf deployment"
-    - ssh -t service@deputy.ocr.cr14.net "mkdir -p deployment"
-    - scp -r ./deployment/* service@deputy.ocr.cr14.net:~/deployment
-    - ssh -t service@deputy.ocr.cr14.net "cd deployment && docker compose pull && docker compose up -d --pull always --force-recreate --remove-orphans"
-    - ssh -t service@deputy.ocr.cr14.net "docker image prune -f"
+    - ssh -t service@ranger.ocr.cr14.net "docker kill $(docker ps -q) || echo 'No containers to kill'"
+    - ssh -t service@ranger.ocr.cr14.net "sudo rm -rf deployment"
+    - ssh -t service@ranger.ocr.cr14.net "mkdir -p deployment"
+    - scp -r ./deployment/* service@ranger.ocr.cr14.net:~/deployment
+    - ssh -t service@ranger.ocr.cr14.net "cd deployment && docker compose pull && docker compose up -d --pull always --force-recreate --remove-orphans"
+    - ssh -t service@ranger.ocr.cr14.net "docker image prune -f"
 
     - echo "Ranger deployed, howdy!"
   only:
