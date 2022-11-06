@@ -1,5 +1,6 @@
 /target
 config.yml
+!deployment/config.yml
 
 # ignores for devcontainer configuration
 /.devcontainer/configs/ranger-vmware-node-deployer.yml

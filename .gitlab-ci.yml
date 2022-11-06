@@ -1,5 +1,7 @@
 stages:
   - build
+  - deploy
+  - release
 
 variables:
   GIT_SUBMODULE_STRATEGY: normal
@@ -53,3 +55,36 @@ build-and-upload-x86-64bit-linux-release-for-ranger:
     - 'curl -u $OCR_DEPLOYMENT_USER:$OCR_DEPLOYMENT_PASSWORD -X POST -H "Content-Type: multipart/form-data" --data-binary "@$DEB_FILE" $OCR_APT_REPOSITORY'
   only:
     - master
+
+staging:
+  variables:
+    RANGER: "1"
+  stage: deploy
+  needs: ["build-and-upload-x86-64bit-linux-release-for-ranger"]
+  trigger:
+    project: open-cyber-range/internal/support-docker-images
+    strategy: depend
+  only:
+    - master
+
+release-to-internal-network:
+  stage: release
+  needs: ["staging"]
+  script:
+    - apt-get update -y && apt-get install openssh-client -y
+    - eval $(ssh-agent -s)
+    - ssh-add <(echo "$OCR_SERVICE_PRIVATE_KEY")
+    - mkdir -p ~/.ssh
+    - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
+
+    - ssh -t service@deputy.ocr.cr14.net "docker kill $(docker ps -q) || echo 'No containers to kill'"
+    - ssh -t service@deputy.ocr.cr14.net "rm -rf deployment"
+    - ssh -t service@deputy.ocr.cr14.net "mkdir -p deployment"
+    - scp -r ./deployment/* service@deputy.ocr.cr14.net:~/deployment
+    - ssh -t service@deputy.ocr.cr14.net "cd deployment && docker compose pull && docker compose up -d --pull always --force-recreate --remove-orphans"
+    - ssh -t service@deputy.ocr.cr14.net "docker image prune -f"
+
+    - echo "Ranger deployed, howdy!"
+  only:
+    - master
+

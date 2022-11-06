@@ -1,0 +1,58 @@
+version: '3'
+
+services:
+  nginx-proxy:
+    image: nexus.ocr.cr14.net:8003/nginx:latest
+    restart: always
+    ports:
+      - "443:443"
+      - "80:80"
+    container_name: nginx-proxy
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - /etc/letsencrypt/:/etc/letsencrypt/
+      - web-app:/var/www/html
+    dns:
+      - '10.81.50.8'
+      - '10.81.50.9'
+
+  ranger:
+    image: nexus.ocr.cr14.net:8003/ranger-server:latest
+    volumes:
+      - ./config.yml:/etc/opt/ranger/ranger/config.yml
+      - web-app:/etc/opt/ranger/ranger-app
+    restart: unless-stopped
+
+  ranger-vmware-machiner:
+    image: nexus.ocr.cr14.net:8003/ranger-vmware-machiner:latest
+    volumes:
+      - ../../handler-configs/ranger-vmware-machiner.yml:/etc/opt/ranger/ranger-vmware-machiner/config.yml
+    restart: unless-stopped
+
+  ranger-vmware-switcher:
+    image: nexus.ocr.cr14.net:8003/ranger-vmware-switcher:latest
+    volumes:
+      - ../../handler-configs/ranger-vmware-switcher.yml:/etc/opt/ranger/ranger-vmware-switcher/config.yml
+    restart: unless-stopped
+
+  ranger-vmware-templater:
+    image: nexus.ocr.cr14.net:8003/ranger-vmware-templater:latest
+    volumes:
+      - ../../handler-configs/ranger-vmware-templater.yml:/etc/opt/ranger/ranger-vmware-templater/config.yml
+      - ./.deputy/configuration.toml:/root/.deputy/configuration.toml
+    restart: unless-stopped
+
+  mariadb:
+    image: nexus.ocr.cr14.net:8003/mariadb:10.7
+    ports:
+      - 3306:3306
+    volumes:
+      - ~/apps/mariadb:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=mysql_root
+      - MYSQL_PASSWORD=mysql_pass
+      - MYSQL_USER=mysql_user
+      - MYSQL_DATABASE=ranger
+
+volumes:
+  web-app:
