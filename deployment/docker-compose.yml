@@ -39,7 +39,7 @@ services:
     image: nexus.ocr.cr14.net:8003/ranger-vmware-templater:latest
     volumes:
       - ../handler-configs/ranger-vmware-templater.yml:/etc/opt/ranger/ranger-vmware-templater/config.yml
-      - ./.deputy/configuration.toml:/root/.deputy/configuration.toml
+      - ./.deputy:/root/.deputy
     restart: unless-stopped
 
   mariadb:

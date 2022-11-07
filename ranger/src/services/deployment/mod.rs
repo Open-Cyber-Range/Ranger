@@ -79,7 +79,7 @@ impl DeploymentManager {
         Ok(())
     }
 
-    fn get_delpoyment_group(&self, deployment: &Deployment) -> String {
+    fn get_deployment_group(&self, deployment: &Deployment) -> String {
         let name = deployment
             .deployment_group
             .clone()
@@ -88,8 +88,8 @@ impl DeploymentManager {
         name
     }
 
-    fn get_deloyers(&self, deployment: &Deployment) -> Result<Vec<String>> {
-        let group = self.get_delpoyment_group(deployment);
+    fn get_deployers(&self, deployment: &Deployment) -> Result<Vec<String>> {
+        let group = self.get_deployment_group(deployment);
         self.deployment_group
             .get(group.as_str())
             .ok_or_else(|| anyhow!("No deployment group found for {}", group))
@@ -115,7 +115,7 @@ impl Handler<StartDeployment> for DeploymentManager {
     fn handle(&mut self, msg: StartDeployment, _: &mut Context<Self>) -> Self::Result {
         let StartDeployment(scenario, deployment, exercise) = msg;
 
-        let deployers_result = self.get_deloyers(&deployment);
+        let deployers_result = self.get_deployers(&deployment);
         let scheduler_address = self.scheduler.clone();
         let distributor_address = self.distributor.clone();
         let database_address = self.database.clone();
@@ -157,7 +157,7 @@ impl Handler<RemoveDeployment> for DeploymentManager {
         let RemoveDeployment(exercise_id, deployment) = msg;
         let database_address = self.database.clone();
         let distributor_address = self.distributor.clone();
-        let deployers_result = self.get_deloyers(&deployment);
+        let deployers_result = self.get_deployers(&deployment);
         Box::pin(
             async move {
                 let deployers = deployers_result?;
