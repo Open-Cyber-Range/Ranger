@@ -6,6 +6,7 @@ import {WebsocketMessageType} from 'src/models/websocket';
 import {apiSlice} from 'src/slices/apiSlice';
 import type {AppDispatch} from 'src/store';
 import {useAppDispatch} from 'src/store';
+import {getWebsocketBase} from 'src/utils';
 
 const websocketHandler = (
   dispatch: AppDispatch,
@@ -86,7 +87,7 @@ const useExerciseStreaming = (exerciseId?: string) => {
       )
     ) {
       websocket.current = new WebSocket(
-        `ws://localhost:3000${BASE_URL}/exercise/${exerciseId}/websocket`,
+        `${getWebsocketBase()}${BASE_URL}/exercise/${exerciseId}/websocket`,
       );
       const thisInstance = websocket.current;
       thisInstance.addEventListener('message', websocketHandler(dispatch));
