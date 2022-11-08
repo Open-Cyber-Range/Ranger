@@ -1,4 +1,4 @@
-host: localhost
+host: ranger
 port: 8085
 deployers:
   my-machiner-deployer: http://ranger-vmware-machiner:9999

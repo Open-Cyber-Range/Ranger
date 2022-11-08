@@ -21,6 +21,11 @@ services:
     volumes:
       - ./config.yml:/etc/opt/ranger/ranger/config.yml
       - web-app:/etc/opt/ranger/ranger-app
+    depends_on:
+      - "mariadb"
+      - "ranger-vmware-machiner"
+      - "ranger-vmware-switcher"
+      - "ranger-vmware-templater"
     restart: unless-stopped
 
   ranger-vmware-machiner:
