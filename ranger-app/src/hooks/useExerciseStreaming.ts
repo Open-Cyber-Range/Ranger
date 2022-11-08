@@ -77,7 +77,6 @@ const useExerciseStreaming = (exerciseId?: string) => {
   const dispatch = useAppDispatch();
   const websocket = useRef<WebSocket | undefined>();
   const [trigger, setTrigger] = useState<boolean>(true);
-
   useEffect(() => {
     if (
       exerciseId
@@ -89,18 +88,17 @@ const useExerciseStreaming = (exerciseId?: string) => {
       websocket.current = new WebSocket(
         `ws://localhost:3000${BASE_URL}/exercise/${exerciseId}/websocket`,
       );
-
-      websocket.current.addEventListener('message', websocketHandler(dispatch));
+      const thisInstance = websocket.current;
+      thisInstance.addEventListener('message', websocketHandler(dispatch));
       let timeout: NodeJS.Timeout | undefined;
-      websocket.current.addEventListener('close', () => {
+      thisInstance.addEventListener('close', () => {
         timeout = setTimeout(() => {
           if (websocket.current?.readyState !== WebSocket.OPEN) {
-            setTrigger(!trigger);
+            setTrigger(current => !current);
           }
         }, humanInterval('3 seconds'));
       });
 
-      const thisInstance = websocket.current;
       return () => {
         if (timeout) {
           clearTimeout(timeout);
