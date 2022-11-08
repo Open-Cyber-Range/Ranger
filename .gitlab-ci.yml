@@ -88,4 +88,8 @@ release-to-internal-network:
     - echo "Ranger deployed, howdy!"
   only:
     - master
+  environment:
+    name: production
+    url: https://ranger.ocr.cr14.net
+
 
