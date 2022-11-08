@@ -89,7 +89,7 @@ release-to-internal-network:
   only:
     - master
   environment:
-    name: production
+    name: Internal Production
     url: https://ranger.ocr.cr14.net
 
 
