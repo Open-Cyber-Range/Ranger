@@ -13,7 +13,8 @@
     "eamodio.gitlens",
     "samverschueren.linter-xo",
     "styled-components.vscode-styled-components",
-    "mtxr.sqltools-driver-mysql"
+    "mtxr.sqltools-driver-mysql",
+    "ms-vsliveshare.vsliveshare"
   ],
   "workspaceFolder": "/workspace",
   "remoteUser": "vscode",
