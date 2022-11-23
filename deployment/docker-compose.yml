@@ -49,8 +49,6 @@ services:
 
   mariadb:
     image: nexus.ocr.cr14.net:8003/mariadb:10.7
-    ports:
-      - 3306:3306
     volumes:
       - ~/apps/mariadb:/var/lib/mysql
     environment:
@@ -58,6 +56,7 @@ services:
       - MYSQL_PASSWORD=mysql_pass
       - MYSQL_USER=mysql_user
       - MYSQL_DATABASE=ranger
+    restart: unless-stopped
 
 volumes:
   web-app:
