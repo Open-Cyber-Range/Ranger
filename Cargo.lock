@@ -1624,7 +1624,7 @@ checksum = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
 [[package]]
 name = "sdl-parser"
 version = "0.9.0"
-source = "git+ssh://git@code.ocr.cr14.net/open-cyber-range/public/sdl-parser?branch=master#36bfdc0e823b295564662ad7d21aded311d0d329"
+source = "git+ssh://git@code.ocr.cr14.net/open-cyber-range/public/sdl-parser?branch=develop#1a57c049b0b27e542d2b5e6502dbe7328925d7c1"
 dependencies = [
  "anyhow",
  "bytesize",
@@ -1632,6 +1632,7 @@ dependencies = [
  "depper",
  "insta",
  "lazy_static",
+ "regex",
  "serde",
  "serde-aux",
  "serde_yaml",
@@ -1654,9 +1655,9 @@ dependencies = [
 
 [[package]]
 name = "serde-aux"
-version = "3.1.0"
+version = "4.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d0a77223b653fa95f3f9864f3eb25b93e4ed170687eb42d85b6b98af21d5e1de"
+checksum = "eb6a3148cb21f1afb585b9ce6aeea9e58bd02c37ddb336277af10396ca3574fd"
 dependencies = [
  "chrono",
  "serde",

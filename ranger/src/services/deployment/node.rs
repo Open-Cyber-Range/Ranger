@@ -1,3 +1,4 @@
+use super::feature::DeployableFeatures;
 use crate::models::helpers::deployer_type::DeployerType;
 use crate::models::helpers::uuid::Uuid;
 use crate::models::{Deployment, DeploymentElement, ElementStatus, Exercise};
@@ -153,7 +154,7 @@ impl DeployableNodes for Scenario {
                             deployment.to_owned(),
                             exercise.name.to_string(),
                             links,
-                            template_id,
+                            template_id.clone(),
                         )
                             .try_to_deployment_command()?;
 
@@ -165,8 +166,26 @@ impl DeployableNodes for Scenario {
                                 deployment_element.status = ElementStatus::Success;
                                 deployment_element.handler_reference = Some(id);
                                 database_address
-                                    .send(UpdateDeploymentElement(exercise.id, deployment_element))
+                                    .send(UpdateDeploymentElement(
+                                        exercise.id,
+                                        deployment_element.clone(),
+                                    ))
                                     .await??;
+
+                                (
+                                    distributor_address.clone(),
+                                    database_address.clone(),
+                                    scheduler_address.clone(),
+                                    deployers.to_owned(),
+                                    self.clone(),
+                                    node.clone(),
+                                    deployment_element,
+                                    exercise.id,
+                                    template_id,
+                                )
+                                    .deploy_features()
+                                    .await?;
+
                                 Ok(())
                             }
                             Err(error) => {

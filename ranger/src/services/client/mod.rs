@@ -1,9 +1,12 @@
+mod feature;
 mod switch;
 mod template;
 mod virtual_machine;
 
 use anyhow::Result;
 use async_trait::async_trait;
+pub use feature::*;
+use ranger_grpc::FeatureResponse;
 use std::any::Any;
 pub use switch::*;
 pub use template::*;
@@ -18,6 +21,14 @@ where
     async fn undeploy(&mut self, handler_reference: String) -> Result<()>;
 }
 
+#[async_trait]
+pub trait DeploymentFeatureClient<T>
+where
+    T: Sized,
+{
+    async fn deploy(&mut self, deployment_struct: T) -> Result<FeatureResponse>;
+    async fn undeploy(&mut self, handler_reference: String) -> Result<()>;
+}
 pub trait DeploymentInfo
 where
     Self: Send,

@@ -1,6 +1,7 @@
 use actix::{Actor, Handler, Message};
 use anyhow::{anyhow, Ok, Result};
-use sdl_parser::{infrastructure::InfraNode, node::Node, Scenario};
+use log::info;
+use sdl_parser::{feature::Feature, infrastructure::InfraNode, node::Node, Scenario};
 
 #[derive(Default)]
 pub struct Scheduler;
@@ -62,10 +63,58 @@ impl CreateDeploymentSchedule {
     }
 }
 
+#[derive(Message, Debug, PartialEq, Eq)]
+#[rtype(result = "Result<Vec<Vec<(String, Feature)>>>")]
+pub struct CreateFeatureDeploymentSchedule(pub(crate) Scenario, pub(crate) Node);
+
+impl CreateFeatureDeploymentSchedule {
+    pub fn generate(&self) -> Result<Vec<Vec<(String, Feature)>>> {
+        let scenario = &self.0;
+        let node = &self.1;
+
+        //this creates a deployment order for ALL features in the scenario? i think?
+        //what i need is a dependency tree of the current nodes features
+        let dependencies = scenario.get_feature_dependencies()?;
+        let tranches = dependencies.generate_tranches()?;
+
+        if let Some(features) = &scenario.features {
+            let mut feature_deployments: Vec<Vec<(String, Feature)>> = Vec::new();
+
+            tranches.iter().try_for_each(|tranche| {
+                let mut new_tranche = Vec::new();
+                tranche.iter().try_for_each(|feature_name| {
+                    let feature_value = features
+                        .get(feature_name)
+                        .ok_or_else(|| anyhow!("feature value"))?;
+                    new_tranche.push((feature_name.clone(), feature_value.clone()));
+                    Ok(())
+                })?;
+                feature_deployments.push(new_tranche);
+                Ok(())
+            })?;
+            return Ok(feature_deployments);
+        }
+
+        Ok(vec![vec![]])
+    }
+}
+
 impl Handler<CreateDeploymentSchedule> for Scheduler {
     type Result = Result<Vec<Vec<(String, Node, InfraNode)>>>;
 
     fn handle(&mut self, message: CreateDeploymentSchedule, _: &mut Self::Context) -> Self::Result {
+        message.generate()
+    }
+}
+
+impl Handler<CreateFeatureDeploymentSchedule> for Scheduler {
+    type Result = Result<Vec<Vec<(String, Feature)>>>;
+
+    fn handle(
+        &mut self,
+        message: CreateFeatureDeploymentSchedule,
+        _: &mut Self::Context,
+    ) -> Self::Result {
         message.generate()
     }
 }

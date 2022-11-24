@@ -30,14 +30,30 @@ services:
       - ./.deputy/configuration.toml:/root/.deputy/configuration.toml
     restart: unless-stopped
 
+  ranger-vmware-executor:
+    image: executor_maybe
+    volumes:
+      - ./.deputy/configuration.toml:/root/.deputy/configuration.toml
+    restart: unless-stopped
+
   deputy-package-server-repository-combo:
     image: nexus.ocr.cr14.net:8003/deputy-package-server-repository-combo:latest
     environment:
       - RUST_LOG=debug
     restart: unless-stopped
 
+  featurer-redis-server:
+    image: nexus.ocr.cr14.net:8003/featurer-redis-server
+    restart: always
+    command: ["redis-server", "/etc/redis/redis.conf"]
+    ports:
+      - 6381:6381
+    volumes:
+      - ./configs/ranger-redis-config.conf:/etc/redis/redis.conf
+
   mariadb:
     image: nexus.ocr.cr14.net:8003/mariadb:10.7
+    restart: always
     ports:
       - 3306:3306
     volumes:
