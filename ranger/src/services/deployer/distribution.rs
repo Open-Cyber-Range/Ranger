@@ -4,7 +4,10 @@ use super::{
     },
     factory::{CreateDeployer, DeployerFactory},
 };
-use crate::services::{client::FeatureClient, deployer::DeployerConnections};
+use crate::services::{
+    client::{DeploymentClientResponse, FeatureClient},
+    deployer::DeployerConnections,
+};
 use actix::{
     Actor, ActorFutureExt, Addr, Context, Handler, Message, ResponseActFuture, WrapFuture,
 };
@@ -136,7 +139,7 @@ impl DeployerDistribution {
 }
 
 #[derive(Message)]
-#[rtype(result = "Result<String>")]
+#[rtype(result = "Result<DeploymentClientResponse>")]
 pub struct Deploy(
     pub DeployerTypes,
     pub Box<dyn DeploymentInfo>,
@@ -144,7 +147,7 @@ pub struct Deploy(
 );
 
 impl Handler<Deploy> for DeployerDistribution {
-    type Result = ResponseActFuture<Self, Result<String>>;
+    type Result = ResponseActFuture<Self, Result<DeploymentClientResponse>>;
 
     fn handle(&mut self, msg: Deploy, _ctx: &mut Self::Context) -> Self::Result {
         let deployment_type = msg.0;
@@ -156,9 +159,9 @@ impl Handler<Deploy> for DeployerDistribution {
         Box::pin(
             async move {
                 let (mut deployment_client, best_deployer) = client_result?;
-                let handler_reference_id = deployment_client.deploy(deployment).await?;
+                let client_response = deployment_client.deploy(deployment).await?;
 
-                Ok((handler_reference_id, best_deployer))
+                Ok((client_response, best_deployer))
             }
             .into_actor(self)
             .map(Self::release_deployer_closure),

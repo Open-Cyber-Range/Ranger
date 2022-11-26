@@ -1,4 +1,4 @@
-use super::DeploymentInfo;
+use super::{DeploymentClientResponse, DeploymentInfo};
 use crate::services::client::DeploymentClient;
 use actix::{Actor, Addr, Context, Handler, Message, ResponseFuture};
 use anyhow::{Ok, Result};
@@ -36,7 +36,10 @@ impl Actor for TemplateClient {
 
 #[async_trait]
 impl DeploymentClient<Box<dyn DeploymentInfo>> for Addr<TemplateClient> {
-    async fn deploy(&mut self, deployment_struct: Box<dyn DeploymentInfo>) -> Result<String> {
+    async fn deploy(
+        &mut self,
+        deployment_struct: Box<dyn DeploymentInfo>,
+    ) -> Result<DeploymentClientResponse> {
         let deployment = CreateTemplate(
             deployment_struct
                 .as_any()
@@ -44,9 +47,9 @@ impl DeploymentClient<Box<dyn DeploymentInfo>> for Addr<TemplateClient> {
                 .unwrap()
                 .clone(),
         );
-        let id = self.send(deployment).await??.value;
+        let identifier = self.send(deployment).await??;
 
-        Ok(id)
+        Ok(DeploymentClientResponse::Identifier(identifier))
     }
 
     async fn undeploy(&mut self, handler_reference: String) -> Result<()> {

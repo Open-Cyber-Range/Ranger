@@ -10,7 +10,9 @@ use async_trait::async_trait;
 use futures::future::try_join_all;
 use log::info;
 use ranger_grpc::capabilities::DeployerTypes;
-use ranger_grpc::{Feature as GrpcFeature, FeatureType as GrpcFeatureType, Source as GrpcSource};
+use ranger_grpc::{
+    Feature as GrpcFeature, FeatureResponse, FeatureType as GrpcFeatureType, Source as GrpcSource,
+};
 use sdl_parser::feature::FeatureType;
 use sdl_parser::{node::Node, Scenario};
 
@@ -113,7 +115,21 @@ impl DeployableFeatures
                                 ))
                                 .await?
                             {
-                                anyhow::Result::Ok(id) => {
+                                anyhow::Result::Ok(result) => {
+                                    let feature_response = FeatureResponse::try_from(result)?;
+
+                                    let id = feature_response
+                                        .identifier
+                                        .ok_or_else(|| anyhow!("identifier"))?
+                                        .value;
+
+                                    if feature_type == GrpcFeatureType::Service {
+                                        info!(
+                                            "Feature: '{feature_name}' output: {:?}",
+                                            feature_response.vm_log
+                                        );
+                                    }
+
                                     feature_deployment_element.status = ElementStatus::Success;
                                     feature_deployment_element.handler_reference = Some(id);
                                     database_address

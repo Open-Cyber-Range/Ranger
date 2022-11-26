@@ -16,7 +16,7 @@ use async_trait::async_trait;
 use futures::future::try_join_all;
 use ranger_grpc::capabilities::DeployerTypes;
 use ranger_grpc::{
-    Configuration, DeploySwitch, DeployVirtualMachine, MetaInfo, Switch, VirtualMachine,
+    Configuration, DeploySwitch, DeployVirtualMachine, Identifier, MetaInfo, Switch, VirtualMachine,
 };
 use sdl_parser::{
     common::Source,
@@ -162,7 +162,9 @@ impl DeployableNodes for Scenario {
                             .send(Deploy(deployer_type, command, deployers.to_owned()))
                             .await?
                         {
-                            anyhow::Result::Ok(id) => {
+                            anyhow::Result::Ok(client_response) => {
+                                let id = Identifier::try_from(client_response)?.value;
+
                                 deployment_element.status = ElementStatus::Success;
                                 deployment_element.handler_reference = Some(id);
                                 database_address

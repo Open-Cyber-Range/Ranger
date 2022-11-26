@@ -14,7 +14,7 @@ use anyhow::{anyhow, Ok, Result};
 use async_trait::async_trait;
 use futures::future::try_join_all;
 use log::debug;
-use ranger_grpc::{capabilities::DeployerTypes, Source as GrpcSource};
+use ranger_grpc::{capabilities::DeployerTypes, Identifier, Source as GrpcSource};
 use sdl_parser::{common::Source as SDLSource, node::NodeType, Scenario};
 
 impl Deployable for SDLSource {
@@ -81,7 +81,9 @@ impl DeployableTemplates for Scenario {
                         ))
                         .await?
                     {
-                        anyhow::Result::Ok(template_id) => {
+                        anyhow::Result::Ok(client_response) => {
+                            let template_id = Identifier::try_from(client_response)?.value;
+
                             debug!(
                                 "Template {} deployed with template id {}",
                                 name, template_id

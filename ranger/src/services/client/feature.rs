@@ -1,6 +1,5 @@
-use super::{DeploymentClient, DeploymentInfo};
+use super::{DeploymentClient, DeploymentClientResponse, DeploymentInfo};
 use actix::{Actor, Addr, Context, Handler, Message, ResponseFuture};
-use anyhow::anyhow;
 use anyhow::{Ok, Result};
 use async_trait::async_trait;
 use ranger_grpc::{
@@ -36,7 +35,10 @@ impl Actor for FeatureClient {
 
 #[async_trait]
 impl DeploymentClient<Box<dyn DeploymentInfo>> for Addr<FeatureClient> {
-    async fn deploy(&mut self, deployment_struct: Box<dyn DeploymentInfo>) -> Result<String> {
+    async fn deploy(
+        &mut self,
+        deployment_struct: Box<dyn DeploymentInfo>,
+    ) -> Result<DeploymentClientResponse> {
         let deployment = CreateFeature(
             deployment_struct
                 .as_any()
@@ -46,15 +48,7 @@ impl DeploymentClient<Box<dyn DeploymentInfo>> for Addr<FeatureClient> {
         );
         let feature_response = self.send(deployment).await??;
 
-        // the log is born and also dies here ... create / update the deploymentElement here??
-        println!("Cowardly print of the log: {:?}", feature_response.vm_log);
-
-        let id = feature_response
-            .identifier
-            .ok_or_else(|| anyhow!("Error during Feature deployment"))?
-            .value;
-
-        Ok(id)
+        Ok(DeploymentClientResponse::FeatureResponse(feature_response))
     }
 
     async fn undeploy(&mut self, handler_reference: String) -> Result<()> {
