@@ -8,6 +8,7 @@ use actix::Addr;
 use anyhow::{anyhow, Ok, Result};
 use async_trait::async_trait;
 use futures::future::try_join_all;
+use log::info;
 use ranger_grpc::capabilities::DeployerTypes;
 use ranger_grpc::{Feature as GrpcFeature, FeatureType as GrpcFeatureType, Source as GrpcSource};
 use sdl_parser::feature::FeatureType;
@@ -45,28 +46,22 @@ impl DeployableFeatures
             template_id,
         ) = self;
 
-        // returns a schedule for ALL features in the scenario
-        // let deployment_schedule = scheduler_address
-        //     .send(CreateFeatureDeploymentSchedule(
-        //         scenario.clone(),
-        //         node.clone(),
-        //     ))
-        //     .await??;
+        let deployment_schedule = scheduler_address
+            .send(CreateFeatureDeploymentSchedule(
+                scenario.clone(),
+                node.clone(),
+            ))
+            .await??;
 
-        //deploys (and executes) all of the nodes features in parallel
-        if let Some(node_features) = node.features.clone() {
+        for tranche in deployment_schedule.iter() {
             try_join_all(
-                node_features
+                tranche
                     .iter()
-                    .map(|(feature_name, role)| async move {
-                        let features = scenario
-                            .features
-                            .clone()
-                            .ok_or_else(|| anyhow!("scenario features"))?;
-
-                        let feature = features
-                            .get(feature_name)
-                            .ok_or_else(|| anyhow!("feature missing in features"))?;
+                    .map(|(feature_name, feature, username)| async move {
+                        info!(
+                            "Deploying feature '{feature_name}' for VM {node_name}",
+                            node_name = deployment_element.scenario_reference
+                        );
 
                         let virtual_machine_id = deployment_element
                             .handler_reference
@@ -89,25 +84,16 @@ impl DeployableFeatures
                             ))
                             .await??;
 
-                        //throw this into a From<FeatureType> ?
-                        //both structs are external and it would necessitate a helper struct
                         let feature_type = match feature.feature_type.clone() {
                             FeatureType::Service => GrpcFeatureType::Service,
                             FeatureType::Artifact => GrpcFeatureType::Artifact,
                             FeatureType::Configuration => GrpcFeatureType::Configuration,
                         };
-                        let username = node
-                            .clone()
-                            .roles
-                            .ok_or_else(|| anyhow!("node roles"))?
-                            .get(role)
-                            .ok_or_else(|| anyhow!("user role"))?
-                            .to_owned();
 
                         let feature_depoyment = Box::new(GrpcFeature {
                             name: feature_name.to_owned(),
                             virtual_machine_id,
-                            username,
+                            username: username.to_owned(),
                             feature_type: feature_type.into(),
                             template_id: template_id
                                 .clone()

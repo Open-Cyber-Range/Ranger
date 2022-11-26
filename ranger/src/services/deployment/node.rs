@@ -172,19 +172,21 @@ impl DeployableNodes for Scenario {
                                     ))
                                     .await??;
 
-                                (
-                                    distributor_address.clone(),
-                                    database_address.clone(),
-                                    scheduler_address.clone(),
-                                    deployers.to_owned(),
-                                    self.clone(),
-                                    node.clone(),
-                                    deployment_element,
-                                    exercise.id,
-                                    template_id,
-                                )
-                                    .deploy_features()
-                                    .await?;
+                                if node.type_field == NodeType::VM && node.features.is_some() {
+                                    (
+                                        distributor_address.clone(),
+                                        database_address.clone(),
+                                        scheduler_address.clone(),
+                                        deployers.to_owned(),
+                                        self.clone(),
+                                        node.clone(),
+                                        deployment_element,
+                                        exercise.id,
+                                        template_id,
+                                    )
+                                        .deploy_features()
+                                        .await?;
+                                };
 
                                 Ok(())
                             }
