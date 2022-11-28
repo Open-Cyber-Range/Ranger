@@ -8,6 +8,7 @@ diesel::table! {
         handler_reference -> Nullable<Tinytext>,
         deployer_type -> Tinytext,
         status -> Tinytext,
+        executor_log -> Nullable<Mediumtext>,
         created_at -> Timestamp,
         deleted_at -> Nullable<Timestamp>,
     }

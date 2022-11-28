@@ -128,6 +128,8 @@ impl DeployableFeatures
                                             "Feature: '{feature_name}' output: {:?}",
                                             feature_response.vm_log
                                         );
+                                        feature_deployment_element.executor_log =
+                                            Some(feature_response.vm_log);
                                     }
 
                                     feature_deployment_element.status = ElementStatus::Success;
