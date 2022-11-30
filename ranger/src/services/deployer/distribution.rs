@@ -115,7 +115,7 @@ impl DeployerDistribution {
                     connections
                         .feature_client
                         .clone()
-                        .ok_or_else(|| anyhow!("No node deployer found"))?,
+                        .ok_or_else(|| anyhow!("No feature deployer found"))?,
                 ),
             },
             best_deployer,

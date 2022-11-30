@@ -92,7 +92,7 @@ impl DeployableFeatures
                             FeatureType::Configuration => GrpcFeatureType::Configuration,
                         };
 
-                        let feature_depoyment = Box::new(GrpcFeature {
+                        let feature_deployment = Box::new(GrpcFeature {
                             name: feature_name.to_owned(),
                             virtual_machine_id,
                             username: username.to_owned(),
@@ -110,7 +110,7 @@ impl DeployableFeatures
                             match distributor_address
                                 .send(Deploy(
                                     DeployerTypes::Feature,
-                                    feature_depoyment,
+                                    feature_deployment,
                                     deployers.to_owned(),
                                 ))
                                 .await?
