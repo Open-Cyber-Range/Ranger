@@ -31,8 +31,9 @@ services:
     restart: unless-stopped
 
   ranger-vmware-executor:
-    image: executor_maybe
+    image: nexus.ocr.cr14.net:8003/ranger-vmware-executor:latest
     volumes:
+      - ./configs/ranger-vmware-executor.yml:/etc/opt/ranger/ranger-vmware-executor/config.yml
       - ./.deputy/configuration.toml:/root/.deputy/configuration.toml
     restart: unless-stopped
 
