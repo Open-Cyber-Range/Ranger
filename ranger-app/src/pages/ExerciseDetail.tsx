@@ -13,7 +13,7 @@ import ExerciseForm from 'src/components/Exercise/Form';
 import DeploymentList from 'src/components/Deployment/List';
 import type {NewDeployment} from 'src/models/deployment';
 import {toastSuccess, toastWarning} from 'src/components/Toaster';
-import Header from 'src/components/Header';
+import Header from 'src/components/GroupHeader';
 import useExerciseStreaming from 'src/hooks/useExerciseStreaming';
 
 const ExerciseDetail = () => {
