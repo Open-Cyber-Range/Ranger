@@ -10,7 +10,7 @@ const language = {
     scenarioSDL: 'Scenario SDL',
   },
   deployments: {
-    title: 'Deployments',
+    title: 'New Deployment',
     add: 'Add Deployment',
     addingSuccess: 'Deployment {{newDeploymentName}} added',
     addingFail: 'Failed to add the deployment',
