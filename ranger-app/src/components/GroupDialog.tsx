@@ -5,6 +5,9 @@ import {
   H2,
   HTMLSelect,
   InputGroup,
+  FormGroup,
+  Classes,
+  Label,
 } from '@blueprintjs/core';
 import {useTranslation} from 'react-i18next';
 
@@ -17,11 +20,10 @@ const GROUP_OPTIONS = [
 ];
 
 const GroupDialog = (
-  {isOpen, title, placeholder, onSumbit, onCancel}:
+  {isOpen, title, onSumbit, onCancel}:
   {
     isOpen: boolean;
     title: string;
-    placeholder?: string;
     onSumbit: (count: string, name: string, group: string) => void;
     onCancel: () => void;
   },
@@ -40,7 +42,7 @@ const GroupDialog = (
 
   return (
     <Dialog isOpen={isOpen}>
-      <div className='bp4-dialog-header'>
+      <div className={Classes.DIALOG_HEADER}>
         <H2>{title}</H2>
         <Button
           small
@@ -50,8 +52,8 @@ const GroupDialog = (
             onCancel();
           }}/>
       </div>
-      <div className='bp4-dialog-body'>
-        <div className='bp4-form-group .bp4-inline'>
+      <div className={Classes.DIALOG_BODY}>
+        <FormGroup>
           <InputGroup
             autoFocus
             large
@@ -62,35 +64,39 @@ const GroupDialog = (
             }}
             onKeyDown={handleKeypress}
           />
-        </div>
-        <div className='bp4-form-group .bp4-inline'>
-          <label className='bp4-label'>
-            Deployement Group<span className='bp4-text-muted'> (Optional)</span>
-          </label>
-          <HTMLSelect
-            autoFocus
-            large
-            options={GROUP_OPTIONS}
-            value={group}
-            placeholder={placeholder ?? 'Deployment Group'}
-            onChange={event => {
-              setGroup(event.target.value);
-            }}
-            onKeyDown={handleKeypress}/>
-        </div>
-        <InputGroup
-          autoFocus
-          large
-          value={name}
-          leftIcon='graph'
-          placeholder={placeholder ?? 'Deployment Name'}
-          onChange={event => {
-            setName(event.target.value);
-          }}
-          onKeyDown={handleKeypress}/>
+        </FormGroup>
+        <FormGroup>
+          <Label>
+            {t('Deployment Group (Optional)')}
+            <HTMLSelect
+              autoFocus
+              large
+              fill
+              options={GROUP_OPTIONS}
+              value={group}
+              onChange={event => {
+                setGroup(event.target.value);
+              }}
+              onKeyDown={handleKeypress}/>
+          </Label>
+        </FormGroup>
+        <FormGroup>
+          <Label>
+            {t('Deployment Name')}
+            <InputGroup
+              autoFocus
+              large
+              value={name}
+              leftIcon='graph'
+              onChange={event => {
+                setName(event.target.value);
+              }}
+              onKeyDown={handleKeypress}/>
+          </Label>
+        </FormGroup>
       </div>
-      <div className='bp4-dialog-footer'>
-        <div className='bp4-dialog-footer-actions'>
+      <div className={Classes.DIALOG_FOOTER}>
+        <div className={Classes.DIALOG_FOOTER_ACTIONS}>
           <Button
             large
             intent='primary'

@@ -43,7 +43,8 @@ const GroupHeader = (
         onSumbit={value => {
           setIsOpen(false);
           onSubmit(value);
-        }}/>
+        }}
+      />
     </>
   );
 };
