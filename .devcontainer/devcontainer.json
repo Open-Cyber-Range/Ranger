@@ -17,5 +17,9 @@
   ],
   "workspaceFolder": "/workspace",
   "remoteUser": "vscode",
-  "postCreateCommand": "sudo chown vscode:vscode /home/vscode/.deputy && mkdir /home/vscode/.deputy/download && mkdir /home/vscode/.deputy/index"
+  "postCreateCommand": "sudo chown vscode:vscode /home/vscode/.deputy && mkdir /home/vscode/.deputy/download && mkdir /home/vscode/.deputy/index",
+  "forwardPorts": [
+    "mariadb:3306",
+    "development-keycloak:8080"
+  ]
 }
