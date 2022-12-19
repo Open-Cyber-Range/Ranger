@@ -7,6 +7,7 @@
     "@blueprintjs/popover2": "^1.8.0",
     "@monaco-editor/react": "^4.4.6",
     "@popperjs/core": "^2.11.6",
+    "@react-keycloak/web": "^3.4.0",
     "@reduxjs/toolkit": "^1.8.6",
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^13.0.0",
@@ -16,13 +17,14 @@
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
     "@types/styled-components": "^5.1.26",
+    "human-interval": "^2.0.1",
     "i18next": "^22.0.4",
     "i18next-browser-languagedetector": "^7.0.0",
+    "keycloak-js": "^20.0.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.36.1",
     "react-i18next": "^12.0.0",
-    "human-interval": "^2.0.1",
     "react-popper": "^2.3.0",
     "react-redux": "^8.0.4",
     "react-router-dom": "^6.4.1",
@@ -78,6 +80,10 @@
       "import/extensions": [
         "error",
         "never"
+      ],
+      "n/prefer-global/process": [
+        "error",
+        "always"
       ],
       "n/file-extension-in-import": [
         "error",
