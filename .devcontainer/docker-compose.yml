@@ -1,4 +1,4 @@
-version: '3'
+version: '3.7'
 
 services:
   ranger:
@@ -14,7 +14,7 @@ services:
   development-keycloak:
     image: nexus.ocr.cr14.net:8003/keycloak/keycloak
     ports:
-      - 8090:8080
+      - "8090:8080"
     volumes:
       - ./configs/keycloak-realm.json:/opt/keycloak/data/import/testrealm.json
     environment:
@@ -51,7 +51,7 @@ services:
   mariadb:
     image: nexus.ocr.cr14.net:8003/mariadb:10.7
     ports:
-      - 3306:3306
+      - "3306:3306"
     volumes:
       - ~/apps/mariadb:/var/lib/mysql
     environment:
