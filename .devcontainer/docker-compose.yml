@@ -13,8 +13,6 @@ services:
 
   development-keycloak:
     image: nexus.ocr.cr14.net:8003/keycloak/keycloak
-    ports:
-      - "8090:8080"
     volumes:
       - ./configs/keycloak-realm.json:/opt/keycloak/data/import/testrealm.json
     environment:
