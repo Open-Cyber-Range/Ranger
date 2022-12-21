@@ -1,3 +1,4 @@
+pub(crate) mod account;
 pub(crate) mod deployment;
 pub(crate) mod exercise;
 
@@ -20,8 +21,14 @@ sql_function! (fn current_timestamp() -> Timestamp);
 pub type All<Table, T> = Select<Table, AsSelect<T, Mysql>>;
 pub type FilterExisting<Target, DeletedAtColumn> = Filter<Target, IsNull<DeletedAtColumn>>;
 pub type ById<Id, R> = Filter<R, Eq<Id, Uuid>>;
+pub type ByTemplateId<TemplateId, R> = Filter<R, Eq<TemplateId, Uuid>>;
+pub type ByUsername<Username, R> = Filter<R, Eq<Username, String>>;
 pub type SelectById<Table, Id, DeletedAtColumn, T> =
     ById<Id, FilterExisting<All<Table, T>, DeletedAtColumn>>;
+pub type SelectByTemplateId<Table, TemplateId, DeletedAtColumn, T> =
+    ByTemplateId<TemplateId, FilterExisting<All<Table, T>, DeletedAtColumn>>;
+pub type SelectByTemplateIdAndUsername<Table, TemplateId, Username, DeletedAtColumn, T> =
+    ByUsername<Username, ByTemplateId<TemplateId, FilterExisting<All<Table, T>, DeletedAtColumn>>>;
 type UpdateDeletedAt<DeletedAtColumn> = Eq<DeletedAtColumn, now>;
 pub type SoftDelete<L, DeletedAtColumn> = Update<L, UpdateDeletedAt<DeletedAtColumn>>;
 pub type SoftDeleteById<Id, DeleteAtColumn, Table> = SoftDelete<ById<Id, Table>, DeleteAtColumn>;

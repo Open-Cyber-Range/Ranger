@@ -38,10 +38,25 @@ diesel::table! {
     }
 }
 
+diesel::table! {
+    accounts (id) {
+        id -> Binary,
+        template_id -> Binary,
+        username -> Tinytext,
+        password -> Nullable<Tinytext>,
+        private_key -> Nullable<Longtext>,
+        exercise_id -> Binary,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
+        deleted_at -> Nullable<Timestamp>,
+    }
+}
+
 diesel::joinable!(deployment_elements -> deployments (deployment_id));
 diesel::joinable!(deployments -> exercises (exercise_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
+    accounts,
     deployment_elements,
     deployments,
     exercises,
