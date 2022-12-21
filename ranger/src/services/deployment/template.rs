@@ -1,8 +1,11 @@
 use crate::{
-    models::{Deployment, DeploymentElement, ElementStatus, Exercise},
+    models::{
+        helpers::uuid::Uuid, Deployment, DeploymentElement, ElementStatus, Exercise, NewAccount,
+    },
     services::{
         client::{Deployable, DeploymentInfo},
         database::{
+            account::CreateAccount,
             deployment::{CreateDeploymentElement, UpdateDeploymentElement},
             Database,
         },
@@ -14,7 +17,7 @@ use anyhow::{anyhow, Ok, Result};
 use async_trait::async_trait;
 use futures::future::try_join_all;
 use log::debug;
-use ranger_grpc::{capabilities::DeployerTypes, Identifier, Source as GrpcSource};
+use ranger_grpc::{capabilities::DeployerTypes, Source as GrpcSource, TemplateResponse};
 use sdl_parser::{common::Source as SDLSource, node::NodeType, Scenario};
 
 impl Deployable for SDLSource {
@@ -82,7 +85,31 @@ impl DeployableTemplates for Scenario {
                         .await?
                     {
                         anyhow::Result::Ok(client_response) => {
-                            let template_id = Identifier::try_from(client_response)?.value;
+                            let template_response = TemplateResponse::try_from(client_response)?;
+                            let template_id = template_response
+                                .identifier
+                                .ok_or_else(|| anyhow!("templater did not return id"))?
+                                .value;
+
+                            if !template_response.accounts.is_empty() {
+                                for account in template_response.accounts.iter() {
+                                    let password = { !account.password.is_empty() }
+                                        .then(|| account.password.to_owned());
+                                    let private_key = { !account.private_key.is_empty() }
+                                        .then(|| account.private_key.to_owned());
+
+                                    database_address
+                                        .send(CreateAccount(NewAccount {
+                                            id: Uuid::random(),
+                                            template_id: Uuid::try_from(template_id.as_str())?,
+                                            username: account.username.to_owned(),
+                                            password,
+                                            private_key,
+                                            exercise_id: exercise.id,
+                                        }))
+                                        .await??;
+                                }
+                            }
 
                             debug!(
                                 "Template {} deployed with template id {}",

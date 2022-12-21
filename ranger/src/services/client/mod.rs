@@ -7,8 +7,7 @@ use anyhow::anyhow;
 use anyhow::Result;
 use async_trait::async_trait;
 pub use feature::*;
-use ranger_grpc::FeatureResponse;
-use ranger_grpc::Identifier;
+use ranger_grpc::{FeatureResponse, Identifier, TemplateResponse};
 use std::any::Any;
 pub use switch::*;
 pub use template::*;
@@ -17,6 +16,7 @@ pub use virtual_machine::*;
 pub enum DeploymentClientResponse {
     Identifier(Identifier),
     FeatureResponse(FeatureResponse),
+    TemplateResponse(TemplateResponse),
 }
 
 #[async_trait]
@@ -61,6 +61,19 @@ impl TryFrom<DeploymentClientResponse> for FeatureResponse {
             DeploymentClientResponse::FeatureResponse(feature_response) => Ok(feature_response),
             _ => Err(anyhow!(
                 "Unable to convert ClientResponse into FeatureResponse"
+            )),
+        }
+    }
+}
+
+impl TryFrom<DeploymentClientResponse> for TemplateResponse {
+    type Error = anyhow::Error;
+
+    fn try_from(client_response: DeploymentClientResponse) -> Result<Self> {
+        match client_response {
+            DeploymentClientResponse::TemplateResponse(template_response) => Ok(template_response),
+            _ => Err(anyhow!(
+                "Unable to convert ClientResponse into TemplateResponse"
             )),
         }
     }

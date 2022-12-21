@@ -5,6 +5,7 @@ use anyhow::{Ok, Result};
 use async_trait::async_trait;
 use ranger_grpc::{
     template_service_client::TemplateServiceClient, Identifier, Source as GrpcSource,
+    TemplateResponse,
 };
 use std::any::Any;
 use tonic::transport::Channel;
@@ -47,9 +48,9 @@ impl DeploymentClient<Box<dyn DeploymentInfo>> for Addr<TemplateClient> {
                 .unwrap()
                 .clone(),
         );
-        let identifier = self.send(deployment).await??;
+        let respose = self.send(deployment).await??;
 
-        Ok(DeploymentClientResponse::Identifier(identifier))
+        Ok(DeploymentClientResponse::TemplateResponse(respose))
     }
 
     async fn undeploy(&mut self, handler_reference: String) -> Result<()> {
@@ -63,11 +64,11 @@ impl DeploymentClient<Box<dyn DeploymentInfo>> for Addr<TemplateClient> {
 }
 
 #[derive(Message)]
-#[rtype(result = "Result<Identifier, anyhow::Error>")]
+#[rtype(result = "Result<TemplateResponse, anyhow::Error>")]
 pub struct CreateTemplate(pub GrpcSource);
 
 impl Handler<CreateTemplate> for TemplateClient {
-    type Result = ResponseFuture<Result<Identifier>>;
+    type Result = ResponseFuture<Result<TemplateResponse>>;
 
     fn handle(&mut self, msg: CreateTemplate, _ctx: &mut Self::Context) -> Self::Result {
         let template_deployment = msg.0;
