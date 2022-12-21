@@ -1,5 +1,6 @@
 use crate::models::helpers::uuid::Uuid;
 use crate::models::{DeploymentElement, ElementStatus};
+use crate::services::database::account::GetAccount;
 use crate::services::database::deployment::{CreateDeploymentElement, UpdateDeploymentElement};
 use crate::services::database::Database;
 use crate::services::deployer::{Deploy, DeployerDistribution};
@@ -11,7 +12,8 @@ use futures::future::try_join_all;
 use log::info;
 use ranger_grpc::capabilities::DeployerTypes;
 use ranger_grpc::{
-    Feature as GrpcFeature, FeatureResponse, FeatureType as GrpcFeatureType, Source as GrpcSource,
+    Account as GrpcAccount, Feature as GrpcFeature, FeatureResponse,
+    FeatureType as GrpcFeatureType, Source as GrpcSource,
 };
 use sdl_parser::feature::FeatureType;
 use sdl_parser::{node::Node, Scenario};
@@ -92,14 +94,26 @@ impl DeployableFeatures
                             FeatureType::Configuration => GrpcFeatureType::Configuration,
                         };
 
+                        let template_id = template_id
+                            .to_owned()
+                            .ok_or_else(|| anyhow!("template id"))?;
+
+                        let account = database_address
+                            .send(GetAccount(
+                                template_id.as_str().try_into()?,
+                                username.to_owned(),
+                            ))
+                            .await??;
+
                         let feature_deployment = Box::new(GrpcFeature {
                             name: feature_name.to_owned(),
                             virtual_machine_id,
-                            username: username.to_owned(),
                             feature_type: feature_type.into(),
-                            template_id: template_id
-                                .clone()
-                                .ok_or_else(|| anyhow!("template id for feature credentials"))?,
+                            account: Some(GrpcAccount {
+                                username: account.username,
+                                password: account.password.unwrap_or_default(),
+                                private_key: account.private_key.unwrap_or_default(),
+                            }),
                             source: Some(GrpcSource {
                                 name: feature_source.name,
                                 version: feature_source.version,
