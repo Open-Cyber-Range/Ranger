@@ -17,7 +17,7 @@ use anyhow::{anyhow, Ok, Result};
 use async_trait::async_trait;
 use futures::future::try_join_all;
 use log::debug;
-use ranger_grpc::{capabilities::DeployerTypes, Source as GrpcSource, TemplateResponse};
+use ranger_grpc::{capabilities::DeployerTypes, Account, Source as GrpcSource, TemplateResponse};
 use sdl_parser::{common::Source as SDLSource, node::NodeType, Scenario};
 
 impl Deployable for SDLSource {
@@ -39,6 +39,30 @@ pub trait DeployableTemplates {
         deployment: &Deployment,
         exercise: &Exercise,
     ) -> Result<()>;
+}
+
+async fn save_accounts(
+    accounts: Vec<Account>,
+    database_address: &Addr<Database>,
+    template_id: Uuid,
+    exercise_id: Uuid,
+) -> Result<()> {
+    for account in accounts.iter() {
+        let password = (!account.password.is_empty()).then_some(account.password.clone());
+        let private_key = (!account.private_key.is_empty()).then_some(account.private_key.clone());
+
+        database_address
+            .send(CreateAccount(NewAccount {
+                id: Uuid::random(),
+                template_id,
+                username: account.username.to_owned(),
+                password,
+                private_key,
+                exercise_id,
+            }))
+            .await??;
+    }
+    Ok(())
 }
 
 #[async_trait]
@@ -92,23 +116,13 @@ impl DeployableTemplates for Scenario {
                                 .value;
 
                             if !template_response.accounts.is_empty() {
-                                for account in template_response.accounts.iter() {
-                                    let password = { !account.password.is_empty() }
-                                        .then(|| account.password.to_owned());
-                                    let private_key = { !account.private_key.is_empty() }
-                                        .then(|| account.private_key.to_owned());
-
-                                    database_address
-                                        .send(CreateAccount(NewAccount {
-                                            id: Uuid::random(),
-                                            template_id: Uuid::try_from(template_id.as_str())?,
-                                            username: account.username.to_owned(),
-                                            password,
-                                            private_key,
-                                            exercise_id: exercise.id,
-                                        }))
-                                        .await??;
-                                }
+                                save_accounts(
+                                    template_response.accounts,
+                                    database_address,
+                                    Uuid::try_from(template_id.as_str())?,
+                                    exercise.id,
+                                )
+                                .await?;
                             }
 
                             debug!(
