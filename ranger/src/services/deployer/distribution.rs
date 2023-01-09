@@ -117,6 +117,7 @@ impl DeployerDistribution {
                         .clone()
                         .ok_or_else(|| anyhow!("No feature deployer found"))?,
                 ),
+                DeployerTypes::Condition => todo!("Add condition client"),
             },
             best_deployer,
         ))

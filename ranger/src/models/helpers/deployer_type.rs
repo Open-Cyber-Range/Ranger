@@ -31,6 +31,7 @@ impl Serialize for DeployerType {
             GrpcDeployerTypes::Template => "template",
             GrpcDeployerTypes::VirtualMachine => "virtual_machine",
             GrpcDeployerTypes::Feature => "feature",
+            GrpcDeployerTypes::Condition => "condition",
         };
         serializer.serialize_str(value)
     }
@@ -83,6 +84,7 @@ impl ToSql<Text, Mysql> for DeployerType {
             DeployerType(GrpcDeployerTypes::Template) => "template",
             DeployerType(GrpcDeployerTypes::VirtualMachine) => "virtual_machine",
             DeployerType(GrpcDeployerTypes::Feature) => "feature",
+            DeployerType(GrpcDeployerTypes::Condition) => "condition",
         });
         out.write_all(value.as_bytes())?;
         Ok(IsNull::No)
