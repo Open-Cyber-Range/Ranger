@@ -32,3 +32,6 @@ export const getWebsocketBase = () => {
   const host = window.location.host;
   return `${protocol}://${host}`;
 };
+
+export const isDevelopment = () =>
+  process.env.NODE_ENV || process.env.NODE_ENV === 'development';

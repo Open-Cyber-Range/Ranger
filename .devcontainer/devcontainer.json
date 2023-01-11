@@ -21,5 +21,9 @@
   "postCreateCommand": "sudo chown vscode:vscode /home/vscode/.deputy && mkdir /home/vscode/.deputy/download && mkdir /home/vscode/.deputy/index",
   "containerEnv": {
     "RUST_LOG": "info"
-  }
+  },
+  "forwardPorts": [
+    "mariadb:3306",
+    "development-keycloak:8080"
+  ]
 }

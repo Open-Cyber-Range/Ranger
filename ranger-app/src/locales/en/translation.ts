@@ -21,6 +21,8 @@ const language = {
   menu: {
     home: 'Home',
     exercises: 'Exercises',
+    logout: 'Logout',
+    greeting: 'Hi, {{username}}!',
   },
   common: {
     submit: 'Submit',
