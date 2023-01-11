@@ -118,6 +118,7 @@ impl DeployerDistribution {
                         .ok_or_else(|| anyhow!("No feature deployer found"))?,
                 ),
                 DeployerTypes::Condition => todo!("Add condition client"),
+                DeployerTypes::Inject => todo!("Add inject client"),
             },
             best_deployer,
         ))
