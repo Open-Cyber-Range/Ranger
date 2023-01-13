@@ -26,7 +26,8 @@ use actix_web::{
 use actix_web_actors::ws;
 use anyhow::Result;
 use log::error;
-use sdl_parser::Schema;
+use sdl_parser::entity::Entities;
+use sdl_parser::{Scenario, parse_sdl};
 
 #[post("exercise")]
 pub async fn add_exercise(
@@ -134,7 +135,7 @@ pub async fn add_exercise_deployment(
         .map_err(create_mailbox_error_handler("Database"))?
         .map_err(create_database_error_handler("Create exercise"))?;
 
-    let schema = Schema::from_yaml(&deployment.sdl_schema).map_err(|error| {
+    let scenario = Scenario::from_yaml(&deployment.sdl_schema).map_err(|error| {
         error!("Deployment error: {error}");
         RangerError::DeploymentFailed
     })?;
@@ -153,7 +154,7 @@ pub async fn add_exercise_deployment(
     app_state
         .deployment_manager_address
         .do_send(StartDeployment(
-            schema.scenario,
+            scenario,
             deployment.clone(),
             exercise,
         ));
@@ -244,3 +245,25 @@ pub async fn subscribe_to_exercise(
 
     ws::start(exercise_socket, &req, stream)
 }
+
+#[get("/exercise/{exercise_uuid}/deployment/{deployment_uuid}/entities")]
+pub async fn get_deployment_entities(
+    path_variables: Path<(Uuid, Uuid)>,
+    app_state: Data<AppState>,
+) -> Result<Json<Option<Entities>>, RangerError> {
+    let (_, deployment_uuid) = path_variables.into_inner();
+    let deployment = app_state
+        .database_address
+        .send(GetDeployment(deployment_uuid))
+        .await
+        .map_err(create_mailbox_error_handler("Database"))?
+        .map_err(create_database_error_handler("Get deployment"))?;
+    let sdl = deployment.sdl_schema;
+    let scenario= parse_sdl(&sdl).map_err(|error| {
+        error!("Failed to parse sdl: {error}");
+        RangerError::ScenarioParsingFailed
+    })?;
+    let entities = scenario.entities;
+    Ok(Json(entities))
+}
+

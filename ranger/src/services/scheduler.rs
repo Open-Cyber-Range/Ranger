@@ -15,7 +15,7 @@ impl Scheduler {
     }
 }
 
-#[derive(Message, Debug, PartialEq, Eq)]
+#[derive(Message, Debug, PartialEq)]
 #[rtype(result = "Result<Vec<Vec<(String, Node, InfraNode)>>>")]
 pub struct CreateDeploymentSchedule(pub(crate) Scenario);
 
