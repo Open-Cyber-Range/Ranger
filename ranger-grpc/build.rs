@@ -8,7 +8,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let proto_path_string = proto_path.to_str().unwrap();
     configure()
         .emit_rerun_if_changed(true)
-        .out_dir(&out_dir)
+        .out_dir(out_dir)
         .compile(
             &[
                 proto_path
