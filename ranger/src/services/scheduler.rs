@@ -76,7 +76,7 @@ impl CreateFeatureDeploymentSchedule {
         let node_features = node
             .clone()
             .features
-            .ok_or_else(|| anyhow!("node features"))?;
+            .ok_or_else(|| anyhow!("Node Features not found"))?;
 
         for (node_feature_name, node_feature_role) in node_features.iter() {
             let dependencies = scenario.get_a_node_features_dependencies(node_feature_name)?;
@@ -102,11 +102,11 @@ impl CreateFeatureDeploymentSchedule {
                         tranche.iter().try_for_each(|feature_name| {
                             let feature_value = features
                                 .get(feature_name)
-                                .ok_or_else(|| anyhow!("feature value"))?;
+                                .ok_or_else(|| anyhow!("Feature in Scenario not found"))?;
 
                             let username = roles
                                 .get(role.to_owned())
-                                .ok_or_else(|| anyhow!("username in roles"))?;
+                                .ok_or_else(|| anyhow!("Username in Roles list not found"))?;
 
                             schedule_entry.push((
                                 feature_name.clone(),

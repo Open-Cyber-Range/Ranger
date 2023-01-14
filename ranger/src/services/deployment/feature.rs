@@ -70,12 +70,14 @@ impl DeployableFeatures
                         let virtual_machine_id = deployment_element
                             .handler_reference
                             .clone()
-                            .ok_or_else(|| anyhow!("deployment element handler reference"))?;
+                            .ok_or_else(|| {
+                                anyhow!("Deployment element handler reference not found")
+                            })?;
 
                         let feature_source = feature
                             .source
                             .clone()
-                            .ok_or_else(|| anyhow!("feature source"))?;
+                            .ok_or_else(|| anyhow!("Feature source not found"))?;
 
                         let mut feature_deployment_element = database_address
                             .send(CreateDeploymentElement(
@@ -96,7 +98,7 @@ impl DeployableFeatures
 
                         let template_id = template_id
                             .to_owned()
-                            .ok_or_else(|| anyhow!("template id"))?;
+                            .ok_or_else(|| anyhow!("Template id not found"))?;
 
                         let account = database_address
                             .send(GetAccount(
@@ -134,7 +136,9 @@ impl DeployableFeatures
 
                                     let id = feature_response
                                         .identifier
-                                        .ok_or_else(|| anyhow!("identifier"))?
+                                        .ok_or_else(|| {
+                                            anyhow!("Identifier in Feature Response not found")
+                                        })?
                                         .value;
 
                                     if feature_type == GrpcFeatureType::Service {
