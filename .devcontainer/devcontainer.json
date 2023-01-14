@@ -23,7 +23,7 @@
     "RUST_LOG": "info"
   },
   "forwardPorts": [
-    "mariadb:3306",
+    "deputy-package-server-repository-combo:3306",
     "development-keycloak:8080"
   ]
 }

@@ -1,6 +1,5 @@
 [registries]
-main-registry = { index = "https://deputy.ocr.cr14.net/git/index.git", api = "http://deputy.ocr.cr14.net/" }
+main-registry = { api = "http://deputy.ocr.cr14.net/" }
 
 [package]
-index_path = "/home/vscode/.deputy/index"
 download_path = "/home/vscode/.deputy/download"
