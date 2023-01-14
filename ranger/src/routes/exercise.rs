@@ -25,7 +25,7 @@ use actix_web::{
 };
 use actix_web_actors::ws;
 use anyhow::Result;
-use log::error;
+use log::{error, info};
 use sdl_parser::Schema;
 
 #[post("exercise")]
@@ -182,6 +182,8 @@ pub async fn delete_exercise_deployment(
             error!("Undeploying error: {error}");
             RangerError::UndeploymentFailed
         })?;
+
+    info!("Deleting deployment {:?}", deployment_uuid.0);
     app_state
         .database_address
         .send(DeleteDeployment(deployment_uuid))
