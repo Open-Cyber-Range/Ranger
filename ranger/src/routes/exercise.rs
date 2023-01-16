@@ -26,8 +26,11 @@ use actix_web::{
 use actix_web_actors::ws;
 use anyhow::Result;
 use log::error;
-use sdl_parser::entity::Entities;
-use sdl_parser::{Scenario, parse_sdl};
+use sdl_parser::{
+    entity::Entities,
+    {Scenario, parse_sdl},
+};
+
 
 #[post("exercise")]
 pub async fn add_exercise(
@@ -258,8 +261,7 @@ pub async fn get_deployment_entities(
         .await
         .map_err(create_mailbox_error_handler("Database"))?
         .map_err(create_database_error_handler("Get deployment"))?;
-    let sdl = deployment.sdl_schema;
-    let scenario= parse_sdl(&sdl).map_err(|error| {
+    let scenario= parse_sdl(&deployment.sdl_schema).map_err(|error| {
         error!("Failed to parse sdl: {error}");
         RangerError::ScenarioParsingFailed
     })?;
