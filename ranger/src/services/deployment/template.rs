@@ -112,7 +112,7 @@ impl DeployableTemplates for Scenario {
                             let template_response = TemplateResponse::try_from(client_response)?;
                             let template_id = template_response
                                 .identifier
-                                .ok_or_else(|| anyhow!("templater did not return id"))?
+                                .ok_or_else(|| anyhow!("Templater did not return id"))?
                                 .value;
 
                             if !template_response.accounts.is_empty() {
