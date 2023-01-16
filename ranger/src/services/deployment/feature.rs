@@ -20,7 +20,7 @@ use sdl_parser::{node::Node, Scenario};
 
 #[async_trait]
 pub trait DeployableFeatures {
-    async fn deploy_features<'a>(&'a self) -> Result<()>;
+    async fn deploy_features(&self) -> Result<()>;
 }
 
 #[async_trait]
@@ -37,7 +37,7 @@ impl DeployableFeatures
         Option<String>,
     )
 {
-    async fn deploy_features<'a>(&'a self) -> Result<()> {
+    async fn deploy_features(&self) -> Result<()> {
         let (
             distributor_address,
             database_address,
