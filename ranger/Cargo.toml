@@ -85,5 +85,5 @@ uuid = { version = "1.1", features = ["v4", "serde"] }
 [dev-dependencies]
 actix-rt = "2"
 sdl-parser = { git = "ssh://git@code.ocr.cr14.net/open-cyber-range/public/sdl-parser", branch = "develop", features = [
-  "test"
+  "test",
 ] }

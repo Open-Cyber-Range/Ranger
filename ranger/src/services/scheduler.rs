@@ -16,7 +16,7 @@ impl Scheduler {
     }
 }
 
-#[derive(Message, Debug, PartialEq, Eq)]
+#[derive(Message, Debug, PartialEq)]
 #[rtype(result = "Result<Vec<Vec<(String, Node, InfraNode)>>>")]
 pub struct CreateDeploymentSchedule(pub(crate) Scenario);
 
@@ -63,7 +63,7 @@ impl CreateDeploymentSchedule {
     }
 }
 
-#[derive(Message, Debug, PartialEq, Eq)]
+#[derive(Message, Debug, PartialEq)]
 #[rtype(result = "Result<Vec<Vec<(String, Feature, String)>>>")]
 pub struct CreateFeatureDeploymentSchedule(pub(crate) Scenario, pub(crate) Node);
 
