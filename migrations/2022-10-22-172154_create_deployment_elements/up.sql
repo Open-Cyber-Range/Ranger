@@ -5,6 +5,7 @@ CREATE TABLE deployment_elements (
   handler_reference TINYTEXT DEFAULT NULL,
   deployer_type TINYTEXT NOT NULL,
   status TINYTEXT NOT NULL,
+  executor_log MEDIUMTEXT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   deleted_at TIMESTAMP NULL DEFAULT NULL,
   PRIMARY KEY (id),

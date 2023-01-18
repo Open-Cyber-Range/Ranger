@@ -129,6 +129,7 @@ pub struct DeploymentElement {
     pub handler_reference: Option<String>,
     pub deployer_type: DeployerType,
     pub status: ElementStatus,
+    pub executor_log: Option<String>,
 }
 
 type ByDeploymentId<T> = Filter<
@@ -154,6 +155,7 @@ impl DeploymentElement {
             handler_reference: None,
             deployer_type: DeployerType(deployer_type),
             status: ElementStatus::Ongoing,
+            executor_log: None,
         }
     }
 

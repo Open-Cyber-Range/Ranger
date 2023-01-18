@@ -25,12 +25,11 @@ use actix_web::{
 };
 use actix_web_actors::ws;
 use anyhow::Result;
-use log::error;
+use log::{error, info};
 use sdl_parser::{
     entity::Entities,
-    {Scenario, parse_sdl},
+    {parse_sdl, Scenario},
 };
-
 
 #[post("exercise")]
 pub async fn add_exercise(
@@ -156,11 +155,7 @@ pub async fn add_exercise_deployment(
 
     app_state
         .deployment_manager_address
-        .do_send(StartDeployment(
-            scenario,
-            deployment.clone(),
-            exercise,
-        ));
+        .do_send(StartDeployment(scenario, deployment.clone(), exercise));
 
     Ok(Json(deployment))
 }
@@ -186,6 +181,8 @@ pub async fn delete_exercise_deployment(
             error!("Undeploying error: {error}");
             RangerError::UndeploymentFailed
         })?;
+
+    info!("Deleting deployment {:?}", deployment_uuid.0);
     app_state
         .database_address
         .send(DeleteDeployment(deployment_uuid))
@@ -261,11 +258,10 @@ pub async fn get_deployment_entities(
         .await
         .map_err(create_mailbox_error_handler("Database"))?
         .map_err(create_database_error_handler("Get deployment"))?;
-    let scenario= parse_sdl(&deployment.sdl_schema).map_err(|error| {
+    let scenario = parse_sdl(&deployment.sdl_schema).map_err(|error| {
         error!("Failed to parse sdl: {error}");
         RangerError::ScenarioParsingFailed
     })?;
     let entities = scenario.entities;
     Ok(Json(entities))
 }
-

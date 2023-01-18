@@ -6,6 +6,7 @@ use actix::{Handler, Message, ResponseActFuture, WrapFuture};
 use actix_web::web::block;
 use anyhow::{Ok, Result};
 use diesel::RunQueryDsl;
+use log::info;
 
 #[derive(Message)]
 #[rtype(result = "Result<Deployment>")]
@@ -113,6 +114,7 @@ impl Handler<DeleteDeployment> for Database {
                     deployment.soft_delete_elements().execute(&mut connection)?;
                     deployment.soft_delete().execute(&mut connection)?;
 
+                    info!("Deployment {:?} deleted", id.0);
                     Ok(id)
                 })
                 .await??;

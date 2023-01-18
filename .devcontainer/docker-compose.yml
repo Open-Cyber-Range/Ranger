@@ -9,7 +9,7 @@ services:
       - ./.deputy/configuration.toml:/home/vscode/.deputy/configuration.toml
     user: vscode
     environment:
-      - DATABASE_URL=mysql://mysql_user:mysql_pass@mariadb:3306/ranger
+      - DATABASE_URL=mysql://mysql_user:mysql_pass@package-server-repository-combo:3306/deputy
 
   development-keycloak:
     image: nexus.ocr.cr14.net:8003/keycloak/keycloak
@@ -40,20 +40,26 @@ services:
       - ./.deputy/configuration.toml:/root/.deputy/configuration.toml
     restart: unless-stopped
 
+  ranger-vmware-executor:
+    image: nexus.ocr.cr14.net:8003/ranger-vmware-executor:latest
+    volumes:
+      - ./configs/ranger-vmware-executor.yml:/etc/opt/ranger/ranger-vmware-executor/config.yml
+      - ./.deputy/configuration.toml:/root/.deputy/configuration.toml
+    restart: unless-stopped
+
   deputy-package-server-repository-combo:
     image: nexus.ocr.cr14.net:8003/deputy-package-server-repository-combo:latest
     environment:
       - RUST_LOG=debug
     restart: unless-stopped
-
-  mariadb:
-    image: nexus.ocr.cr14.net:8003/mariadb:10.7
-    ports:
-      - "3306:3306"
     volumes:
-      - ~/apps/mariadb:/var/lib/mysql
-    environment:
-      - MYSQL_ROOT_PASSWORD=mysql_root
-      - MYSQL_PASSWORD=mysql_pass
-      - MYSQL_USER=mysql_user
-      - MYSQL_DATABASE=ranger
+      - ./configs/deputy-package-server-configuration.yml:/etc/opt/deputy/deputy-package-server/config.yml
+
+  featurer-redis-server:
+    image: nexus.ocr.cr14.net:8003/featurer-redis-server
+    restart: always
+    command: ["redis-server", "/etc/redis/redis.conf"]
+    ports:
+      - 6381:6381
+    volumes:
+      - ./configs/ranger-redis-config.conf:/etc/redis/redis.conf

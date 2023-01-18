@@ -17,33 +17,33 @@ assets = [
   [
     "target/release/ranger",
     "/var/opt/ranger/bin/",
-    "755",
+    "755"
   ],
   [
     "assets/default-production-config.yml",
     "/etc/opt/ranger/ranger/config.yml",
-    "644",
+    "644"
   ],
   [
     "../ranger-app/build/static/css/*",
     "/etc/opt/ranger/ranger-app/static/css",
-    "644",
+    "644"
   ],
   [
     "../ranger-app/build/static/js/*",
     "/etc/opt/ranger/ranger-app/static/js",
-    "644",
+    "644"
   ],
   [
     "../ranger-app/build/static/media/*",
     "/etc/opt/ranger/ranger-app/static/media",
-    "644",
+    "644"
   ],
   [
     "../ranger-app/build/*",
     "/etc/opt/ranger/ranger-app/",
-    "644",
-  ],
+    "644"
+  ]
 ]
 systemd-units = { unit-name = "ranger", unit-scripts = "assets/unit-scripts" }
 
@@ -77,7 +77,7 @@ tokio = { version = "1", features = [
   "fs",
   "macros",
   "net",
-  "rt",
+  "rt"
 ] }
 tonic = "0.8"
 uuid = { version = "1.1", features = ["v4", "serde"] }
