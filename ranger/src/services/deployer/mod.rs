@@ -1,7 +1,9 @@
 mod distribution;
 mod factory;
 
-use super::client::{FeatureClient, SwitchClient, TemplateClient, VirtualMachineClient};
+use super::client::{
+    FeatureClient, InjectClient, SwitchClient, TemplateClient, VirtualMachineClient,
+};
 use actix::{Actor, Addr};
 use anyhow::Result;
 pub use distribution::*;
@@ -14,6 +16,7 @@ pub struct DeployerConnections {
     switch_client: Option<Addr<SwitchClient>>,
     template_client: Option<Addr<TemplateClient>>,
     feature_client: Option<Addr<FeatureClient>>,
+    inject_client: Option<Addr<InjectClient>>,
 }
 
 impl DeployerConnections {
@@ -22,6 +25,7 @@ impl DeployerConnections {
         let mut template_client = None;
         let mut switch_client = None;
         let mut feature_client = None;
+        let mut inject_client = None;
 
         if capabilities.contains(&DeployerTypes::VirtualMachine) {
             virtual_machine_client = Some(
@@ -39,11 +43,15 @@ impl DeployerConnections {
         if capabilities.contains(&DeployerTypes::Feature) {
             feature_client = Some(FeatureClient::new(address.to_string()).await?.start());
         }
+        if capabilities.contains(&DeployerTypes::Inject) {
+            inject_client = Some(InjectClient::new(address.to_string()).await?.start());
+        }
         Ok(Self {
             virtual_machine_client,
             switch_client,
             template_client,
             feature_client,
+            inject_client,
         })
     }
 }

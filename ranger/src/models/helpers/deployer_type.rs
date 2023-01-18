@@ -49,6 +49,7 @@ impl<'de> Deserialize<'de> for DeployerType {
             "template" => Ok(DeployerType(GrpcDeployerTypes::Template)),
             "virtual_machine" => Ok(DeployerType(GrpcDeployerTypes::VirtualMachine)),
             "feature" => Ok(DeployerType(GrpcDeployerTypes::Feature)),
+            "inject" => Ok(DeployerType(GrpcDeployerTypes::Inject)),
             _ => Err(serde::de::Error::custom(format!(
                 "Invalid deployer type: {}",
                 type_string
@@ -65,6 +66,7 @@ impl FromSql<Text, Mysql> for DeployerType {
                 "template" => Ok(DeployerType(GrpcDeployerTypes::Template)),
                 "virtual_machine" => Ok(DeployerType(GrpcDeployerTypes::VirtualMachine)),
                 "feature" => Ok(DeployerType(GrpcDeployerTypes::Feature)),
+                "inject" => Ok(DeployerType(GrpcDeployerTypes::Inject)),
                 _ => Err("Invalid deployer type".into()),
             };
         }

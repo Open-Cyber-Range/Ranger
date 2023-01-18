@@ -1,4 +1,5 @@
 mod feature;
+mod inject;
 mod switch;
 mod template;
 mod virtual_machine;
@@ -7,6 +8,7 @@ use anyhow::anyhow;
 use anyhow::Result;
 use async_trait::async_trait;
 pub use feature::*;
+pub use inject::*;
 use ranger_grpc::{FeatureResponse, Identifier, TemplateResponse};
 use std::any::Any;
 pub use switch::*;
