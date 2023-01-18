@@ -41,6 +41,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     .join("feature.proto")
                     .to_str()
                     .unwrap(),
+                proto_path
+                    .join("src")
+                    .join("inject.proto")
+                    .to_str()
+                    .unwrap(),
             ],
             &[proto_path_string],
         )?;

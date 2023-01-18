@@ -88,7 +88,10 @@ impl CreateFeatureDeploymentSchedule {
 
             tranches_with_roles.insert(node_feature_role, tranches);
         }
-        let roles = node.roles.as_ref().ok_or_else(|| anyhow!("node roles"))?;
+        let roles = node
+            .roles
+            .as_ref()
+            .ok_or_else(|| anyhow!("Node Roles not found"))?;
 
         if let Some(features) = &scenario.features {
             let mut feature_schedule: Vec<Vec<(String, Feature, String)>> = Vec::new();

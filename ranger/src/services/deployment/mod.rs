@@ -1,4 +1,5 @@
 mod feature;
+mod inject;
 mod node;
 mod template;
 
