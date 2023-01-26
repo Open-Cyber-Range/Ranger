@@ -1,7 +1,7 @@
 CREATE TABLE accounts (
     id BINARY(16) NOT NULL,
     template_id BINARY(16) NOT NULL,
-    username TINYTEXT,
+    username TINYTEXT NOT NULL,
     password TINYTEXT NULL DEFAULT NULL,
     private_key TEXT NULL DEFAULT NULL,
     exercise_id BINARY(16) NOT NULL,

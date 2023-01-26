@@ -6,7 +6,7 @@ use crate::{
         client::{Deployable, DeploymentInfo},
         database::{
             account::CreateAccount,
-            deployment::{CreateDeploymentElement, UpdateDeploymentElement},
+            deployment::{CreateOrIgnoreDeploymentElement, UpdateDeploymentElement},
             Database,
         },
         deployer::{Deploy, DeployerDistribution},
@@ -89,13 +89,18 @@ impl DeployableTemplates for Scenario {
                         .as_ref()
                         .ok_or_else(|| anyhow!("Source not found"))?;
 
+                    let placeholder_template_id =
+                        "00000000-0000-0000-0000-000000000000".to_string();
+
                     let mut deployment_element = database_address
-                        .send(CreateDeploymentElement(
+                        .send(CreateOrIgnoreDeploymentElement(
                             exercise.id,
                             DeploymentElement::new(
                                 deployment.id,
                                 Box::new(source.to_owned()),
+                                Some(placeholder_template_id),
                                 DeployerTypes::Template,
+                                ElementStatus::Ongoing,
                             ),
                         ))
                         .await??;
@@ -125,10 +130,8 @@ impl DeployableTemplates for Scenario {
                                 .await?;
                             }
 
-                            debug!(
-                                "Template {} deployed with template id {}",
-                                name, template_id
-                            );
+                            debug!("Node {} deployed with template id {}", name, template_id);
+
                             deployment_element.status = ElementStatus::Success;
                             deployment_element.handler_reference = Some(template_id);
 
@@ -137,8 +140,10 @@ impl DeployableTemplates for Scenario {
                                 .await??;
                             Ok::<()>(())
                         }
+
                         Err(error) => {
                             deployment_element.status = ElementStatus::Failed;
+
                             database_address
                                 .send(UpdateDeploymentElement(exercise.id, deployment_element))
                                 .await??;
@@ -148,7 +153,6 @@ impl DeployableTemplates for Scenario {
                 }),
         )
         .await?;
-
         Ok(())
     }
 }
