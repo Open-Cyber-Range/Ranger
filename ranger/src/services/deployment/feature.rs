@@ -82,7 +82,7 @@ impl DeployableFeatures
                         let mut feature_deployment_element = database_address
                             .send(CreateDeploymentElement(
                                 *exercise_id,
-                                DeploymentElement::new(
+                                DeploymentElement::new_ongoing(
                                     deployment_element.deployment_id,
                                     Box::new(feature_name.to_string()),
                                     DeployerTypes::Feature,

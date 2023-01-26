@@ -2,7 +2,8 @@ mod distribution;
 mod factory;
 
 use super::client::{
-    FeatureClient, InjectClient, SwitchClient, TemplateClient, VirtualMachineClient,
+    ConditionClient, FeatureClient, InjectClient, SwitchClient, TemplateClient,
+    VirtualMachineClient,
 };
 use actix::{Actor, Addr};
 use anyhow::Result;
@@ -16,6 +17,7 @@ pub struct DeployerConnections {
     switch_client: Option<Addr<SwitchClient>>,
     template_client: Option<Addr<TemplateClient>>,
     feature_client: Option<Addr<FeatureClient>>,
+    condition_client: Option<Addr<ConditionClient>>,
     inject_client: Option<Addr<InjectClient>>,
 }
 
@@ -25,6 +27,7 @@ impl DeployerConnections {
         let mut template_client = None;
         let mut switch_client = None;
         let mut feature_client = None;
+        let mut condition_client = None;
         let mut inject_client = None;
 
         if capabilities.contains(&DeployerTypes::VirtualMachine) {
@@ -43,6 +46,9 @@ impl DeployerConnections {
         if capabilities.contains(&DeployerTypes::Feature) {
             feature_client = Some(FeatureClient::new(address.to_string()).await?.start());
         }
+        if capabilities.contains(&DeployerTypes::Condition) {
+            condition_client = Some(ConditionClient::new(address.to_string()).await?.start());
+        }
         if capabilities.contains(&DeployerTypes::Inject) {
             inject_client = Some(InjectClient::new(address.to_string()).await?.start());
         }
@@ -51,6 +57,7 @@ impl DeployerConnections {
             switch_client,
             template_client,
             feature_client,
+            condition_client,
             inject_client,
         })
     }

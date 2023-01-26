@@ -1,3 +1,4 @@
+mod condition;
 mod feature;
 mod inject;
 mod switch;
@@ -7,18 +8,23 @@ mod virtual_machine;
 use anyhow::anyhow;
 use anyhow::Result;
 use async_trait::async_trait;
+pub use condition::*;
 pub use feature::*;
 pub use inject::*;
+use ranger_grpc::ConditionStreamResponse;
 use ranger_grpc::{FeatureResponse, Identifier, TemplateResponse};
 use std::any::Any;
 pub use switch::*;
 pub use template::*;
+use tonic::Streaming;
 pub use virtual_machine::*;
 
+pub type ConditionResponse = (Identifier, Streaming<ConditionStreamResponse>);
 pub enum DeploymentClientResponse {
     Identifier(Identifier),
     FeatureResponse(FeatureResponse),
     TemplateResponse(TemplateResponse),
+    ConditionResponse(ConditionResponse),
 }
 
 #[async_trait]
@@ -74,6 +80,19 @@ impl TryFrom<DeploymentClientResponse> for TemplateResponse {
     fn try_from(client_response: DeploymentClientResponse) -> Result<Self> {
         match client_response {
             DeploymentClientResponse::TemplateResponse(template_response) => Ok(template_response),
+            _ => Err(anyhow!(
+                "Unable to convert ClientResponse into TemplateResponse"
+            )),
+        }
+    }
+}
+
+impl TryFrom<DeploymentClientResponse> for ConditionResponse {
+    type Error = anyhow::Error;
+
+    fn try_from(client_response: DeploymentClientResponse) -> Result<Self> {
+        match client_response {
+            DeploymentClientResponse::ConditionResponse((id, stream)) => Ok((id, stream)),
             _ => Err(anyhow!(
                 "Unable to convert ClientResponse into TemplateResponse"
             )),

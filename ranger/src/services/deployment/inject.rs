@@ -77,7 +77,7 @@ impl DeployableInject
         let mut inject_deployment_element = database_address
             .send(CreateDeploymentElement(
                 *exercise_id,
-                DeploymentElement::new(
+                DeploymentElement::new_ongoing(
                     deployment_element.deployment_id,
                     Box::new(inject_name.to_owned()),
                     DeployerTypes::Inject,

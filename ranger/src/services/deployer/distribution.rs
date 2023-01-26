@@ -5,7 +5,7 @@ use super::{
     factory::{CreateDeployer, DeployerFactory},
 };
 use crate::services::{
-    client::{DeploymentClientResponse, FeatureClient, InjectClient},
+    client::{ConditionClient, DeploymentClientResponse, FeatureClient, InjectClient},
     deployer::DeployerConnections,
 };
 use actix::{
@@ -41,6 +41,8 @@ impl DeployerDistribution {
                     || deployer_type == DeployerTypes::Switch && value.switch_client.is_some()
                     || deployer_type == DeployerTypes::Template && value.template_client.is_some()
                     || deployer_type == DeployerTypes::Feature && value.feature_client.is_some()
+                    || deployer_type == DeployerTypes::Condition
+                        && value.condition_client.is_some()
                     || deployer_type == DeployerTypes::Inject && value.inject_client.is_some())
             {
                 return Some(key.to_string());
@@ -86,6 +88,7 @@ impl DeployerDistribution {
         actix::Addr<SwitchClient>: DeploymentClient<Box<dyn DeploymentInfo>>,
         actix::Addr<TemplateClient>: DeploymentClient<Box<dyn DeploymentInfo>>,
         actix::Addr<FeatureClient>: DeploymentClient<Box<dyn DeploymentInfo>>,
+        actix::Addr<ConditionClient>: DeploymentClient<Box<dyn DeploymentInfo>>,
         actix::Addr<InjectClient>: DeploymentClient<Box<dyn DeploymentInfo>>,
     {
         let best_deployer = self.book_best_deployer(potential_deployers, deployer_type)?;
@@ -125,7 +128,12 @@ impl DeployerDistribution {
                         .clone()
                         .ok_or_else(|| anyhow!("No inject deployer found"))?,
                 ),
-                DeployerTypes::Condition => todo!("Add condition client"),
+                DeployerTypes::Condition => Box::new(
+                    connections
+                        .condition_client
+                        .clone()
+                        .ok_or_else(|| anyhow!("No condition deployer found"))?,
+                ),
             },
             best_deployer,
         ))

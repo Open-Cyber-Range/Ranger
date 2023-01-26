@@ -43,6 +43,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     .unwrap(),
                 proto_path
                     .join("src")
+                    .join("condition.proto")
+                    .to_str()
+                    .unwrap(),
+                proto_path
+                    .join("src")
                     .join("inject.proto")
                     .to_str()
                     .unwrap(),

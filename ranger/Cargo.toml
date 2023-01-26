@@ -17,33 +17,33 @@ assets = [
   [
     "target/release/ranger",
     "/var/opt/ranger/bin/",
-    "755"
+    "755",
   ],
   [
     "assets/default-production-config.yml",
     "/etc/opt/ranger/ranger/config.yml",
-    "644"
+    "644",
   ],
   [
     "../ranger-app/build/static/css/*",
     "/etc/opt/ranger/ranger-app/static/css",
-    "644"
+    "644",
   ],
   [
     "../ranger-app/build/static/js/*",
     "/etc/opt/ranger/ranger-app/static/js",
-    "644"
+    "644",
   ],
   [
     "../ranger-app/build/static/media/*",
     "/etc/opt/ranger/ranger-app/static/media",
-    "644"
+    "644",
   ],
   [
     "../ranger-app/build/*",
     "/etc/opt/ranger/ranger-app/",
-    "644"
-  ]
+    "644",
+  ],
 ]
 systemd-units = { unit-name = "ranger", unit-scripts = "assets/unit-scripts" }
 
@@ -54,8 +54,9 @@ actix-web-actors = "4"
 actix-http = { version = "3", features = ["http2", "ws"] }
 anyhow = "1"
 async-trait = "0.1"
+bigdecimal = { version = "0.3", features = ["serde"] }
 chrono = "0.4"
-diesel = { version = "2", features = ["mysql", "r2d2", "chrono"] }
+diesel = { version = "2", features = ["mysql", "r2d2", "chrono", "numeric"] }
 diesel_migrations = "2"
 env_logger = "0.9"
 futures = "0.3"
@@ -77,7 +78,7 @@ tokio = { version = "1", features = [
   "fs",
   "macros",
   "net",
-  "rt"
+  "rt",
 ] }
 tonic = "0.8"
 uuid = { version = "1.1", features = ["v4", "serde"] }

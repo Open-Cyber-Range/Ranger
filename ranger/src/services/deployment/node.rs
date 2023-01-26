@@ -1,3 +1,4 @@
+use super::condition::DeployableConditions;
 use super::feature::DeployableFeatures;
 use crate::models::helpers::deployer_type::DeployerType;
 use crate::models::helpers::uuid::Uuid;
@@ -122,7 +123,7 @@ impl DeployableNodes for Scenario {
                         let mut deployment_element = database_address
                             .send(CreateDeploymentElement(
                                 exercise.id,
-                                DeploymentElement::new(
+                                DeploymentElement::new_ongoing(
                                     deployment.id,
                                     Box::new(unique_name.to_string()),
                                     deployer_type,
@@ -174,20 +175,36 @@ impl DeployableNodes for Scenario {
                                     ))
                                     .await??;
 
-                                if node.type_field == NodeType::VM && node.features.is_some() {
-                                    (
-                                        distributor_address.clone(),
-                                        database_address.clone(),
-                                        scheduler_address.clone(),
-                                        deployers.to_owned(),
-                                        self.clone(),
-                                        node.clone(),
-                                        deployment_element,
-                                        exercise.id,
-                                        template_id,
-                                    )
-                                        .deploy_features()
-                                        .await?;
+                                if node.type_field == NodeType::VM {
+                                    if node.features.is_some() {
+                                        (
+                                            distributor_address.clone(),
+                                            database_address.clone(),
+                                            scheduler_address.clone(),
+                                            deployers.to_owned(),
+                                            self.clone(),
+                                            node.clone(),
+                                            deployment_element.clone(),
+                                            exercise.id,
+                                            template_id.clone(),
+                                        )
+                                            .deploy_features()
+                                            .await?;
+                                    }
+                                    if node.conditions.is_some() {
+                                        (
+                                            distributor_address.clone(),
+                                            database_address.clone(),
+                                            deployers.to_owned(),
+                                            self.clone(),
+                                            node.clone(),
+                                            deployment_element,
+                                            exercise.id,
+                                            template_id,
+                                        )
+                                            .deploy_conditions()
+                                            .await?;
+                                    }
                                 };
 
                                 Ok(())

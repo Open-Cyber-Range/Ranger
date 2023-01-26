@@ -1,4 +1,5 @@
 pub(crate) mod account;
+pub(crate) mod condition;
 pub(crate) mod deployment;
 pub(crate) mod exercise;
 
@@ -9,7 +10,7 @@ use diesel::{
     dsl::now,
     helper_types::{AsSelect, Eq, Filter, IsNull, Select, Update},
     mysql::{Mysql, MysqlConnection},
-    query_builder::InsertStatement,
+    query_builder::{InsertOrIgnoreStatement, InsertStatement},
     r2d2::{ConnectionManager, Pool, PooledConnection},
     sql_function, Insertable,
 };
@@ -35,6 +36,8 @@ pub type SoftDeleteById<Id, DeleteAtColumn, Table> = SoftDelete<ById<Id, Table>,
 pub type UpdateById<Id, DeletedAtColumn, Table, T> =
     Update<FilterExisting<ById<Id, Table>, DeletedAtColumn>, T>;
 pub type Create<Type, Table> = InsertStatement<Table, <Type as Insertable<Table>>::Values>;
+pub type CreateOrIgnore<Type, Table> =
+    InsertOrIgnoreStatement<Table, <Type as Insertable<Table>>::Values>;
 
 pub struct Database {
     websocket_manager_address: Addr<WebSocketManager>,
