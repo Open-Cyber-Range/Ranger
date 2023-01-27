@@ -32,6 +32,20 @@ const language = {
     switches: 'Switches',
     templates: 'Templates',
   },
+
+  emails: {
+    emailLog: 'Email log:',
+    status: 'Status',
+    timestamp: 'Timestamp',
+    toEntity: 'To Entity',
+    from: 'From',
+    to: 'To',
+    replyTo: 'Reply to',
+    subject: 'Subject',
+    bcc: 'Bcc',
+    cc: 'Cc',
+    body: 'Body',
+  },
 };
 
 export default language;

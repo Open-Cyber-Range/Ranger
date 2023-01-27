@@ -12,4 +12,25 @@ type Exercise = {
 
 type UpdateExercise = NewExercise;
 
-export type {NewExercise, Exercise, UpdateExercise};
+export enum EmailStatus {
+  Delivered = 'delivered',
+  BeingSent = 'being sent',
+  Bounced = 'bounced',
+}
+
+type Email = {
+  id: string;
+  exerciseId: string;
+  fromAddress: string;
+  toEntity: string;
+  to?: string;
+  replyTo?: string;
+  subject: string;
+  cc?: string;
+  bcc?: string;
+  body: string;
+  sentAt: string;
+  status: EmailStatus;
+};
+
+export type {NewExercise, Exercise, UpdateExercise, Email};
