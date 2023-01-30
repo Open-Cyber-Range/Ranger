@@ -9,7 +9,7 @@ services:
       - ./.deputy/configuration.toml:/home/vscode/.deputy/configuration.toml
     user: vscode
     environment:
-      - DATABASE_URL=mysql://mysql_user:mysql_pass@package-server-repository-combo:3306/deputy
+      - DATABASE_URL=mysql://mysql_user:mysql_pass@deputy-package-server-repository-combo:3306/deputy
 
   development-keycloak:
     image: nexus.ocr.cr14.net:8003/keycloak/keycloak
