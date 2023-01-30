@@ -12,7 +12,6 @@ diesel::table! {
         updated_at -> Timestamp,
         deleted_at -> Nullable<Timestamp>,
     }
-
 }
 
 diesel::table! {
@@ -50,6 +49,7 @@ diesel::table! {
         created_at -> Timestamp,
         updated_at -> Timestamp,
         deleted_at -> Nullable<Timestamp>,
+        is_deployed -> Nullable<Bool>,
     }
 }
 

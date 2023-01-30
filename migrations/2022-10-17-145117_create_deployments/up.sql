@@ -7,7 +7,8 @@ CREATE TABLE deployments (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP NULL DEFAULT NULL,
+    is_deployed BOOLEAN GENERATED ALWAYS AS (IF(deleted_at IS NULL, 1, NULL)),
     PRIMARY KEY (id),
     FOREIGN KEY (exercise_id) REFERENCES exercises(id),
-    UNIQUE (name, exercise_id)
+    UNIQUE (name, exercise_id, is_deployed)
 );
