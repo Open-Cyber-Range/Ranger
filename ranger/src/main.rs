@@ -2,6 +2,7 @@ use actix_web::web::scope;
 use actix_web::{web::Data, App, HttpServer};
 use anyhow::Error;
 use ranger::app_setup;
+use ranger::routes::deployers::get_deployers;
 use ranger::routes::exercise::{
     delete_exercise_deployment, get_exercise, get_exercise_deployment_elements,
     get_exercise_deployments, get_exercises, subscribe_to_exercise, update_exercise,
@@ -34,7 +35,8 @@ async fn main() -> Result<(), Error> {
                     .service(add_exercise)
                     .service(delete_exercise)
                     .service(update_exercise)
-                    .service(get_exercise),
+                    .service(get_exercise)
+                    .service(get_deployers),
             )
     })
     .bind((host, port))?
