@@ -13,7 +13,7 @@ const GroupHeaderHolder = styled.div`
 
 const GroupHeader = (
   {onSubmit, dialogTitle, buttonTitle, headerTitle}: {
-    onSubmit: (name: string) => void;
+    onSubmit: (count: string, name: string, deploymentGroup: string) => void;
     dialogTitle: string;
     buttonTitle: string;
     headerTitle: string;
@@ -40,9 +40,9 @@ const GroupHeader = (
         onCancel={() => {
           setIsOpen(false);
         }}
-        onSumbit={value => {
+        onSumbit={(count, name, deploymentGroup) => {
           setIsOpen(false);
-          onSubmit(value);
+          onSubmit(count, name, deploymentGroup);
         }}
       />
     </>
