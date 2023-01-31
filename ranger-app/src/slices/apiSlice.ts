@@ -75,6 +75,9 @@ export const apiSlice = createApi({
       query: ({exerciseId, deploymentId}) =>
         `/exercise/${exerciseId}/deployment/${deploymentId}/deployment_element`,
     }),
+    getDeploymentGroups: builder.query<Deployment[], void>({
+      query: () => '/deployer',
+    }),
   }),
 });
 
@@ -87,4 +90,5 @@ export const {
   useAddDeploymentMutation,
   useDeleteDeploymentMutation,
   useGetDeploymentElementsQuery,
+  useGetDeploymentGroupsQuery,
 } = apiSlice;
