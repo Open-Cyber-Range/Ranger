@@ -13,9 +13,17 @@
     "eamodio.gitlens",
     "samverschueren.linter-xo",
     "styled-components.vscode-styled-components",
-    "mtxr.sqltools-driver-mysql"
+    "mtxr.sqltools-driver-mysql",
+    "ms-vsliveshare.vsliveshare"
   ],
   "workspaceFolder": "/workspace",
   "remoteUser": "vscode",
-  "postCreateCommand": "sudo chown vscode:vscode /home/vscode/.deputy && mkdir /home/vscode/.deputy/download && mkdir /home/vscode/.deputy/index"
+  "postCreateCommand": "sudo chown vscode:vscode /home/vscode/.deputy && mkdir /home/vscode/.deputy/download && mkdir /home/vscode/.deputy/index",
+  "containerEnv": {
+    "RUST_LOG": "info"
+  },
+  "forwardPorts": [
+    "deputy-package-server-repository-combo:3306",
+    "development-keycloak:8080"
+  ]
 }

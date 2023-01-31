@@ -6,6 +6,7 @@ use actix::{Handler, Message, ResponseActFuture, WrapFuture};
 use actix_web::web::block;
 use anyhow::{Ok, Result};
 use diesel::RunQueryDsl;
+use log::info;
 
 #[derive(Message)]
 #[rtype(result = "Result<Deployment>")]
@@ -113,6 +114,7 @@ impl Handler<DeleteDeployment> for Database {
                     deployment.soft_delete_elements().execute(&mut connection)?;
                     deployment.soft_delete().execute(&mut connection)?;
 
+                    info!("Deployment {:?} deleted", id.0);
                     Ok(id)
                 })
                 .await??;
@@ -145,6 +147,59 @@ impl Handler<CreateDeploymentElement> for Database {
                         .execute(&mut connection)?;
                     let deployment_element = DeploymentElement::by_id(new_deployment_element.id)
                         .first(&mut connection)?;
+                    websocket_manager.do_send(SocketDeploymentElement(
+                        exercise_uuid,
+                        (
+                            exercise_uuid,
+                            deployment_element.id,
+                            deployment_element.clone(),
+                            false,
+                        )
+                            .into(),
+                    ));
+
+                    Ok(deployment_element)
+                })
+                .await??;
+
+                Ok(deployment_element)
+            }
+            .into_actor(self),
+        )
+    }
+}
+
+#[derive(Message)]
+#[rtype(result = "Result<DeploymentElement>")]
+pub struct CreateOrIgnoreDeploymentElement(pub Uuid, pub DeploymentElement);
+
+impl Handler<CreateOrIgnoreDeploymentElement> for Database {
+    type Result = ResponseActFuture<Self, Result<DeploymentElement>>;
+
+    fn handle(
+        &mut self,
+        msg: CreateOrIgnoreDeploymentElement,
+        _ctx: &mut Self::Context,
+    ) -> Self::Result {
+        let CreateOrIgnoreDeploymentElement(exercise_uuid, new_deployment_element) = msg;
+        let connection_result = self.get_connection();
+        let websocket_manager = self.websocket_manager_address.clone();
+
+        Box::pin(
+            async move {
+                let mut connection = connection_result?;
+                let deployment_element = block(move || {
+                    new_deployment_element
+                        .create_insert_or_ignore()
+                        .execute(&mut connection)?;
+
+                    let deployment_element =
+                        DeploymentElement::by_deployment_id_by_scenario_reference(
+                            new_deployment_element.deployment_id,
+                            new_deployment_element.scenario_reference,
+                        )
+                        .first(&mut connection)?;
+
                     websocket_manager.do_send(SocketDeploymentElement(
                         exercise_uuid,
                         (
@@ -228,14 +283,14 @@ impl Handler<GetDeploymentElementByDeploymentIdByScenarioReference> for Database
         _ctx: &mut Self::Context,
     ) -> Self::Result {
         let deployment_id = msg.0;
-        let scenario_reference = msg.1;
+        let scenario_reference = msg.1.reference();
         let connection_result = self.get_connection();
 
         Box::pin(
             async move {
                 let mut connection = connection_result?;
                 let deployment_element = block(move || {
-                    DeploymentElement::by_deployer_id_by_scenario_reference(
+                    DeploymentElement::by_deployment_id_by_scenario_reference(
                         deployment_id,
                         scenario_reference,
                     )

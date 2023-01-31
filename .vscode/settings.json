@@ -15,11 +15,11 @@
         "authProtocol": "default"
       },
       "previewLimit": 50,
-      "server": "mariadb",
+      "server": "deputy-package-server-repository-combo",
       "port": 3306,
       "driver": "MariaDB",
       "name": "mariadb",
-      "database": "ranger",
+      "database": "deputy",
       "username": "mysql_user",
       "password": "mysql_pass"
     }

@@ -8,7 +8,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let proto_path_string = proto_path.to_str().unwrap();
     configure()
         .emit_rerun_if_changed(true)
-        .out_dir(&out_dir)
+        .out_dir(out_dir)
         .compile(
             &[
                 proto_path
@@ -34,6 +34,21 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 proto_path
                     .join("src")
                     .join("template.proto")
+                    .to_str()
+                    .unwrap(),
+                proto_path
+                    .join("src")
+                    .join("feature.proto")
+                    .to_str()
+                    .unwrap(),
+                proto_path
+                    .join("src")
+                    .join("condition.proto")
+                    .to_str()
+                    .unwrap(),
+                proto_path
+                    .join("src")
+                    .join("inject.proto")
                     .to_str()
                     .unwrap(),
             ],
