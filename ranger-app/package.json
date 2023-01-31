@@ -22,11 +22,7 @@
     "human-interval": "^2.0.1",
     "i18next": "^22.0.4",
     "i18next-browser-languagedetector": "^7.0.0",
-<<<<<<< HEAD
-    "lodash": "^4.17.21",
-=======
     "keycloak-js": "^20.0.2",
->>>>>>> develop
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.36.1",
