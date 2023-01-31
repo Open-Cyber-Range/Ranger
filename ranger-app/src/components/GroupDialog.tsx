@@ -1,4 +1,6 @@
-import React, {useState} from 'react';
+/* eslint-disable react/jsx-key */
+import type React from 'react';
+import {useState} from 'react';
 import {
   Button,
   Dialog,
@@ -9,15 +11,8 @@ import {
   Classes,
   Label,
 } from '@blueprintjs/core';
+import {useGetDeploymentGroupsQuery} from 'src/slices/apiSlice';
 import {useTranslation} from 'react-i18next';
-
-const GROUP_OPTIONS = [
-  'Group List',
-  'Group - 1',
-  'Group - 2',
-  'Group - 3',
-  'Group - 4',
-];
 
 const GroupDialog = (
   {isOpen, title, onSumbit, onCancel}:
@@ -32,7 +27,7 @@ const GroupDialog = (
   const [name, setName] = useState('');
   const [group, setGroup] = useState('');
   const [count, setCount] = useState('1');
-
+  const {data} = useGetDeploymentGroupsQuery();
   const handleKeypress = (event: {key: string}) => {
     if (event.key === 'Enter' && name !== '') {
       onSumbit(name, count, group);
@@ -54,30 +49,23 @@ const GroupDialog = (
       </div>
       <div className={Classes.DIALOG_BODY}>
         <FormGroup>
-          <InputGroup
-            autoFocus
-            large
-            value={count}
-            leftIcon='array-numeric'
-            onChange={event => {
-              setCount(event.target.value);
-            }}
-            onKeyDown={handleKeypress}
-          />
-        </FormGroup>
-        <FormGroup>
           <Label>
             {t('Deployment Group (Optional)')}
             <HTMLSelect
               autoFocus
               large
               fill
-              options={GROUP_OPTIONS}
               value={group}
               onChange={event => {
                 setGroup(event.target.value);
               }}
-              onKeyDown={handleKeypress}/>
+              onKeyDown={handleKeypress}
+            >
+              <option>{t('select group')}</option>
+              {data['my-cool-group'].map((group) =>
+                <option>{group}</option>)}
+
+            </HTMLSelect>
           </Label>
         </FormGroup>
         <FormGroup>
@@ -88,11 +76,24 @@ const GroupDialog = (
               large
               value={name}
               leftIcon='graph'
+              placeholder={t('Deployment Name')}
               onChange={event => {
                 setName(event.target.value);
               }}
               onKeyDown={handleKeypress}/>
           </Label>
+        </FormGroup>
+        <FormGroup>
+          <InputGroup
+            autoFocus
+            large
+            value={count}
+            leftIcon='array-numeric'
+            onChange={event => {
+              setCount(event.target.value);
+            }}
+            onKeyDown={handleKeypress}
+          />
         </FormGroup>
       </div>
       <div className={Classes.DIALOG_FOOTER}>
