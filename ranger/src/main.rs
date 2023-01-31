@@ -38,15 +38,11 @@ async fn main() -> Result<(), Error> {
                     .service(delete_exercise)
                     .service(update_exercise)
                     .service(get_exercise)
-<<<<<<< HEAD
-                    .service(get_deployers),
-=======
                     .service(get_deployers)
                     .service(get_deployment_entities)
                     .service(get_exercise_deployment_tlos)
                     .service(get_exercise_deployment_tlo_evaluation)
                     .service(get_exercise_deployment_tlo_evaluation_metric_scores),
->>>>>>> develop
             )
     })
     .bind((host, port))?
