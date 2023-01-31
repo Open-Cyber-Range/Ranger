@@ -21,6 +21,8 @@ const language = {
   menu: {
     home: 'Home',
     exercises: 'Exercises',
+    logout: 'Logout',
+    greeting: 'Hi, {{username}}!',
   },
   common: {
     submit: 'Submit',
@@ -29,6 +31,20 @@ const language = {
     virtualMachines: 'Virtual Machines',
     switches: 'Switches',
     templates: 'Templates',
+  },
+
+  emails: {
+    emailLog: 'Email log:',
+    status: 'Status',
+    timestamp: 'Timestamp',
+    toEntity: 'To Entity',
+    from: 'From',
+    to: 'To',
+    replyTo: 'Reply to',
+    subject: 'Subject',
+    bcc: 'Bcc',
+    cc: 'Cc',
+    body: 'Body',
   },
 };
 

@@ -1,10 +1,11 @@
-use super::DeploymentInfo;
+use super::{DeploymentClientResponse, DeploymentInfo};
 use crate::services::client::DeploymentClient;
 use actix::{Actor, Addr, Context, Handler, Message, ResponseFuture};
 use anyhow::{Ok, Result};
 use async_trait::async_trait;
 use ranger_grpc::{
     template_service_client::TemplateServiceClient, Identifier, Source as GrpcSource,
+    TemplateResponse,
 };
 use std::any::Any;
 use tonic::transport::Channel;
@@ -36,7 +37,10 @@ impl Actor for TemplateClient {
 
 #[async_trait]
 impl DeploymentClient<Box<dyn DeploymentInfo>> for Addr<TemplateClient> {
-    async fn deploy(&mut self, deployment_struct: Box<dyn DeploymentInfo>) -> Result<String> {
+    async fn deploy(
+        &mut self,
+        deployment_struct: Box<dyn DeploymentInfo>,
+    ) -> Result<DeploymentClientResponse> {
         let deployment = CreateTemplate(
             deployment_struct
                 .as_any()
@@ -44,9 +48,9 @@ impl DeploymentClient<Box<dyn DeploymentInfo>> for Addr<TemplateClient> {
                 .unwrap()
                 .clone(),
         );
-        let id = self.send(deployment).await??.value;
+        let respose = self.send(deployment).await??;
 
-        Ok(id)
+        Ok(DeploymentClientResponse::TemplateResponse(respose))
     }
 
     async fn undeploy(&mut self, handler_reference: String) -> Result<()> {
@@ -60,11 +64,11 @@ impl DeploymentClient<Box<dyn DeploymentInfo>> for Addr<TemplateClient> {
 }
 
 #[derive(Message)]
-#[rtype(result = "Result<Identifier, anyhow::Error>")]
+#[rtype(result = "Result<TemplateResponse, anyhow::Error>")]
 pub struct CreateTemplate(pub GrpcSource);
 
 impl Handler<CreateTemplate> for TemplateClient {
-    type Result = ResponseFuture<Result<Identifier>>;
+    type Result = ResponseFuture<Result<TemplateResponse>>;
 
     fn handle(&mut self, msg: CreateTemplate, _ctx: &mut Self::Context) -> Self::Result {
         let template_deployment = msg.0;

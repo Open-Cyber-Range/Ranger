@@ -4,7 +4,10 @@ use super::{
     },
     factory::{CreateDeployer, DeployerFactory},
 };
-use crate::services::deployer::DeployerConnections;
+use crate::services::{
+    client::{ConditionClient, DeploymentClientResponse, FeatureClient, InjectClient},
+    deployer::DeployerConnections,
+};
 use actix::{
     Actor, ActorFutureExt, Addr, Context, Handler, Message, ResponseActFuture, WrapFuture,
 };
@@ -36,7 +39,11 @@ impl DeployerDistribution {
                 && (deployer_type == DeployerTypes::VirtualMachine
                     && value.virtual_machine_client.is_some()
                     || deployer_type == DeployerTypes::Switch && value.switch_client.is_some()
-                    || deployer_type == DeployerTypes::Template && value.template_client.is_some())
+                    || deployer_type == DeployerTypes::Template && value.template_client.is_some()
+                    || deployer_type == DeployerTypes::Feature && value.feature_client.is_some()
+                    || deployer_type == DeployerTypes::Condition
+                        && value.condition_client.is_some()
+                    || deployer_type == DeployerTypes::Inject && value.inject_client.is_some())
             {
                 return Some(key.to_string());
             }
@@ -80,6 +87,9 @@ impl DeployerDistribution {
         actix::Addr<VirtualMachineClient>: DeploymentClient<Box<dyn DeploymentInfo>>,
         actix::Addr<SwitchClient>: DeploymentClient<Box<dyn DeploymentInfo>>,
         actix::Addr<TemplateClient>: DeploymentClient<Box<dyn DeploymentInfo>>,
+        actix::Addr<FeatureClient>: DeploymentClient<Box<dyn DeploymentInfo>>,
+        actix::Addr<ConditionClient>: DeploymentClient<Box<dyn DeploymentInfo>>,
+        actix::Addr<InjectClient>: DeploymentClient<Box<dyn DeploymentInfo>>,
     {
         let best_deployer = self.book_best_deployer(potential_deployers, deployer_type)?;
         let connections = self
@@ -106,6 +116,24 @@ impl DeployerDistribution {
                         .clone()
                         .ok_or_else(|| anyhow!("No node deployer found"))?,
                 ),
+                DeployerTypes::Feature => Box::new(
+                    connections
+                        .feature_client
+                        .clone()
+                        .ok_or_else(|| anyhow!("No feature deployer found"))?,
+                ),
+                DeployerTypes::Inject => Box::new(
+                    connections
+                        .inject_client
+                        .clone()
+                        .ok_or_else(|| anyhow!("No inject deployer found"))?,
+                ),
+                DeployerTypes::Condition => Box::new(
+                    connections
+                        .condition_client
+                        .clone()
+                        .ok_or_else(|| anyhow!("No condition deployer found"))?,
+                ),
             },
             best_deployer,
         ))
@@ -128,7 +156,7 @@ impl DeployerDistribution {
 }
 
 #[derive(Message)]
-#[rtype(result = "Result<String>")]
+#[rtype(result = "Result<DeploymentClientResponse>")]
 pub struct Deploy(
     pub DeployerTypes,
     pub Box<dyn DeploymentInfo>,
@@ -136,7 +164,7 @@ pub struct Deploy(
 );
 
 impl Handler<Deploy> for DeployerDistribution {
-    type Result = ResponseActFuture<Self, Result<String>>;
+    type Result = ResponseActFuture<Self, Result<DeploymentClientResponse>>;
 
     fn handle(&mut self, msg: Deploy, _ctx: &mut Self::Context) -> Self::Result {
         let deployment_type = msg.0;
@@ -148,9 +176,9 @@ impl Handler<Deploy> for DeployerDistribution {
         Box::pin(
             async move {
                 let (mut deployment_client, best_deployer) = client_result?;
-                let handler_reference_id = deployment_client.deploy(deployment).await?;
+                let client_response = deployment_client.deploy(deployment).await?;
 
-                Ok((handler_reference_id, best_deployer))
+                Ok((client_response, best_deployer))
             }
             .into_actor(self)
             .map(Self::release_deployer_closure),

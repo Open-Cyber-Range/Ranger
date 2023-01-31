@@ -3,7 +3,8 @@ use crate::{
     errors::RangerError,
     schema::{deployment_elements, deployments},
     services::database::{
-        All, Create, FilterExisting, SelectById, SoftDelete, SoftDeleteById, UpdateById,
+        All, Create, CreateOrIgnore, FilterExisting, SelectById, SoftDelete, SoftDeleteById,
+        UpdateById,
     },
     utilities::Validation,
 };
@@ -129,6 +130,7 @@ pub struct DeploymentElement {
     pub handler_reference: Option<String>,
     pub deployer_type: DeployerType,
     pub status: ElementStatus,
+    pub executor_log: Option<String>,
 }
 
 type ByDeploymentId<T> = Filter<
@@ -142,18 +144,37 @@ type ByDeploymentIdByScenarioReference<T> = Filter<
 >;
 
 impl DeploymentElement {
-    pub fn new(
+    pub fn new_ongoing(
         deployment_id: Uuid,
-        reference_box: Box<dyn ScenarioReference>,
+        source_box: Box<dyn ScenarioReference>,
         deployer_type: DeployerTypes,
     ) -> Self {
         Self {
             id: Uuid::random(),
             deployment_id,
-            scenario_reference: reference_box.reference(),
+            scenario_reference: source_box.reference(),
             handler_reference: None,
             deployer_type: DeployerType(deployer_type),
             status: ElementStatus::Ongoing,
+            executor_log: None,
+        }
+    }
+
+    pub fn new(
+        deployment_id: Uuid,
+        source_box: Box<dyn ScenarioReference>,
+        handler_reference: Option<String>,
+        deployer_type: DeployerTypes,
+        status: ElementStatus,
+    ) -> Self {
+        Self {
+            id: Uuid::random(),
+            deployment_id,
+            scenario_reference: source_box.reference(),
+            handler_reference,
+            deployer_type: DeployerType(deployer_type),
+            status,
+            executor_log: None,
         }
     }
 
@@ -184,9 +205,9 @@ impl DeploymentElement {
         Self::all().filter(deployment_elements::deployment_id.eq(deployment_id))
     }
 
-    pub fn by_deployer_id_by_scenario_reference(
+    pub fn by_deployment_id_by_scenario_reference(
         deployment_id: Uuid,
-        scenario_reference: BoxedScenarioReference,
+        scenario_reference: String,
     ) -> ByDeploymentIdByScenarioReference<Self> {
         Self::all()
             .filter(deployment_elements::deployment_id.eq(deployment_id))
@@ -195,6 +216,10 @@ impl DeploymentElement {
 
     pub fn create_insert(&self) -> Create<&Self, deployment_elements::table> {
         diesel::insert_into(deployment_elements::table).values(self)
+    }
+
+    pub fn create_insert_or_ignore(&self) -> CreateOrIgnore<&Self, deployment_elements::table> {
+        diesel::insert_or_ignore_into(deployment_elements::table).values(self)
     }
 
     pub fn create_update(

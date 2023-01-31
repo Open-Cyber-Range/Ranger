@@ -1,4 +1,4 @@
-use super::{DeploymentClient, DeploymentInfo};
+use super::{DeploymentClient, DeploymentClientResponse, DeploymentInfo};
 use actix::{Actor, Addr, Context, Handler, Message, ResponseFuture};
 use anyhow::{Ok, Result};
 use async_trait::async_trait;
@@ -19,7 +19,10 @@ impl DeploymentInfo for DeployVirtualMachine {
 
 #[async_trait]
 impl DeploymentClient<Box<dyn DeploymentInfo>> for Addr<VirtualMachineClient> {
-    async fn deploy(&mut self, deployment_struct: Box<dyn DeploymentInfo>) -> Result<String> {
+    async fn deploy(
+        &mut self,
+        deployment_struct: Box<dyn DeploymentInfo>,
+    ) -> Result<DeploymentClientResponse> {
         let deployment = CreateVirtualMachine(
             deployment_struct
                 .as_any()
@@ -27,9 +30,9 @@ impl DeploymentClient<Box<dyn DeploymentInfo>> for Addr<VirtualMachineClient> {
                 .unwrap()
                 .clone(),
         );
-        let id = self.send(deployment).await??.value;
+        let identifier = self.send(deployment).await??;
 
-        Ok(id)
+        Ok(DeploymentClientResponse::Identifier(identifier))
     }
 
     async fn undeploy(&mut self, handler_reference: String) -> Result<()> {

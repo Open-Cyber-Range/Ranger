@@ -9,6 +9,7 @@
     "@blueprintjs/select": "^4.8.12",
     "@monaco-editor/react": "^4.4.6",
     "@popperjs/core": "^2.11.6",
+    "@react-keycloak/web": "^3.4.0",
     "@reduxjs/toolkit": "^1.8.6",
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^13.0.0",
@@ -21,7 +22,11 @@
     "human-interval": "^2.0.1",
     "i18next": "^22.0.4",
     "i18next-browser-languagedetector": "^7.0.0",
+<<<<<<< HEAD
     "lodash": "^4.17.21",
+=======
+    "keycloak-js": "^20.0.2",
+>>>>>>> develop
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.36.1",
@@ -82,6 +87,10 @@
       "import/extensions": [
         "error",
         "never"
+      ],
+      "n/prefer-global/process": [
+        "error",
+        "always"
       ],
       "n/file-extension-in-import": [
         "error",

@@ -93,5 +93,3 @@ impl UpdateExercise {
             .set(self)
     }
 }
-
-//type UpdateExerciseWebS = UpdateExercise;

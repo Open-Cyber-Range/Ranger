@@ -1,3 +1,6 @@
+mod condition;
+mod feature;
+mod inject;
 mod node;
 mod template;
 
@@ -120,6 +123,7 @@ impl Handler<StartDeployment> for DeploymentManager {
         let distributor_address = self.distributor.clone();
         let database_address = self.database.clone();
 
+        info!("Starting new Deployment {:?}", deployment.name);
         Box::pin(
             async move {
                 let deployers = deployers_result?;

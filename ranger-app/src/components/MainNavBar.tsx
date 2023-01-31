@@ -2,6 +2,7 @@ import React from 'react';
 import {Link} from 'react-router-dom';
 import {Alignment, Navbar} from '@blueprintjs/core';
 import {useTranslation} from 'react-i18next';
+import LoginInfo from './LoginInfo';
 
 const MainNavbar = () => {
   const {t} = useTranslation();
@@ -25,6 +26,7 @@ const MainNavbar = () => {
           {t('menu.exercises')}
         </Link>
       </Navbar.Group>
+      <LoginInfo/>
     </Navbar>
   );
 };
