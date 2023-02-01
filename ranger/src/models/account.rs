@@ -1,5 +1,6 @@
 use super::helpers::uuid::Uuid;
 use crate::{
+    constants::{DATETIME_FORMAT, DELETED_AT_DEFAULT_VALUE},
     schema::accounts,
     services::database::{
         All, Create, FilterExisting, SelectById, SelectByTemplateId, SelectByTemplateIdAndUsername,
@@ -45,7 +46,7 @@ pub struct Account {
     pub exercise_id: Uuid,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
-    pub deleted_at: Option<NaiveDateTime>,
+    pub deleted_at: NaiveDateTime,
 }
 
 impl Account {
@@ -54,7 +55,13 @@ impl Account {
     }
 
     pub fn all() -> FilterExisting<All<accounts::table, Self>, accounts::deleted_at> {
-        Self::all_with_deleted().filter(accounts::deleted_at.is_null())
+        Self::all_with_deleted().filter(
+            accounts::deleted_at.eq(NaiveDateTime::parse_from_str(
+                DELETED_AT_DEFAULT_VALUE,
+                DATETIME_FORMAT,
+            )
+            .unwrap()),
+        )
     }
 
     pub fn by_id(
@@ -109,7 +116,9 @@ impl UpdateAccount {
     ) -> UpdateById<accounts::id, accounts::deleted_at, accounts::table, &Self> {
         diesel::update(accounts::table)
             .filter(accounts::id.eq(id))
-            .filter(accounts::deleted_at.is_null())
+            .filter(accounts::deleted_at.eq(
+                NaiveDateTime::parse_from_str(DELETED_AT_DEFAULT_VALUE, DATETIME_FORMAT).unwrap(),
+            ))
             .set(self)
     }
 }
