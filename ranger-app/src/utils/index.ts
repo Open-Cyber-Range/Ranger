@@ -1,5 +1,6 @@
 import type {Deployment} from 'src/models/deployment';
 import type {Exercise} from 'src/models/exercise';
+import type {ScoreElement} from 'src/models/tlo';
 
 export function sortByUpdatedAtAscending<
   T extends Deployment | Exercise>(a: T, b: T) {
@@ -21,6 +22,32 @@ export function sortByUpdatedAtDescending<
   }
 
   if (!b.updatedAt || a.updatedAt > b.updatedAt) {
+    return -1;
+  }
+
+  return 0;
+}
+
+export function sortByCreatedAtAscending<
+  T extends Deployment | Exercise | ScoreElement >(a: T, b: T) {
+  if (!a.createdAt || a.createdAt < b.createdAt) {
+    return -1;
+  }
+
+  if (!b.createdAt || a.createdAt > b.createdAt) {
+    return 1;
+  }
+
+  return 0;
+}
+
+export function sortByCreatedAtDescending<
+  T extends Deployment | Exercise | ScoreElement >(a: T, b: T) {
+  if (!a.createdAt || a.createdAt < b.createdAt) {
+    return 1;
+  }
+
+  if (!b.createdAt || a.createdAt > b.createdAt) {
     return -1;
   }
 

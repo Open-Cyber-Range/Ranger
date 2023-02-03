@@ -13,11 +13,16 @@ import {
   type NewExercise,
   type UpdateExercise,
 } from 'src/models/exercise';
+import type {ScoreElement} from 'src/models/tlo';
 
 export const apiSlice = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({baseUrl: BASE_URL}),
-  tagTypes: ['Deployment', 'Exercise'],
+  tagTypes: [
+    'Deployment',
+    'Exercise',
+    'Record<string, TrainingLearningObjective>',
+  ],
   endpoints: builder => ({
     getExercises: builder.query<Exercise[], void>({
       query: () => '/exercise',
@@ -111,6 +116,14 @@ export const apiSlice = createApi({
     }),
     getEmailForm: builder.query <string, string>({
       query: exerciseId => `/exercise/${exerciseId}/email`,
+    }),
+    getDeploymentScores: builder.query<ScoreElement[],
+    {
+      exerciseId: string;
+      deploymentId: string;
+    }>({
+      query: ({exerciseId, deploymentId}) =>
+        `/exercise/${exerciseId}/deployment/${deploymentId}/score`,
     }),
   }),
 });
