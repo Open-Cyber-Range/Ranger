@@ -38,12 +38,40 @@ impl Handler<CreateScore> for Database {
 
 #[derive(Message)]
 #[rtype(result = "Result<Vec<Score>>")]
-pub struct GetScores(pub Uuid, pub String, pub String);
+pub struct GetScoresByDeployment(pub Uuid);
 
-impl Handler<GetScores> for Database {
+impl Handler<GetScoresByDeployment> for Database {
     type Result = ResponseActFuture<Self, Result<Vec<Score>>>;
 
-    fn handle(&mut self, msg: GetScores, _ctx: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, msg: GetScoresByDeployment, _ctx: &mut Self::Context) -> Self::Result {
+        let connection_result = self.get_connection();
+        let deployment_id = msg.0;
+
+        Box::pin(
+            async move {
+                let mut connection = connection_result?;
+                let score = block(move || {
+                    let score = Score::by_deployment_id(deployment_id).load(&mut connection)?;
+
+                    Ok(score)
+                })
+                .await??;
+
+                Ok(score)
+            }
+            .into_actor(self),
+        )
+    }
+}
+
+#[derive(Message)]
+#[rtype(result = "Result<Vec<Score>>")]
+pub struct GetScoresByMetric(pub Uuid, pub String, pub String);
+
+impl Handler<GetScoresByMetric> for Database {
+    type Result = ResponseActFuture<Self, Result<Vec<Score>>>;
+
+    fn handle(&mut self, msg: GetScoresByMetric, _ctx: &mut Self::Context) -> Self::Result {
         let connection_result = self.get_connection();
         let deployment_id = msg.0;
         let tlo_name = msg.1;

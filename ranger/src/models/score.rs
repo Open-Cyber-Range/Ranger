@@ -86,6 +86,10 @@ impl Score {
         Self::all().filter(scores::id.eq(id))
     }
 
+    pub fn by_deployment_id(deployment_id: Uuid) -> ByDeploymentId<All<scores::table, Self>> {
+        Self::all().filter(scores::deployment_id.eq(deployment_id))
+    }
+
     pub fn by_deployment_id_by_tlo_name_by_metric_name(
         deployment_id: Uuid,
         tlo_name: String,
