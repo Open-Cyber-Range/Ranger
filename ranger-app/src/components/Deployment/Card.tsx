@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import {Button, Card, H2} from '@blueprintjs/core';
 import styled from 'styled-components';
 import type {Deployment} from 'src/models/deployment';
@@ -8,6 +8,7 @@ import {
 } from 'src/slices/apiSlice';
 import {toastSuccess, toastWarning} from 'src/components/Toaster';
 import {useTranslation} from 'react-i18next';
+import {useNavigate} from 'react-router-dom';
 import StatusBar from './ProgressBar';
 import Tags from './Tags';
 
@@ -38,7 +39,13 @@ const Status = styled.div`
 const DeploymentCard = ({deployment}: {deployment: Deployment}) => {
   const {t} = useTranslation();
   const [deleteDeployment, _deploymentId] = useDeleteDeploymentMutation();
-  const deleteCurrentDeployment = async () => {
+  const navigate = useNavigate();
+  const routeChange = () => {
+    navigate(`deployments/${deployment.id}`);
+  };
+
+  const deleteCurrentDeployment
+  = async () => {
     try {
       const response = await deleteDeployment({
         exerciseId: deployment.exerciseId,
@@ -61,7 +68,7 @@ const DeploymentCard = ({deployment}: {deployment: Deployment}) => {
   const deploymentElements = potentialDeploymentElements ?? [];
 
   return (
-    <Card interactive elevation={2}>
+    <Card interactive elevation={2} onClick={routeChange}>
       <CardRow>
         <H2>{deployment.name}</H2>
         <Status>
