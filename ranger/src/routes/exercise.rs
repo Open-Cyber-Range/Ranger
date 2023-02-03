@@ -2,7 +2,7 @@ use crate::{
     errors::RangerError,
     models::{
         helpers::uuid::Uuid, Deployment, DeploymentElement, Exercise, NewDeployment,
-        NewDeploymentResource, NewExercise, Score, UpdateExercise,
+        NewDeploymentResource, NewExercise, UpdateExercise,
     },
     services::{
         database::{
@@ -11,7 +11,6 @@ use crate::{
                 GetDeploymentElementByDeploymentId, GetDeployments,
             },
             exercise::{CreateExercise, DeleteExercise, GetExercise, GetExercises},
-            score::GetScores,
         },
         deployment::{RemoveDeployment, StartDeployment},
         websocket::ExerciseWebsocket,
@@ -29,9 +28,7 @@ use anyhow::Result;
 use log::{error, info};
 use sdl_parser::{
     entity::Entities,
-    evaluation::Evaluation,
     node::Nodes,
-    training_learning_objective::TrainingLearningObjectives,
     {parse_sdl, Scenario},
 };
 
@@ -268,70 +265,6 @@ pub async fn get_deployment_entities(
     })?;
     let entities = scenario.entities;
     Ok(Json(entities))
-}
-
-#[get("exercise/{exercise_uuid}/deployment/{deployment_uuid}/tlo")]
-pub async fn get_exercise_deployment_tlos(
-    path_variables: Path<(Uuid, Uuid)>,
-    app_state: Data<AppState>,
-) -> Result<Json<Option<TrainingLearningObjectives>>, RangerError> {
-    let (_, deployment_uuid) = path_variables.into_inner();
-    let deployment = app_state
-        .database_address
-        .send(GetDeployment(deployment_uuid))
-        .await
-        .map_err(create_mailbox_error_handler("Database"))?
-        .map_err(create_database_error_handler("Get deployment"))?;
-    let scenario = parse_sdl(&deployment.sdl_schema).map_err(|error| {
-        error!("Failed to parse sdl: {error}");
-        RangerError::ScenarioParsingFailed
-    })?;
-
-    Ok(Json(scenario.tlos))
-}
-
-#[get("exercise/{exercise_uuid}/deployment/{deployment_uuid}/tlo/{tlo_name}/evaluation")]
-pub async fn get_exercise_deployment_tlo_evaluation(
-    path_variables: Path<(Uuid, Uuid, String)>,
-    app_state: Data<AppState>,
-) -> Result<Json<Option<Evaluation>>, RangerError> {
-    let (_, deployment_uuid, tlo_name) = path_variables.into_inner();
-    let deployment = app_state
-        .database_address
-        .send(GetDeployment(deployment_uuid))
-        .await
-        .map_err(create_mailbox_error_handler("Database"))?
-        .map_err(create_database_error_handler("Get deployment"))?;
-    let scenario = parse_sdl(&deployment.sdl_schema).map_err(|error| {
-        error!("Failed to parse sdl: {error}");
-        RangerError::ScenarioParsingFailed
-    })?;
-
-    let tlos = scenario.tlos.unwrap_or_default();
-    if let Some(tlo) = tlos.get(&tlo_name) {
-        if let Some(evaluations) = scenario.evaluations {
-            return Ok(Json(evaluations.get(&tlo.evaluation).cloned()));
-        }
-    }
-
-    Ok(Json(None))
-}
-
-#[get("exercise/{exercise_uuid}/deployment/{deployment_uuid}/tlo/{tlo_name}/evaluation/{metric_name}/score")]
-pub async fn get_exercise_deployment_tlo_evaluation_metric_scores(
-    path_variables: Path<(Uuid, Uuid, String, String)>,
-    app_state: Data<AppState>,
-) -> Result<Json<Vec<Score>>, RangerError> {
-    let (_, deployment_uuid, tlo_name, metric_name) = path_variables.into_inner();
-
-    let scores = app_state
-        .database_address
-        .send(GetScores(deployment_uuid, tlo_name, metric_name))
-        .await
-        .map_err(create_mailbox_error_handler("Database"))?
-        .map_err(create_database_error_handler("Get scores"))?;
-
-    Ok(Json(scores))
 }
 
 #[get("exercise/{exercise_uuid}/deployment/{deployment_uuid}/nodes")]
