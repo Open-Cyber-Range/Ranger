@@ -49,7 +49,7 @@ const InfoTag = ({name, count}: {name: string; count: number}) => (
   </TagWrapper>
 );
 
-const Tags = (
+const InfoTags = (
   {deploymentElements}: {deploymentElements: DeploymentElement[]}) => {
   const [
     virtualMachineCount,
@@ -66,4 +66,4 @@ const Tags = (
   );
 };
 
-export default Tags;
+export default InfoTags;
