@@ -79,7 +79,8 @@ const DeploymentCard = ({deployment}: {deployment: Deployment}) => {
           <Button
             large
             intent='danger'
-            onClick={async () => {
+            onClick={async event => {
+              event.stopPropagation();
               await deleteCurrentDeployment();
             }}
           > {t('common.delete')}
