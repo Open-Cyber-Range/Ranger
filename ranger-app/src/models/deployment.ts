@@ -12,6 +12,8 @@ type Deployment = {
   updatedAt: string;
 } & NewDeployment;
 
+type Deployers = Record<string, string[]>;
+
 export enum DeployerType {
   Switch = 'switch',
   Template = 'template',
@@ -35,4 +37,4 @@ type DeploymentElement = {
   status: ElementStatus;
 };
 
-export type {NewDeployment, Deployment, DeploymentElement};
+export type {NewDeployment, Deployment, DeploymentElement, Deployers};
