@@ -1,9 +1,8 @@
 use crate::{
     errors::RangerError,
-    models::{helpers::uuid::Uuid, Score},
+    models::helpers::{score_element::ScoreElement, uuid::Uuid},
     services::database::{
-        deployment::GetDeployment,
-        score::{GetScoresByDeployment, GetScoresByMetric},
+        condition::GetConditionMessagesByDeploymentId, deployment::GetDeployment,
     },
     utilities::{create_database_error_handler, create_mailbox_error_handler},
     AppState,
@@ -13,6 +12,7 @@ use actix_web::{
     web::{Data, Json, Path},
 };
 use anyhow::Result;
+use bigdecimal::BigDecimal;
 use log::error;
 use sdl_parser::{
     evaluation::Evaluation, parse_sdl, training_learning_objective::TrainingLearningObjectives,
@@ -70,32 +70,97 @@ pub async fn get_exercise_deployment_tlo_evaluation(
 pub async fn get_exercise_deployment_scores(
     path_variables: Path<(Uuid, Uuid)>,
     app_state: Data<AppState>,
-) -> Result<Json<Vec<Score>>, RangerError> {
-    let (_, deployment_uuid) = path_variables.into_inner();
+) -> Result<Json<Vec<ScoreElement>>, RangerError> {
+    let (exercise_uuid, deployment_uuid) = path_variables.into_inner();
 
-    let scores = app_state
+    let condition_messages = app_state
         .database_address
-        .send(GetScoresByDeployment(deployment_uuid))
+        .send(GetConditionMessagesByDeploymentId(deployment_uuid))
         .await
         .map_err(create_mailbox_error_handler("Database"))?
-        .map_err(create_database_error_handler("Get scores"))?;
+        .map_err(create_database_error_handler("Get condition_messages"))?;
 
-    Ok(Json(scores))
+    let deployment = app_state
+        .database_address
+        .send(GetDeployment(deployment_uuid))
+        .await
+        .map_err(create_mailbox_error_handler("Database"))?
+        .map_err(create_database_error_handler("Get deployment"))?;
+
+    let scenario = parse_sdl(&deployment.sdl_schema).map_err(|error| {
+        error!("Failed to parse sdl: {error}");
+        RangerError::ScenarioParsingFailed
+    })?;
+
+    let metrics = scenario.metrics.unwrap_or_default();
+
+    let score_elements = condition_messages
+        .iter()
+        .map(|condition_message| {
+            let mut metric_name: String = Default::default();
+            let mut score_multiplier: BigDecimal = Default::default();
+
+            for (name, metric) in metrics.iter() {
+                if metric
+                    .condition
+                    .eq(&Some(condition_message.clone().scenario_reference))
+                {
+                    metric_name = name.to_owned();
+                    score_multiplier = metric.max_score.into();
+                    break;
+                }
+            }
+
+            let calculated_score = condition_message.clone().value * score_multiplier;
+
+            ScoreElement::new(
+                exercise_uuid,
+                deployment_uuid,
+                None,
+                metric_name,
+                condition_message.virtual_machine_id.to_string(),
+                calculated_score,
+                condition_message.created_at,
+            )
+        })
+        .collect::<Vec<_>>();
+    Ok(Json(score_elements))
 }
 
 #[get("exercise/{exercise_uuid}/deployment/{deployment_uuid}/tlo/{tlo_name}/evaluation/{metric_name}/score")]
 pub async fn get_exercise_deployment_tlo_evaluation_metric_scores(
     path_variables: Path<(Uuid, Uuid, String, String)>,
     app_state: Data<AppState>,
-) -> Result<Json<Vec<Score>>, RangerError> {
-    let (_, deployment_uuid, tlo_name, metric_name) = path_variables.into_inner();
+) -> Result<Json<Option<Vec<ScoreElement>>>, RangerError> {
+    let (exercise_uuid, deployment_uuid, _, req_metric_name) = path_variables.into_inner();
 
-    let scores = app_state
+    let condition_messages = app_state
         .database_address
-        .send(GetScoresByMetric(deployment_uuid, tlo_name, metric_name))
+        .send(GetConditionMessagesByDeploymentId(deployment_uuid))
         .await
         .map_err(create_mailbox_error_handler("Database"))?
-        .map_err(create_database_error_handler("Get scores"))?;
+        .map_err(create_database_error_handler("Get condition_messages"))?;
 
-    Ok(Json(scores))
+    let deployment = app_state
+        .database_address
+        .send(GetDeployment(deployment_uuid))
+        .await
+        .map_err(create_mailbox_error_handler("Database"))?
+        .map_err(create_database_error_handler("Get deployment"))?;
+
+    let scenario = parse_sdl(&deployment.sdl_schema).map_err(|error| {
+        error!("Failed to parse sdl: {error}");
+        RangerError::ScenarioParsingFailed
+    })?;
+
+    let results = ScoreElement::from_condition_messages_by_metric_name(
+        exercise_uuid,
+        deployment_uuid,
+        scenario,
+        condition_messages,
+        req_metric_name,
+    )
+    .await;
+
+    Ok(Json(results))
 }
