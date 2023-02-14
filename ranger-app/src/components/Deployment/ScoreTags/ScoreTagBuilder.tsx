@@ -2,7 +2,8 @@
 import React from 'react';
 import styled from 'styled-components';
 import '@blueprintjs/popover2/lib/css/blueprint-popover2.css';
-import type {Entities, ExerciseRole} from 'src/models/entity';
+import type {Entities} from 'src/models/entity';
+import {ExerciseRole} from 'src/models/entity';
 import ScoreTagData from './ScoreTagData';
 
 const TagWrapper = styled.div`
@@ -27,9 +28,13 @@ const ScoreTagBuilder = ({exerciseId, deploymentId, entities}:
     }
   }
 
+  const rolesOrder = Object.values(ExerciseRole);
+  const sortedroles = roles
+    .sort((a, b) => rolesOrder.indexOf(a) - rolesOrder.indexOf(b));
+
   return (
     <>
-      {roles.map(role => (
+      {sortedroles.map(role => (
         <TagWrapper key={role}>
           <ScoreTagData
             key={role}

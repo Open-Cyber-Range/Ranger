@@ -4,7 +4,7 @@ import {Tag, Colors} from '@blueprintjs/core';
 import styled from 'styled-components';
 import '@blueprintjs/popover2/lib/css/blueprint-popover2.css';
 import {ExerciseRole} from 'src/models/entity';
-import {useGetScoresByGoalQuery} from 'src/slices/apiSlice';
+import {useGetScoreByRoleQuery} from 'src/slices/apiSlice';
 
 const TagWrapper = styled.div`
   display: flex;
@@ -40,18 +40,19 @@ const ScoreTagData = ({exerciseId, deploymentId, role}:
   deploymentId: string;
   role: ExerciseRole;
 }) => {
-  const {data: scoresByRole} = useGetScoresByGoalQuery({
+  const {data: score} = useGetScoreByRoleQuery({
     exerciseId,
     deploymentId,
-    roleName: role,
+    role,
   });
 
+  const tagScore = Math.round((score ?? 0) * 100) / 100;
   return (
     <TagWrapper key={role}>
       <Tagger
         key={role}
         role={role}
-        score={scoresByRole ?? 0}
+        score={tagScore}
       />
     </TagWrapper>
   );

@@ -47,45 +47,46 @@ impl ScoreElement {
         deployment_id: Uuid,
         scenario: Scenario,
         condition_messages: Vec<ConditionMessage>,
-        metric_name: String,
+        requested_metric_name: String,
     ) -> Option<Vec<ScoreElement>> {
         let metrics = scenario.metrics.unwrap_or_default();
 
-        if !condition_exists_in_metrics(&condition_messages, &metrics, &metric_name) {
+        if !condition_exists_in_metrics(&condition_messages, &metrics, &requested_metric_name) {
             return None;
         }
 
-        let results = condition_messages
-            .iter()
-            .map(|condition_message| {
-                let mut score_multiplier: BigDecimal = Default::default();
+        let requested_metric = metrics.get(&requested_metric_name);
 
-                for (scenario_reference, metric) in metrics.iter() {
-                    if metric
-                        .condition
-                        .eq(&Some(condition_message.clone().scenario_reference))
-                        && scenario_reference.eq_ignore_ascii_case(&metric_name)
-                    {
-                        score_multiplier = metric.max_score.into();
-                        break;
-                    }
-                }
+        if let Some(metric) = requested_metric {
+            if let Some(metric_conditon) = metric.clone().condition {
+                let results = condition_messages
+                    .iter()
+                    .filter_map(|condition_message| {
+                        if !condition_message
+                            .scenario_reference
+                            .eq_ignore_ascii_case(&metric_conditon)
+                        {
+                            return None;
+                        }
 
-                let calculated_score = condition_message.clone().value * score_multiplier;
+                        let calculated_score =
+                            condition_message.clone().value * BigDecimal::from(metric.max_score);
 
-                ScoreElement::new(
-                    exercise_id,
-                    deployment_id,
-                    None,
-                    metric_name.to_owned(),
-                    condition_message.virtual_machine_id.to_string(),
-                    calculated_score,
-                    condition_message.created_at,
-                )
-            })
-            .collect::<Vec<_>>();
-
-        Some(results)
+                        Some(ScoreElement::new(
+                            exercise_id,
+                            deployment_id,
+                            None,
+                            requested_metric_name.to_owned(),
+                            condition_message.virtual_machine_id.to_string(),
+                            calculated_score,
+                            condition_message.created_at,
+                        ))
+                    })
+                    .collect::<Vec<_>>();
+                return Some(results);
+            }
+        }
+        None
     }
 }
 
