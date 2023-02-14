@@ -9,8 +9,8 @@ pub struct Mailer {}
 impl Mailer {
     pub fn send_mail(configuration: MailerConfiguration, recipient: String) -> Result<()> {
         let email = Message::builder()
-            .from(configuration.username.parse().unwrap())
-            .to(recipient.parse().unwrap())
+            .from(configuration.username.parse()?)
+            .to(recipient.parse()?)
             .subject("Greetings from OCR!")
             .body(String::from("Hi!"))
             .unwrap();
