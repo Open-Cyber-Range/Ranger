@@ -10,7 +10,8 @@ import {toastSuccess, toastWarning} from 'src/components/Toaster';
 import {useTranslation} from 'react-i18next';
 import {useNavigate} from 'react-router-dom';
 import StatusBar from './ProgressBar';
-import Tags from './Tags';
+import InfoTags from './InfoTags';
+import ScoreTags from './ScoreTags/ScoreTags';
 
 const CardRow = styled.div`
   display: flex;
@@ -29,7 +30,7 @@ const ActionButtons = styled.div`
   }
 `;
 
-const Status = styled.div`
+const TagsWrapper = styled.div`
   display: flex;
   align-items: end;
   margin-left: auto;
@@ -71,10 +72,9 @@ const DeploymentCard = ({deployment}: {deployment: Deployment}) => {
     <Card interactive elevation={2} onClick={routeChange}>
       <CardRow>
         <H2>{deployment.name}</H2>
-        <Status>
-          <Tags deploymentElements={deploymentElements}/>
-        </Status>
-
+        <TagsWrapper>
+          <InfoTags deploymentElements={deploymentElements}/>
+        </TagsWrapper>
         <ActionButtons>
           <Button
             large
@@ -92,6 +92,9 @@ const DeploymentCard = ({deployment}: {deployment: Deployment}) => {
         deployment={deployment}
         deploymentElements={deploymentElements}
       />
+      <ScoreTags
+        exerciseId={deployment.exerciseId}
+        deploymentId={deployment.id}/>
     </Card>
   );
 };

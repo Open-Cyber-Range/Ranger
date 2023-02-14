@@ -1,0 +1,60 @@
+
+import React from 'react';
+import {Tag, Colors} from '@blueprintjs/core';
+import styled from 'styled-components';
+import '@blueprintjs/popover2/lib/css/blueprint-popover2.css';
+import {ExerciseRole} from 'src/models/entity';
+import {useGetScoresByGoalQuery} from 'src/slices/apiSlice';
+
+const TagWrapper = styled.div`
+  display: flex;
+  margin-right: 0.5rem; 
+`;
+
+const getRoleColor = (role: ExerciseRole) => {
+  switch (role) {
+    case (ExerciseRole.Red):
+      return Colors.RED2;
+    case (ExerciseRole.Green):
+      return Colors.GREEN3;
+    case (ExerciseRole.Blue):
+      return Colors.BLUE2;
+    case (ExerciseRole.White):
+      return Colors.GRAY4;
+    default:
+      return Colors.GRAY1;
+  }
+};
+
+const Tagger = ({role, score}: {role: ExerciseRole; score: number}) => (
+  <Tag
+    round
+    style={{background: getRoleColor(role)}}
+  >
+    {role} Team: {score}
+  </Tag>
+);
+
+const ScoreTagData = ({exerciseId, deploymentId, role}:
+{exerciseId: string;
+  deploymentId: string;
+  role: ExerciseRole;
+}) => {
+  const {data: scoresByRole} = useGetScoresByGoalQuery({
+    exerciseId,
+    deploymentId,
+    roleName: role,
+  });
+
+  return (
+    <TagWrapper key={role}>
+      <Tagger
+        key={role}
+        role={role}
+        score={scoresByRole ?? 0}
+      />
+    </TagWrapper>
+  );
+};
+
+export default ScoreTagData;
