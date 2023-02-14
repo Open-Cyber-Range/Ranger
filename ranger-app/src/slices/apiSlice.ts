@@ -1,6 +1,7 @@
 import {createApi, fetchBaseQuery} from '@reduxjs/toolkit/query/react';
 import {BASE_URL} from 'src/constants';
 import type {
+  Deployers,
   Deployment,
   DeploymentElement,
   NewDeployment,
@@ -75,7 +76,7 @@ export const apiSlice = createApi({
       query: ({exerciseId, deploymentId}) =>
         `/exercise/${exerciseId}/deployment/${deploymentId}/deployment_element`,
     }),
-    getDeploymentGroups: builder.query<Deployment[], void>({
+    getDeploymentGroups: builder.query<Deployers, void>({
       query: () => '/deployer',
     }),
   }),

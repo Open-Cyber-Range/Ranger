@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-key */
 import type React from 'react';
 import {useState} from 'react';
 import {
@@ -27,7 +26,7 @@ const GroupDialog = (
   const [name, setName] = useState('');
   const [group, setGroup] = useState('');
   const [count, setCount] = useState('1');
-  const {data} = useGetDeploymentGroupsQuery();
+  const {data: deployers} = useGetDeploymentGroupsQuery();
   const handleKeypress = (event: {key: string}) => {
     if (event.key === 'Enter' && name !== '') {
       onSumbit(name, count, group);
@@ -62,9 +61,8 @@ const GroupDialog = (
               onKeyDown={handleKeypress}
             >
               <option>{t('select group')}</option>
-              {data['my-cool-group'].map((group) =>
-                <option>{group}</option>)}
-
+              {Object.keys((deployers ?? {})).map(groupName =>
+                <option key={groupName}>{groupName}</option>)}
             </HTMLSelect>
           </Label>
         </FormGroup>
@@ -76,7 +74,7 @@ const GroupDialog = (
               large
               value={name}
               leftIcon='graph'
-              placeholder={t('Deployment Name')}
+              placeholder={t('Deployment Name') ?? ''}
               onChange={event => {
                 setName(event.target.value);
               }}
