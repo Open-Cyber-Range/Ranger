@@ -8,6 +8,9 @@ type GraphDataset = {
   tension: number;
   borderColor: string | string[];
   backgroundColor: string | string[];
+  borderWidth: number;
+  fill: boolean;
+  pointRadius: number;
   data: GraphPoint[];
 };
 

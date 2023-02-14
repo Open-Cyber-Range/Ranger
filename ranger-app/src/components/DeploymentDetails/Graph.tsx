@@ -19,6 +19,7 @@ import {
   definedOrSkipToken,
   generateRandomColor,
   groupBy,
+  parseStringDateToMillis,
   sortByCreatedAtAscending,
 } from 'src/utils';
 // eslint-disable-next-line import/no-unassigned-import
@@ -62,12 +63,10 @@ const DeploymentDetailsGraph = ({exerciseId, deploymentId}:
     );
   }
 
-  const intoGraphPoint = (scoreElement: ScoreElement) => (
-    {
-      x: Date.parse(scoreElement.createdAt.replace(/-/g, '/')),
-      y: Math.round(scoreElement.value * 100 * 100) / 100,
-    }
-  );
+  const intoGraphPoint = (scoreElement: ScoreElement) => ({
+    x: parseStringDateToMillis(scoreElement.createdAt),
+    y: Math.round(scoreElement.value * 100) / 100,
+  });
 
   function intoGraphData(
     scoreElementsMap: Record<string, ScoreElement[]>) {
@@ -78,17 +77,21 @@ const DeploymentDetailsGraph = ({exerciseId, deploymentId}:
     for (const metricName in scoreElementsMap) {
       if (Object.prototype.hasOwnProperty.call(scoreElementsMap, metricName)
       ) {
-        const ramdomColor = generateRandomColor();
+        const randomColor = generateRandomColor();
         const baseDataset: GraphDataset = {
           label: metricName,
           tension: 0.3,
-          borderColor: ramdomColor,
-          backgroundColor: ramdomColor,
+          borderColor: randomColor,
+          backgroundColor: randomColor,
+          borderWidth: 1,
+          fill: false,
+          pointRadius: 3,
           data: [],
         };
 
         for (const scoreElement of scoreElementsMap[metricName]
-          .sort(sortByCreatedAtAscending)) {
+          .sort(sortByCreatedAtAscending)
+        ) {
           const graphPoint: GraphPoint = intoGraphPoint(scoreElement);
           (baseDataset.data).push(graphPoint);
         }
@@ -101,24 +104,48 @@ const DeploymentDetailsGraph = ({exerciseId, deploymentId}:
   }
 
   const groupedScoreElements = groupBy(scoreElements, 'metricName');
+
   const graphData = intoGraphData(groupedScoreElements);
 
   return (
     <Line
       data={graphData}
       options={{
+        showLine: true,
+        animation: false,
+        parsing: false,
+
+        interaction: {
+          mode: 'point',
+          axis: 'x',
+          intersect: false,
+        },
+
+        indexAxis: 'x',
         plugins: {
+          decimation: {
+            enabled: true,
+            threshold: 50,
+            algorithm: 'lttb',
+            samples: 10,
+          },
+
           title: {
             display: true,
             text: 'Score',
           },
         },
+        responsive: true,
+        clip: false,
         scales: {
           y: {
             min: 0,
-            max: 100,
           },
           x: {
+            ticks: {
+              source: 'auto',
+              maxRotation: 0,
+            },
             type: 'time',
           },
         },
