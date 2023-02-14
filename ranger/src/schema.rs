@@ -17,7 +17,10 @@ diesel::table! {
 diesel::table! {
     condition_messages (id) {
         id -> Binary,
+        exercise_id -> Binary,
         deployment_id -> Binary,
+        virtual_machine_id -> Binary,
+        scenario_reference -> Tinytext,
         condition_id -> Binary,
         value -> Decimal,
         created_at -> Timestamp,

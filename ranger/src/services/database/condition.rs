@@ -67,6 +67,72 @@ impl Handler<GetConditionMessage> for Database {
 }
 
 #[derive(Message)]
+#[rtype(result = "Result<Vec<ConditionMessage>>")]
+pub struct GetConditionMessagesByDeploymentId(pub Uuid);
+
+impl Handler<GetConditionMessagesByDeploymentId> for Database {
+    type Result = ResponseActFuture<Self, Result<Vec<ConditionMessage>>>;
+
+    fn handle(
+        &mut self,
+        msg: GetConditionMessagesByDeploymentId,
+        _ctx: &mut Self::Context,
+    ) -> Self::Result {
+        let connection_result = self.get_connection();
+        let id = msg.0;
+
+        Box::pin(
+            async move {
+                let mut connection = connection_result?;
+                let condition_messages = block(move || {
+                    let condition_messages =
+                        ConditionMessage::by_deployment_id(id).load(&mut connection)?;
+
+                    Ok(condition_messages)
+                })
+                .await??;
+
+                Ok(condition_messages)
+            }
+            .into_actor(self),
+        )
+    }
+}
+
+#[derive(Message)]
+#[rtype(result = "Result<Vec<ConditionMessage>>")]
+pub struct GetConditionMessagesByExerciseId(pub Uuid);
+
+impl Handler<GetConditionMessagesByExerciseId> for Database {
+    type Result = ResponseActFuture<Self, Result<Vec<ConditionMessage>>>;
+
+    fn handle(
+        &mut self,
+        msg: GetConditionMessagesByExerciseId,
+        _ctx: &mut Self::Context,
+    ) -> Self::Result {
+        let connection_result = self.get_connection();
+        let id = msg.0;
+
+        Box::pin(
+            async move {
+                let mut connection = connection_result?;
+                let condition_messages = block(move || {
+                    let condition_messages =
+                        ConditionMessage::by_exercise_id(id).load(&mut connection)?;
+
+                    Ok(condition_messages)
+                })
+                .await??;
+
+                Ok(condition_messages)
+            }
+            .into_actor(self),
+        )
+    }
+}
+
+#[derive(Message)]
 #[rtype(result = "Result<Uuid>")]
 pub struct DeleteConditionMessage(pub Uuid);
 

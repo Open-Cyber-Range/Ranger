@@ -7,6 +7,7 @@ use crate::{
 use bigdecimal::BigDecimal;
 use chrono::NaiveDateTime;
 use diesel::{
+    helper_types::{Eq, Filter},
     insert_into, ExpressionMethods, Insertable, QueryDsl, Queryable, Selectable, SelectableHelper,
 };
 use serde::{Deserialize, Serialize};
@@ -17,16 +18,29 @@ use serde::{Deserialize, Serialize};
 pub struct NewConditionMessage {
     #[serde(default = "Uuid::random")]
     pub id: Uuid,
+    pub exercise_id: Uuid,
     pub deployment_id: Uuid,
+    pub virtual_machine_id: Uuid,
+    pub scenario_reference: String,
     pub condition_id: Uuid,
     pub value: BigDecimal,
 }
 
 impl NewConditionMessage {
-    pub fn new(deployment_id: Uuid, condition_id: Uuid, value: BigDecimal) -> Self {
+    pub fn new(
+        exercise_id: Uuid,
+        deployment_id: Uuid,
+        virtual_machine_id: Uuid,
+        scenario_reference: String,
+        condition_id: Uuid,
+        value: BigDecimal,
+    ) -> Self {
         Self {
             id: Uuid::random(),
+            exercise_id,
             deployment_id,
+            virtual_machine_id,
+            scenario_reference,
             condition_id,
             value,
         }
@@ -43,12 +57,27 @@ impl NewConditionMessage {
 pub struct ConditionMessage {
     #[serde(default = "Uuid::random")]
     pub id: Uuid,
+    pub exercise_id: Uuid,
     pub deployment_id: Uuid,
+    pub virtual_machine_id: Uuid,
+    pub scenario_reference: String,
     pub condition_id: Uuid,
     pub value: BigDecimal,
     pub created_at: NaiveDateTime,
     pub deleted_at: NaiveDateTime,
 }
+
+pub type ConditonMessages = Vec<ConditionMessage>;
+
+type ByExerciseId<T> = Filter<
+    FilterExisting<T, condition_messages::deleted_at>,
+    Eq<condition_messages::exercise_id, Uuid>,
+>;
+
+type ByDeploymentId<T> = Filter<
+    FilterExisting<T, condition_messages::deleted_at>,
+    Eq<condition_messages::deployment_id, Uuid>,
+>;
 
 impl ConditionMessage {
     fn all_with_deleted() -> All<condition_messages::table, Self> {
@@ -70,6 +99,16 @@ impl ConditionMessage {
         Self,
     > {
         Self::all().filter(condition_messages::id.eq(id))
+    }
+
+    pub fn by_deployment_id(
+        deployment_id: Uuid,
+    ) -> ByDeploymentId<All<condition_messages::table, Self>> {
+        Self::all().filter(condition_messages::deployment_id.eq(deployment_id))
+    }
+
+    pub fn by_exercise_id(exercise_id: Uuid) -> ByExerciseId<All<condition_messages::table, Self>> {
+        Self::all().filter(condition_messages::exercise_id.eq(exercise_id))
     }
 
     pub fn soft_delete(

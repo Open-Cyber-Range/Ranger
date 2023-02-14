@@ -1,6 +1,9 @@
 CREATE TABLE condition_messages (
     id BINARY(16) NOT NULL,
+    exercise_id BINARY(16) NOT NULL,
     deployment_id BINARY(16) NOT NULL,
+    virtual_machine_id BINARY(16) NOT NULL,
+    scenario_reference TINYTEXT NOT NULL,
     condition_id BINARY(16) NOT NULL,
     value DECIMAL(18, 17) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,

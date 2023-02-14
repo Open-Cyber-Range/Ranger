@@ -153,7 +153,9 @@ impl DeployableConditions
                                     distributor_address
                                         .clone()
                                         .send(ConditionStream(
+                                            *exercise_id,
                                             condition_deployment_element,
+                                            virtual_machine_id.clone(),
                                             database_address.clone(),
                                             condition_stream,
                                         ))
