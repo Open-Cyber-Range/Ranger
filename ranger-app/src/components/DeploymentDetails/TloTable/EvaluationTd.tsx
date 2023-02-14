@@ -18,7 +18,7 @@ const EvaluationTd = ({exerciseId, deploymentId, tloName, tloMap}:
     return (
       <>
         <td key={tloName}>
-          <div>{tloMap[tloName].name}</div>
+          <div>{tloMap[tloName].evaluation}</div>
           <div>{evaluation.description}</div>
         </td>
         <MetricsTd
