@@ -12,8 +12,8 @@ const MetricsTd = ({exerciseId, deploymentId, tloName, metrics}:
       <MetricLi
         key={metricName}
         exerciseId={exerciseId}
-        deploymentId={deploymentId}
         tloName={tloName}
+        deploymentId={deploymentId}
         metricName={metricName}/>
     ))}
   </td>
