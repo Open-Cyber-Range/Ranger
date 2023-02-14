@@ -20,10 +20,11 @@ type ScoreElement = {
   id: string;
   exerciseId: string;
   deploymentId: string;
-  tloName: string;
+  tloName?: string;
   metricName: string;
   value: number;
   createdAt: string;
+  vmName: string;
 };
 
 export type {
