@@ -337,3 +337,38 @@ impl Handler<GetDeploymentElementByDeploymentId> for Database {
         )
     }
 }
+
+#[derive(Message)]
+#[rtype(result = "Result<DeploymentElement>")]
+pub struct GetDeploymentElementByDeploymentIdByHandlerReference(pub Uuid, pub String);
+
+impl Handler<GetDeploymentElementByDeploymentIdByHandlerReference> for Database {
+    type Result = ResponseActFuture<Self, Result<DeploymentElement>>;
+
+    fn handle(
+        &mut self,
+        msg: GetDeploymentElementByDeploymentIdByHandlerReference,
+        _ctx: &mut Self::Context,
+    ) -> Self::Result {
+        let deployment_id = msg.0;
+        let handler_reference = msg.1.reference();
+        let connection_result = self.get_connection();
+
+        Box::pin(
+            async move {
+                let mut connection = connection_result?;
+                let deployment_element = block(move || {
+                    DeploymentElement::by_deployment_id_by_handler_reference(
+                        deployment_id,
+                        handler_reference,
+                    )
+                    .first(&mut connection)
+                })
+                .await??;
+
+                Ok(deployment_element)
+            }
+            .into_actor(self),
+        )
+    }
+}

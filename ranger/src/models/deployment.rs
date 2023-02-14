@@ -144,6 +144,11 @@ type ByDeploymentIdByScenarioReference<T> = Filter<
     Eq<deployment_elements::scenario_reference, String>,
 >;
 
+type ByDeploymentIdByHandlerReference<T> = Filter<
+    ByDeploymentId<All<deployment_elements::table, T>>,
+    Eq<deployment_elements::handler_reference, String>,
+>;
+
 impl DeploymentElement {
     pub fn new_ongoing(
         deployment_id: Uuid,
@@ -214,6 +219,15 @@ impl DeploymentElement {
         Self::all()
             .filter(deployment_elements::deployment_id.eq(deployment_id))
             .filter(deployment_elements::scenario_reference.eq(scenario_reference.reference()))
+    }
+
+    pub fn by_deployment_id_by_handler_reference(
+        deployment_id: Uuid,
+        handler_reference: String,
+    ) -> ByDeploymentIdByHandlerReference<Self> {
+        Self::all()
+            .filter(deployment_elements::deployment_id.eq(deployment_id))
+            .filter(deployment_elements::handler_reference.eq(handler_reference))
     }
 
     pub fn create_insert(&self) -> Create<&Self, deployment_elements::table> {
