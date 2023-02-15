@@ -1,4 +1,5 @@
 import type React from 'react';
+import type {ChartData, ChartDataset} from 'chart.js';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -24,7 +25,6 @@ import {
 } from 'src/utils';
 // eslint-disable-next-line import/no-unassigned-import
 import 'chartjs-adapter-moment';
-import type {GraphData, GraphDataset, GraphPoint} from 'src/models/scoreGraph';
 
 ChartJS.register(
   CategoryScale,
@@ -70,7 +70,7 @@ const DeploymentDetailsGraph = ({exerciseId, deploymentId}:
 
   function intoGraphData(
     scoreElementsMap: Record<string, ScoreElement[]>) {
-    const graphData: GraphData = {
+    const graphData: ChartData<'line'> = {
       datasets: [],
     };
 
@@ -78,21 +78,22 @@ const DeploymentDetailsGraph = ({exerciseId, deploymentId}:
       if (Object.prototype.hasOwnProperty.call(scoreElementsMap, metricName)
       ) {
         const randomColor = generateRandomColor();
-        const baseDataset: GraphDataset = {
+        const baseDataset: ChartDataset<'line'> = {
+          type: 'line',
           label: metricName,
           tension: 0.3,
           borderColor: randomColor,
           backgroundColor: randomColor,
           borderWidth: 1,
           fill: false,
-          pointRadius: 3,
+          pointRadius: 1,
           data: [],
         };
 
         for (const scoreElement of scoreElementsMap[metricName]
           .sort(sortByCreatedAtAscending)
         ) {
-          const graphPoint: GraphPoint = intoGraphPoint(scoreElement);
+          const graphPoint = intoGraphPoint(scoreElement);
           (baseDataset.data).push(graphPoint);
         }
 
@@ -125,9 +126,8 @@ const DeploymentDetailsGraph = ({exerciseId, deploymentId}:
         plugins: {
           decimation: {
             enabled: true,
-            threshold: 50,
-            algorithm: 'lttb',
-            samples: 10,
+            algorithm: 'min-max',
+            threshold: 1,
           },
 
           title: {
