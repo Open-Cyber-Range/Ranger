@@ -7,8 +7,8 @@ import type {DeploymentDetailRouteParameters} from 'src/models/routes';
 import {useGetTLOsQuery} from 'src/slices/apiSlice';
 import styled from 'styled-components';
 import {definedOrSkipToken} from 'src/utils';
-import TloRow from 'src/components/DeploymentDetails/TloTable/TloRow';
 import DeploymentDetailsGraph from 'src/components/DeploymentDetails/Graph';
+import TloTable from 'src/components/DeploymentDetails/TloTable/TloTable';
 
 const Wrapper = styled.div`
   display: flex;
@@ -34,33 +34,10 @@ const DeploymentDetail = () => {
           exerciseId={exerciseId}
           deploymentId={deploymentId}
         />
-        <br/>
-        <Wrapper>
-          <table className='
-        bp4-html-table
-        bp4-html-table-striped'
-          >
-            <tbody>
-              {(() => {
-                const rows = [];
-                for (const tloName in tloMap) {
-                  if (tloMap[tloName]) {
-                    rows.push(
-                      <TloRow
-                        key={tloName}
-                        exerciseId={exerciseId}
-                        deploymentId={deploymentId}
-                        tloName={tloName}
-                        tloMap={tloMap}/>,
-                    );
-                  }
-                }
-
-                return rows;
-              })()}
-            </tbody>
-          </table>
-        </Wrapper>
+        <TloTable
+          exerciseId={exerciseId}
+          deploymentId={deploymentId}
+          tloMap={tloMap}/>
       </PageHolder>
     );
   }
