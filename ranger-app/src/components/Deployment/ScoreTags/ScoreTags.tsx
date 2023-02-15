@@ -11,7 +11,7 @@ import ScoreTagBuilder from './ScoreTagBuilder';
 const TagWrapper = styled.div`
   display: flex;
   margin: 2px;
-  margin-top: 1rem;
+  margin-top: auto;
   margin-bottom: auto;
 `;
 

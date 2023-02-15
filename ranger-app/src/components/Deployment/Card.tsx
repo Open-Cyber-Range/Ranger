@@ -30,11 +30,19 @@ const ActionButtons = styled.div`
   }
 `;
 
-const TagsWrapper = styled.div`
+const InfoTagsWrapper = styled.div`
   display: flex;
   align-items: end;
   margin-left: auto;
   margin-right: 2rem;
+  margin-top: auto;
+  margin-bottom: auto;
+`;
+
+const ScoreTagsWrapper = styled.div`
+  display: flex;
+  align-items: flex-start;
+  margin-top: 1rem;
 `;
 
 const DeploymentCard = ({deployment}: {deployment: Deployment}) => {
@@ -72,9 +80,9 @@ const DeploymentCard = ({deployment}: {deployment: Deployment}) => {
     <Card interactive elevation={2} onClick={routeChange}>
       <CardRow>
         <H2>{deployment.name}</H2>
-        <TagsWrapper>
+        <InfoTagsWrapper>
           <InfoTags deploymentElements={deploymentElements}/>
-        </TagsWrapper>
+        </InfoTagsWrapper>
         <ActionButtons>
           <Button
             large
@@ -92,9 +100,11 @@ const DeploymentCard = ({deployment}: {deployment: Deployment}) => {
         deployment={deployment}
         deploymentElements={deploymentElements}
       />
-      <ScoreTags
-        exerciseId={deployment.exerciseId}
-        deploymentId={deployment.id}/>
+      <ScoreTagsWrapper>
+        <ScoreTags
+          exerciseId={deployment.exerciseId}
+          deploymentId={deployment.id}/>
+      </ScoreTagsWrapper>
     </Card>
   );
 };

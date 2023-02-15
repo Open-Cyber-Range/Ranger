@@ -123,6 +123,7 @@ const ExerciseDetail = () => {
         <br/>
 
         <Header
+          exerciseId={exercise.id}
           headerTitle={t('deployments.title')}
           buttonTitle={t('deployments.add')}
           onSubmit={async (value: DeploymentForm) => {
