@@ -8,6 +8,7 @@ import {useGetDeploymentsQuery, useGetExerciseQuery} from 'src/slices/apiSlice';
 import styled from 'styled-components';
 import DeploymentScoresTable from
   'src/components/ExerciseScores/ScoresTable/DeploymentScoresTable';
+import {sortByUpdatedAtDescending} from 'src/utils';
 
 const Wrapper = styled.div`
   display: flex;
@@ -42,7 +43,8 @@ const ExerciseScores = () => {
     <PageHolder>
       <Wrapper>
         <h1>{exercise?.name ?? ''}</h1>
-        <DeploymentScoresTable deployments={deployments}/>
+        <DeploymentScoresTable
+          deployments={deployments.slice().sort(sortByUpdatedAtDescending)}/>
       </Wrapper>
     </PageHolder>
   );
