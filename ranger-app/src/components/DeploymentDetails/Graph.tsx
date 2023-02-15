@@ -25,6 +25,7 @@ import {
 } from 'src/utils';
 // eslint-disable-next-line import/no-unassigned-import
 import 'chartjs-adapter-moment';
+import {useTranslation} from 'react-i18next';
 
 ChartJS.register(
   CategoryScale,
@@ -52,13 +53,14 @@ const DeploymentDetailsGraph = ({exerciseId, deploymentId}:
 {exerciseId: string | undefined;
   deploymentId: string | undefined;
 }) => {
+  const {t} = useTranslation();
   const {data: scoreElements} = useGetDeploymentScoresQuery(
     definedOrSkipToken(exerciseId, deploymentId));
 
   if (!scoreElements || scoreElements.length === 0) {
     return (
       <FallbackTextWrapper>
-        No score data to display graph
+        {t('error.noScoreData')}
       </FallbackTextWrapper>
     );
   }

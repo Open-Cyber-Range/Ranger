@@ -5,6 +5,7 @@ import styled from 'styled-components';
 import '@blueprintjs/popover2/lib/css/blueprint-popover2.css';
 import {ExerciseRole} from 'src/models/entity';
 import {useGetScoreByRoleQuery} from 'src/slices/apiSlice';
+import {useTranslation} from 'react-i18next';
 
 const TagWrapper = styled.div`
   display: flex;
@@ -26,14 +27,18 @@ const getRoleColor = (role: ExerciseRole) => {
   }
 };
 
-const Tagger = ({role, score}: {role: ExerciseRole; score: number}) => (
-  <Tag
-    round
-    style={{background: getRoleColor(role)}}
-  >
-    {role} Team: {score}
-  </Tag>
-);
+const Tagger = ({role, score}: {role: ExerciseRole; score: number}) => {
+  const {t} = useTranslation();
+
+  return (
+    <Tag
+      round
+      style={{background: getRoleColor(role)}}
+    >
+      {role} {t('common.team')}: {score}
+    </Tag>
+  );
+};
 
 const ScoreTagData = ({exerciseId, deploymentId, role}:
 {exerciseId: string;

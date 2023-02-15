@@ -1,4 +1,5 @@
 import React from 'react';
+import {useTranslation} from 'react-i18next';
 import {useGetMetricScoresQuery} from 'src/slices/apiSlice';
 import {parseStringDateToMillis} from 'src/utils';
 
@@ -9,6 +10,7 @@ const MetricLi = (
     deploymentId: string;
     metricName: string;
   }) => {
+  const {t} = useTranslation();
   const {data: scoreElements} = useGetMetricScoresQuery({
     exerciseId,
     deploymentId,
@@ -19,7 +21,7 @@ const MetricLi = (
   if (!scoreElements || scoreElements.length === 0) {
     return (
       <li>
-        No metric scores to display
+        {t('error.noMetricData')}
       </li>
     );
   }

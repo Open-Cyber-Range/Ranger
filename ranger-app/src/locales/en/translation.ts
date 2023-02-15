@@ -48,6 +48,8 @@ const language = {
     virtualMachines: 'Virtual Machines',
     switches: 'Switches',
     templates: 'Templates',
+    currentScore: 'Current Score',
+    team: 'Team',
   },
   emails: {
     link: 'Create and send emails',
@@ -95,6 +97,16 @@ const language = {
       emailPlaceholder:
       'Enter email address, multiple addresses separated by comma',
     },
+  },
+  sdl: {
+    tlo: 'Training Learning Objective',
+    evaluation: 'Evaluation',
+    metrics: 'Metrics',
+  },
+  error: {
+    none: 'None',
+    noScoreData: 'No score data to display graph',
+    noMetricData: 'No metric scores to display',
   },
 };
 

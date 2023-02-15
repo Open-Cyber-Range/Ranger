@@ -1,4 +1,5 @@
 import React from 'react';
+import {useTranslation} from 'react-i18next';
 import type {TrainingLearningObjective} from 'src/models/tlo';
 import {useGetEvaluationQuery} from 'src/slices/apiSlice';
 import MetricsTd from './MetricsTd';
@@ -9,6 +10,7 @@ const EvaluationTd = ({exerciseId, deploymentId, tloName, tloMap}:
   tloName: string;
   tloMap: Record<string, TrainingLearningObjective>;
 }) => {
+  const {t} = useTranslation();
   const {data: evaluation} = useGetEvaluationQuery(
     {exerciseId,
       deploymentId,
@@ -32,7 +34,7 @@ const EvaluationTd = ({exerciseId, deploymentId, tloName, tloMap}:
 
   return (
     <td>
-      No evaluation to display
+      {t('error.none')}
     </td>
   );
 };

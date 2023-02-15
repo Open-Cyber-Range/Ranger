@@ -9,21 +9,21 @@ import styled from 'styled-components';
 import {definedOrSkipToken} from 'src/utils';
 import DeploymentDetailsGraph from 'src/components/DeploymentDetails/Graph';
 import TloTable from 'src/components/DeploymentDetails/TloTable/TloTable';
+import {useTranslation} from 'react-i18next';
 
-const Wrapper = styled.div`
+const FallbackTextWrapper = styled.div`
   display: flex;
-  flex-direction: column;
-  text-align: center;
-
-  > div {
-    margin-bottom: 2rem;
-  }
+  justify-content: center;
+  align-self: center;
+  margin-top: 5rem;
+  margin-bottom: 1rem;
+  color: #a6a3a3;
 `;
 
 const DeploymentDetail = () => {
+  const {t} = useTranslation();
   const {exerciseId, deploymentId}
   = useParams<DeploymentDetailRouteParameters>();
-
   const {data: tloMap} = useGetTLOsQuery(
     definedOrSkipToken(exerciseId, deploymentId));
 
@@ -43,11 +43,9 @@ const DeploymentDetail = () => {
   }
 
   return (
-    <PageHolder>
-      <Wrapper>
-        Error: Missing Exercise Id and / or Deployment Id
-      </Wrapper>
-    </PageHolder>
+    <FallbackTextWrapper>
+      {t('exercises.noDeploymentInfo')}
+    </FallbackTextWrapper>
   );
 };
 

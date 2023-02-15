@@ -33,7 +33,7 @@ const ExerciseScores = () => {
   if (!deployments || !exerciseId) {
     return (
       <FallbackTextWrapper>
-        No deployments
+        {t('exercises.noDeployments')}
       </FallbackTextWrapper>
     );
   }

@@ -1,4 +1,5 @@
 import React from 'react';
+import {useTranslation} from 'react-i18next';
 import type {TrainingLearningObjective} from 'src/models/tlo';
 import EvaluationTd from './EvaluationTd';
 
@@ -8,6 +9,8 @@ const TloRow = ({exerciseId, deploymentId, tloName, tloMap}:
   tloName: string;
   tloMap: Record<string, TrainingLearningObjective>;
 }) => {
+  const {t} = useTranslation();
+
   if (tloMap[tloName]) {
     return (
       <tr key={tloName}>
@@ -28,7 +31,7 @@ const TloRow = ({exerciseId, deploymentId, tloName, tloMap}:
 
   return (
     <tr>
-      Nothing
+      {t('error.none')}
     </tr>
   );
 };
