@@ -10,7 +10,7 @@ pub(crate) mod utilities;
 use crate::services::database::Database;
 use actix::{Actor, Addr};
 use anyhow::Result;
-use configuration::{get_mailer_configuration, read_configuration, Configuration};
+use configuration::{read_configuration, Configuration};
 use log::{error, info};
 use services::{
     deployer::{DeployerDistribution, DeployerFactory},
@@ -88,8 +88,7 @@ pub async fn app_setup(environment_arguments: Vec<String>) -> Result<(String, u1
 }
 
 pub fn send_mail(configuration: Configuration) {
-    let mailer_configuration = get_mailer_configuration(configuration);
-    if let Ok(mailer_configuration) = mailer_configuration {
+    if let Some(mailer_configuration) = configuration.mailer_configuration {
         match Mailer::send_mail(
             mailer_configuration,
             "real.person@real-email.com".to_string(),
@@ -97,7 +96,5 @@ pub fn send_mail(configuration: Configuration) {
             Ok(_) => info!("Mail sent successfully!"),
             Err(e) => error!("Mailer failed: {:?}", e),
         }
-    } else {
-        info!("{:?}", mailer_configuration.unwrap_err())
     }
 }

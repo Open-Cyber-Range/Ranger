@@ -19,9 +19,7 @@ pub struct Configuration {
     pub default_deployment_group: String,
     pub deployment_groups: DeploymentGroupMap,
     pub database_url: String,
-    pub mailer_server_address: Option<String>,
-    pub mailer_username: Option<String>,
-    pub mailer_password: Option<String>,
+    pub mailer_configuration: Option<MailerConfiguration>,
 }
 
 pub fn read_configuration(arguments: Vec<String>) -> Result<Configuration> {
@@ -33,24 +31,7 @@ pub fn read_configuration(arguments: Vec<String>) -> Result<Configuration> {
     Ok(serde_yaml::from_str(&configuration_string)?)
 }
 
-pub fn get_mailer_configuration(configuration: Configuration) -> Result<MailerConfiguration> {
-    let server_address = configuration.mailer_server_address;
-    let username = configuration.mailer_username;
-    let password = configuration.mailer_password;
-    if let (Some(server_address), Some(username), Some(password)) =
-        (server_address, username, password)
-    {
-        Ok(MailerConfiguration {
-            server_address,
-            username,
-            password,
-        })
-    } else {
-        Err(Error::msg("Mailer configuration missing or partial"))
-    }
-}
-
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Serialize, Deserialize, Clone)]
 pub struct MailerConfiguration {
     pub server_address: String,
     pub username: String,
@@ -120,9 +101,10 @@ mod tests {
                         - my-machiner-deployer
                         - my-switch-deployer
                 database_url: mysql://user:pass@mariadb:3306/app-database
-                mailer_server_address: smtp.mail.com
-                mailer_username: username
-                mailer_password: password
+                mailer_configuration:
+                    server_address: smtp.mail.com
+                    username: username
+                    password: password
                 "#
         )?;
         let arguments = vec![String::from("program-name"), path_string];

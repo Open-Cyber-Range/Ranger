@@ -14,7 +14,5 @@ deployment_groups:
     - my-machiner-deployer
     - my-switch-deployer
 database_url: "mysql://user:pass@mariadb:3306/app-database"
-mailer_server_address: ~
-mailer_username: ~
-mailer_password: ~
+mailer_configuration: ~
 
