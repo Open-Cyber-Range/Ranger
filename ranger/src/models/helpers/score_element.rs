@@ -13,7 +13,6 @@ pub struct ScoreElement {
     pub id: Uuid,
     pub exercise_id: Uuid,
     pub deployment_id: Uuid,
-    pub tlo_name: Option<String>,
     pub metric_name: String,
     pub vm_name: String,
     pub value: BigDecimal,
@@ -24,7 +23,6 @@ impl ScoreElement {
     pub fn new(
         exercise_id: Uuid,
         deployment_id: Uuid,
-        tlo_name: Option<String>,
         metric_name: String,
         vm_name: String,
         value: BigDecimal,
@@ -34,7 +32,6 @@ impl ScoreElement {
             id: Uuid::random(),
             exercise_id,
             deployment_id,
-            tlo_name,
             metric_name,
             vm_name,
             value,
@@ -75,7 +72,6 @@ impl ScoreElement {
                         Some(ScoreElement::new(
                             exercise_id,
                             deployment_id,
-                            None,
                             requested_metric_name.to_owned(),
                             condition_message.virtual_machine_id.to_string(),
                             calculated_score,

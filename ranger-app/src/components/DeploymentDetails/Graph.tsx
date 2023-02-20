@@ -17,9 +17,9 @@ import {useGetDeploymentScoresQuery} from 'src/slices/apiSlice';
 import styled from 'styled-components';
 import type {ScoreElement} from 'src/models/tlo';
 import {
+  defaultColors,
   definedOrSkipToken,
-  generateRandomColor,
-  groupBy,
+  groupByMetricNameAndVmName,
   parseStringDateToMillis,
   sortByCreatedAtAscending,
 } from 'src/utils';
@@ -79,16 +79,17 @@ const DeploymentDetailsGraph = ({exerciseId, deploymentId}:
     for (const metricName in scoreElementsMap) {
       if (Object.prototype.hasOwnProperty.call(scoreElementsMap, metricName)
       ) {
-        const randomColor = generateRandomColor();
         const baseDataset: ChartDataset<'line'> = {
           type: 'line',
           label: metricName,
           tension: 0.3,
-          borderColor: randomColor,
-          backgroundColor: randomColor,
+          borderColor: defaultColors,
+          backgroundColor: defaultColors,
+          pointBackgroundColor: '#ffffff',
+          pointBorderColor: '#808080',
           borderWidth: 1,
           fill: false,
-          pointRadius: 1,
+          pointRadius: 1.5,
           data: [],
         };
 
@@ -106,7 +107,7 @@ const DeploymentDetailsGraph = ({exerciseId, deploymentId}:
     return graphData;
   }
 
-  const groupedScoreElements = groupBy(scoreElements, 'metricName');
+  const groupedScoreElements = groupByMetricNameAndVmName(scoreElements);
 
   const graphData = intoGraphData(groupedScoreElements);
 
@@ -123,9 +124,12 @@ const DeploymentDetailsGraph = ({exerciseId, deploymentId}:
           axis: 'x',
           intersect: false,
         },
-
         indexAxis: 'x',
         plugins: {
+          tooltip: {
+            displayColors: false,
+          },
+
           decimation: {
             enabled: true,
             algorithm: 'min-max',

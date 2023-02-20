@@ -2,7 +2,8 @@ use crate::{
     errors::RangerError,
     models::helpers::{score_element::ScoreElement, uuid::Uuid},
     services::database::{
-        condition::GetConditionMessagesByDeploymentId, deployment::GetDeployment,
+        condition::GetConditionMessagesByDeploymentId,
+        deployment::{GetDeployment, GetDeploymentElementByDeploymentIdByHandlerReference},
     },
     utilities::{create_database_error_handler, create_mailbox_error_handler},
     AppState,
@@ -17,6 +18,7 @@ use log::error;
 use sdl_parser::{
     evaluation::Evaluation, parse_sdl, training_learning_objective::TrainingLearningObjectives,
 };
+use std::collections::{HashMap, HashSet};
 
 #[get("exercise/{exercise_uuid}/deployment/{deployment_uuid}/tlo")]
 pub async fn get_exercise_deployment_tlos(
@@ -111,19 +113,49 @@ pub async fn get_exercise_deployment_scores(
                 }
             }
 
-            let calculated_score = condition_message.clone().value * score_multiplier;
-
             ScoreElement::new(
                 exercise_uuid,
                 deployment_uuid,
-                None,
                 metric_name,
                 condition_message.virtual_machine_id.to_string(),
-                calculated_score,
+                condition_message.clone().value * score_multiplier,
                 condition_message.created_at,
             )
         })
         .collect::<Vec<_>>();
+
+    let unique_vm_uuids: HashSet<String> = score_elements
+        .clone()
+        .into_iter()
+        .map(|element| element.vm_name)
+        .collect();
+
+    let mut vm_names_by_uuid: HashMap<String, String> = Default::default();
+
+    for vm_uuid in unique_vm_uuids {
+        let deployment_element = app_state
+            .database_address
+            .send(GetDeploymentElementByDeploymentIdByHandlerReference(
+                deployment_uuid,
+                vm_uuid.to_owned(),
+            ))
+            .await
+            .map_err(create_mailbox_error_handler("Database"))?
+            .map_err(create_database_error_handler("Get deployment element"))?;
+        vm_names_by_uuid.insert(vm_uuid.to_owned(), deployment_element.scenario_reference);
+    }
+
+    let score_elements: Vec<ScoreElement> = score_elements
+        .iter()
+        .map(|element| ScoreElement {
+            vm_name: vm_names_by_uuid
+                .get(&element.vm_name)
+                .unwrap_or(&element.vm_name)
+                .to_string(),
+            ..element.clone()
+        })
+        .collect();
+
     Ok(Json(score_elements))
 }
 
