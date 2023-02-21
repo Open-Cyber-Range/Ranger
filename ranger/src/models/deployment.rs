@@ -1,5 +1,5 @@
 use crate::{
-    constants::{DATETIME_FORMAT, DELETED_AT_DEFAULT_VALUE, MAX_DEPLOYMENT_NAME_LENGTH},
+    constants::{DELETED_AT_DEFAULT_VALUE, MAX_DEPLOYMENT_NAME_LENGTH},
     errors::RangerError,
     schema::{deployment_elements, deployments},
     services::database::{
@@ -186,13 +186,8 @@ impl DeploymentElement {
     fn all(
     ) -> FilterExisting<All<deployment_elements::table, Self>, deployment_elements::deleted_at>
     {
-        Self::all_with_deleted().filter(
-            deployment_elements::deleted_at.eq(NaiveDateTime::parse_from_str(
-                DELETED_AT_DEFAULT_VALUE,
-                DATETIME_FORMAT,
-            )
-            .unwrap()),
-        )
+        Self::all_with_deleted()
+            .filter(deployment_elements::deleted_at.eq(*DELETED_AT_DEFAULT_VALUE))
     }
 
     pub fn by_id(
@@ -239,9 +234,7 @@ impl DeploymentElement {
     > {
         diesel::update(deployment_elements::table)
             .filter(deployment_elements::id.eq(self.id))
-            .filter(deployment_elements::deleted_at.eq(
-                NaiveDateTime::parse_from_str(DELETED_AT_DEFAULT_VALUE, DATETIME_FORMAT).unwrap(),
-            ))
+            .filter(deployment_elements::deleted_at.eq(*DELETED_AT_DEFAULT_VALUE))
             .set(self)
     }
 }
@@ -252,13 +245,7 @@ impl Deployment {
     }
 
     pub fn all() -> FilterExisting<All<deployments::table, Self>, deployments::deleted_at> {
-        Self::all_with_deleted().filter(
-            deployments::deleted_at.eq(NaiveDateTime::parse_from_str(
-                DELETED_AT_DEFAULT_VALUE,
-                DATETIME_FORMAT,
-            )
-            .unwrap()),
-        )
+        Self::all_with_deleted().filter(deployments::deleted_at.eq(*DELETED_AT_DEFAULT_VALUE))
     }
 
     pub fn by_id(
@@ -279,9 +266,7 @@ impl Deployment {
     ) -> SoftDelete<ByDeploymentId<deployment_elements::table>, deployment_elements::deleted_at>
     {
         diesel::update(deployment_elements::table)
-            .filter(deployment_elements::deleted_at.eq(
-                NaiveDateTime::parse_from_str(DELETED_AT_DEFAULT_VALUE, DATETIME_FORMAT).unwrap(),
-            ))
+            .filter(deployment_elements::deleted_at.eq(*DELETED_AT_DEFAULT_VALUE))
             .filter(deployment_elements::deployment_id.eq(self.id))
             .set(deployment_elements::deleted_at.eq(diesel::dsl::now))
     }
