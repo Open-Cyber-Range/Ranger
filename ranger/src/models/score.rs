@@ -1,5 +1,6 @@
 use super::helpers::uuid::Uuid;
 use crate::{
+    constants::{DATETIME_FORMAT, DELETED_AT_DEFAULT_VALUE},
     schema::scores,
     services::database::{All, Create, FilterExisting, SelectById, SoftDeleteById, UpdateById},
 };
@@ -61,7 +62,7 @@ pub struct Score {
     pub value: BigDecimal,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
-    pub deleted_at: Option<NaiveDateTime>,
+    pub deleted_at: NaiveDateTime,
 }
 
 type ByDeploymentId<T> =
@@ -78,7 +79,13 @@ impl Score {
     }
 
     pub fn all() -> FilterExisting<All<scores::table, Self>, scores::deleted_at> {
-        Self::all_with_deleted().filter(scores::deleted_at.is_null())
+        Self::all_with_deleted().filter(
+            scores::deleted_at.eq(NaiveDateTime::parse_from_str(
+                DELETED_AT_DEFAULT_VALUE,
+                DATETIME_FORMAT,
+            )
+            .unwrap()),
+        )
     }
 
     pub fn by_id(id: Uuid) -> SelectById<scores::table, scores::id, scores::deleted_at, Self> {
@@ -117,7 +124,9 @@ impl UpdateScore {
     ) -> UpdateById<scores::id, scores::deleted_at, scores::table, &Self> {
         diesel::update(scores::table)
             .filter(scores::id.eq(id))
-            .filter(scores::deleted_at.is_null())
+            .filter(scores::deleted_at.eq(
+                NaiveDateTime::parse_from_str(DELETED_AT_DEFAULT_VALUE, DATETIME_FORMAT).unwrap(),
+            ))
             .set(self)
     }
 }
