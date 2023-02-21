@@ -10,7 +10,7 @@ const language = {
     scenarioSDL: 'Scenario SDL',
   },
   deployments: {
-    title: 'Deployments',
+    title: 'New deployment',
     add: 'Add Deployment',
     addingSuccess: 'Deployment {{newDeploymentName}} added',
     addingFail: 'Failed to add the deployment',
@@ -31,6 +31,20 @@ const language = {
     virtualMachines: 'Virtual Machines',
     switches: 'Switches',
     templates: 'Templates',
+  },
+
+  emails: {
+    emailLog: 'Email log:',
+    status: 'Status',
+    timestamp: 'Timestamp',
+    toEntity: 'To Entity',
+    from: 'From',
+    to: 'To',
+    replyTo: 'Reply to',
+    subject: 'Subject',
+    bcc: 'Bcc',
+    cc: 'Cc',
+    body: 'Body',
   },
 };
 
