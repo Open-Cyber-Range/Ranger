@@ -54,6 +54,24 @@ export function sortByCreatedAtDescending<
   return 0;
 }
 
+export function sortByVmNameAscending<
+  T extends ScoreElement >(a: T, b: T) {
+  if (!a.vmName || a.vmName < b.vmName) {
+    return -1;
+  }
+
+  if (!b.vmName || a.vmName > b.vmName) {
+    return 1;
+  }
+
+  return 0;
+}
+
+export function sortByVmNameDescending<
+  T extends ScoreElement >(a: T, b: T) {
+  return sortByVmNameAscending(a, b) * -1;
+}
+
 export const getWebsocketBase = () => {
   const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
   const host = window.location.host;

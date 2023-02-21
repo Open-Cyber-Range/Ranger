@@ -1,7 +1,7 @@
 import React from 'react';
 import {useTranslation} from 'react-i18next';
 import {useGetMetricScoresQuery} from 'src/slices/apiSlice';
-import {parseStringDateToMillis} from 'src/utils';
+import {sortByVmNameAscending} from 'src/utils';
 
 const MetricLi = (
   {exerciseId, deploymentId, tloName, metricName}:
@@ -26,21 +26,17 @@ const MetricLi = (
     );
   }
 
-  const currentScoreElements = scoreElements
-    .filter(score => score.metricName === metricName);
-
-  const parsedMetricDates = currentScoreElements.map(scoreElement =>
-    parseStringDateToMillis(scoreElement.createdAt));
-  const latestMetricDate = Math.max(...parsedMetricDates);
-  const latestScoreEelement = currentScoreElements
-    .find(metric => Date.parse(metric.createdAt) === latestMetricDate);
+  const sortedScoreElements = scoreElements.slice().sort(sortByVmNameAscending);
 
   return (
-    <li key={latestScoreEelement?.metricName}>
-      {latestScoreEelement?.metricName ?? metricName}{' - '}
-      {latestScoreEelement ? Math
-        .round(latestScoreEelement.value * 100) / 100 : 'No'}{' points'}
-    </li>
+    <>
+      {sortedScoreElements.map(element => (
+        <li key={element.id}>
+          {metricName} - {element.vmName}: {Math
+            .round(element.value * 100) / 100} points
+        </li>
+      ))}
+    </>
   );
 };
 

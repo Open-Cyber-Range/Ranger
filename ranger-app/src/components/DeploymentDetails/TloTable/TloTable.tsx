@@ -30,9 +30,9 @@ const TloTable = ({exerciseId, deploymentId, tloMap}:
       >
         <thead>
           <tr>
-            <th>{t('sdl.tlo')}</th>
-            <th>{t('sdl.evaluation')}</th>
-            <th>{t('sdl.metrics')} - {t('common.currentScore')}</th>
+            <th>{t('tloTableHeaders.tlo')}</th>
+            <th>{t('tloTableHeaders.evaluation')}</th>
+            <th>{t('tloTableHeaders.metric')}</th>
           </tr>
         </thead>
         <tbody>

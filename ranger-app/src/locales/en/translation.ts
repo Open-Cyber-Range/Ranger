@@ -48,7 +48,6 @@ const language = {
     virtualMachines: 'Virtual Machines',
     switches: 'Switches',
     templates: 'Templates',
-    currentScore: 'Current Score',
     team: 'Team',
   },
   emails: {
@@ -98,10 +97,10 @@ const language = {
       'Enter email address, multiple addresses separated by comma',
     },
   },
-  sdl: {
+  tloTableHeaders: {
     tlo: 'Training Learning Objective',
     evaluation: 'Evaluation',
-    metrics: 'Metrics',
+    metric: 'Metric - VM Name: Current Score',
   },
   error: {
     none: 'None',
