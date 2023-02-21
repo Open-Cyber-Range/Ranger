@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [package.metadata.deb]
-name = "ranger"
+name = "ranger-server"
 maintainer = "C14 developers <developers@cr14.ee>"
 copyright = "MIT"
 depends = "$auto, systemd"
