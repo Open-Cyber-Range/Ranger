@@ -96,7 +96,7 @@ pub async fn get_exercise_deployment_scores(
 
     let metrics = scenario.metrics.unwrap_or_default();
 
-    let score_elements = condition_messages
+    let mut score_elements = condition_messages
         .iter()
         .map(|condition_message| {
             let mut metric_name: String = Default::default();
@@ -124,37 +124,16 @@ pub async fn get_exercise_deployment_scores(
         })
         .collect::<Vec<_>>();
 
-    let unique_vm_uuids: HashSet<Uuid> = score_elements
-        .clone()
-        .into_iter()
-        .map(|element| element.vm_uuid)
-        .collect();
-
-    let mut vm_names_by_uuid: HashMap<Uuid, String> = Default::default();
-
-    for vm_uuid in unique_vm_uuids {
-        let deployment_element = app_state
-            .database_address
-            .send(GetDeploymentElementByDeploymentIdByHandlerReference(
-                deployment_uuid,
-                vm_uuid.to_string(),
-            ))
-            .await
-            .map_err(create_mailbox_error_handler("Database"))?
-            .map_err(create_database_error_handler("Get deployment element"))?;
-        vm_names_by_uuid.insert(vm_uuid, deployment_element.scenario_reference);
-    }
-
-    let score_elements: Vec<ScoreElement> = score_elements
-        .iter()
-        .map(|element| ScoreElement {
-            vm_name: vm_names_by_uuid
-                .get(&element.vm_uuid)
-                .unwrap_or(&element.vm_uuid.to_string())
-                .to_string(),
-            ..element.clone()
-        })
-        .collect();
+    score_elements = ScoreElement::populate_vm_names(
+        score_elements,
+        app_state.database_address.clone(),
+        deployment_uuid,
+    )
+    .await
+    .map_err(|error| {
+        error!("Failed to populate ScoreElements with VM names: {error}");
+        RangerError::GenericInternalError
+    })?;
 
     Ok(Json(score_elements))
 }
@@ -185,7 +164,7 @@ pub async fn get_exercise_deployment_tlo_evaluation_metric_scores(
         RangerError::ScenarioParsingFailed
     })?;
 
-    let results = ScoreElement::from_condition_messages_by_metric_name(
+    let score_elements_by_metric = ScoreElement::from_condition_messages_by_metric_name(
         exercise_uuid,
         deployment_uuid,
         scenario,
@@ -193,6 +172,41 @@ pub async fn get_exercise_deployment_tlo_evaluation_metric_scores(
         req_metric_name,
     )
     .await;
+    if let Some(score_elements) = score_elements_by_metric {
+        let unique_vm_uuids: HashSet<Uuid> = score_elements
+            .clone()
+            .into_iter()
+            .map(|element| element.vm_uuid)
+            .collect();
 
-    Ok(Json(results))
+        let score_elements = ScoreElement::populate_vm_names(
+            score_elements,
+            app_state.database_address.clone(),
+            deployment_uuid,
+        )
+        .await
+        .map_err(|error| {
+            error!("Failed to populate ScoreElements with VM names: {error}");
+            RangerError::GenericInternalError
+        })?;
+
+        let latest_unique_elements_by_vm_uuid: Option<Vec<ScoreElement>> = unique_vm_uuids
+            .into_iter()
+            .map(|vm_uuid| {
+                score_elements
+                    .clone()
+                    .into_iter()
+                    .filter_map(|element| element.vm_uuid.eq(&vm_uuid).then_some(Some(element)))
+                    .collect::<Option<Vec<ScoreElement>>>()
+                    .and_then(|score_elements| {
+                        score_elements
+                            .into_iter()
+                            .max_by_key(|element| element.created_at)
+                    })
+            })
+            .collect();
+
+        return Ok(Json(latest_unique_elements_by_vm_uuid));
+    }
+    Ok(Json(None))
 }

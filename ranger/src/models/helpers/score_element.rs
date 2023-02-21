@@ -1,10 +1,19 @@
-use crate::models::ConditionMessage;
+use crate::{
+    models::ConditionMessage,
+    services::database::{
+        deployment::GetDeploymentElementByDeploymentIdByHandlerReference, Database,
+    },
+    utilities::{create_database_error_handler, create_mailbox_error_handler},
+};
 
 use super::uuid::Uuid;
+use actix::Addr;
+use anyhow::Result;
 use bigdecimal::BigDecimal;
 use chrono::NaiveDateTime;
 use sdl_parser::{metric::Metrics, Scenario};
 use serde::{Deserialize, Serialize};
+use std::collections::{HashMap, HashSet};
 
 #[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -85,6 +94,44 @@ impl ScoreElement {
             }
         }
         None
+    }
+
+    pub async fn populate_vm_names(
+        score_elements: Vec<ScoreElement>,
+        database_address: Addr<Database>,
+        deployment_uuid: Uuid,
+    ) -> Result<Vec<ScoreElement>> {
+        let unique_vm_uuids: HashSet<Uuid> = score_elements
+            .clone()
+            .into_iter()
+            .map(|element| element.vm_uuid)
+            .collect();
+
+        let mut vm_names_by_uuid: HashMap<Uuid, String> = Default::default();
+
+        for vm_uuid in unique_vm_uuids.clone() {
+            let deployment_element = database_address
+                .send(GetDeploymentElementByDeploymentIdByHandlerReference(
+                    deployment_uuid,
+                    vm_uuid.to_string(),
+                ))
+                .await
+                .map_err(create_mailbox_error_handler("Database"))?
+                .map_err(create_database_error_handler("Get deployment element"))?;
+            vm_names_by_uuid.insert(vm_uuid, deployment_element.scenario_reference);
+        }
+
+        let score_elements: Vec<ScoreElement> = score_elements
+            .iter()
+            .map(|element| ScoreElement {
+                vm_name: vm_names_by_uuid
+                    .get(&element.vm_uuid)
+                    .unwrap_or(&element.vm_uuid.to_string())
+                    .to_string(),
+                ..element.clone()
+            })
+            .collect();
+        Ok(score_elements)
     }
 }
 
