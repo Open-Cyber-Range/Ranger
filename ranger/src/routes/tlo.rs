@@ -2,8 +2,7 @@ use crate::{
     errors::RangerError,
     models::helpers::{score_element::ScoreElement, uuid::Uuid},
     services::database::{
-        condition::GetConditionMessagesByDeploymentId,
-        deployment::{GetDeployment, GetDeploymentElementByDeploymentIdByHandlerReference},
+        condition::GetConditionMessagesByDeploymentId, deployment::GetDeployment,
     },
     utilities::{create_database_error_handler, create_mailbox_error_handler},
     AppState,
@@ -18,7 +17,7 @@ use log::error;
 use sdl_parser::{
     evaluation::Evaluation, parse_sdl, training_learning_objective::TrainingLearningObjectives,
 };
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 
 #[get("exercise/{exercise_uuid}/deployment/{deployment_uuid}/tlo")]
 pub async fn get_exercise_deployment_tlos(

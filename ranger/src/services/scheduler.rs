@@ -24,7 +24,7 @@ impl CreateDeploymentSchedule {
     fn create_node_name(infra_node: &InfraNode, node_name: String, count: u32) -> String {
         match infra_node.count {
             0 | 1 => node_name,
-            _ => format!("{}-{}", node_name, count),
+            _ => format!("{node_name}-{count}"),
         }
     }
 

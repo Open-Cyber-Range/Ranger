@@ -23,7 +23,7 @@ pub fn create_database_error_handler(
 ) -> impl Fn(anyhow::Error) -> RangerError + '_ {
     move |err| {
         error!("{} error: {}", action_name, err);
-        let error_string = format!("{}", err);
+        let error_string = format!("{err}");
         if error_string.contains(FOREIGN_KEY_CONSTRAINT_FAILS) {
             return RangerError::DatabaseConflict;
         } else if error_string.contains(RECORD_NOT_FOUND) {
