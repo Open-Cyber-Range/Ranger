@@ -1,6 +1,7 @@
 import type React from 'react';
 import type {ChartData, ChartDataset} from 'chart.js';
 import {
+  Decimation,
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
@@ -37,6 +38,7 @@ ChartJS.register(
   Legend,
   PointElement,
   LineElement,
+  Decimation,
 );
 
 const FallbackTextWrapper = styled.div`
@@ -88,6 +90,7 @@ const DeploymentDetailsGraph = ({exerciseId, deploymentId}:
           pointBackgroundColor: '#ffffff',
           pointBorderColor: '#808080',
           borderWidth: 1,
+          parsing: false,
           fill: false,
           pointRadius: 1.5,
           data: [],
@@ -107,18 +110,13 @@ const DeploymentDetailsGraph = ({exerciseId, deploymentId}:
     return graphData;
   }
 
-  const groupedScoreElements = groupByMetricNameAndVmName(scoreElements);
-
-  const graphData = intoGraphData(groupedScoreElements);
-
   return (
     <Line
-      data={graphData}
+      data={intoGraphData(groupByMetricNameAndVmName(scoreElements))}
       options={{
         showLine: true,
         animation: false,
         parsing: false,
-
         interaction: {
           mode: 'point',
           axis: 'x',
@@ -132,8 +130,9 @@ const DeploymentDetailsGraph = ({exerciseId, deploymentId}:
 
           decimation: {
             enabled: true,
-            algorithm: 'min-max',
-            threshold: 1,
+            algorithm: 'lttb',
+            threshold: 100,
+            samples: 100,
           },
 
           title: {
