@@ -11,11 +11,9 @@ use crate::services::database::Database;
 use actix::{Actor, Addr};
 use anyhow::Result;
 use configuration::{read_configuration, Configuration};
-use log::{error, info};
 use services::{
     deployer::{DeployerDistribution, DeployerFactory},
     deployment::DeploymentManager,
-    mailer::Mailer,
     scheduler::Scheduler,
     websocket::WebSocketManager,
 };
@@ -76,8 +74,6 @@ pub async fn app_setup(environment_arguments: Vec<String>) -> Result<(String, u1
         })
         .start();
 
-    send_mail(configuration.clone());
-
     let app_state = AppState::new(
         &configuration,
         &deployer_distributor,
@@ -85,16 +81,4 @@ pub async fn app_setup(environment_arguments: Vec<String>) -> Result<(String, u1
         &websocket_manager,
     );
     Ok((configuration.host, configuration.port, app_state))
-}
-
-pub fn send_mail(configuration: Configuration) {
-    if let Some(mailer_configuration) = configuration.mailer_configuration {
-        match Mailer::send_mail(
-            mailer_configuration,
-            "real.person@real-email.com".to_string(),
-        ) {
-            Ok(_) => info!("Mail sent successfully!"),
-            Err(e) => error!("Mailer failed: {:?}", e),
-        }
-    }
 }
