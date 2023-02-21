@@ -117,40 +117,40 @@ pub async fn get_exercise_deployment_scores(
                 exercise_uuid,
                 deployment_uuid,
                 metric_name,
-                condition_message.virtual_machine_id.to_string(),
+                condition_message.virtual_machine_id,
                 condition_message.clone().value * score_multiplier,
                 condition_message.created_at,
             )
         })
         .collect::<Vec<_>>();
 
-    let unique_vm_uuids: HashSet<String> = score_elements
+    let unique_vm_uuids: HashSet<Uuid> = score_elements
         .clone()
         .into_iter()
-        .map(|element| element.vm_name)
+        .map(|element| element.vm_uuid)
         .collect();
 
-    let mut vm_names_by_uuid: HashMap<String, String> = Default::default();
+    let mut vm_names_by_uuid: HashMap<Uuid, String> = Default::default();
 
     for vm_uuid in unique_vm_uuids {
         let deployment_element = app_state
             .database_address
             .send(GetDeploymentElementByDeploymentIdByHandlerReference(
                 deployment_uuid,
-                vm_uuid.to_owned(),
+                vm_uuid.to_string(),
             ))
             .await
             .map_err(create_mailbox_error_handler("Database"))?
             .map_err(create_database_error_handler("Get deployment element"))?;
-        vm_names_by_uuid.insert(vm_uuid.to_owned(), deployment_element.scenario_reference);
+        vm_names_by_uuid.insert(vm_uuid, deployment_element.scenario_reference);
     }
 
     let score_elements: Vec<ScoreElement> = score_elements
         .iter()
         .map(|element| ScoreElement {
             vm_name: vm_names_by_uuid
-                .get(&element.vm_name)
-                .unwrap_or(&element.vm_name)
+                .get(&element.vm_uuid)
+                .unwrap_or(&element.vm_uuid.to_string())
                 .to_string(),
             ..element.clone()
         })

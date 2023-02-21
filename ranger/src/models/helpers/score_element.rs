@@ -15,6 +15,7 @@ pub struct ScoreElement {
     pub deployment_id: Uuid,
     pub metric_name: String,
     pub vm_name: String,
+    pub vm_uuid: Uuid,
     pub value: BigDecimal,
     pub created_at: NaiveDateTime,
 }
@@ -24,7 +25,7 @@ impl ScoreElement {
         exercise_id: Uuid,
         deployment_id: Uuid,
         metric_name: String,
-        vm_name: String,
+        vm_uuid: Uuid,
         value: BigDecimal,
         created_at: NaiveDateTime,
     ) -> Self {
@@ -33,7 +34,8 @@ impl ScoreElement {
             exercise_id,
             deployment_id,
             metric_name,
-            vm_name,
+            vm_name: Default::default(),
+            vm_uuid,
             value,
             created_at,
         }
@@ -73,7 +75,7 @@ impl ScoreElement {
                             exercise_id,
                             deployment_id,
                             requested_metric_name.to_owned(),
-                            condition_message.virtual_machine_id.to_string(),
+                            condition_message.virtual_machine_id,
                             calculated_score,
                             condition_message.created_at,
                         ))
