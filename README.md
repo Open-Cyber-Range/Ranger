@@ -5,6 +5,7 @@ This is an execution runtime project for the cyber range. It's main purpose is t
 ### Developing
 
 Use VSCode and [devcontainers](https://code.visualstudio.com/docs/remote/containers) to develop ranger and automatically have its dependencies deployed.
+The vSphere related dependencies (docker containers) require network access from the users system to vSphere, this may require logging into appropriate VPN's.
 
 Use `cargo install cargo-insta` to have access to snapshot tooling under `cargo insta` command.
 

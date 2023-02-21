@@ -47,6 +47,39 @@ services:
       - ./deputy:/root/.deputy
     restart: unless-stopped
 
+  real-ranger-vmware-machiner:
+    image: nexus.ocr.cr14.net:8003/ranger-vmware-machiner:latest
+    volumes:
+      - ../handler-configs/real-ranger-vmware-machiner.yml:/etc/opt/ranger/ranger-vmware-machiner/config.yml
+    restart: unless-stopped
+
+  real-ranger-vmware-switcher:
+    image: nexus.ocr.cr14.net:8003/ranger-vmware-switcher:latest
+    volumes:
+      - ../handler-configs/real-ranger-vmware-switcher.yml:/etc/opt/ranger/ranger-vmware-switcher/config.yml
+    restart: unless-stopped
+
+  real-ranger-vmware-templater:
+    image: nexus.ocr.cr14.net:8003/ranger-vmware-templater:latest
+    volumes:
+      - ../handler-configs/real-ranger-vmware-templater.yml:/etc/opt/ranger/ranger-vmware-templater/config.yml
+      - ./deputy:/root/.deputy
+    restart: unless-stopped
+  
+  real-ranger-vmware-executor:
+    image: nexus.ocr.cr14.net:8003/ranger-vmware-executor:latest
+    volumes:
+      - ../handler-configs/real-ranger-vmware-executor.yml:/etc/opt/ranger/ranger-vmware-templater/config.yml
+      - ./deputy:/root/.deputy
+    restart: unless-stopped
+
+  ranger-redis-server:
+    image: nexus.ocr.cr14.net:8003/featurer-redis-server
+    restart: always
+    command: ["redis-server", "/etc/redis/redis.conf"]
+    volumes:
+      - ../handler-configs/ranger-redis-config.conf:/etc/redis/redis.conf
+
   mariadb:
     image: nexus.ocr.cr14.net:8003/mariadb:10.7
     volumes:
