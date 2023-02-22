@@ -22,6 +22,8 @@ const TloTable = ({exerciseId, deploymentId, tloMap}:
     return null;
   }
 
+  const sortedTloNames = Object.keys(tloMap).sort((a, b) => (a > b ? 1 : -1));
+
   return (
     <Wrapper>
       <table className='
@@ -38,7 +40,7 @@ const TloTable = ({exerciseId, deploymentId, tloMap}:
         <tbody>
           {(() => {
             const rows = [];
-            for (const tloName in tloMap) {
+            for (const tloName of sortedTloNames) {
               if (tloMap[tloName]) {
                 rows.push(
                   <TloRow
