@@ -13,9 +13,15 @@ pub async fn send_email(
 ) -> Result<Json<Email>, RangerError> {
     let email = email.into_inner();
     let mailer_configuration = app_state.configuration.mailer_configuration.clone();
+
     if let Some(mailer_configuration) = mailer_configuration {
-        let message = email.create_message();
         let mailer = Mailer::new(mailer_configuration);
+
+        let message = email.create_message().map_err(|error| {
+            error!("Failed to create message: {error}");
+            RangerError::EmailMessageCreationFailed
+        })?;
+
         match mailer.send_message(message) {
             Ok(_) => info!("Mail sent successfully!"),
             Err(e) => error!("Mailer failed: {:?}", e),
@@ -23,5 +29,6 @@ pub async fn send_email(
     } else {
         return Err(RangerError::MailerConfigurationNotFound);
     }
+
     Ok(Json(email))
 }
