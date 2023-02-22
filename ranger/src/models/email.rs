@@ -1,4 +1,4 @@
-use lettre::Message;
+use lettre::{error::Error, Message};
 use serde::{Deserialize, Serialize};
 
 use super::helpers::uuid::Uuid;
@@ -15,12 +15,12 @@ pub struct Email {
 }
 
 impl Email {
-    pub fn create_message(&self) -> Message {
-        Message::builder()
+    pub fn create_message(&self) -> Result<Message, Error> {
+        Ok(Message::builder()
             .from(self.from_address.parse().unwrap())
             .to(self.to_address.parse().unwrap())
             .subject(self.subject.clone())
             .body(self.body.clone())
-            .unwrap()
+            .unwrap())
     }
 }

@@ -31,6 +31,8 @@ pub enum RangerError {
     DatabaseRecordNotFound,
     #[error("Mailer configuration not found")]
     MailerConfigurationNotFound,
+    #[error("Failed to create email message")]
+    EmailMessageCreationFailed,
 }
 
 impl ResponseError for RangerError {
