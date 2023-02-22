@@ -20,6 +20,8 @@ pub async fn send_email(
             Ok(_) => info!("Mail sent successfully!"),
             Err(e) => error!("Mailer failed: {:?}", e),
         }
+    } else {
+        return Err(RangerError::MailerConfigurationNotFound);
     }
     Ok(Json(email))
 }
