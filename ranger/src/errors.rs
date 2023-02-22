@@ -33,6 +33,8 @@ pub enum RangerError {
     MailerConfigurationNotFound,
     #[error("Failed to create email message")]
     EmailMessageCreationFailed,
+    #[error("Failed to send email")]
+    EmailSendingFailed,
 }
 
 impl ResponseError for RangerError {
