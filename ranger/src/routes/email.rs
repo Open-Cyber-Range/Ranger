@@ -4,7 +4,7 @@ use actix_web::{
     web::{Data, Json},
 };
 use anyhow::Result;
-use log::{error, info};
+use log::error;
 
 #[post("exercise/{exercise_uuid}/email")]
 pub async fn send_email(
@@ -22,10 +22,10 @@ pub async fn send_email(
             RangerError::EmailMessageCreationFailed
         })?;
 
-        match mailer.send_message(message) {
-            Ok(_) => info!("Mail sent successfully!"),
-            Err(e) => error!("Mailer failed: {:?}", e),
-        }
+        mailer.send_message(message).map_err(|error| {
+            error!("Failed to send email: {error}");
+            RangerError::EmailSendingFailed
+        })?;
     } else {
         return Err(RangerError::MailerConfigurationNotFound);
     }
