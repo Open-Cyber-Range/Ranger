@@ -7,7 +7,7 @@ deployers:
   real-machiner-deployer: http://real-ranger-vmware-machiner:10002
   real-switch-deployer: http://real-ranger-vmware-switcher:10003
   real-template-deployer: http://real-ranger-vmware-templater:10001
-  real-executor-deployer: http://real-ranger-vmware-executor:10004
+  # real-executor-deployer: http://real-ranger-vmware-executor:10004
 
 default_deployment_group: real-deal-deployment-group
 deployment_groups:
@@ -19,5 +19,5 @@ deployment_groups:
     - real-machiner-deployer
     - real-switch-deployer
     - real-template-deployer
-    - real-executor-deployer
+    # - real-executor-deployer
 database_url: mysql://mysql_user:mysql_pass@mariadb:3306/ranger
