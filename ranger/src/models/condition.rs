@@ -1,5 +1,6 @@
 use super::helpers::uuid::Uuid;
 use crate::{
+    constants::DELETED_AT_DEFAULT_VALUE,
     schema::condition_messages,
     services::database::{All, Create, FilterExisting, SelectById, SoftDeleteById},
 };
@@ -46,7 +47,7 @@ pub struct ConditionMessage {
     pub condition_id: Uuid,
     pub value: BigDecimal,
     pub created_at: NaiveDateTime,
-    pub deleted_at: Option<NaiveDateTime>,
+    pub deleted_at: NaiveDateTime,
 }
 
 impl ConditionMessage {
@@ -56,7 +57,8 @@ impl ConditionMessage {
 
     pub fn all(
     ) -> FilterExisting<All<condition_messages::table, Self>, condition_messages::deleted_at> {
-        Self::all_with_deleted().filter(condition_messages::deleted_at.is_null())
+        Self::all_with_deleted()
+            .filter(condition_messages::deleted_at.eq(*DELETED_AT_DEFAULT_VALUE))
     }
 
     pub fn by_id(
