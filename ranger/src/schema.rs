@@ -10,7 +10,7 @@ diesel::table! {
         exercise_id -> Binary,
         created_at -> Timestamp,
         updated_at -> Timestamp,
-        deleted_at -> Nullable<Timestamp>,
+        deleted_at -> Timestamp,
     }
 }
 
@@ -21,7 +21,7 @@ diesel::table! {
         condition_id -> Binary,
         value -> Decimal,
         created_at -> Timestamp,
-        deleted_at -> Nullable<Timestamp>,
+        deleted_at -> Timestamp,
     }
 }
 
@@ -35,7 +35,7 @@ diesel::table! {
         status -> Tinytext,
         executor_log -> Nullable<Mediumtext>,
         created_at -> Timestamp,
-        deleted_at -> Nullable<Timestamp>,
+        deleted_at -> Timestamp,
     }
 }
 
@@ -48,7 +48,7 @@ diesel::table! {
         exercise_id -> Binary,
         created_at -> Timestamp,
         updated_at -> Timestamp,
-        deleted_at -> Nullable<Timestamp>,
+        deleted_at -> Timestamp,
     }
 }
 
@@ -59,7 +59,7 @@ diesel::table! {
         sdl_schema -> Nullable<Longtext>,
         created_at -> Timestamp,
         updated_at -> Timestamp,
-        deleted_at -> Nullable<Timestamp>,
+        deleted_at -> Timestamp,
     }
 }
 
@@ -88,7 +88,7 @@ diesel::table! {
         value -> Decimal,
         created_at -> Timestamp,
         updated_at -> Timestamp,
-        deleted_at -> Nullable<Timestamp>,
+        deleted_at -> Timestamp,
     }
 }
 
