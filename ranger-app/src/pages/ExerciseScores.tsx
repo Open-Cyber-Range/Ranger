@@ -9,6 +9,7 @@ import styled from 'styled-components';
 import DeploymentScoresTable from
   'src/components/ExerciseScores/ScoresTable/DeploymentScoresTable';
 import {sortByUpdatedAtDescending} from 'src/utils';
+import BackButton from 'src/components/BackButton';
 
 const Wrapper = styled.div`
   display: flex;
@@ -34,6 +35,7 @@ const ExerciseScores = () => {
   if (!deployments || !exerciseId) {
     return (
       <FallbackTextWrapper>
+        <BackButton/>
         {t('exercises.noDeployments')}
       </FallbackTextWrapper>
     );
@@ -41,6 +43,7 @@ const ExerciseScores = () => {
 
   return (
     <PageHolder>
+      <BackButton/>
       <Wrapper>
         <h1>{exercise?.name ?? ''}</h1>
         <DeploymentScoresTable

@@ -10,6 +10,7 @@ import {definedOrSkipToken} from 'src/utils';
 import DeploymentDetailsGraph from 'src/components/DeploymentDetails/Graph';
 import TloTable from 'src/components/DeploymentDetails/TloTable/TloTable';
 import {useTranslation} from 'react-i18next';
+import BackButton from 'src/components/BackButton';
 
 const FallbackTextWrapper = styled.div`
   display: flex;
@@ -30,6 +31,7 @@ const DeploymentDetail = () => {
   if (exerciseId && deploymentId) {
     return (
       <PageHolder>
+        <BackButton/>
         <DeploymentDetailsGraph
           exerciseId={exerciseId}
           deploymentId={deploymentId}
