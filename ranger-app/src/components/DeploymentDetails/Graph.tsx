@@ -56,6 +56,9 @@ const DeploymentDetailsGraph = ({exerciseId, deploymentId}:
   deploymentId: string | undefined;
 }) => {
   const {t} = useTranslation();
+  const xAxisTitle = t('chart.xAxisTitle');
+  const yAxisTitle = t('chart.yAxisTitle');
+  const chartTitle = t('chart.title');
   const {data: scoreElements} = useGetDeploymentScoresQuery(
     definedOrSkipToken(exerciseId, deploymentId));
 
@@ -137,21 +140,37 @@ const DeploymentDetailsGraph = ({exerciseId, deploymentId}:
 
           title: {
             display: true,
-            text: 'Score',
+            text: chartTitle,
           },
         },
         responsive: true,
         clip: false,
         scales: {
           y: {
+            title: {
+              display: true,
+              text: yAxisTitle,
+            },
             min: 0,
           },
           x: {
+            title: {
+              display: true,
+              text: xAxisTitle,
+            },
             ticks: {
               source: 'auto',
               maxRotation: 0,
             },
             type: 'time',
+            time: {
+              displayFormats: {
+                hour: 'HH',
+                minute: 'HH:mm',
+                second: 'HH:mm:ss',
+                millisecond: 'HH:mm:ss.SSS',
+              },
+            },
           },
         },
       }}/>

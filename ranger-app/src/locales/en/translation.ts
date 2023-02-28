@@ -102,6 +102,11 @@ const language = {
     evaluation: 'Evaluation',
     metric: 'Metric - VM Name: Current Score',
   },
+  chart: {
+    title: 'Score',
+    xAxisTitle: 'Time',
+    yAxisTitle: 'Points',
+  },
   error: {
     none: 'None',
     noScoreData: 'No score data to display graph',
