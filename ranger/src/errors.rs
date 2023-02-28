@@ -48,6 +48,7 @@ impl ResponseError for RangerError {
             RangerError::ScenarioParsingFailed => StatusCode::UNPROCESSABLE_ENTITY,
             RangerError::DatabaseConflict => StatusCode::CONFLICT,
             RangerError::DatabaseRecordNotFound => StatusCode::NOT_FOUND,
+            RangerError::MailerConfigurationNotFound => StatusCode::NOT_FOUND,
             _ => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
