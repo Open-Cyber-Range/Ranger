@@ -16,14 +16,14 @@ impl Mailer {
     }
 
     pub fn send_message(&self, message: Message) -> Result<Response, Error> {
-        let creds = Credentials::new(
+        let credentials = Credentials::new(
             self.configuration.username.clone(),
             self.configuration.password.clone(),
         );
 
         let client = SmtpTransport::starttls_relay(&self.configuration.server_address)
             .unwrap()
-            .credentials(creds)
+            .credentials(credentials)
             .build();
 
         client.send(&message)
