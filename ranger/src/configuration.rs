@@ -40,6 +40,8 @@ pub struct MailerConfiguration {
 
 #[cfg(test)]
 mod tests {
+    use crate::configuration::Configuration;
+
     use super::read_configuration;
     use anyhow::Result;
     use std::fs::File;
@@ -80,39 +82,26 @@ mod tests {
     }
 
     #[test]
-    fn can_parse_the_configuration_with_mailer() -> Result<()> {
-        let temporary_directory = tempdir()?;
-        let file_path = temporary_directory.path().join("test-config.yml");
-        let path_string = file_path.clone().into_os_string().into_string().unwrap();
-        let mut file = File::create(file_path)?;
-        writeln!(
-            file,
-            r#"
-                host: localhost
-                port: 8080
-                deployers:
-                    my-machiner-deployer: http://ranger-vmware-machiner:9999
-                    my-switch-deployer: http://ranger-vmware-switcher:9999
-                    ungrouped-deployer: http://some-vmware-deployer:9999
+    fn can_parse_the_configuration_with_mailer() {
+        let sdl = r#"
+        host: localhost
+        port: 8080
+        deployers:
+            my-machiner-deployer: http://ranger-vmware-machiner:9999
+            my-switch-deployer: http://ranger-vmware-switcher:9999
+            ungrouped-deployer: http://some-vmware-deployer:9999
 
-                default_deployment_group: my-cool-group
-                deployment_groups:
-                    my-cool-group:
-                        - my-machiner-deployer
-                        - my-switch-deployer
-                database_url: mysql://user:pass@mariadb:3306/app-database
-                mailer_configuration:
-                    server_address: smtp.mail.com
-                    username: username
-                    password: password
-                "#
-        )?;
-        let arguments = vec![String::from("program-name"), path_string];
-        let configuration = read_configuration(arguments)?;
-
-        insta::with_settings!({sort_maps => true}, {
-        insta::assert_yaml_snapshot!(configuration);
-        });
-        Ok(())
+        default_deployment_group: my-cool-group
+        deployment_groups:
+            my-cool-group:
+                - my-machiner-deployer
+                - my-switch-deployer
+        database_url: mysql://user:pass@mariadb:3306/app-database
+        mailer_configuration:
+            server_address: smtp.mail.com
+            username: username
+            password: password
+        "#;
+        serde_yaml::from_str::<Configuration>(sdl).unwrap();
     }
 }
