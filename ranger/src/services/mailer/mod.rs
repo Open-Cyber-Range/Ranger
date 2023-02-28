@@ -21,8 +21,7 @@ impl Mailer {
             self.configuration.password.clone(),
         );
 
-        let client = SmtpTransport::starttls_relay(&self.configuration.server_address)
-            .unwrap()
+        let client = SmtpTransport::starttls_relay(&self.configuration.server_address)?
             .credentials(credentials)
             .build();
 
