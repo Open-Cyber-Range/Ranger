@@ -7,9 +7,10 @@ pub(crate) mod score;
 use crate::{models::helpers::uuid::Uuid, utilities::run_migrations};
 use actix::{Actor, Addr};
 use anyhow::{anyhow, Result};
+use chrono::NaiveDateTime;
 use diesel::{
     dsl::now,
-    helper_types::{AsSelect, Eq, Filter, IsNull, Select, Update},
+    helper_types::{AsSelect, Eq, Filter, Select, Update},
     mysql::{Mysql, MysqlConnection},
     query_builder::{InsertOrIgnoreStatement, InsertStatement},
     r2d2::{ConnectionManager, Pool, PooledConnection},
@@ -21,7 +22,8 @@ use super::websocket::WebSocketManager;
 sql_function! (fn current_timestamp() -> Timestamp);
 
 pub type All<Table, T> = Select<Table, AsSelect<T, Mysql>>;
-pub type FilterExisting<Target, DeletedAtColumn> = Filter<Target, IsNull<DeletedAtColumn>>;
+pub type FilterExisting<Target, DeletedAtColumn> =
+    Filter<Target, Eq<DeletedAtColumn, NaiveDateTime>>;
 pub type ById<Id, R> = Filter<R, Eq<Id, Uuid>>;
 pub type ByTemplateId<TemplateId, R> = Filter<R, Eq<TemplateId, Uuid>>;
 pub type ByUsername<Username, R> = Filter<R, Eq<Username, String>>;
