@@ -6,4 +6,4 @@ config.yml
 /.devcontainer/configs/ranger-vmware-node-deployer.yml
 
 # ignores for devcontainer database
-/.devcontainer/ranger-database
+/.devcontainer/mariadb/*
