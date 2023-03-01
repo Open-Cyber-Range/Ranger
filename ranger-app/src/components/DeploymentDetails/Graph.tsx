@@ -14,7 +14,10 @@ import {
   TimeScale,
 } from 'chart.js';
 import {Line} from 'react-chartjs-2';
-import {useGetDeploymentScoresQuery} from 'src/slices/apiSlice';
+import {
+  useGetDeploymentScoresQuery,
+  useGetDeploymentStartTimeandEndTimeQuery,
+} from 'src/slices/apiSlice';
 import styled from 'styled-components';
 import type {ScoreElement} from 'src/models/tlo';
 import {
@@ -60,6 +63,8 @@ const DeploymentDetailsGraph = ({exerciseId, deploymentId}:
   const yAxisTitle = t('chart.yAxisTitle');
   const chartTitle = t('chart.title');
   const {data: scoreElements} = useGetDeploymentScoresQuery(
+    definedOrSkipToken(exerciseId, deploymentId));
+  const {data: deploymentTimeRange} = useGetDeploymentStartTimeandEndTimeQuery(
     definedOrSkipToken(exerciseId, deploymentId));
 
   if (!scoreElements || scoreElements.length === 0) {
@@ -144,7 +149,6 @@ const DeploymentDetailsGraph = ({exerciseId, deploymentId}:
           },
         },
         responsive: true,
-        clip: false,
         scales: {
           y: {
             title: {
@@ -158,17 +162,17 @@ const DeploymentDetailsGraph = ({exerciseId, deploymentId}:
               display: true,
               text: xAxisTitle,
             },
+            min: deploymentTimeRange?.startTime,
+            max: deploymentTimeRange?.endTime,
             ticks: {
               source: 'auto',
-              maxRotation: 0,
             },
             type: 'time',
             time: {
               displayFormats: {
-                hour: 'HH',
+                hour: 'HH:mm',
                 minute: 'HH:mm',
                 second: 'HH:mm:ss',
-                millisecond: 'HH:mm:ss.SSS',
               },
             },
           },

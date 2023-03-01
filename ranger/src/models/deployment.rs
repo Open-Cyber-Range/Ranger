@@ -8,7 +8,7 @@ use crate::{
     },
     utilities::Validation,
 };
-use chrono::NaiveDateTime;
+use chrono::{DateTime, NaiveDateTime, Utc};
 use diesel::{
     helper_types::{Eq, Filter},
     sql_types::Text,
@@ -19,6 +19,13 @@ use ranger_grpc::capabilities::DeployerTypes;
 use serde::{Deserialize, Serialize};
 
 use super::helpers::{deployer_type::DeployerType, uuid::Uuid};
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DeploymentTimeRange {
+    pub start_time: DateTime<Utc>,
+    pub end_time: DateTime<Utc>,
+}
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
