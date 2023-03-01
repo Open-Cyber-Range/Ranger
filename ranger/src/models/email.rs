@@ -1,7 +1,5 @@
-use lettre::Message;
+use lettre::{address::AddressError, Message};
 use serde::{Deserialize, Serialize};
-
-use crate::errors::RangerError;
 
 use super::helpers::uuid::Uuid;
 
@@ -37,20 +35,10 @@ impl Email {
         }
     }
 
-    pub fn create_message(&self) -> Result<Message, RangerError> {
-        let from_address = match self.from_address.parse() {
-            Ok(from_address) => from_address,
-            Err(_) => return Err(RangerError::EmailMessageCreationFailed),
-        };
-
-        let to_address = match self.to_address.parse() {
-            Ok(to_address) => to_address,
-            Err(_) => return Err(RangerError::EmailMessageCreationFailed),
-        };
-
+    pub fn create_message(&self) -> Result<Message, AddressError> {
         Ok(Message::builder()
-            .from(from_address)
-            .to(to_address)
+            .from(self.from_address.parse()?)
+            .to(self.to_address.parse()?)
             .subject(self.subject.clone())
             .body(self.body.clone())
             .unwrap())
