@@ -22,7 +22,7 @@ pub async fn send_email(
 
     if let Some(mailer_configuration) = mailer_configuration {
         let mailer = Mailer::new(mailer_configuration.clone());
-        email = Email::new(email_resource, mailer_configuration.username);
+        email = Email::new(email_resource, mailer_configuration.from_address);
 
         let message = email.create_message().map_err(|error| {
             error!("Failed to create message: {error}");

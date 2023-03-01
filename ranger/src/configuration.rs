@@ -36,6 +36,7 @@ pub struct MailerConfiguration {
     pub server_address: String,
     pub username: String,
     pub password: String,
+    pub from_address: String,
 }
 
 #[cfg(test)]
@@ -101,6 +102,7 @@ mod tests {
             server_address: smtp.mail.com
             username: username
             password: password
+            from_address: address
         "#;
         serde_yaml::from_str::<Configuration>(sdl).unwrap();
     }
