@@ -13,4 +13,4 @@ deployment_groups:
     - my-switch-deployer
     - my-template-deployer
     - my-executor-deployer
-database_url: mysql://mysql_user:mysql_pass@deputy-package-server-repository-combo:3306/deputy
+database_url: mysql://mysql_user:mysql_pass@mariadb:3306/ranger
