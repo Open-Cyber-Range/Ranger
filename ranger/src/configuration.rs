@@ -19,6 +19,7 @@ pub struct Configuration {
     pub default_deployment_group: String,
     pub deployment_groups: DeploymentGroupMap,
     pub database_url: String,
+    pub mailer_configuration: Option<MailerConfiguration>,
 }
 
 pub fn read_configuration(arguments: Vec<String>) -> Result<Configuration> {
@@ -30,8 +31,18 @@ pub fn read_configuration(arguments: Vec<String>) -> Result<Configuration> {
     Ok(serde_yaml::from_str(&configuration_string)?)
 }
 
+#[derive(Debug, Default, Serialize, Deserialize, Clone)]
+pub struct MailerConfiguration {
+    pub server_address: String,
+    pub username: String,
+    pub password: String,
+    pub from_address: String,
+}
+
 #[cfg(test)]
 mod tests {
+    use crate::configuration::Configuration;
+
     use super::read_configuration;
     use anyhow::Result;
     use std::fs::File;
@@ -69,5 +80,30 @@ mod tests {
         insta::assert_yaml_snapshot!(configuration);
         });
         Ok(())
+    }
+
+    #[test]
+    fn can_parse_the_configuration_with_mailer() {
+        let sdl = r#"
+        host: localhost
+        port: 8080
+        deployers:
+            my-machiner-deployer: http://ranger-vmware-machiner:9999
+            my-switch-deployer: http://ranger-vmware-switcher:9999
+            ungrouped-deployer: http://some-vmware-deployer:9999
+
+        default_deployment_group: my-cool-group
+        deployment_groups:
+            my-cool-group:
+                - my-machiner-deployer
+                - my-switch-deployer
+        database_url: mysql://user:pass@mariadb:3306/app-database
+        mailer_configuration:
+            server_address: smtp.mail.com
+            username: username
+            password: password
+            from_address: address
+        "#;
+        serde_yaml::from_str::<Configuration>(sdl).unwrap();
     }
 }

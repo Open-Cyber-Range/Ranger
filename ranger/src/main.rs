@@ -3,6 +3,7 @@ use actix_web::{web::Data, App, HttpServer};
 use anyhow::Error;
 use ranger::app_setup;
 use ranger::routes::deployers::get_deployers;
+use ranger::routes::email::send_email;
 use ranger::routes::exercise::{
     delete_exercise_deployment, get_deployment_entities, get_exercise,
     get_exercise_deployment_elements, get_exercise_deployment_tlo_evaluation,
@@ -42,7 +43,8 @@ async fn main() -> Result<(), Error> {
                     .service(get_deployment_entities)
                     .service(get_exercise_deployment_tlos)
                     .service(get_exercise_deployment_tlo_evaluation)
-                    .service(get_exercise_deployment_tlo_evaluation_metric_scores),
+                    .service(get_exercise_deployment_tlo_evaluation_metric_scores)
+                    .service(send_email),
             )
     })
     .bind((host, port))?
