@@ -69,7 +69,7 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - ./ranger-database:/var/lib/mysql
+      - ./mariadb:/var/lib/mysql
     environment:
       - MYSQL_ROOT_PASSWORD=mysql_root
       - MYSQL_PASSWORD=mysql_pass
