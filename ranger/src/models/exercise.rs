@@ -1,6 +1,6 @@
 use super::helpers::uuid::Uuid;
 use crate::{
-    constants::MAX_EXERCISE_NAME_LENGTH,
+    constants::{DELETED_AT_DEFAULT_VALUE, MAX_EXERCISE_NAME_LENGTH},
     errors::RangerError,
     schema::exercises,
     services::database::{All, Create, FilterExisting, SelectById, SoftDeleteById, UpdateById},
@@ -57,7 +57,7 @@ impl Exercise {
     }
 
     pub fn all() -> FilterExisting<All<exercises::table, Self>, exercises::deleted_at> {
-        Self::all_with_deleted().filter(exercises::deleted_at.is_null())
+        Self::all_with_deleted().filter(exercises::deleted_at.eq(*DELETED_AT_DEFAULT_VALUE))
     }
 
     pub fn by_id(
@@ -89,7 +89,7 @@ impl UpdateExercise {
     ) -> UpdateById<exercises::id, exercises::deleted_at, exercises::table, &Self> {
         diesel::update(exercises::table)
             .filter(exercises::id.eq(id))
-            .filter(exercises::deleted_at.is_null())
+            .filter(exercises::deleted_at.eq(*DELETED_AT_DEFAULT_VALUE))
             .set(self)
     }
 }

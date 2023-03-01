@@ -58,7 +58,7 @@ services:
   featurer-redis-server:
     image: nexus.ocr.cr14.net:8003/featurer-redis-server
     restart: always
-    command: ["redis-server", "/etc/redis/redis.conf"]
+    command: [ "redis-server", "/etc/redis/redis.conf" ]
     ports:
       - 6381:6381
     volumes:
