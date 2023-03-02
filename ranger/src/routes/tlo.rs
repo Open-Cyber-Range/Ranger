@@ -131,7 +131,7 @@ pub async fn get_exercise_deployment_scores(
     .await
     .map_err(|error| {
         error!("Failed to populate ScoreElements with VM names: {error}");
-        RangerError::GenericInternalError
+        RangerError::DatabaseUnexpected
     })?;
 
     Ok(Json(score_elements))
@@ -186,7 +186,7 @@ pub async fn get_exercise_deployment_tlo_evaluation_metric_scores(
         .await
         .map_err(|error| {
             error!("Failed to populate ScoreElements with VM names: {error}");
-            RangerError::GenericInternalError
+            RangerError::DatabaseUnexpected
         })?;
 
         let latest_unique_elements_by_vm_uuid: Option<Vec<ScoreElement>> = unique_vm_uuids
