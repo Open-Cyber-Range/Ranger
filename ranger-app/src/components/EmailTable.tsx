@@ -47,12 +47,17 @@ const dummyEmails: Email[] = [
 
 const emailIntent = (status: EmailStatus): Intent => {
   switch (status) {
-    case EmailStatus.Delivered:
+    case EmailStatus.Delivered: {
       return Intent.SUCCESS;
-    case EmailStatus.Bounced:
+    }
+
+    case EmailStatus.Bounced: {
       return Intent.WARNING;
-    default:
+    }
+
+    default: {
       return Intent.PRIMARY;
+    }
   }
 };
 
