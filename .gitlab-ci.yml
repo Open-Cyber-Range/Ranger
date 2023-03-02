@@ -6,7 +6,7 @@ stages:
 variables:
   GIT_SUBMODULE_STRATEGY: normal
 
-lint-and-test:
+lint-and-test-backend:
   stage: build
   image: $DOCKER_REGISTRY_PULL/rust-builder
   before_script:
@@ -26,12 +26,26 @@ lint-and-test:
     - master
     - merge_requests
 
-build-frontend:
+lint-and-test-frontend:
   stage: build
-  needs: ["lint-and-test"]
   image: $DOCKER_REGISTRY_PULL/frontend-builder
   script:
     - cd ranger-app
+    - yarn
+    - yarn lint
+  only:
+    - develop
+    - master
+    - merge_requests
+
+build-frontend:
+  stage: build
+  needs: ["lint-and-test-backend", "lint-and-test-frontend"]
+  image: $DOCKER_REGISTRY_PULL/frontend-builder
+  script:
+    - cd ranger-app
+    - touch .env.production.local
+    - echo $OCR_RANGER_UI_ENV >> .env.production.local
     - yarn
     - yarn build
   artifacts:
@@ -44,7 +58,7 @@ build-and-upload-x86-64bit-linux-release-for-ranger:
   stage: build
   dependencies:
     - build-frontend
-  needs: ["lint-and-test", "build-frontend"]
+  needs: ["build-frontend"]
   image: $DOCKER_REGISTRY_PULL/rust-builder
   before_script:
     - git config --global url."https://gitlab+deploy-token-2:${OCR_DEPLOY_TOKEN_PASSWORD}@code.ocr.cr14.net/open-cyber-range/public/sdl-parser.git/".insteadOf "ssh://git@code.ocr.cr14.net/open-cyber-range/public/sdl-parser"

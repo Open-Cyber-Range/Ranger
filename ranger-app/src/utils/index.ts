@@ -34,4 +34,4 @@ export const getWebsocketBase = () => {
 };
 
 export const isDevelopment = () =>
-  process.env.NODE_ENV || process.env.NODE_ENV === 'development';
+  import.meta.env.DEV;
