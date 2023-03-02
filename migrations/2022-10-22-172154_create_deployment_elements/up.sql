@@ -7,7 +7,7 @@ CREATE TABLE deployment_elements (
   status TINYTEXT NOT NULL,
   executor_log MEDIUMTEXT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  deleted_at TIMESTAMP NOT NULL DEFAULT '1970-01-01 00:00:01',
+  deleted_at TIMESTAMP NULL DEFAULT NULL,
   PRIMARY KEY (id),
   FOREIGN KEY (deployment_id) REFERENCES deployments(id),
   CONSTRAINT unique_references UNIQUE (
