@@ -64,21 +64,6 @@ diesel::table! {
 }
 
 diesel::table! {
-    packages (id) {
-        id -> Binary,
-        name -> Tinytext,
-        version -> Tinytext,
-        license -> Text,
-        readme -> Mediumtext,
-        readme_html -> Longtext,
-        checksum -> Text,
-        created_at -> Timestamp,
-        updated_at -> Timestamp,
-        deleted_at -> Nullable<Timestamp>,
-    }
-}
-
-diesel::table! {
     scores (id) {
         id -> Binary,
         exercise_id -> Binary,
@@ -105,6 +90,5 @@ diesel::allow_tables_to_appear_in_same_query!(
     deployment_elements,
     deployments,
     exercises,
-    packages,
     scores,
 );
