@@ -4,7 +4,7 @@ CREATE TABLE condition_messages (
     condition_id BINARY(16) NOT NULL,
     value DECIMAL(18, 17) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP NOT NULL DEFAULT '1970-01-01 00:00:01',
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
     PRIMARY KEY (id),
     FOREIGN KEY (deployment_id) REFERENCES deployments(id)
 )
