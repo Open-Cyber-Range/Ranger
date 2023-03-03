@@ -1,10 +1,12 @@
-import Keycloak from 'keycloak-js';
-import {isDevelopment} from 'src/utils';
 
-const keycloak = new Keycloak(isDevelopment() ? {
-  url: 'http://localhost:8080',
-  realm: 'OCR',
-  clientId: 'ranger-ui',
-} : undefined);
+import Keycloak from 'keycloak-js';
+
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+const keycloak = new Keycloak({
+  url: import.meta.env.VITE_KEYCLOAK_URL,
+  realm: import.meta.env.VITE_KEYCLOAK_REALM,
+  clientId: import.meta.env.VITE_KEYCLOAK_CLIENT_ID,
+});
+/* eslint-enable @typescript-eslint/no-unsafe-assignment */
 
 export default keycloak;

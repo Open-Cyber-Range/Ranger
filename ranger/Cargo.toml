@@ -25,18 +25,8 @@ assets = [
     "644",
   ],
   [
-    "../ranger-app/build/static/css/*",
-    "/etc/opt/ranger/ranger-app/static/css",
-    "644",
-  ],
-  [
-    "../ranger-app/build/static/js/*",
-    "/etc/opt/ranger/ranger-app/static/js",
-    "644",
-  ],
-  [
-    "../ranger-app/build/static/media/*",
-    "/etc/opt/ranger/ranger-app/static/media",
+    "../ranger-app/build/assets/*",
+    "/etc/opt/ranger/ranger-app/assets",
     "644",
   ],
   [
