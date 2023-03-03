@@ -7,15 +7,22 @@ import {ElementStatus} from 'src/models/deployment';
 const loadingIntent = (status: ElementStatus): Intent => {
   switch (status) {
     case ElementStatus.Success:
-    case ElementStatus.Removed:
+    case ElementStatus.Removed: {
       return Intent.SUCCESS;
-    case ElementStatus.Ongoing:
+    }
+
+    case ElementStatus.Ongoing: {
       return Intent.WARNING;
+    }
+
     case ElementStatus.Failed:
-    case ElementStatus.RemoveFailed:
+    case ElementStatus.RemoveFailed: {
       return Intent.DANGER;
-    default:
+    }
+
+    default: {
       return Intent.WARNING;
+    }
   }
 };
 
