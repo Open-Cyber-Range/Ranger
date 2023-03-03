@@ -7,9 +7,6 @@ variables:
   GIT_SUBMODULE_STRATEGY: normal
   DOCKER_TLS_CERTDIR: "/certs"
 
-services:
-  - docker:20.10.17-dind
-
 lint-and-test-backend:
   stage: test
   image: $DOCKER_REGISTRY_PULL/rust-builder
@@ -76,6 +73,8 @@ build-and-upload-x86-64bit-linux-release-for-ranger:
 
 staging:
   stage: deploy
+  services:
+    - docker:20.10.17-dind
   needs: ["build-and-upload-x86-64bit-linux-release-for-ranger"]
   image: $DOCKER_REGISTRY_PULL/docker:20.10.17
   script:
