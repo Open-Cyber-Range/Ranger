@@ -74,6 +74,8 @@ staging:
   stage: deploy
   needs: ["build-and-upload-x86-64bit-linux-release-for-ranger"]
   script:
+    - docker info
+    - echo "$OCR_DEPLOYMENT_PASSWORD" | docker login $DOCKER_REGISTRY --username $OCR_DEPLOYMENT_USER --password-stdin
     - docker pull $DOCKER_REGISTRY/ranger-server:latest
     - docker build -t ranger-server ./docker
     - docker tag ranger-server:latest $DOCKER_REGISTRY/ranger-server:latest
