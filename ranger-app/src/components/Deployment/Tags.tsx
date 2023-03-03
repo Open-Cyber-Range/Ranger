@@ -19,17 +19,24 @@ const countNodesByType = (deploymentElements: DeploymentElement[]) => {
 
   for (const element of deploymentElements) {
     switch (element.deployerType) {
-      case (DeployerType.VirtualMachine):
+      case (DeployerType.VirtualMachine): {
         virtualMachines += 1;
         break;
-      case (DeployerType.Switch):
+      }
+
+      case (DeployerType.Switch): {
         switches += 1;
         break;
-      case (DeployerType.Template):
+      }
+
+      case (DeployerType.Template): {
         templates += 1;
         break;
-      default:
+      }
+
+      default: {
         break;
+      }
     }
   }
 
