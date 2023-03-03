@@ -69,8 +69,9 @@ const websocketHandler = (
       break;
     }
 
-    default:
+    default: {
       break;
+    }
   }
 };
 
@@ -91,7 +92,7 @@ const useExerciseStreaming = (exerciseId?: string) => {
       );
       const thisInstance = websocket.current;
       thisInstance.addEventListener('message', websocketHandler(dispatch));
-      let timeout: NodeJS.Timeout | undefined;
+      let timeout: number | undefined;
       thisInstance.addEventListener('close', () => {
         timeout = setTimeout(() => {
           if (websocket.current?.readyState !== WebSocket.OPEN) {
