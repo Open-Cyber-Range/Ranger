@@ -49,7 +49,7 @@ build-frontend:
   script:
     - cd ranger-app
     - touch .env.production.local
-    - echo $OCR_RANGER_UI_ENV >> .env.production.local
+    - echo -e $OCR_RANGER_UI_ENV >> .env.production.local
     - cat .env.production.local
     - yarn
     - yarn build
