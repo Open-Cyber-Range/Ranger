@@ -1,13 +1,13 @@
 stages:
+  - test
   - build
   - deploy
-  - release
 
 variables:
   GIT_SUBMODULE_STRATEGY: normal
 
 lint-and-test-backend:
-  stage: build
+  stage: test
   image: $DOCKER_REGISTRY_PULL/rust-builder
   before_script:
     - git config --global url."https://gitlab+deploy-token-2:${OCR_DEPLOY_TOKEN_PASSWORD}@code.ocr.cr14.net/open-cyber-range/public/sdl-parser.git/".insteadOf "ssh://git@code.ocr.cr14.net/open-cyber-range/public/sdl-parser"
@@ -27,7 +27,7 @@ lint-and-test-backend:
     - merge_requests
 
 lint-and-test-frontend:
-  stage: build
+  stage: test
   image: $DOCKER_REGISTRY_PULL/frontend-builder
   script:
     - cd ranger-app
@@ -71,39 +71,16 @@ build-and-upload-x86-64bit-linux-release-for-ranger:
     - master
 
 staging:
-  variables:
-    RANGER: "1"
   stage: deploy
   needs: ["build-and-upload-x86-64bit-linux-release-for-ranger"]
-  trigger:
-    project: open-cyber-range/internal/support-docker-images
-    strategy: depend
-  only:
-    - master
-
-release-to-internal-network:
-  stage: release
-  needs: ["staging"]
   script:
-    - apt-get update -y && apt-get install openssh-client -y
-    - eval $(ssh-agent -s)
-    - ssh-add <(echo "$OCR_SERVICE_PRIVATE_KEY")
-    - mkdir -p ~/.ssh
-    - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
-
-    - ssh -t service@ranger.ocr.cr14.net "docker kill $(docker ps -q) || echo 'No containers to kill'"
-    - ssh -t service@ranger.ocr.cr14.net "docker volume rm $(docker volume ls -q) || echo 'No volumes to remove'"
-    - ssh -t service@ranger.ocr.cr14.net "sudo rm -rf deployment"
-    - ssh -t service@ranger.ocr.cr14.net "mkdir -p deployment"
-    - scp -r ./deployment service@ranger.ocr.cr14.net:~
-    - ssh -t service@ranger.ocr.cr14.net "cd deployment && docker compose pull && docker compose up -d --pull always --force-recreate --remove-orphans"
-    - ssh -t service@ranger.ocr.cr14.net "docker image prune -f"
-
-    - echo "Ranger deployed, howdy!"
+    - docker pull $DOCKER_REGISTRY/ranger-server:latest
+    - docker build -t ranger-server ./docker
+    - docker tag ranger-server:latest $DOCKER_REGISTRY/ranger-server:latest
+    - docker push $DOCKER_REGISTRY/ranger-server:latest
+  only:
+    changes:
+      - ranger-server/Dockerfile
   only:
     - master
-  environment:
-    name: Internal Production
-    url: https://ranger.ocr.cr14.net
-
 
