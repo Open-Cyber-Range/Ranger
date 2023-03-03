@@ -5,6 +5,10 @@ stages:
 
 variables:
   GIT_SUBMODULE_STRATEGY: normal
+  DOCKER_TLS_CERTDIR: "/certs"
+
+services:
+  - docker:20.10.17-dind
 
 lint-and-test-backend:
   stage: test
@@ -73,6 +77,7 @@ build-and-upload-x86-64bit-linux-release-for-ranger:
 staging:
   stage: deploy
   needs: ["build-and-upload-x86-64bit-linux-release-for-ranger"]
+  image: $DOCKER_REGISTRY_PULL/docker:20.10.17
   script:
     - docker info
     - echo "$OCR_DEPLOYMENT_PASSWORD" | docker login $DOCKER_REGISTRY --username $OCR_DEPLOYMENT_USER --password-stdin
