@@ -15,7 +15,8 @@
         "samverschueren.linter-xo",
         "bradlc.vscode-tailwindcss",
         "mtxr.sqltools-driver-mysql",
-        "ms-vsliveshare.vsliveshare"
+        "ms-vsliveshare.vsliveshare",
+        "gitlab.gitlab-workflow"
       ]
     }
   },
