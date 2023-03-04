@@ -56,15 +56,18 @@ pub async fn get_exercise_deployment_tlo_evaluation(
         RangerError::ScenarioParsingFailed
     })?;
 
-    let tlos = scenario.tlos.unwrap_or_default();
-    if let Some(tlo) = tlos.get(&tlo_name) {
-        if let Some(evaluations) = scenario.evaluations {
-            let evaluation_return = evaluations.get(&tlo.evaluation).cloned();
-            return Ok(Json(evaluation_return));
+    match scenario.tlos {
+        Some(tlos) => {
+            if let Some(tlo) = tlos.get(&tlo_name) {
+                if let Some(evaluations) = scenario.evaluations {
+                    let evaluation_return = evaluations.get(&tlo.evaluation).cloned();
+                    return Ok(Json(evaluation_return));
+                }
+            }
+            Ok(Json(None))
         }
+        None => Ok(Json(None)),
     }
-
-    Ok(Json(None))
 }
 
 #[get("exercise/{exercise_uuid}/deployment/{deployment_uuid}/score")]
@@ -93,48 +96,49 @@ pub async fn get_exercise_deployment_scores(
         RangerError::ScenarioParsingFailed
     })?;
 
-    let metrics = scenario.metrics.unwrap_or_default();
+    if let Some(metrics) = scenario.metrics {
+        let mut score_elements = condition_messages
+            .iter()
+            .map(|condition_message| {
+                let mut metric_name: String = Default::default();
+                let mut score_multiplier: BigDecimal = Default::default();
 
-    let mut score_elements = condition_messages
-        .iter()
-        .map(|condition_message| {
-            let mut metric_name: String = Default::default();
-            let mut score_multiplier: BigDecimal = Default::default();
-
-            for (name, metric) in metrics.iter() {
-                if metric
-                    .condition
-                    .eq(&Some(condition_message.clone().scenario_reference))
-                {
-                    metric_name = name.to_owned();
-                    score_multiplier = metric.max_score.into();
-                    break;
+                for (name, metric) in metrics.iter() {
+                    if metric
+                        .condition
+                        .eq(&Some(condition_message.clone().scenario_reference))
+                    {
+                        metric_name = name.to_owned();
+                        score_multiplier = metric.max_score.into();
+                        break;
+                    }
                 }
-            }
 
-            ScoreElement::new(
-                exercise_uuid,
-                deployment_uuid,
-                metric_name,
-                condition_message.virtual_machine_id,
-                condition_message.clone().value * score_multiplier,
-                condition_message.created_at,
-            )
-        })
-        .collect::<Vec<_>>();
+                ScoreElement::new(
+                    exercise_uuid,
+                    deployment_uuid,
+                    metric_name,
+                    condition_message.virtual_machine_id,
+                    condition_message.clone().value * score_multiplier,
+                    condition_message.created_at,
+                )
+            })
+            .collect::<Vec<_>>();
 
-    score_elements = ScoreElement::populate_vm_names(
-        score_elements,
-        app_state.database_address.clone(),
-        deployment_uuid,
-    )
-    .await
-    .map_err(|error| {
-        error!("Failed to populate ScoreElements with VM names: {error}");
-        RangerError::DatabaseUnexpected
-    })?;
+        score_elements = ScoreElement::populate_vm_names(
+            score_elements,
+            app_state.database_address.clone(),
+            deployment_uuid,
+        )
+        .await
+        .map_err(|error| {
+            error!("Failed to populate ScoreElements with VM names: {error}");
+            RangerError::DatabaseUnexpected
+        })?;
 
-    Ok(Json(score_elements))
+        return Ok(Json(score_elements));
+    }
+    Ok(Json(vec![]))
 }
 
 #[get("exercise/{exercise_uuid}/deployment/{deployment_uuid}/tlo/{tlo_name}/evaluation/{metric_name}/score")]

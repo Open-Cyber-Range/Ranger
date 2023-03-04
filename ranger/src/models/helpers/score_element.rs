@@ -57,40 +57,38 @@ impl ScoreElement {
         condition_messages: Vec<ConditionMessage>,
         requested_metric_name: String,
     ) -> Option<Vec<ScoreElement>> {
-        let metrics = scenario.metrics.unwrap_or_default();
+        if let Some(metrics) = scenario.metrics {
+            if !condition_exists_in_metrics(&condition_messages, &metrics, &requested_metric_name) {
+                return None;
+            }
 
-        if !condition_exists_in_metrics(&condition_messages, &metrics, &requested_metric_name) {
-            return None;
-        }
+            if let Some(requested_metric) = metrics.get(&requested_metric_name) {
+                if let Some(metric_conditon) = requested_metric.clone().condition {
+                    let results = condition_messages
+                        .iter()
+                        .filter_map(|condition_message| {
+                            if !condition_message
+                                .scenario_reference
+                                .eq_ignore_ascii_case(&metric_conditon)
+                            {
+                                return None;
+                            }
 
-        let requested_metric = metrics.get(&requested_metric_name);
+                            let calculated_score = condition_message.clone().value
+                                * BigDecimal::from(requested_metric.max_score);
 
-        if let Some(metric) = requested_metric {
-            if let Some(metric_conditon) = metric.clone().condition {
-                let results = condition_messages
-                    .iter()
-                    .filter_map(|condition_message| {
-                        if !condition_message
-                            .scenario_reference
-                            .eq_ignore_ascii_case(&metric_conditon)
-                        {
-                            return None;
-                        }
-
-                        let calculated_score =
-                            condition_message.clone().value * BigDecimal::from(metric.max_score);
-
-                        Some(ScoreElement::new(
-                            exercise_id,
-                            deployment_id,
-                            requested_metric_name.to_owned(),
-                            condition_message.virtual_machine_id,
-                            calculated_score,
-                            condition_message.created_at,
-                        ))
-                    })
-                    .collect::<Vec<_>>();
-                return Some(results);
+                            Some(ScoreElement::new(
+                                exercise_id,
+                                deployment_id,
+                                requested_metric_name.to_owned(),
+                                condition_message.virtual_machine_id,
+                                calculated_score,
+                                condition_message.created_at,
+                            ))
+                        })
+                        .collect::<Vec<_>>();
+                    return Some(results);
+                }
             }
         }
         None
