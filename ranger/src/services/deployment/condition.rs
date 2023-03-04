@@ -71,7 +71,6 @@ impl DeployableConditions
                         .clone()
                         .handler_reference
                         .ok_or_else(|| anyhow!("Deployment element handler reference not found"))?;
-                    // for (condition_name, condition) in scenario_conditions.iter() {
                     for (node_condition_name, role_name) in node_conditions.iter() {
                         if condition_name.eq_ignore_ascii_case(node_condition_name) {
                             info!(
