@@ -8,6 +8,8 @@ const language = {
     addingFail: 'Failed to add the exercise',
     name: 'Exercise name',
     scenarioSDL: 'Scenario SDL',
+    deleteSuccess: 'Exercise {{exerciseName}} deleted',
+    deleteFail: 'Failed to delete the exercise {{exerciseName}}',
   },
   deployments: {
     title: 'New deployment',
@@ -27,6 +29,7 @@ const language = {
   common: {
     submit: 'Submit',
     delete: 'Delete',
+    deleting: 'Deleting',
     add: 'Add',
     virtualMachines: 'Virtual Machines',
     switches: 'Switches',
