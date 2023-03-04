@@ -140,7 +140,6 @@ fn condition_exists_in_metrics(
     metrics: &Metrics,
     req_metric_name: &str,
 ) -> bool {
-    let mut requested_metric_condition_exist = false;
     for condition_message in condition_messages {
         for (name, metric) in metrics.iter() {
             if name.eq_ignore_ascii_case(req_metric_name)
@@ -148,13 +147,9 @@ fn condition_exists_in_metrics(
                     .condition
                     .eq(&Some(condition_message.clone().scenario_reference))
             {
-                requested_metric_condition_exist = true;
-                break;
+                return true;
             }
         }
-        if requested_metric_condition_exist {
-            break;
-        }
     }
-    requested_metric_condition_exist
+    false
 }
