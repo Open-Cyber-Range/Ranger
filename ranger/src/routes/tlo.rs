@@ -97,33 +97,24 @@ pub async fn get_exercise_deployment_scores(
     })?;
 
     if let Some(metrics) = scenario.metrics {
-        let mut score_elements = condition_messages
-            .iter()
-            .map(|condition_message| {
-                let mut metric_name: String = Default::default();
-                let mut score_multiplier: BigDecimal = Default::default();
+        let mut score_elements: Vec<ScoreElement> = vec![];
 
-                for (name, metric) in metrics.iter() {
-                    if metric
-                        .condition
-                        .eq(&Some(condition_message.clone().scenario_reference))
-                    {
-                        metric_name = name.to_owned();
-                        score_multiplier = metric.max_score.into();
-                        break;
-                    }
-                }
-
-                ScoreElement::new(
+        for condition_message in condition_messages {
+            if let Some((metric_name, metric)) = metrics.iter().find(|(_, metric)| {
+                metric
+                    .condition
+                    .eq(&Some(condition_message.clone().scenario_reference))
+            }) {
+                score_elements.push(ScoreElement::new(
                     exercise_uuid,
                     deployment_uuid,
-                    metric_name,
+                    metric_name.to_owned(),
                     condition_message.virtual_machine_id,
-                    condition_message.clone().value * score_multiplier,
+                    condition_message.clone().value * BigDecimal::from(metric.max_score),
                     condition_message.created_at,
-                )
-            })
-            .collect::<Vec<_>>();
+                ))
+            }
+        }
 
         score_elements = ScoreElement::populate_vm_names(
             score_elements,
