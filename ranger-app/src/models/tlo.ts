@@ -1,3 +1,5 @@
+import type {RequireAtLeastOne} from 'src/utils';
+
 type TrainingLearningObjective = {
   name?: string;
   description?: string;
@@ -5,10 +7,12 @@ type TrainingLearningObjective = {
   capabilities?: string[];
 };
 
-type MinScore = {
+type PotentialMinScore = {
   absolute?: number;
   percentage?: number;
 };
+
+type MinScore = RequireAtLeastOne<PotentialMinScore, 'absolute' | 'percentage'>;
 
 type Evaluation = {
   description?: string;
