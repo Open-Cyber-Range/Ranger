@@ -1,6 +1,6 @@
 [package]
 name = "ranger"
-version = "0.4.0"
+version = "0.5.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -53,6 +53,7 @@ futures = "0.3"
 insta = { version = "1", features = ["redactions", "yaml"] }
 log = "0.4"
 lazy_static = "1.4"
+lettre = "0.10"
 rand = "0.8"
 ranger-grpc = { path = "../ranger-grpc" }
 sdl-parser = { git = "ssh://git@code.ocr.cr14.net/open-cyber-range/public/sdl-parser", branch = "develop" }

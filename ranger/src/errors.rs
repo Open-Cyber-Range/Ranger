@@ -29,6 +29,12 @@ pub enum RangerError {
     DatabaseConflict,
     #[error("Not found")]
     DatabaseRecordNotFound,
+    #[error("Mailer configuration not found")]
+    MailerConfigurationNotFound,
+    #[error("Failed to create email message")]
+    EmailMessageCreationFailed,
+    #[error("Failed to send email")]
+    EmailSendingFailed,
 }
 
 impl ResponseError for RangerError {
@@ -42,6 +48,7 @@ impl ResponseError for RangerError {
             RangerError::ScenarioParsingFailed => StatusCode::UNPROCESSABLE_ENTITY,
             RangerError::DatabaseConflict => StatusCode::CONFLICT,
             RangerError::DatabaseRecordNotFound => StatusCode::NOT_FOUND,
+            RangerError::MailerConfigurationNotFound => StatusCode::NOT_FOUND,
             _ => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
