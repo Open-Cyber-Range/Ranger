@@ -65,7 +65,7 @@ impl ScoreElement {
                             .iter()
                             .filter_map(|condition_message| {
                                 if !condition_message
-                                    .scenario_reference
+                                    .condition_name
                                     .eq_ignore_ascii_case(&metric_conditon)
                                 {
                                     return None;
@@ -141,7 +141,7 @@ fn condition_exists_in_metrics(
             if name.eq_ignore_ascii_case(req_metric_name)
                 && metric
                     .condition
-                    .eq(&Some(condition_message.clone().scenario_reference))
+                    .eq(&Some(condition_message.clone().condition_name))
             {
                 return true;
             }

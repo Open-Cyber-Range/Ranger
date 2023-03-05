@@ -103,7 +103,7 @@ pub async fn get_exercise_deployment_scores(
             if let Some((metric_name, metric)) = metrics.iter().find(|(_, metric)| {
                 metric
                     .condition
-                    .eq(&Some(condition_message.clone().scenario_reference))
+                    .eq(&Some(condition_message.clone().condition_name))
             }) {
                 score_elements.push(ScoreElement::new(
                     exercise_uuid,

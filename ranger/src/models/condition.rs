@@ -21,7 +21,7 @@ pub struct NewConditionMessage {
     pub exercise_id: Uuid,
     pub deployment_id: Uuid,
     pub virtual_machine_id: Uuid,
-    pub scenario_reference: String,
+    pub condition_name: String,
     pub condition_id: Uuid,
     pub value: BigDecimal,
 }
@@ -31,7 +31,7 @@ impl NewConditionMessage {
         exercise_id: Uuid,
         deployment_id: Uuid,
         virtual_machine_id: Uuid,
-        scenario_reference: String,
+        condition_name: String,
         condition_id: Uuid,
         value: BigDecimal,
     ) -> Self {
@@ -40,7 +40,7 @@ impl NewConditionMessage {
             exercise_id,
             deployment_id,
             virtual_machine_id,
-            scenario_reference,
+            condition_name,
             condition_id,
             value,
         }
@@ -60,7 +60,7 @@ pub struct ConditionMessage {
     pub exercise_id: Uuid,
     pub deployment_id: Uuid,
     pub virtual_machine_id: Uuid,
-    pub scenario_reference: String,
+    pub condition_name: String,
     pub condition_id: Uuid,
     pub value: BigDecimal,
     pub created_at: NaiveDateTime,

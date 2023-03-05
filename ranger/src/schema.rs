@@ -20,7 +20,7 @@ diesel::table! {
         exercise_id -> Binary,
         deployment_id -> Binary,
         virtual_machine_id -> Binary,
-        scenario_reference -> Tinytext,
+        condition_name -> Tinytext,
         condition_id -> Binary,
         value -> Decimal,
         created_at -> Timestamp,
