@@ -18,6 +18,7 @@ import {
   useGetDeploymentStartTimeandEndTimeQuery,
 } from 'src/slices/apiSlice';
 import styled from 'styled-components';
+import {Colors} from '@blueprintjs/core';
 import type {ScoreElement} from 'src/models/tlo';
 import {
   defaultColors,
@@ -49,7 +50,7 @@ const FallbackTextWrapper = styled.div`
   margin: 2px;
   margin-top: auto;
   margin-bottom: 1rem;
-  color: #a6a3a3;
+  color: ${Colors.GRAY3};
 `;
 
 const DeploymentDetailsGraph = ({exerciseId, deploymentId}:
