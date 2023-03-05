@@ -23,7 +23,6 @@ import {
   defaultColors,
   definedOrSkipToken,
   groupByMetricNameAndVmName,
-  parseStringDateToMillis,
   roundToDecimalPlaces,
   sortByCreatedAtAscending,
 } from 'src/utils';
@@ -75,7 +74,7 @@ const DeploymentDetailsGraph = ({exerciseId, deploymentId}:
   }
 
   const intoGraphPoint = (scoreElement: ScoreElement) => ({
-    x: parseStringDateToMillis(scoreElement.createdAt),
+    x: Date.parse(scoreElement.createdAt),
     y: roundToDecimalPlaces(scoreElement.value),
   });
 

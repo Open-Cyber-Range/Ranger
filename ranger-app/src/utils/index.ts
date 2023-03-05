@@ -18,15 +18,7 @@ export function sortByUpdatedAtAscending<
 
 export function sortByUpdatedAtDescending<
   T extends Deployment | Exercise>(a: T, b: T) {
-  if (!a.updatedAt || a.updatedAt < b.updatedAt) {
-    return 1;
-  }
-
-  if (!b.updatedAt || a.updatedAt > b.updatedAt) {
-    return -1;
-  }
-
-  return 0;
+  return sortByUpdatedAtAscending(a, b) * -1;
 }
 
 export function sortByCreatedAtAscending<
@@ -44,33 +36,7 @@ export function sortByCreatedAtAscending<
 
 export function sortByCreatedAtDescending<
   T extends Deployment | Exercise | ScoreElement >(a: T, b: T) {
-  if (!a.createdAt || a.createdAt < b.createdAt) {
-    return 1;
-  }
-
-  if (!b.createdAt || a.createdAt > b.createdAt) {
-    return -1;
-  }
-
-  return 0;
-}
-
-export function sortByVmNameAscending<
-  T extends ScoreElement >(a: T, b: T) {
-  if (!a.vmName || a.vmName < b.vmName) {
-    return -1;
-  }
-
-  if (!b.vmName || a.vmName > b.vmName) {
-    return 1;
-  }
-
-  return 0;
-}
-
-export function sortByVmNameDescending<
-  T extends ScoreElement >(a: T, b: T) {
-  return sortByVmNameAscending(a, b) * -1;
+  return sortByCreatedAtAscending(a, b);
 }
 
 export const getWebsocketBase = () => {

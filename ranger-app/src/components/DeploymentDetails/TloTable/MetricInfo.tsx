@@ -1,7 +1,7 @@
 import React from 'react';
 import {useTranslation} from 'react-i18next';
 import {useGetMetricScoresQuery} from 'src/slices/apiSlice';
-import {roundToDecimalPlaces, sortByVmNameAscending} from 'src/utils';
+import {roundToDecimalPlaces} from 'src/utils';
 
 const MetricInfo = (
   {exerciseId, deploymentId, tloName, metricName}:
@@ -20,7 +20,7 @@ const MetricInfo = (
 
   if (scoreElements && scoreElements.length > 0) {
     const sortedScoreElements = scoreElements.slice()
-      .sort(sortByVmNameAscending);
+      .sort((a, b) => a.vmName.localeCompare(b.vmName));
 
     return (
       <>
