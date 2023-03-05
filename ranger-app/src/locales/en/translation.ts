@@ -13,12 +13,26 @@ const language = {
   },
   deployments: {
     title: 'New deployment',
-    add: 'Add Deployment',
+    add: 'Add Deployments',
     addingSuccess: 'Deployment {{newDeploymentName}} added',
     addingFail: 'Failed to add the deployment',
     sdlMissing: 'Exercise must have an sdl-schema',
     deleteSuccess: 'Deployment {{deploymentName}} deleted',
     deleteFail: 'Failed to delete the deployment',
+    form: {
+      group: {
+        title: 'Deployment group',
+        required: 'Deployment group is required',
+      },
+      name: {
+        title: 'Deployment name',
+        required: 'Deployment name is required',
+      },
+      count: {
+        title: 'Deployment count',
+        required: 'Deployment count is required',
+      },
+    },
   },
   menu: {
     home: 'Home',
@@ -35,7 +49,6 @@ const language = {
     switches: 'Switches',
     templates: 'Templates',
   },
-
   emails: {
     emailLog: 'Email log:',
     status: 'Status',
