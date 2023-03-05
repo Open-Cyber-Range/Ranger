@@ -40,6 +40,16 @@ export const apiSlice = createApi({
       invalidatesTags: (result, error, {exerciseId}) =>
         [{type: 'Exercise', id: exerciseId}],
     }),
+    deleteExercise: builder
+      .mutation<string, {exerciseId: string}>({
+      query: ({exerciseId}) => ({
+        url: `/exercise/${exerciseId}`,
+        method: 'DELETE',
+        responseHandler: 'text',
+      }),
+      invalidatesTags: (result, error, {exerciseId}) =>
+        [{type: 'Exercise', id: exerciseId}],
+    }),
     getDeployments: builder.query<Deployment[], string>({
       query: exerciseId => `/exercise/${exerciseId}/deployment`,
       providesTags: (result = []) =>
@@ -86,6 +96,7 @@ export const {
   useGetExerciseQuery,
   useGetExercisesQuery,
   useAddExerciseMutation,
+  useDeleteExerciseMutation,
   useUpdateExerciseMutation,
   useGetDeploymentsQuery,
   useAddDeploymentMutation,

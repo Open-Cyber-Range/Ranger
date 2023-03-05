@@ -1,7 +1,6 @@
 
 import React, {useState} from 'react';
 import {Button, H2} from '@blueprintjs/core';
-import NameDialog from 'src/components/NameDialog';
 import styled from 'styled-components';
 
 const HeaderHolder = styled.div`
@@ -11,12 +10,18 @@ const HeaderHolder = styled.div`
   margin-bottom: 4rem;
 `;
 
-const Header = (
-  {onSubmit, dialogTitle, buttonTitle, headerTitle}: {
-    onSubmit: (name: string) => void;
-    dialogTitle: string;
+// eslint-disable-next-line @typescript-eslint/comma-dangle
+const Header = <T,>(
+  {onSubmit, buttonTitle, headerTitle, children}: {
+    onSubmit: (value: T) => void;
     buttonTitle: string;
     headerTitle: string;
+    children?: React.ReactElement<{
+      onCancel: () => void;
+      onSubmit: (value: T) => void;
+      title: string;
+      isOpen: boolean;
+    }, any>;
   },
 ) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -25,25 +30,34 @@ const Header = (
     <>
       <HeaderHolder>
         <H2>{headerTitle}</H2>
-        <Button
-          large
-          icon='add'
-          intent='success'
-          text={buttonTitle}
-          onClick={() => {
-            setIsOpen(true);
-          }}/>
+        {children && (
+          <Button
+            large
+            icon='add'
+            intent='success'
+            text={buttonTitle}
+            onClick={() => {
+              setIsOpen(true);
+            }}/>
+        )}
       </HeaderHolder>
-      <NameDialog
-        title={dialogTitle}
-        isOpen={isOpen}
-        onCancel={() => {
-          setIsOpen(false);
-        }}
-        onSumbit={value => {
-          setIsOpen(false);
-          onSubmit(value);
-        }}/>
+      {children && React.Children.map(children, child => {
+        if (React.isValidElement(child)) {
+          return React
+            .cloneElement(child, {
+              isOpen,
+              onCancel() {
+                setIsOpen(false);
+              },
+              onSubmit(value: T) {
+                setIsOpen(false);
+                onSubmit(value);
+              },
+            });
+        }
+
+        return null;
+      })}
     </>
   );
 };
