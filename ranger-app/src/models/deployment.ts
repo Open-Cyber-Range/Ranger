@@ -1,4 +1,10 @@
 
+type DeploymentForm = {
+  name: string;
+  deploymentGroup: string;
+  count: number;
+};
+
 type NewDeployment = {
   name: string;
   deploymentGroup?: string;
@@ -37,4 +43,10 @@ type DeploymentElement = {
   status: ElementStatus;
 };
 
-export type {NewDeployment, Deployment, DeploymentElement, Deployers};
+export type {
+  NewDeployment,
+  Deployment,
+  DeploymentElement,
+  Deployers,
+  DeploymentForm,
+};

@@ -6,6 +6,7 @@ import type {NewExercise} from 'src/models/exercise';
 import {useAddExerciseMutation} from 'src/slices/apiSlice';
 import Header from 'src/components/Header';
 import {useTranslation} from 'react-i18next';
+import AddDialog from 'src/components/Exercise/AddDialog';
 
 const Exercise = () => {
   const {t} = useTranslation();
@@ -33,11 +34,15 @@ const Exercise = () => {
     <PageHolder>
       <Header
         headerTitle={t('exercises.title')}
-        dialogTitle={t('exercises.add')}
         buttonTitle={t('exercises.add')}
-        onSubmit={async name => {
+        onSubmit={async (name: string) => {
           await addNewExercise(name);
-        }}/>
+        }}
+      >
+        <AddDialog
+          title={t('deployments.title')}
+        />
+      </Header>
       <List/>
     </PageHolder>
   );

@@ -3,58 +3,61 @@ import {Button, Dialog, H2, InputGroup} from '@blueprintjs/core';
 import {useTranslation} from 'react-i18next';
 
 const NameDialog = (
-  {isOpen, title, placeholder, onSumbit, onCancel}:
+  {isOpen, title, placeholder, onSubmit, onCancel}:
   {
-    isOpen: boolean;
+    isOpen?: boolean;
     title: string;
     placeholder?: string;
-    onSumbit: (name: string) => void;
-    onCancel: () => void;
+    onSubmit?: (name: string) => void;
+    onCancel?: () => void;
   },
 ) => {
   const {t} = useTranslation();
   const [name, setName] = useState('');
 
-  return (
-    <Dialog isOpen={isOpen}>
-      <div className='bp4-dialog-header'>
-        <H2>{title}</H2>
-        <Button
-          small
-          minimal
-          icon='cross'
-          onClick={() => {
-            onCancel();
-          }}/>
-      </div>
-      <div className='bp4-dialog-body'>
-        <InputGroup
-          autoFocus
-          large
-          value={name}
-          leftIcon='graph'
-          placeholder={placeholder ?? 'Name'}
-          onChange={event => {
-            setName(event.target.value);
-          }}/>
-      </div>
-      <div className='bp4-dialog-footer'>
-        <div className='bp4-dialog-footer-actions'>
+  if (isOpen !== undefined && onSubmit && onCancel) {
+    return (
+      <Dialog isOpen={isOpen}>
+        <div className='bp4-dialog-header'>
+          <H2>{title}</H2>
           <Button
-            large
-            intent='primary'
-            text={t('common.add')}
+            small
+            minimal
+            icon='cross'
             onClick={() => {
-              if (name !== '') {
-                onSumbit(name);
-                setName('');
-              }
+              onCancel();
             }}/>
         </div>
-      </div>
-    </Dialog>
+        <div className='bp4-dialog-body'>
+          <InputGroup
+            autoFocus
+            large
+            value={name}
+            leftIcon='graph'
+            placeholder={placeholder ?? 'Name'}
+            onChange={event => {
+              setName(event.target.value);
+            }}/>
+        </div>
+        <div className='bp4-dialog-footer'>
+          <div className='bp4-dialog-footer-actions'>
+            <Button
+              large
+              intent='primary'
+              text={t('common.add')}
+              onClick={() => {
+                if (name !== '') {
+                  onSubmit(name);
+                  setName('');
+                }
+              }}/>
+          </div>
+        </div>
+      </Dialog>
+    );
+  }
 
-  );
+  return null;
 };
 
 export default NameDialog;
