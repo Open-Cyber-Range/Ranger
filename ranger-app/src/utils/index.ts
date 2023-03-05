@@ -1,4 +1,5 @@
 import type {Deployment} from 'src/models/deployment';
+import {ExerciseRole} from 'src/models/entity';
 import type {Exercise} from 'src/models/exercise';
 import type {ScoreElement} from 'src/models/tlo';
 
