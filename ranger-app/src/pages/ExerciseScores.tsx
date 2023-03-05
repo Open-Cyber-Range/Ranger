@@ -7,7 +7,7 @@ import {skipToken} from '@reduxjs/toolkit/dist/query';
 import {useGetDeploymentsQuery, useGetExerciseQuery} from 'src/slices/apiSlice';
 import styled from 'styled-components';
 import DeploymentScoresTable from
-  'src/components/ExerciseScores/ScoresTable/DeploymentScoresTable';
+  'src/components/ExerciseScores/DeploymentScoresTable';
 import {sortByUpdatedAtDescending} from 'src/utils';
 import BackButton from 'src/components/BackButton';
 
