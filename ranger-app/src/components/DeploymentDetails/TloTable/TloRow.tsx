@@ -1,7 +1,7 @@
 import React from 'react';
 import {useTranslation} from 'react-i18next';
 import type {TrainingLearningObjective} from 'src/models/tlo';
-import EvaluationTd from './EvaluationTd';
+import TloDetails from './TloDetails';
 
 const TloRow = ({exerciseId, deploymentId, tloName, tloMap}:
 {exerciseId: string;
@@ -18,7 +18,7 @@ const TloRow = ({exerciseId, deploymentId, tloName, tloMap}:
           <div>{tloName}</div>
           <div>{tloMap[tloName].description}</div>
         </td>
-        <EvaluationTd
+        <TloDetails
           key={tloName}
           exerciseId={exerciseId}
           deploymentId={deploymentId}

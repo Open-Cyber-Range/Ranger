@@ -18,47 +18,38 @@ const TloTable = ({exerciseId, deploymentId, tloMap}:
 }) => {
   const {t} = useTranslation();
 
-  if (!tloMap) {
-    return null;
+  if (tloMap) {
+    const sortedTloNames = Object.keys(tloMap).sort((a, b) => (a > b ? 1 : -1));
+
+    return (
+      <Wrapper>
+        <table className='
+          bp4-html-table
+          bp4-html-table-striped'
+        >
+          <thead>
+            <tr>
+              <th>{t('tloTableHeaders.tlo')}</th>
+              <th>{t('tloTableHeaders.evaluation')}</th>
+              <th>{t('tloTableHeaders.metric')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sortedTloNames.map(tloName => (
+              <TloRow
+                key={tloName}
+                exerciseId={exerciseId}
+                deploymentId={deploymentId}
+                tloName={tloName}
+                tloMap={tloMap}/>
+            ))}
+          </tbody>
+        </table>
+      </Wrapper>
+    );
   }
 
-  const sortedTloNames = Object.keys(tloMap).sort((a, b) => (a > b ? 1 : -1));
-
-  return (
-    <Wrapper>
-      <table className='
-    bp4-html-table
-    bp4-html-table-striped'
-      >
-        <thead>
-          <tr>
-            <th>{t('tloTableHeaders.tlo')}</th>
-            <th>{t('tloTableHeaders.evaluation')}</th>
-            <th>{t('tloTableHeaders.metric')}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {(() => {
-            const rows = [];
-            for (const tloName of sortedTloNames) {
-              if (tloMap[tloName]) {
-                rows.push(
-                  <TloRow
-                    key={tloName}
-                    exerciseId={exerciseId}
-                    deploymentId={deploymentId}
-                    tloName={tloName}
-                    tloMap={tloMap}/>,
-                );
-              }
-            }
-
-            return rows;
-          })()}
-        </tbody>
-      </table>
-    </Wrapper>
-  );
+  return null;
 };
 
 export default TloTable;

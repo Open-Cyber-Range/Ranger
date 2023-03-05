@@ -25,6 +25,7 @@ import {
   definedOrSkipToken,
   groupByMetricNameAndVmName,
   parseStringDateToMillis,
+  roundToDecimalPlaces,
   sortByCreatedAtAscending,
 } from 'src/utils';
 // eslint-disable-next-line import/no-unassigned-import
@@ -77,7 +78,7 @@ const DeploymentDetailsGraph = ({exerciseId, deploymentId}:
 
   const intoGraphPoint = (scoreElement: ScoreElement) => ({
     x: parseStringDateToMillis(scoreElement.createdAt),
-    y: Math.round(scoreElement.value * 100) / 100,
+    y: roundToDecimalPlaces(scoreElement.value),
   });
 
   function intoGraphData(

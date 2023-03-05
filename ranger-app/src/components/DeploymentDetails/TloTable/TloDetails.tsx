@@ -2,9 +2,9 @@ import React from 'react';
 import {useTranslation} from 'react-i18next';
 import type {TrainingLearningObjective} from 'src/models/tlo';
 import {useGetEvaluationQuery} from 'src/slices/apiSlice';
-import MetricsTd from './MetricsTd';
+import MetricInfo from './MetricInfo';
 
-const EvaluationTd = ({exerciseId, deploymentId, tloName, tloMap}:
+const TloDetails = ({exerciseId, deploymentId, tloName, tloMap}:
 {exerciseId: string;
   deploymentId: string;
   tloName: string;
@@ -19,15 +19,21 @@ const EvaluationTd = ({exerciseId, deploymentId, tloName, tloMap}:
   if (evaluation) {
     return (
       <>
-        <td key={tloName}>
+        <td key={tloMap[tloName].evaluation}>
           <div>{tloMap[tloName].evaluation}</div>
           <div>{evaluation.description}</div>
         </td>
-        <MetricsTd
-          exerciseId={exerciseId}
-          deploymentId={deploymentId}
-          tloName={tloName}
-          metrics={evaluation.metrics}/>
+        <td key={tloName}>
+          {evaluation.metrics.map(metricName => (
+            <MetricInfo
+              key={metricName}
+              exerciseId={exerciseId}
+              deploymentId={deploymentId}
+              tloName={tloName}
+              metricName={metricName}/>
+          ))}
+        </td>
+
       </>
     );
   }
@@ -39,4 +45,4 @@ const EvaluationTd = ({exerciseId, deploymentId, tloName, tloMap}:
   );
 };
 
-export default EvaluationTd;
+export default TloDetails;
