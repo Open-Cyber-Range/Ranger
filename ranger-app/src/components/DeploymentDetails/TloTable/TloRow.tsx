@@ -31,7 +31,7 @@ const TloRow = ({exerciseId, deploymentId, tloName, tloMap}:
 
   return (
     <tr>
-      {t('error.none')}
+      {t('tloTable.noTlos')}
     </tr>
   );
 };

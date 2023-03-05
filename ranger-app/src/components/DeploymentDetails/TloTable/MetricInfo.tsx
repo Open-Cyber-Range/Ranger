@@ -27,7 +27,7 @@ const MetricInfo = (
         {sortedScoreElements.map(element => (
           <li key={element.id}>
             {metricName} - {element.vmName}: {roundToDecimalPlaces(
-              element.value)} points
+              element.value)} {t('tloTable.points')}
           </li>
         ))}
       </>
@@ -36,7 +36,7 @@ const MetricInfo = (
 
   return (
     <li>
-      {t('error.noMetricData')}
+      {t('tloTable.noMetricData')}
     </li>
   );
 };

@@ -97,20 +97,24 @@ const language = {
       'Enter email address, multiple addresses separated by comma',
     },
   },
-  tloTableHeaders: {
-    tlo: 'Training Learning Objective',
-    evaluation: 'Evaluation',
-    metric: 'Metric - VM Name: Current Score',
+  tloTable: {
+    headers: {
+      tlo: 'Training Learning Objective',
+      evaluation: 'Evaluation',
+      metric: 'Metric - VM Name: Current Score',
+    },
+    points: 'points',
+    noEvaluations: 'No Evaluations to display',
+    noTlos: 'No Training Learning Objectives to display',
+    noMetricData: 'No metric scores to display',
   },
   chart: {
-    title: 'Score',
-    xAxisTitle: 'Time',
-    yAxisTitle: 'Points',
-  },
-  error: {
-    none: 'None',
-    noScoreData: 'No score data to display graph',
-    noMetricData: 'No metric scores to display',
+    scoring: {
+      title: 'Score',
+      xAxisTitle: 'Time',
+      yAxisTitle: 'Points',
+      noScoreData: 'No score data to display graph',
+    },
   },
 };
 

@@ -69,7 +69,7 @@ const DeploymentDetailsGraph = ({exerciseId, deploymentId}:
   if (!scoreElements || scoreElements.length === 0) {
     return (
       <FallbackTextWrapper>
-        {t('error.noScoreData')}
+        {t('chart.scoring.noScoreData')}
       </FallbackTextWrapper>
     );
   }

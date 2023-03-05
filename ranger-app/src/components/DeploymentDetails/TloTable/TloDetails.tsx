@@ -40,7 +40,7 @@ const TloDetails = ({exerciseId, deploymentId, tloName, tloMap}:
 
   return (
     <td>
-      {t('error.none')}
+      {t('tloTable.noEvaluations')}
     </td>
   );
 };

@@ -29,9 +29,9 @@ const TloTable = ({exerciseId, deploymentId, tloMap}:
         >
           <thead>
             <tr>
-              <th>{t('tloTableHeaders.tlo')}</th>
-              <th>{t('tloTableHeaders.evaluation')}</th>
-              <th>{t('tloTableHeaders.metric')}</th>
+              <th>{t('tloTable.headers.tlo')}</th>
+              <th>{t('tloTable.headers.evaluation')}</th>
+              <th>{t('tloTable.headers.metric')}</th>
             </tr>
           </thead>
           <tbody>
