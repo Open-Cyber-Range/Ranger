@@ -14,8 +14,8 @@ import {
 } from 'chart.js';
 import {Line} from 'react-chartjs-2';
 import {
+  useGetDeploymentQuery,
   useGetDeploymentScoresQuery,
-  useGetDeploymentStartTimeandEndTimeQuery,
 } from 'src/slices/apiSlice';
 import styled from 'styled-components';
 import {Colors} from '@blueprintjs/core';
@@ -58,21 +58,13 @@ const DeploymentDetailsGraph = ({exerciseId, deploymentId}:
   deploymentId: string | undefined;
 }) => {
   const {t} = useTranslation();
-  const xAxisTitle = t('chart.xAxisTitle');
-  const yAxisTitle = t('chart.yAxisTitle');
-  const chartTitle = t('chart.title');
+  const xAxisTitle = t('chart.scoring.xAxisTitle');
+  const yAxisTitle = t('chart.scoring.yAxisTitle');
+  const chartTitle = t('chart.scoring.title');
   const {data: scoreElements} = useGetDeploymentScoresQuery(
     definedOrSkipToken(exerciseId, deploymentId));
-  const {data: deploymentTimeRange} = useGetDeploymentStartTimeandEndTimeQuery(
+  const {data: deployment} = useGetDeploymentQuery(
     definedOrSkipToken(exerciseId, deploymentId));
-
-  if (!scoreElements || scoreElements.length === 0) {
-    return (
-      <FallbackTextWrapper>
-        {t('chart.scoring.noScoreData')}
-      </FallbackTextWrapper>
-    );
-  }
 
   const intoGraphPoint = (scoreElement: ScoreElement) => ({
     x: Date.parse(scoreElement.createdAt),
@@ -94,8 +86,8 @@ const DeploymentDetailsGraph = ({exerciseId, deploymentId}:
           tension: 0.3,
           borderColor: defaultColors,
           backgroundColor: defaultColors,
-          pointBackgroundColor: '#ffffff',
-          pointBorderColor: '#808080',
+          pointBackgroundColor: Colors.WHITE,
+          pointBorderColor: Colors.GRAY3,
           borderWidth: 1,
           parsing: false,
           fill: false,
@@ -117,66 +109,74 @@ const DeploymentDetailsGraph = ({exerciseId, deploymentId}:
     return graphData;
   }
 
-  return (
-    <Line
-      data={intoGraphData(groupByMetricNameAndVmName(scoreElements))}
-      options={{
-        showLine: true,
-        animation: false,
-        parsing: false,
-        interaction: {
-          mode: 'point',
-          axis: 'x',
-          intersect: false,
-        },
-        indexAxis: 'x',
-        plugins: {
-          tooltip: {
-            displayColors: false,
+  if (deployment && scoreElements && scoreElements.length > 0) {
+    return (
+      <Line
+        data={intoGraphData(groupByMetricNameAndVmName(scoreElements))}
+        options={{
+          showLine: true,
+          animation: false,
+          parsing: false,
+          interaction: {
+            mode: 'point',
+            axis: 'x',
+            intersect: false,
           },
+          indexAxis: 'x',
+          plugins: {
+            tooltip: {
+              displayColors: false,
+            },
 
-          decimation: {
-            enabled: true,
-            algorithm: 'lttb',
-            threshold: 100,
-            samples: 100,
-          },
+            decimation: {
+              enabled: true,
+              algorithm: 'lttb',
+              threshold: 100,
+              samples: 100,
+            },
 
-          title: {
-            display: true,
-            text: chartTitle,
-          },
-        },
-        responsive: true,
-        scales: {
-          y: {
             title: {
               display: true,
-              text: yAxisTitle,
+              text: chartTitle,
             },
-            min: 0,
           },
-          x: {
-            title: {
-              display: true,
-              text: xAxisTitle,
+          responsive: true,
+          scales: {
+            y: {
+              title: {
+                display: true,
+                text: yAxisTitle,
+              },
+              min: 0,
             },
-            min: deploymentTimeRange?.startTime,
-            max: deploymentTimeRange?.endTime,
-            ticks: {
-              source: 'auto',
-            },
-            type: 'time',
-            time: {
-              displayFormats: {
-                hour: 'HH:mm',
-                minute: 'HH:mm',
-                second: 'HH:mm:ss',
+            x: {
+              title: {
+                display: true,
+                text: xAxisTitle,
+              },
+              min: deployment.startTime,
+              max: deployment.endTime,
+              ticks: {
+                source: 'auto',
+              },
+              type: 'time',
+              time: {
+                displayFormats: {
+                  hour: 'HH:mm',
+                  minute: 'HH:mm',
+                  second: 'HH:mm:ss',
+                },
               },
             },
           },
-        },
-      }}/>
+        }}/>
+    );
+  }
+
+  return (
+    <FallbackTextWrapper>
+      {t('chart.scoring.noScoreData')}
+    </FallbackTextWrapper>
   );
 };
 

@@ -11,6 +11,7 @@ import DeploymentDetailsGraph from 'src/components/DeploymentDetails/Graph';
 import TloTable from 'src/components/DeploymentDetails/TloTable/TloTable';
 import {useTranslation} from 'react-i18next';
 import BackButton from 'src/components/BackButton';
+import {Colors} from '@blueprintjs/core';
 
 const FallbackTextWrapper = styled.div`
   display: flex;
@@ -18,7 +19,7 @@ const FallbackTextWrapper = styled.div`
   align-self: center;
   margin-top: 5rem;
   margin-bottom: 1rem;
-  color: #a6a3a3;
+  color: ${Colors.GRAY3};
 `;
 
 const DeploymentDetail = () => {

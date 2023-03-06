@@ -45,7 +45,7 @@ actix-http = { version = "3", features = ["http2", "ws"] }
 anyhow = "1"
 async-trait = "0.1"
 bigdecimal = { version = "0.3", features = ["serde"] }
-chrono = "0.4"
+chrono = {version = "0.4", features = ["serde"]}
 diesel = { version = "2", features = ["mysql", "r2d2", "chrono", "numeric"] }
 diesel_migrations = "2"
 env_logger = "0.9"

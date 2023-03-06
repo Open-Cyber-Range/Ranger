@@ -8,7 +8,7 @@ use crate::{
     },
     utilities::Validation,
 };
-use chrono::{DateTime, NaiveDateTime, Utc};
+use chrono::NaiveDateTime;
 use diesel::{
     helper_types::{Eq, Filter},
     sql_types::Text,
@@ -19,13 +19,6 @@ use ranger_grpc::capabilities::DeployerTypes;
 use serde::{Deserialize, Serialize};
 
 use super::helpers::{deployer_type::DeployerType, uuid::Uuid};
-
-#[derive(Clone, Debug, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct DeploymentTimeRange {
-    pub start_time: DateTime<Utc>,
-    pub end_time: DateTime<Utc>,
-}
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -45,17 +38,26 @@ pub struct NewDeployment {
     pub name: String,
     pub deployment_group: Option<String>,
     pub sdl_schema: String,
+    pub start_time: NaiveDateTime,
+    pub end_time: NaiveDateTime,
     pub exercise_id: Uuid,
 }
 
 impl NewDeployment {
-    pub fn new(resource: NewDeploymentResource, exercise_id: Uuid) -> Self {
+    pub fn new(
+        resource: NewDeploymentResource,
+        exercise_id: Uuid,
+        start_time: NaiveDateTime,
+        end_time: NaiveDateTime,
+    ) -> Self {
         Self {
             id: resource.id,
             name: resource.name,
             deployment_group: resource.deployment_group,
             sdl_schema: resource.sdl_schema,
             exercise_id,
+            start_time,
+            end_time,
         }
     }
 
@@ -81,6 +83,8 @@ pub struct Deployment {
     pub name: String,
     pub deployment_group: Option<String>,
     pub sdl_schema: String,
+    pub start_time: NaiveDateTime,
+    pub end_time: NaiveDateTime,
     pub exercise_id: Uuid,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,

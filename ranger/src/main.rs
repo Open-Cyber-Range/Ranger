@@ -33,6 +33,7 @@ async fn main() -> Result<(), Error> {
                     .service(get_exercise_deployment_elements)
                     .service(get_exercise_deployments)
                     .service(add_exercise_deployment)
+                    .service(get_exercise_deployment)
                     .service(delete_exercise_deployment)
                     .service(subscribe_to_exercise)
                     .service(get_exercises)

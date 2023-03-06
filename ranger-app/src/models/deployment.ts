@@ -14,6 +14,8 @@ type NewDeployment = {
 type Deployment = {
   id: string;
   exerciseId: string;
+  startTime: string;
+  endTime: string;
   createdAt: string;
   updatedAt: string;
 } & NewDeployment;
