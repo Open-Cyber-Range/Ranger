@@ -1,7 +1,7 @@
 
 type DeploymentForm = {
   name: string;
-  deploymentGroup: string;
+  deploymentGroup?: string;
   count: number;
 };
 

@@ -25,7 +25,7 @@ const AddDialog = (
       count,
       name,
       deploymentGroup,
-    }: {count: number; name: string; deploymentGroup: string}) => void;
+    }: DeploymentForm) => void;
     onCancel?: () => void;
   },
 ) => {
@@ -41,6 +41,10 @@ const AddDialog = (
   });
 
   const onHandleSubmit = (formContent: DeploymentForm) => {
+    if (formContent.deploymentGroup === '') {
+      formContent.deploymentGroup = undefined;
+    }
+
     if (onSubmit) {
       onSubmit(formContent);
     }
