@@ -174,7 +174,7 @@ impl Handler<ConditionStream> for DeployerDistribution {
                     let value = BigDecimal::from_f32(stream_item.command_return_value)
                         .ok_or_else(|| anyhow!("Error converting Condition Return value"))?;
 
-                    log::info!(
+                    log::debug!(
                         "Received Condition Id: {:?}, Value: {:?}",
                         stream_item.response,
                         stream_item.command_return_value,
