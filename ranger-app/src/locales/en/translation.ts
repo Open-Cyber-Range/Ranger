@@ -10,6 +10,10 @@ const language = {
     scenarioSDL: 'Scenario SDL',
     deleteSuccess: 'Exercise {{exerciseName}} deleted',
     deleteFail: 'Failed to delete the exercise {{exerciseName}}',
+    tabs: {
+      dashboard: 'Dashboard',
+      scores: 'Scores',
+    },
   },
   deployments: {
     title: 'New deployment',
