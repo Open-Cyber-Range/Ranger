@@ -78,7 +78,6 @@ const AddDialog = (
                     label={t('deployments.form.group.title')}
                   >
                     <Label>
-                      {t('deployments.form.group.title')}
                       <HTMLSelect
                         ref={ref}
                         autoFocus
