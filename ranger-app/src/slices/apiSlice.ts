@@ -6,7 +6,13 @@ import type {
   DeploymentElement,
   NewDeployment,
 } from 'src/models/deployment';
-import type {Exercise, NewExercise, UpdateExercise} from 'src/models/exercise';
+import {
+  type SimpleEmail,
+  type EmailForm,
+  type Exercise,
+  type NewExercise,
+  type UpdateExercise,
+} from 'src/models/exercise';
 
 export const apiSlice = createApi({
   reducerPath: 'api',
@@ -89,6 +95,14 @@ export const apiSlice = createApi({
     getDeploymentGroups: builder.query<Deployers, void>({
       query: () => '/deployer',
     }),
+    sendMail: builder
+      .mutation <SimpleEmail, {email: EmailForm; exerciseId: string} >({
+      query: ({email, exerciseId}) => ({
+        url: `/exercise/${exerciseId}/email`,
+        method: 'POST',
+        body: email,
+      }),
+    }),
   }),
 });
 
@@ -103,4 +117,5 @@ export const {
   useDeleteDeploymentMutation,
   useGetDeploymentElementsQuery,
   useGetDeploymentGroupsQuery,
+  useSendMailMutation,
 } = apiSlice;

@@ -61,6 +61,24 @@ const language = {
     bcc: 'Bcc',
     cc: 'Cc',
     body: 'Body',
+    send: 'Send email',
+    sendingSuccess: 'Email sent',
+    sendingFail: 'Error trying to send the email: {{errorMessage}}',
+    sendingFailWithoutMessage: 'Failed to send the email',
+    form: {
+      to: {
+        title: 'To address',
+        required: 'Receiver address is required',
+      },
+      subject: {
+        title: 'Email subject',
+        required: 'Email subject is required',
+      },
+      body: {
+        title: 'Email body',
+        required: 'Email body is required',
+      },
+    },
   },
 };
 
