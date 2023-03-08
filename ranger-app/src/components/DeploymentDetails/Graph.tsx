@@ -22,7 +22,6 @@ import {Colors} from '@blueprintjs/core';
 import type {ScoreElement} from 'src/models/tlo';
 import {
   defaultColors,
-  definedOrSkipToken,
   groupByMetricNameAndVmName,
   roundToDecimalPlaces,
   sortByCreatedAtAscending,
@@ -30,6 +29,7 @@ import {
 // eslint-disable-next-line import/no-unassigned-import
 import 'chartjs-adapter-moment';
 import {useTranslation} from 'react-i18next';
+import {skipToken} from '@reduxjs/toolkit/dist/query';
 
 ChartJS.register(
   CategoryScale,
@@ -61,10 +61,10 @@ const DeploymentDetailsGraph = ({exerciseId, deploymentId}:
   const xAxisTitle = t('chart.scoring.xAxisTitle');
   const yAxisTitle = t('chart.scoring.yAxisTitle');
   const chartTitle = t('chart.scoring.title');
-  const {data: scoreElements} = useGetDeploymentScoresQuery(
-    definedOrSkipToken(exerciseId, deploymentId));
-  const {data: deployment} = useGetDeploymentQuery(
-    definedOrSkipToken(exerciseId, deploymentId));
+  const queryArguments = exerciseId && deploymentId
+    ? {exerciseId, deploymentId} : skipToken;
+  const {data: scoreElements} = useGetDeploymentScoresQuery(queryArguments);
+  const {data: deployment} = useGetDeploymentQuery(queryArguments);
 
   const intoGraphPoint = (scoreElement: ScoreElement) => ({
     x: Date.parse(scoreElement.createdAt),

@@ -6,12 +6,12 @@ import PageHolder from 'src/components/PageHolder';
 import type {DeploymentDetailRouteParameters} from 'src/models/routes';
 import {useGetTLOsQuery} from 'src/slices/apiSlice';
 import styled from 'styled-components';
-import {definedOrSkipToken} from 'src/utils';
 import DeploymentDetailsGraph from 'src/components/DeploymentDetails/Graph';
 import TloTable from 'src/components/DeploymentDetails/TloTable/TloTable';
 import {useTranslation} from 'react-i18next';
 import BackButton from 'src/components/BackButton';
 import {Colors} from '@blueprintjs/core';
+import {skipToken} from '@reduxjs/toolkit/dist/query';
 
 const FallbackTextWrapper = styled.div`
   display: flex;
@@ -27,7 +27,7 @@ const DeploymentDetail = () => {
   const {exerciseId, deploymentId}
   = useParams<DeploymentDetailRouteParameters>();
   const {data: tloMap} = useGetTLOsQuery(
-    definedOrSkipToken(exerciseId, deploymentId));
+    exerciseId && deploymentId ? {exerciseId, deploymentId} : skipToken);
 
   if (exerciseId && deploymentId) {
     return (

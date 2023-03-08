@@ -1,5 +1,4 @@
 import {Colors} from '@blueprintjs/core';
-import {skipToken} from '@reduxjs/toolkit/dist/query';
 import type {Deployment} from 'src/models/deployment';
 import {ExerciseRole} from 'src/models/entity';
 import type {Exercise} from 'src/models/exercise';
@@ -49,16 +48,6 @@ export const getWebsocketBase = () => {
 
 export const isDevelopment = () =>
   import.meta.env.DEV;
-
-export const definedOrSkipToken = (
-  exerciseId: string | undefined,
-  deploymentId: string | undefined) => {
-  if (!exerciseId || !deploymentId) {
-    return skipToken;
-  }
-
-  return {exerciseId, deploymentId};
-};
 
 export function groupByMetricNameAndVmName(array: ScoreElement[]) {
   // eslint-disable-next-line unicorn/no-array-reduce
