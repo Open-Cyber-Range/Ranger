@@ -11,6 +11,7 @@ import {useTranslation} from 'react-i18next';
 import {Controller, type SubmitHandler, useForm} from 'react-hook-form';
 import {useSendMailMutation} from 'src/slices/apiSlice';
 import {toastSuccess, toastWarning} from 'src/components/Toaster';
+import nunjucks from 'nunjucks';
 
 const SendEmail = ({exercise}: {exercise: Exercise}) => {
   const {t} = useTranslation();
@@ -25,6 +26,9 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
   });
 
   const onSubmit: SubmitHandler<EmailForm> = async email => {
+    const reformattedBody = nunjucks
+      .renderString(email.body, {exerciseName: exercise.name});
+    email.body = reformattedBody;
     await sendMail({email, exerciseId: exercise.id});
   };
 
