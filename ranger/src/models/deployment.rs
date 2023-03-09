@@ -3,11 +3,13 @@ use crate::{
     errors::RangerError,
     schema::{deployment_elements, deployments},
     services::database::{
-        All, Create, CreateOrIgnore, FilterExisting, SelectById, SoftDelete, SoftDeleteById,
-        UpdateById,
+        deployment::UpdateDeploymentElement, All, Create, CreateOrIgnore, Database, FilterExisting,
+        SelectById, SoftDelete, SoftDeleteById, UpdateById,
     },
     utilities::Validation,
 };
+use actix::Addr;
+use anyhow::Result;
 use chrono::NaiveDateTime;
 use diesel::{
     helper_types::{Eq, Filter},
@@ -193,6 +195,22 @@ impl DeploymentElement {
             status,
             executor_log: None,
         }
+    }
+
+    pub async fn update(
+        &mut self,
+        database_address: &Addr<Database>,
+        exercise_id: Uuid,
+        status: ElementStatus,
+        handler_reference: Option<String>,
+    ) -> Result<()> {
+        self.status = status;
+        self.handler_reference = handler_reference;
+
+        database_address
+            .send(UpdateDeploymentElement(exercise_id, self.clone()))
+            .await??;
+        Ok(())
     }
 
     fn all_with_deleted() -> All<deployment_elements::table, Self> {
