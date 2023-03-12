@@ -13,7 +13,7 @@ import {
   type NewExercise,
   type UpdateExercise,
 } from 'src/models/exercise';
-import type {ScoreElement} from 'src/models/tlo';
+import {type ScoreElement} from 'src/models/scoreElement';
 
 export const apiSlice = createApi({
   reducerPath: 'api',

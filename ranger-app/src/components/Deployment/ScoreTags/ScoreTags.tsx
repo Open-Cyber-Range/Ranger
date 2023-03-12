@@ -5,7 +5,7 @@ import {
   useGetDeploymentEntitiesQuery,
   useGetDeploymentGoalsQuery,
 } from 'src/slices/apiSlice';
-import {exerciseRoleOrder} from 'src/models/entity';
+import {exerciseRoleOrder} from 'src/models/scenario/entity';
 import ScoreTagBody from './ScoreTagBody';
 
 const TagGroupWrapper = styled.div`
