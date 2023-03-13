@@ -2,14 +2,14 @@ use std::collections::HashMap;
 
 use crate::models::helpers::uuid::Uuid;
 use crate::models::{DeploymentElement, ElementStatus};
-use crate::services::client::{ConditionResponse, ConditionStream, DeploymentClientResponse};
+use crate::services::client::{ConditionResponse, ConditionStream};
 use crate::services::database::account::GetAccount;
 use crate::services::database::deployment::{CreateDeploymentElement, UpdateDeploymentElement};
 use crate::services::database::Database;
 use crate::services::deployer::{Deploy, DeployerDistribution};
 use crate::utilities::try_some;
 use actix::Addr;
-use anyhow::{anyhow, Ok, Result};
+use anyhow::{Ok, Result};
 use async_trait::async_trait;
 use futures::future::try_join_all;
 use log::info;

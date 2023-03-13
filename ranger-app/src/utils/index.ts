@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/no-array-reduce */
 import {Colors} from '@blueprintjs/core';
 import type {Deployment} from 'src/models/deployment';
 import type {Exercise} from 'src/models/exercise';
@@ -50,7 +51,6 @@ export const isDevelopment = () =>
   import.meta.env.DEV;
 
 export function groupByMetricNameAndVmName(array: ScoreElement[]) {
-  // eslint-disable-next-line unicorn/no-array-reduce
   return array.reduce<Record<string, ScoreElement[]>>(
     (groupedMap, element) => {
       const key = element.metricName.concat(' - ', element.vmName);
@@ -112,3 +112,18 @@ export type RequireAtLeastOne<T, Keys extends keyof T = keyof T> =
     & {
       [K in Keys]-?: Required<Pick<T, K>> & Partial<Pick<T, Exclude<Keys, K>>>
     }[Keys];
+
+export function isNonNullable<T>(value: T): value is NonNullable<T> {
+  return value !== null && value !== undefined;
+}
+
+export const findLatestScoreElement = (scoreElements: ScoreElement[]) => {
+  if (scoreElements.length > 0) {
+    const latestScoreElement = scoreElements.reduce((previous, current) =>
+      (Date.parse(previous?.createdAt)
+      > Date.parse(current?.createdAt)) ? previous : current);
+    return latestScoreElement;
+  }
+
+  return undefined;
+};
