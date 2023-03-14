@@ -49,16 +49,17 @@ impl Email {
             .from(self.from_address.parse()?)
             .to(self.to_address.parse()?);
 
-        if let Some(reply_to_address) = &self.reply_to_address {
-            message_builder = message_builder.reply_to(reply_to_address.parse()?);
+        if self.reply_to_address.is_some() && !self.reply_to_address.clone().unwrap().is_empty() {
+            message_builder =
+                message_builder.reply_to(self.reply_to_address.clone().unwrap().parse()?);
         }
 
-        if let Some(cc_address) = &self.cc_address {
-            message_builder = message_builder.cc(cc_address.parse()?);
+        if self.cc_address.is_some() && !self.cc_address.clone().unwrap().is_empty() {
+            message_builder = message_builder.cc(self.cc_address.clone().unwrap().parse()?);
         }
 
-        if let Some(bcc_address) = &self.bcc_address {
-            message_builder = message_builder.bcc(bcc_address.parse()?);
+        if self.bcc_address.is_some() && !self.bcc_address.clone().unwrap().is_empty() {
+            message_builder = message_builder.bcc(self.bcc_address.clone().unwrap().parse()?);
         }
 
         Ok(message_builder
