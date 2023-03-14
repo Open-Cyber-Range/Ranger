@@ -1,4 +1,4 @@
-use lettre::{address::AddressError, Message};
+use lettre::{address::AddressError, message::MultiPart, Message};
 use serde::{Deserialize, Serialize};
 
 use super::helpers::uuid::Uuid;
@@ -45,7 +45,9 @@ impl Email {
     }
 
     pub fn create_message(&self) -> Result<Message, AddressError> {
-        let mut message_builder = Message::builder().from(self.from_address.parse()?);
+        let mut message_builder = Message::builder()
+            .from(self.from_address.parse()?)
+            .subject(self.subject.clone());
 
         let to_addresses: Vec<&str> = self.to_address.split(',').collect();
         for to_address in to_addresses {
@@ -66,8 +68,10 @@ impl Email {
         }
 
         Ok(message_builder
-            .subject(self.subject.clone())
-            .body(self.body.clone())
+            .multipart(MultiPart::alternative_plain_html(
+                String::from("Hello from OCR!"),
+                self.body.clone(),
+            ))
             .unwrap())
     }
 }
