@@ -45,9 +45,12 @@ impl Email {
     }
 
     pub fn create_message(&self) -> Result<Message, AddressError> {
-        let mut message_builder = Message::builder()
-            .from(self.from_address.parse()?)
-            .to(self.to_address.parse()?);
+        let mut message_builder = Message::builder().from(self.from_address.parse()?);
+
+        let to_addresses: Vec<&str> = self.to_address.split(',').collect();
+        for to_address in to_addresses {
+            message_builder = message_builder.to(to_address.trim().parse()?);
+        }
 
         if self.reply_to_address.is_some() && !self.reply_to_address.clone().unwrap().is_empty() {
             message_builder =
