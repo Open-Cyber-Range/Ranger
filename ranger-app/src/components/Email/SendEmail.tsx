@@ -84,6 +84,87 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
         />
         <Controller
           control={control}
+          name='replyToAddress'
+          render={({
+            field: {onChange, onBlur, ref, value}, fieldState: {error},
+          }) => {
+            const intent = error ? Intent.DANGER : Intent.NONE;
+            return (
+              <FormGroup
+                labelFor='email-reply-to'
+                helperText={error?.message}
+                intent={intent}
+                label={t('emails.form.replyTo.title')}
+              >
+                <InputGroup
+                  large
+                  intent={intent}
+                  value={value}
+                  inputRef={ref}
+                  id='email-reply-to'
+                  onChange={onChange}
+                  onBlur={onBlur}
+                />
+              </FormGroup>
+            );
+          }}
+        />
+        <Controller
+          control={control}
+          name='ccAddress'
+          render={({
+            field: {onChange, onBlur, ref, value}, fieldState: {error},
+          }) => {
+            const intent = error ? Intent.DANGER : Intent.NONE;
+            return (
+              <FormGroup
+                labelFor='email-cc'
+                helperText={error?.message}
+                intent={intent}
+                label={t('emails.form.cc.title')}
+              >
+                <InputGroup
+                  large
+                  intent={intent}
+                  value={value}
+                  inputRef={ref}
+                  id='email-cc'
+                  onChange={onChange}
+                  onBlur={onBlur}
+                />
+              </FormGroup>
+            );
+          }}
+        />
+        <Controller
+          control={control}
+          name='bccAddress'
+          render={({
+            field: {onChange, onBlur, ref, value}, fieldState: {error},
+          }) => {
+            const intent = error ? Intent.DANGER : Intent.NONE;
+            return (
+              <FormGroup
+                labelFor='email-bcc'
+                helperText={error?.message}
+                intent={intent}
+                label={t('emails.form.bcc.title')}
+              >
+                <InputGroup
+                  large
+                  intent={intent}
+                  value={value}
+                  inputRef={ref}
+                  id='email-bcc'
+                  onChange={onChange}
+                  onBlur={onBlur}
+                />
+              </FormGroup>
+            );
+          }}
+        />
+        <Controller
+          control={control}
           name='subject'
           rules={{required: t('emails.form.subject.required') ?? ''}}
           render={({

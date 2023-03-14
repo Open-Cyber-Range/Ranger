@@ -14,6 +14,9 @@ type UpdateExercise = NewExercise;
 
 type EmailForm = {
   toAddress: string;
+  replyToAddress?: string;
+  ccAddress?: string;
+  bccAddress?: string;
   subject: string;
   body: string;
 };
@@ -21,6 +24,9 @@ type EmailForm = {
 type SimpleEmail = {
   id: string;
   fromAddress: string;
+  replyToAddress?: string;
+  ccAddress?: string;
+  bccAddress?: string;
   toAddress: string;
   subject: string;
   body: string;

@@ -67,8 +67,17 @@ const language = {
     sendingFailWithoutMessage: 'Failed to send the email',
     form: {
       to: {
-        title: 'To address',
+        title: 'To',
         required: 'Receiver address is required',
+      },
+      replyTo: {
+        title: 'Reply to',
+      },
+      cc: {
+        title: 'Cc',
+      },
+      bcc: {
+        title: 'Bcc',
       },
       subject: {
         title: 'Email subject',
