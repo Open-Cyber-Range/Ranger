@@ -2,9 +2,10 @@ use crate::{
     errors::RangerError,
     models::helpers::{score_element::ScoreElement, uuid::Uuid},
     services::database::{
-        condition::GetConditionMessagesByDeploymentId, deployment::GetDeployment,
+        condition::GetConditionMessagesByDeploymentId,
+        deployment::{GetDeployment, GetDeploymentElementByDeploymentId},
     },
-    utilities::{create_database_error_handler, create_mailbox_error_handler},
+    utilities::{create_database_error_handler, create_mailbox_error_handler, try_some},
     AppState,
 };
 use actix_web::{
@@ -14,10 +15,11 @@ use actix_web::{
 use anyhow::Result;
 use bigdecimal::BigDecimal;
 use log::error;
+use ranger_grpc::capabilities::DeployerTypes as GrpcDeployerTypes;
 use sdl_parser::{
     evaluation::Evaluation, parse_sdl, training_learning_objective::TrainingLearningObjectives,
 };
-use std::collections::HashSet;
+use std::collections::HashMap;
 
 #[get("exercise/{exercise_uuid}/deployment/{deployment_uuid}/tlo")]
 pub async fn get_exercise_deployment_tlos(
@@ -96,111 +98,53 @@ pub async fn get_exercise_deployment_scores(
         RangerError::ScenarioParsingFailed
     })?;
 
+    let deployment_elements = app_state
+        .database_address
+        .send(GetDeploymentElementByDeploymentId(deployment_uuid))
+        .await
+        .map_err(create_mailbox_error_handler("Database"))?
+        .map_err(create_database_error_handler("Get deployment elements"))?;
+
+    let vm_deplyoment_elements = deployment_elements
+        .iter()
+        .filter(|element| matches!(element.deployer_type.0, GrpcDeployerTypes::VirtualMachine))
+        .map(|element| {
+            let vm_id = try_some(
+                element.handler_reference.to_owned(),
+                "VM element missing handler reference",
+            )?;
+            Ok((vm_id, element.scenario_reference.to_owned()))
+        })
+        .collect::<Result<HashMap<String, String>>>()
+        .map_err(create_database_error_handler("Get deployment elements"))?;
+
     if let Some(metrics) = scenario.metrics {
         let mut score_elements: Vec<ScoreElement> = vec![];
 
-        for condition_message in condition_messages {
+        for condition_message in condition_messages.iter() {
             if let Some((metric_name, metric)) = metrics.iter().find(|(_, metric)| {
                 metric
                     .condition
                     .eq(&Some(condition_message.clone().condition_name))
             }) {
-                score_elements.push(ScoreElement::new(
-                    exercise_uuid,
-                    deployment_uuid,
-                    metric_name.to_owned(),
-                    condition_message.virtual_machine_id,
-                    condition_message.clone().value * BigDecimal::from(metric.max_score),
-                    condition_message.created_at,
-                ))
+                if let Some(vm_name) =
+                    vm_deplyoment_elements.get(&condition_message.virtual_machine_id.to_string())
+                {
+                    score_elements.push(ScoreElement::new(
+                        exercise_uuid,
+                        deployment_uuid,
+                        metric_name.to_owned(),
+                        vm_name.to_owned(),
+                        condition_message.virtual_machine_id,
+                        condition_message.clone().value * BigDecimal::from(metric.max_score),
+                        condition_message.created_at,
+                    ))
+                }
             }
         }
 
-        score_elements = ScoreElement::populate_vm_names(
-            score_elements,
-            app_state.database_address.clone(),
-            deployment_uuid,
-        )
-        .await
-        .map_err(|error| {
-            error!("Failed to populate ScoreElements with VM names: {error}");
-            RangerError::DatabaseUnexpected
-        })?;
 
         return Ok(Json(score_elements));
     }
     Ok(Json(vec![]))
-}
-
-#[get("exercise/{exercise_uuid}/deployment/{deployment_uuid}/tlo/{tlo_name}/evaluation/{metric_name}/score")]
-pub async fn get_exercise_deployment_tlo_evaluation_metric_scores(
-    path_variables: Path<(Uuid, Uuid, String, String)>,
-    app_state: Data<AppState>,
-) -> Result<Json<Option<Vec<ScoreElement>>>, RangerError> {
-    let (exercise_uuid, deployment_uuid, _, req_metric_name) = path_variables.into_inner();
-
-    let condition_messages = app_state
-        .database_address
-        .send(GetConditionMessagesByDeploymentId(deployment_uuid))
-        .await
-        .map_err(create_mailbox_error_handler("Database"))?
-        .map_err(create_database_error_handler("Get condition_messages"))?;
-
-    let deployment = app_state
-        .database_address
-        .send(GetDeployment(deployment_uuid))
-        .await
-        .map_err(create_mailbox_error_handler("Database"))?
-        .map_err(create_database_error_handler("Get deployment"))?;
-
-    let scenario = parse_sdl(&deployment.sdl_schema).map_err(|error| {
-        error!("Failed to parse sdl: {error}");
-        RangerError::ScenarioParsingFailed
-    })?;
-
-    let score_elements_by_metric = ScoreElement::from_condition_messages_by_metric_name(
-        exercise_uuid,
-        deployment_uuid,
-        scenario,
-        condition_messages,
-        req_metric_name,
-    )
-    .await;
-    if let Some(score_elements) = score_elements_by_metric {
-        let unique_vm_uuids: HashSet<Uuid> = score_elements
-            .clone()
-            .into_iter()
-            .map(|element| element.vm_uuid)
-            .collect();
-
-        let score_elements = ScoreElement::populate_vm_names(
-            score_elements,
-            app_state.database_address.clone(),
-            deployment_uuid,
-        )
-        .await
-        .map_err(|error| {
-            error!("Failed to populate ScoreElements with VM names: {error}");
-            RangerError::DatabaseUnexpected
-        })?;
-
-        let latest_unique_elements_by_vm_uuid: Option<Vec<ScoreElement>> = unique_vm_uuids
-            .into_iter()
-            .map(|vm_uuid| {
-                score_elements
-                    .clone()
-                    .into_iter()
-                    .filter_map(|element| element.vm_uuid.eq(&vm_uuid).then_some(Some(element)))
-                    .collect::<Option<Vec<ScoreElement>>>()
-                    .and_then(|score_elements| {
-                        score_elements
-                            .into_iter()
-                            .max_by_key(|element| element.created_at)
-                    })
-            })
-            .collect();
-
-        return Ok(Json(latest_unique_elements_by_vm_uuid));
-    }
-    Ok(Json(None))
 }

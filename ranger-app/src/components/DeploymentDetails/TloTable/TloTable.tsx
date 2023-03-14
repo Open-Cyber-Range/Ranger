@@ -1,6 +1,6 @@
 import React from 'react';
 import {useTranslation} from 'react-i18next';
-import type {TrainingLearningObjective} from 'src/models/tlo';
+import {type TrainingLearningObjective} from 'src/models/scenario/tlo';
 import styled from 'styled-components';
 import TloRow from './TloRow';
 

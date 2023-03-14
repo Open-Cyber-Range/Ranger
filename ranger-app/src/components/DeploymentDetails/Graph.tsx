@@ -19,7 +19,7 @@ import {
 } from 'src/slices/apiSlice';
 import styled from 'styled-components';
 import {Colors} from '@blueprintjs/core';
-import type {ScoreElement} from 'src/models/tlo';
+import {type ScoreElement} from 'src/models/scoreElement';
 import {
   defaultColors,
   groupByMetricNameAndVmName,

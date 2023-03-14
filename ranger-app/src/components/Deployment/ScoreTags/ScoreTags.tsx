@@ -26,7 +26,6 @@ const ScoreTags = ({exerciseId, deploymentId}:
 }) => {
   const {data: entities}
   = useGetDeploymentEntitiesQuery({exerciseId, deploymentId});
-
   const {data: goals}
   = useGetDeploymentGoalsQuery({exerciseId, deploymentId});
 
@@ -52,9 +51,7 @@ const ScoreTags = ({exerciseId, deploymentId}:
     );
   }
 
-  return (
-    null
-  );
+  return null;
 };
 
 export default ScoreTags;

@@ -46,14 +46,17 @@ const calculateTotalScoreForRole = ({schema, scoreElements, role}: {
     const roleScores = scoreElements.filter(score =>
       roleMetricNames.has(score.metricName));
 
-    const uniqueVmNames = [...new Set(roleScores
-      .map(score => score.vmName))];
+    const uniqueVmNames = [...new Set(roleScores.map(score => score.vmName))];
     const totalRoleScore = uniqueVmNames.reduce((scoreSum, vmName) => {
-      const vmScores: ScoreElement[] = roleScores
-        .filter(scoreElement => scoreElement.vmName === vmName);
-      const latest_score = findLatestScoreElement(vmScores);
+      const vmScores: ScoreElement[] = roleScores.filter(scoreElement =>
+        scoreElement.vmName === vmName);
+      const latest_score_value = findLatestScoreElement(vmScores)?.value;
 
-      return Number(scoreSum) + Number(latest_score?.value);
+      if (latest_score_value) {
+        return scoreSum + Number(latest_score_value);
+      }
+
+      return 0;
     }, 0);
     return totalRoleScore;
   }
@@ -87,6 +90,8 @@ const ScoreTagBody = ({exerciseId, deploymentId, role}:
       </TagWrapper>
     );
   }
+
+  return null;
 };
 
 export default ScoreTagBody;

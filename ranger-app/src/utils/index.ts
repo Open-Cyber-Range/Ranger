@@ -64,6 +64,13 @@ export function groupByMetricNameAndVmName(array: ScoreElement[]) {
     }, {});
 }
 
+export const groupBy = <T, K extends keyof any>(array: T[], key: (i: T) => K) =>
+  array.reduce<Record<K, T[]>>((groups, item) => {
+    (groups[key(item)] ||= []).push(item);
+    return groups;
+  // eslint-disable-next-line @typescript-eslint/prefer-reduce-type-parameter
+  }, {} as Record<K, T[]>);
+
 export const defaultColors = [
   '#147EB3',
   '#29A634',
@@ -126,4 +133,23 @@ export const findLatestScoreElement = (scoreElements: ScoreElement[]) => {
   }
 
   return undefined;
+};
+
+export const findLatestScoreElementsByVms = (scoreElements: ScoreElement[]) => {
+  const uniqueVmNames = [...new Set(scoreElements
+    .map(score => score.vmName))];
+  const latestScoresByVm = uniqueVmNames
+    .reduce<ScoreElement[]>((latestVms, vmName) => {
+    const scoresByVm = scoreElements.filter(scoreElement =>
+      scoreElement.vmName === vmName);
+    const latest_score_value = findLatestScoreElement(scoresByVm);
+    if (latest_score_value) {
+      latestVms.push(latest_score_value);
+      return latestVms;
+    }
+
+    return [];
+  }, []);
+
+  return latestScoresByVm;
 };
