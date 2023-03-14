@@ -13,7 +13,7 @@ import {
   type NewExercise,
   type UpdateExercise,
 } from 'src/models/exercise';
-import {type ScoreElement} from 'src/models/scoreElement';
+import {type Score} from 'src/models/score';
 
 export const apiSlice = createApi({
   reducerPath: 'api',
@@ -22,6 +22,7 @@ export const apiSlice = createApi({
     'Deployment',
     'Exercise',
     'Record<string, TrainingLearningObjective>',
+    'Score',
   ],
   endpoints: builder => ({
     getExercises: builder.query<Exercise[], void>({
@@ -117,7 +118,7 @@ export const apiSlice = createApi({
     getEmailForm: builder.query <string, string>({
       query: exerciseId => `/exercise/${exerciseId}/email`,
     }),
-    getDeploymentScores: builder.query<ScoreElement[],
+    getDeploymentScores: builder.query<Score[],
     {
       exerciseId: string;
       deploymentId: string;

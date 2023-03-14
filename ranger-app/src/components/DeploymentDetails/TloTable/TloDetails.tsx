@@ -20,12 +20,11 @@ const TloDetails = ({exerciseId, deploymentId, tloName, tloMap}:
     {exerciseId,
       deploymentId,
       tloName});
-  const {data: scoreElements} = useGetDeploymentScoresQuery(
+  const {data: scores} = useGetDeploymentScoresQuery(
     exerciseId && deploymentId ? {exerciseId, deploymentId} : skipToken);
 
-  if (evaluation && scoreElements) {
-    const scoreElementsMap = groupBy(scoreElements, element =>
-      element.metricName);
+  if (evaluation && scores) {
+    const scoresByMetric = groupBy(scores, score => score.metricName);
 
     return (
       <>
@@ -38,7 +37,7 @@ const TloDetails = ({exerciseId, deploymentId, tloName, tloMap}:
             <MetricInfo
               key={metricName}
               metricName={metricName}
-              scoreElements={scoreElementsMap[metricName]}
+              scores={scoresByMetric[metricName]}
             />
           ))}
         </td>

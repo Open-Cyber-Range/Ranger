@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ScoreElement {
+pub struct Score {
     #[serde(default = "Uuid::random")]
     pub id: Uuid,
     pub exercise_id: Uuid,
@@ -17,7 +17,7 @@ pub struct ScoreElement {
     pub created_at: NaiveDateTime,
 }
 
-impl ScoreElement {
+impl Score {
     pub fn new(
         exercise_id: Uuid,
         deployment_id: Uuid,

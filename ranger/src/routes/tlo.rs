@@ -1,6 +1,6 @@
 use crate::{
     errors::RangerError,
-    models::helpers::{score_element::ScoreElement, uuid::Uuid},
+    models::helpers::{score::Score, uuid::Uuid},
     services::database::{
         condition::GetConditionMessagesByDeploymentId,
         deployment::{GetDeployment, GetDeploymentElementByDeploymentId},
@@ -76,7 +76,7 @@ pub async fn get_exercise_deployment_tlo_evaluation(
 pub async fn get_exercise_deployment_scores(
     path_variables: Path<(Uuid, Uuid)>,
     app_state: Data<AppState>,
-) -> Result<Json<Vec<ScoreElement>>, RangerError> {
+) -> Result<Json<Vec<Score>>, RangerError> {
     let (exercise_uuid, deployment_uuid) = path_variables.into_inner();
 
     let condition_messages = app_state
@@ -119,7 +119,7 @@ pub async fn get_exercise_deployment_scores(
         .map_err(create_database_error_handler("Get deployment elements"))?;
 
     if let Some(metrics) = scenario.metrics {
-        let mut score_elements: Vec<ScoreElement> = vec![];
+        let mut scores: Vec<Score> = vec![];
 
         for condition_message in condition_messages.iter() {
             if let Some((metric_name, metric)) = metrics.iter().find(|(_, metric)| {
@@ -130,7 +130,7 @@ pub async fn get_exercise_deployment_scores(
                 if let Some(vm_name) =
                     vm_deplyoment_elements.get(&condition_message.virtual_machine_id.to_string())
                 {
-                    score_elements.push(ScoreElement::new(
+                    scores.push(Score::new(
                         exercise_uuid,
                         deployment_uuid,
                         metric_name.to_owned(),
@@ -143,8 +143,7 @@ pub async fn get_exercise_deployment_scores(
             }
         }
 
-
-        return Ok(Json(score_elements));
+        return Ok(Json(scores));
     }
     Ok(Json(vec![]))
 }

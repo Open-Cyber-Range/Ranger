@@ -19,7 +19,7 @@ import {
 } from 'src/slices/apiSlice';
 import styled from 'styled-components';
 import {Colors} from '@blueprintjs/core';
-import {type ScoreElement} from 'src/models/scoreElement';
+import {type Score} from 'src/models/score';
 import {
   defaultColors,
   groupByMetricNameAndVmName,
@@ -63,22 +63,22 @@ const DeploymentDetailsGraph = ({exerciseId, deploymentId}:
   const chartTitle = t('chart.scoring.title');
   const queryArguments = exerciseId && deploymentId
     ? {exerciseId, deploymentId} : skipToken;
-  const {data: scoreElements} = useGetDeploymentScoresQuery(queryArguments);
+  const {data: scores} = useGetDeploymentScoresQuery(queryArguments);
   const {data: deployment} = useGetDeploymentQuery(queryArguments);
 
-  const intoGraphPoint = (scoreElement: ScoreElement) => ({
-    x: Date.parse(scoreElement.createdAt),
-    y: roundToDecimalPlaces(scoreElement.value),
+  const intoGraphPoint = (score: Score) => ({
+    x: Date.parse(score.createdAt),
+    y: roundToDecimalPlaces(score.value),
   });
 
   function intoGraphData(
-    scoreElementsMap: Record<string, ScoreElement[]>) {
+    scoresByMetric: Record<string, Score[]>) {
     const graphData: ChartData<'line'> = {
       datasets: [],
     };
 
-    for (const metricName in scoreElementsMap) {
-      if (Object.prototype.hasOwnProperty.call(scoreElementsMap, metricName)
+    for (const metricName in scoresByMetric) {
+      if (Object.prototype.hasOwnProperty.call(scoresByMetric, metricName)
       ) {
         const baseDataset: ChartDataset<'line'> = {
           type: 'line',
@@ -95,10 +95,10 @@ const DeploymentDetailsGraph = ({exerciseId, deploymentId}:
           data: [],
         };
 
-        for (const scoreElement of scoreElementsMap[metricName]
+        for (const score of scoresByMetric[metricName]
           .sort(sortByCreatedAtAscending)
         ) {
-          const graphPoint = intoGraphPoint(scoreElement);
+          const graphPoint = intoGraphPoint(score);
           (baseDataset.data).push(graphPoint);
         }
 
@@ -109,10 +109,10 @@ const DeploymentDetailsGraph = ({exerciseId, deploymentId}:
     return graphData;
   }
 
-  if (deployment && scoreElements && scoreElements.length > 0) {
+  if (deployment && scores && scores.length > 0) {
     return (
       <Line
-        data={intoGraphData(groupByMetricNameAndVmName(scoreElements))}
+        data={intoGraphData(groupByMetricNameAndVmName(scores))}
         options={{
           showLine: true,
           animation: false,

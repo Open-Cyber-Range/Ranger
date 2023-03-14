@@ -1,4 +1,4 @@
-export type ScoreElement = {
+export type Score = {
   id: string;
   exerciseId: string;
   deploymentId: string;

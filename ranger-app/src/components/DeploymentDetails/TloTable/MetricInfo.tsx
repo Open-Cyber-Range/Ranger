@@ -1,16 +1,16 @@
 
 import React from 'react';
 import {useTranslation} from 'react-i18next';
-import {type ScoreElement} from 'src/models/scoreElement';
-import {findLatestScoreElementsByVms, roundToDecimalPlaces} from 'src/utils';
+import {type Score} from 'src/models/score';
+import {findLatestScoresByVms, roundToDecimalPlaces} from 'src/utils';
 
 const MetricInfo = (
-  {metricName, scoreElements}:
-  {metricName: string; scoreElements: ScoreElement[] | undefined}) => {
+  {metricName, scores}:
+  {metricName: string; scores: Score[] | undefined}) => {
   const {t} = useTranslation();
 
-  if (scoreElements && scoreElements.length > 0) {
-    const latestScoresByVm = findLatestScoreElementsByVms(scoreElements);
+  if (scores && scores.length > 0) {
+    const latestScoresByVm = findLatestScoresByVms(scores);
     latestScoresByVm.sort((a, b) => a.vmName.localeCompare(b.vmName));
 
     return (

@@ -9,7 +9,7 @@ import {
 } from 'src/slices/apiSlice';
 import {useTranslation} from 'react-i18next';
 import {
-  findLatestScoreElement,
+  findLatestScore,
   getRoleColor,
   isNonNullable,
   roundToDecimalPlaces,
@@ -17,19 +17,19 @@ import {
 import {skipToken} from '@reduxjs/toolkit/dist/query';
 import {type ExerciseRole} from 'src/models/scenario/entity';
 import {type Schema} from 'src/models/schema';
-import {type ScoreElement} from 'src/models/scoreElement';
+import {type Score} from 'src/models/score';
 
 const TagWrapper = styled.div`
   display: flex;
   margin-right: 0.5rem;
 `;
 
-const calculateTotalScoreForRole = ({schema, scoreElements, role}: {
+const calculateTotalScoreForRole = ({schema, scores, role}: {
   schema: Schema;
-  scoreElements: ScoreElement[];
+  scores: Score[];
   role: ExerciseRole;
 }) => {
-  if (scoreElements.length > 0) {
+  if (scores.length > 0) {
     const entityValues = Object.values(schema.entities);
     const roleEntities = entityValues.slice().filter(entity =>
       entity.role?.valueOf() === role,
@@ -43,14 +43,14 @@ const calculateTotalScoreForRole = ({schema, scoreElements, role}: {
     const roleMetricNames = new Set(roleEvaluationNames
       .flatMap(evaluationName =>
         schema.evaluations[evaluationName]?.metrics));
-    const roleScores = scoreElements.filter(score =>
+    const roleScores = scores.filter(score =>
       roleMetricNames.has(score.metricName));
 
     const uniqueVmNames = [...new Set(roleScores.map(score => score.vmName))];
     const totalRoleScore = uniqueVmNames.reduce((scoreSum, vmName) => {
-      const vmScores: ScoreElement[] = roleScores.filter(scoreElement =>
-        scoreElement.vmName === vmName);
-      const latest_score_value = findLatestScoreElement(vmScores)?.value;
+      const vmScores: Score[] = roleScores.filter(score =>
+        score.vmName === vmName);
+      const latest_score_value = findLatestScore(vmScores)?.value;
 
       if (latest_score_value) {
         return scoreSum + Number(latest_score_value);
@@ -71,13 +71,13 @@ const ScoreTagBody = ({exerciseId, deploymentId, role}:
 }) => {
   const queryArguments = exerciseId && deploymentId
     ? {exerciseId, deploymentId} : skipToken;
-  const {data: scoreElements} = useGetDeploymentScoresQuery(queryArguments);
+  const {data: scores} = useGetDeploymentScoresQuery(queryArguments);
   const {data: schema} = useGetDeploymentSchemaQuery(queryArguments);
   const {t} = useTranslation();
   const backgroundColor = getRoleColor(role);
 
-  if (schema && scoreElements && role) {
-    const tagScore = calculateTotalScoreForRole({schema, scoreElements, role});
+  if (schema && scores && role) {
+    const tagScore = calculateTotalScoreForRole({schema, scores, role});
 
     return (
       <TagWrapper key={role}>

@@ -3,7 +3,7 @@ import {Colors} from '@blueprintjs/core';
 import type {Deployment} from 'src/models/deployment';
 import type {Exercise} from 'src/models/exercise';
 import {ExerciseRole} from 'src/models/scenario/entity';
-import {type ScoreElement} from 'src/models/scoreElement';
+import {type Score} from 'src/models/score';
 
 export function sortByUpdatedAtAscending<
   T extends Deployment | Exercise>(a: T, b: T) {
@@ -24,7 +24,7 @@ export function sortByUpdatedAtDescending<
 }
 
 export function sortByCreatedAtAscending<
-  T extends Deployment | Exercise | ScoreElement >(a: T, b: T) {
+  T extends Deployment | Exercise | Score >(a: T, b: T) {
   if (!a.createdAt || a.createdAt < b.createdAt) {
     return -1;
   }
@@ -37,7 +37,7 @@ export function sortByCreatedAtAscending<
 }
 
 export function sortByCreatedAtDescending<
-  T extends Deployment | Exercise | ScoreElement >(a: T, b: T) {
+  T extends Deployment | Exercise | Score >(a: T, b: T) {
   return sortByCreatedAtAscending(a, b);
 }
 
@@ -50,8 +50,8 @@ export const getWebsocketBase = () => {
 export const isDevelopment = () =>
   import.meta.env.DEV;
 
-export function groupByMetricNameAndVmName(array: ScoreElement[]) {
-  return array.reduce<Record<string, ScoreElement[]>>(
+export function groupByMetricNameAndVmName(array: Score[]) {
+  return array.reduce<Record<string, Score[]>>(
     (groupedMap, element) => {
       const key = element.metricName.concat(' - ', element.vmName);
       if (groupedMap[key]) {
@@ -124,25 +124,25 @@ export function isNonNullable<T>(value: T): value is NonNullable<T> {
   return value !== null && value !== undefined;
 }
 
-export const findLatestScoreElement = (scoreElements: ScoreElement[]) => {
-  if (scoreElements.length > 0) {
-    const latestScoreElement = scoreElements.reduce((previous, current) =>
+export const findLatestScore = (scores: Score[]) => {
+  if (scores.length > 0) {
+    const latestScore = scores.reduce((previous, current) =>
       (Date.parse(previous?.createdAt)
       > Date.parse(current?.createdAt)) ? previous : current);
-    return latestScoreElement;
+    return latestScore;
   }
 
   return undefined;
 };
 
-export const findLatestScoreElementsByVms = (scoreElements: ScoreElement[]) => {
-  const uniqueVmNames = [...new Set(scoreElements
+export const findLatestScoresByVms = (scores: Score[]) => {
+  const uniqueVmNames = [...new Set(scores
     .map(score => score.vmName))];
   const latestScoresByVm = uniqueVmNames
-    .reduce<ScoreElement[]>((latestVms, vmName) => {
-    const scoresByVm = scoreElements.filter(scoreElement =>
-      scoreElement.vmName === vmName);
-    const latest_score_value = findLatestScoreElement(scoresByVm);
+    .reduce<Score[]>((latestVms, vmName) => {
+    const scoresByVm = scores.filter(score =>
+      score.vmName === vmName);
+    const latest_score_value = findLatestScore(scoresByVm);
     if (latest_score_value) {
       latestVms.push(latest_score_value);
       return latestVms;
