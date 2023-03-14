@@ -51,7 +51,7 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
   }, [error, t]);
 
   return (
-    <form className='EmailForm' onSubmit={handleSubmit(onSubmit)}>
+    <form onSubmit={handleSubmit(onSubmit)}>
       <div>
         <Controller
           control={control}

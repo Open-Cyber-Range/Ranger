@@ -7,7 +7,6 @@ import type {
   NewDeployment,
 } from 'src/models/deployment';
 import {
-  type SimpleEmail,
   type EmailForm,
   type Exercise,
   type NewExercise,
@@ -96,7 +95,7 @@ export const apiSlice = createApi({
       query: () => '/deployer',
     }),
     sendMail: builder
-      .mutation <SimpleEmail, {email: EmailForm; exerciseId: string} >({
+      .mutation <EmailForm, {email: EmailForm; exerciseId: string} >({
       query: ({email, exerciseId}) => ({
         url: `/exercise/${exerciseId}/email`,
         method: 'POST',

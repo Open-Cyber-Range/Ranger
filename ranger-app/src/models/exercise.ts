@@ -21,17 +21,6 @@ type EmailForm = {
   body: string;
 };
 
-type SimpleEmail = {
-  id: string;
-  fromAddress: string;
-  replyToAddress?: string;
-  ccAddress?: string;
-  bccAddress?: string;
-  toAddress: string;
-  subject: string;
-  body: string;
-};
-
 export enum EmailStatus {
   Delivered = 'delivered',
   BeingSent = 'being sent',
@@ -58,6 +47,5 @@ export type {
   Exercise,
   UpdateExercise,
   EmailForm,
-  SimpleEmail,
   Email,
 };
