@@ -11,6 +11,7 @@ import {useTranslation} from 'react-i18next';
 import {
   findLatestScore,
   getRoleColor,
+  groupBy,
   isNonNullable,
   roundToDecimalPlaces,
 } from 'src/utils';
@@ -50,13 +51,19 @@ const calculateTotalScoreForRole = ({schema, scores, role}: {
     const totalRoleScore = uniqueVmNames.reduce((scoreSum, vmName) => {
       const vmScores: Score[] = roleScores.filter(score =>
         score.vmName === vmName);
-      const latest_score_value = findLatestScore(vmScores)?.value;
 
-      if (latest_score_value) {
-        return scoreSum + Number(latest_score_value);
+      const scoresByMetric = groupBy(vmScores, score => score.metricName);
+
+      for (const metricName in scoresByMetric) {
+        if (scoresByMetric[metricName]) {
+          const currentScore = findLatestScore(scoresByMetric[metricName]);
+          if (currentScore?.value) {
+            scoreSum += Number(currentScore?.value);
+          }
+        }
       }
 
-      return 0;
+      return scoreSum;
     }, 0);
     return totalRoleScore;
   }
