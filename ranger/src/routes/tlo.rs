@@ -107,7 +107,10 @@ pub async fn get_exercise_deployment_scores(
 
     let vm_deplyoment_elements = deployment_elements
         .iter()
-        .filter(|element| matches!(element.deployer_type.0, GrpcDeployerTypes::VirtualMachine))
+        .filter(|element| {
+            matches!(element.deployer_type.0, GrpcDeployerTypes::VirtualMachine)
+                && element.handler_reference.is_some()
+        })
         .map(|element| {
             let vm_id = try_some(
                 element.handler_reference.to_owned(),
