@@ -1,17 +1,17 @@
 import React, {useEffect} from 'react';
 import type {EmailForm, Exercise} from 'src/models/exercise';
-import {
-  Button,
-  FormGroup,
-  InputGroup,
-  Intent,
-  TextArea,
-} from '@blueprintjs/core';
+import {Button, FormGroup, InputGroup, Intent} from '@blueprintjs/core';
 import {useTranslation} from 'react-i18next';
 import {Controller, type SubmitHandler, useForm} from 'react-hook-form';
 import {useSendMailMutation} from 'src/slices/apiSlice';
 import {toastSuccess, toastWarning} from 'src/components/Toaster';
 import nunjucks from 'nunjucks';
+import Editor from '@monaco-editor/react';
+import styled from 'styled-components';
+
+const EditorHolder = styled.div`
+  height: 40vh;
+`;
 
 const SendEmail = ({exercise}: {exercise: Exercise}) => {
   const {t} = useTranslation();
@@ -71,6 +71,7 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
               >
                 <InputGroup
                   large
+                  type='email'
                   intent={intent}
                   value={value}
                   inputRef={ref}
@@ -98,6 +99,7 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
               >
                 <InputGroup
                   large
+                  type='email'
                   intent={intent}
                   value={value}
                   inputRef={ref}
@@ -125,6 +127,7 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
               >
                 <InputGroup
                   large
+                  type='email'
                   intent={intent}
                   value={value}
                   inputRef={ref}
@@ -152,6 +155,7 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
               >
                 <InputGroup
                   large
+                  type='email'
                   intent={intent}
                   value={value}
                   inputRef={ref}
@@ -197,7 +201,7 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
           name='body'
           rules={{required: t('emails.form.body.required') ?? ''}}
           render={({
-            field: {onChange, onBlur, ref, value}, fieldState: {error},
+            field: {onChange, value}, fieldState: {error},
           }) => {
             const intent = error ? Intent.DANGER : Intent.NONE;
             return (
@@ -208,17 +212,13 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
                 intent={intent}
                 label={t('emails.form.body.title')}
               >
-                <TextArea
-                  large
-                  growVertically
-                  fill
-                  intent={intent}
-                  value={value}
-                  inputRef={ref}
-                  id='email-body'
-                  onChange={onChange}
-                  onBlur={onBlur}
-                />
+                <EditorHolder>
+                  <Editor
+                    value={value}
+                    defaultLanguage='html'
+                    onChange={onChange}
+                  />
+                </EditorHolder>
               </FormGroup>
             );
           }}
