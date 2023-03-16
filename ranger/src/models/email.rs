@@ -50,22 +50,26 @@ impl Email {
             .from(self.from_address.parse()?)
             .subject(self.subject.clone());
 
-        let to_addresses: Vec<&str> = self.to_address.split(',').collect();
-        for to_address in to_addresses {
+        for to_address in self.to_address.clone().split(',') {
             message_builder = message_builder.to(to_address.trim().parse()?);
         }
 
         if self.reply_to_address.is_some() && !self.reply_to_address.clone().unwrap().is_empty() {
-            message_builder =
-                message_builder.reply_to(self.reply_to_address.clone().unwrap().parse()?);
+            for reply_to_address in self.reply_to_address.clone().unwrap().split(',') {
+                message_builder = message_builder.reply_to(reply_to_address.trim().parse()?);
+            }
         }
 
         if self.cc_address.is_some() && !self.cc_address.clone().unwrap().is_empty() {
-            message_builder = message_builder.cc(self.cc_address.clone().unwrap().parse()?);
+            for cc_address in self.cc_address.clone().unwrap().split(',') {
+                message_builder = message_builder.cc(cc_address.trim().parse()?);
+            }
         }
 
         if self.bcc_address.is_some() && !self.bcc_address.clone().unwrap().is_empty() {
-            message_builder = message_builder.bcc(self.bcc_address.clone().unwrap().parse()?);
+            for bcc_address in self.bcc_address.clone().unwrap().split(',') {
+                message_builder = message_builder.bcc(bcc_address.trim().parse()?);
+            }
         }
 
         Ok(message_builder.multipart(MultiPart::alternative_plain_html(
