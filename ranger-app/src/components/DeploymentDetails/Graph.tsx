@@ -1,4 +1,4 @@
-import type React from 'react';
+import React from 'react';
 import type {ChartData, ChartDataset} from 'chart.js';
 import {
   Decimation,
@@ -19,6 +19,7 @@ import {
 } from 'src/slices/apiSlice';
 import styled from 'styled-components';
 import {Colors} from '@blueprintjs/core';
+import zoomPlugin from 'chartjs-plugin-zoom';
 import {type Score} from 'src/models/score';
 import {
   defaultColors,
@@ -41,6 +42,7 @@ ChartJS.register(
   PointElement,
   LineElement,
   Decimation,
+  zoomPlugin,
 );
 
 const FallbackTextWrapper = styled.div`
@@ -110,9 +112,10 @@ const DeploymentDetailsGraph = ({exerciseId, deploymentId}:
   }
 
   if (deployment && scores && scores.length > 0) {
+    const groupedScores = groupByMetricNameAndVmName(scores);
     return (
       <Line
-        data={intoGraphData(groupByMetricNameAndVmName(scores))}
+        data={intoGraphData(groupedScores)}
         options={{
           showLine: true,
           animation: false,
@@ -138,6 +141,31 @@ const DeploymentDetailsGraph = ({exerciseId, deploymentId}:
             title: {
               display: true,
               text: chartTitle,
+            },
+            zoom: {
+              pan: {
+                enabled: true,
+                mode: 'xy',
+              },
+              limits: {
+                x: {
+                  min: Date.parse(deployment.startTime),
+                  max: Date.parse(deployment.endTime),
+                },
+                y: {
+                  min: 'original',
+                  max: 'original',
+                },
+              },
+              zoom: {
+                wheel: {
+                  enabled: true,
+                },
+                pinch: {
+                  enabled: true,
+                },
+                mode: 'x',
+              },
             },
           },
           responsive: true,

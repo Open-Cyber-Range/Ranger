@@ -38,7 +38,7 @@ export function sortByCreatedAtAscending<
 
 export function sortByCreatedAtDescending<
   T extends Deployment | Exercise | Score >(a: T, b: T) {
-  return sortByCreatedAtAscending(a, b);
+  return sortByCreatedAtAscending(a, b) * -1;
 }
 
 export const getWebsocketBase = () => {
@@ -142,9 +142,9 @@ export const findLatestScoresByVms = (scores: Score[]) => {
     .reduce<Score[]>((latestVms, vmName) => {
     const scoresByVm = scores.filter(score =>
       score.vmName === vmName);
-    const latest_score_value = findLatestScore(scoresByVm);
-    if (latest_score_value) {
-      latestVms.push(latest_score_value);
+    const latestScoreValue = findLatestScore(scoresByVm);
+    if (latestScoreValue) {
+      latestVms.push(latestScoreValue);
       return latestVms;
     }
 

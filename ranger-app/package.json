@@ -21,6 +21,7 @@
     "@types/styled-components": "^5.1.26",
     "chart.js": "^4.2.0",
     "chartjs-adapter-moment": "^1.0.1",
+    "chartjs-plugin-zoom": "^2.0.0",
     "human-interval": "^2.0.1",
     "i18next": "^22.0.4",
     "i18next-browser-languagedetector": "^7.0.0",
