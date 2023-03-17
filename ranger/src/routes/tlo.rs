@@ -1,6 +1,6 @@
 use crate::{
     errors::RangerError,
-    models::helpers::{score::Score, uuid::Uuid},
+    models::{helpers::uuid::Uuid, Score},
     services::database::{
         condition::GetConditionMessagesByDeploymentId,
         deployment::{GetDeployment, GetDeploymentElementByDeploymentId},

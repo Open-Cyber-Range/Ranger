@@ -1,4 +1,4 @@
-use super::uuid::Uuid;
+use super::helpers::uuid::Uuid;
 use bigdecimal::BigDecimal;
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
