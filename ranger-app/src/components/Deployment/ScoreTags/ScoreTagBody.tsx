@@ -1,7 +1,6 @@
 /* eslint-disable unicorn/no-array-reduce */
 import React from 'react';
 import {Tag} from '@blueprintjs/core';
-import styled from 'styled-components';
 import '@blueprintjs/popover2/lib/css/blueprint-popover2.css';
 import {
   useGetDeploymentSchemaQuery,
@@ -19,11 +18,6 @@ import {skipToken} from '@reduxjs/toolkit/dist/query';
 import {type ExerciseRole} from 'src/models/scenario/entity';
 import {type Schema} from 'src/models/schema';
 import {type Score} from 'src/models/score';
-
-const TagWrapper = styled.div`
-  display: flex;
-  margin-right: 0.5rem;
-`;
 
 const calculateTotalScoreForRole = ({schema, scores, role}: {
   schema: Schema;
@@ -71,10 +65,11 @@ const calculateTotalScoreForRole = ({schema, scores, role}: {
   return 0;
 };
 
-const ScoreTagBody = ({exerciseId, deploymentId, role}:
+const ScoreTagBody = ({exerciseId, deploymentId, role, large = false}:
 {exerciseId: string;
   deploymentId: string;
   role: ExerciseRole;
+  large?: boolean;
 }) => {
   const queryArguments = exerciseId && deploymentId
     ? {exerciseId, deploymentId} : skipToken;
@@ -87,14 +82,14 @@ const ScoreTagBody = ({exerciseId, deploymentId, role}:
     const tagScore = calculateTotalScoreForRole({schema, scores, role});
 
     return (
-      <TagWrapper key={role}>
-        <Tag
-          round
-          style={{background: backgroundColor}}
-        >
-          {role} {t('common.team')}: {roundToDecimalPlaces(tagScore) }
-        </Tag>
-      </TagWrapper>
+      <Tag
+        key={role}
+        round
+        large={large}
+        style={{background: backgroundColor}}
+      >
+        {role} {t('common.team')}: {roundToDecimalPlaces(tagScore) }
+      </Tag>
     );
   }
 
