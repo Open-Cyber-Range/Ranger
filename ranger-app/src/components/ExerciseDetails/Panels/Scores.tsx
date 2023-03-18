@@ -4,26 +4,40 @@ import {useTranslation} from 'react-i18next';
 import type {Deployment} from 'src/models/deployment';
 import ScoreTags from 'src/components/Deployment/ScoreTags/ScoreTags';
 import {H4} from '@blueprintjs/core';
+import {useNavigate} from 'react-router-dom';
+import {sortByUpdatedAtDescending} from 'src/utils';
 
 const ScoresPanel = ({deployments}:
 {deployments: Deployment[] | undefined;
 }) => {
   const {t} = useTranslation();
+  const navigate = useNavigate();
+
+  const handleClick = (deploymentId: string) => {
+    navigate(`deployments/${deploymentId}`);
+  };
 
   if (deployments) {
+    deployments = deployments.slice().sort(sortByUpdatedAtDescending);
+
     return (
       <PageHolder>
-        <div className='flex flex-col text-center'>
+        <div className='flex flex-col'>
           <table className='
               bp4-html-table
-              bp4-compact
-              bp4-html-table-striped'
+              bp4-html-table-striped
+              bp4-interactive'
           >
             <tbody>
               {deployments.map(deployment => (
-                <tr key={deployment.id}>
+                <tr
+                  key={deployment.id}
+                  onClick={() => {
+                    handleClick(deployment.id);
+                  }}
+                >
                   <td className='flex flex-row justify-between'>
-                    <H4>{deployment.name}</H4>
+                    <H4 className='mb-0'>{deployment.name}</H4>
                     <ScoreTags
                       exerciseId={deployment.exerciseId}
                       deploymentId={deployment.id}/>

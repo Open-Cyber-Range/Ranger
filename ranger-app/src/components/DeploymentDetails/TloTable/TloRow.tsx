@@ -23,7 +23,7 @@ const TloRow = ({exerciseId, deploymentId, tloKey, tlo}:
 
   const MetricsCell = ({scores, metricName}:
   {scores: Score[]; metricName: string}) => {
-    if (scores.length > 0) {
+    if (scores && scores.length > 0) {
       const latestScoresByVm = findLatestScoresByVms(scores);
       latestScoresByVm.sort((a, b) => a.vmName.localeCompare(b.vmName));
 
@@ -43,9 +43,11 @@ const TloRow = ({exerciseId, deploymentId, tloKey, tlo}:
 
     return (
       <td>
-        <li>
-          {t('tloTable.noMetricData')}
-        </li>
+        <div className='pl-4'>
+          <li>
+            {t('tloTable.noMetricData')}
+          </li>
+        </div>
       </td>
     );
   };
