@@ -1,18 +1,8 @@
 import React from 'react';
-import styled from 'styled-components';
 import {useGetExercisesQuery} from 'src/slices/apiSlice';
 import {sortByUpdatedAtDescending} from 'src/utils';
 import humanInterval from 'human-interval';
 import ExerciseCard from './Card';
-
-const Wrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-
-  > div {
-    margin-bottom: 2rem;
-  }
-`;
 
 const ExerciseList = () => {
   const {
@@ -25,12 +15,12 @@ const ExerciseList = () => {
   exercises = exercises.slice().sort(sortByUpdatedAtDescending);
 
   return (
-    <Wrapper>
+    <div className='flex flex-col [&>div]:mb-8'>
       {exercises.map(exercise => (
         <ExerciseCard key={exercise.id} exercise={exercise}/>
       ))}
 
-    </Wrapper>
+    </div>
 
   );
 };

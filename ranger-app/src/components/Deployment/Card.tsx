@@ -1,6 +1,5 @@
 import type React from 'react';
 import {Button, Card, H2} from '@blueprintjs/core';
-import styled from 'styled-components';
 import type {Deployment} from 'src/models/deployment';
 import {
   useDeleteDeploymentMutation,
@@ -12,38 +11,6 @@ import {useNavigate} from 'react-router-dom';
 import StatusBar from './ProgressBar';
 import InfoTags from './InfoTags';
 import ScoreTags from './ScoreTags/ScoreTags';
-
-const CardRow = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-`;
-
-const ActionButtons = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-end;
-  > button {
-    margin-left: 1rem;
-    margin-bottom: 0.5rem;
-    align-self: center;
-  }
-`;
-
-const InfoTagsWrapper = styled.div`
-  display: flex;
-  align-items: end;
-  margin-left: auto;
-  margin-right: 2rem;
-  margin-top: auto;
-  margin-bottom: auto;
-`;
-
-const ScoreTagsWrapper = styled.div`
-  display: flex;
-  align-items: flex-start;
-  margin-top: 1rem;
-`;
 
 const DeploymentCard = ({deployment}: {deployment: Deployment}) => {
   const {t} = useTranslation();
@@ -78,12 +45,14 @@ const DeploymentCard = ({deployment}: {deployment: Deployment}) => {
 
   return (
     <Card interactive elevation={2} onClick={routeChange}>
-      <CardRow>
+      <div className='flex flex-row justify-between'>
         <H2>{deployment.name}</H2>
-        <InfoTagsWrapper>
+        <div className='flex items-end ml-auto mr-8 mt-auto mb-auto'>
           <InfoTags deploymentElements={deploymentElements}/>
-        </InfoTagsWrapper>
-        <ActionButtons>
+        </div>
+        <div className='
+          flex flex-row justify-end [&>button]:ml-4 [&>button]:mb-2'
+        >
           <Button
             large
             intent='danger'
@@ -93,18 +62,18 @@ const DeploymentCard = ({deployment}: {deployment: Deployment}) => {
             }}
           > {t('common.delete')}
           </Button>
-        </ActionButtons>
-      </CardRow>
+        </div>
+      </div>
       <StatusBar
         key={deployment.id}
         deployment={deployment}
         deploymentElements={deploymentElements}
       />
-      <ScoreTagsWrapper>
+      <div className='flex items-start mt-4'>
         <ScoreTags
           exerciseId={deployment.exerciseId}
           deploymentId={deployment.id}/>
-      </ScoreTagsWrapper>
+      </div>
     </Card>
   );
 };

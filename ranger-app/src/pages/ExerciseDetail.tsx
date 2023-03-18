@@ -9,11 +9,9 @@ import {
 import {skipToken} from '@reduxjs/toolkit/dist/query';
 import {useTranslation} from 'react-i18next';
 import {H2, Tab, Tabs} from '@blueprintjs/core';
-
 import DashboardPanel from 'src/components/ExerciseDetails/Panels/Dashboard';
 import ScoresPanel from 'src/components/ExerciseDetails/Panels/Scores';
 import SendEmail from 'src/components/Email/SendEmail';
-import ExerciseForm from 'src/components/Exercise/Form';
 
 const ExerciseDetail = () => {
   const {t} = useTranslation();
@@ -25,9 +23,6 @@ const ExerciseDetail = () => {
   if (exercise && deployments) {
     return (
       <PageHolder>
-        <ExerciseForm exercise={exercise}/>
-        <br/>
-
         <H2>{exercise.name}</H2>
         <Tabs
           large

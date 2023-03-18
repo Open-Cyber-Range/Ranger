@@ -12,22 +12,7 @@ import {
   useGetDeploymentGoalsQuery,
 } from 'src/slices/apiSlice';
 import {isNonNullable} from 'src/utils';
-import styled from 'styled-components';
 import TloRow from './TloRow';
-
-const Wrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  text-align: center;
-  margin-top: 2rem;
-`;
-
-const ScoreTagsWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  margin-bottom: 1rem;
-  `;
 
 const TloTable = ({exerciseId, deploymentId, tloMap}:
 {exerciseId: string;
@@ -75,15 +60,15 @@ const TloTable = ({exerciseId, deploymentId, tloMap}:
     }
 
     return (
-      <Wrapper>
+      <div className='flex flex-col mt-2'>
         {roles.map(role => {
           const tloMap = tloMapsByRole[role];
           if (tloMap) {
             const tloKeys = Object.keys(tloMap);
 
             return (
-              <Wrapper key={role}>
-                <ScoreTagsWrapper>
+              <div key={role} className='flex flex-col mt-2 text-center'>
+                <div className='flex flex-col mt-6 font-bold'>
                   <ScoreTagBody
                     key={role}
                     large
@@ -91,11 +76,12 @@ const TloTable = ({exerciseId, deploymentId, tloMap}:
                     deploymentId={deploymentId}
                     role={role}
                   />
-                </ScoreTagsWrapper>
+                </div>
 
                 <table className='
-                bp4-html-table
-                bp4-html-table-striped'
+                  bp4-html-table
+                  bp4-html-table-striped
+                  bp4-html-table-bordered'
                 >
                   <tbody>
                     <tr>
@@ -114,14 +100,14 @@ const TloTable = ({exerciseId, deploymentId, tloMap}:
                     )) }
                   </tbody>
                 </table>
-              </Wrapper>
+              </div>
             );
           }
 
           return null;
         },
         )}
-      </Wrapper>
+      </div>
     );
   }
 

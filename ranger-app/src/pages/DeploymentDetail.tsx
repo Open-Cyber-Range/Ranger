@@ -1,26 +1,14 @@
 
 import React from 'react';
 import {useParams} from 'react-router-dom';
-
 import PageHolder from 'src/components/PageHolder';
 import type {DeploymentDetailRouteParameters} from 'src/models/routes';
 import {useGetTLOsQuery} from 'src/slices/apiSlice';
-import styled from 'styled-components';
 import DeploymentDetailsGraph from 'src/components/DeploymentDetails/Graph';
 import TloTable from 'src/components/DeploymentDetails/TloTable/TloTable';
 import {useTranslation} from 'react-i18next';
 import BackButton from 'src/components/BackButton';
-import {Colors} from '@blueprintjs/core';
 import {skipToken} from '@reduxjs/toolkit/dist/query';
-
-const FallbackTextWrapper = styled.div`
-  display: flex;
-  justify-content: center;
-  align-self: center;
-  margin-top: 5rem;
-  margin-bottom: 1rem;
-  color: ${Colors.GRAY3};
-`;
 
 const DeploymentDetail = () => {
   const {t} = useTranslation();
@@ -46,9 +34,11 @@ const DeploymentDetail = () => {
   }
 
   return (
-    <FallbackTextWrapper>
+    <div className='
+    flex justify-center align-center m-2 mt-10 mb-auto text-gray-400'
+    >
       {t('exercises.noDeploymentInfo')}
-    </FallbackTextWrapper>
+    </div>
   );
 };
 

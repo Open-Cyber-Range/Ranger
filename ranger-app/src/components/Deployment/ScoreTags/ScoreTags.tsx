@@ -1,5 +1,4 @@
 import React from 'react';
-import styled from 'styled-components';
 import '@blueprintjs/popover2/lib/css/blueprint-popover2.css';
 import {
   useGetDeploymentEntitiesQuery,
@@ -7,18 +6,6 @@ import {
 } from 'src/slices/apiSlice';
 import {exerciseRoleOrder} from 'src/models/scenario/entity';
 import ScoreTagBody from './ScoreTagBody';
-
-const TagGroupWrapper = styled.div`
-  display: flex;
-  margin: 0.25rem;
-  margin-top: auto;
-  margin-bottom: auto;
-`;
-
-const TagWrapper = styled.div`
-  display: flex;
-  margin-right: 0.25rem; 
-`;
 
 const ScoreTags = ({exerciseId, deploymentId}:
 {exerciseId: string;
@@ -36,18 +23,18 @@ const ScoreTags = ({exerciseId, deploymentId}:
     roles.sort((a, b) => exerciseRoleOrder[a] - exerciseRoleOrder[b]);
 
     return (
-      <TagGroupWrapper>
+      <div className='flex m-1 mt-auto mb-auto'>
         {roles.map(role => (
-          <TagWrapper key={role}>
+          <div key={role} className='flex mr-1'>
             <ScoreTagBody
               key={role}
               exerciseId={exerciseId}
               deploymentId={deploymentId}
               role={role}
             />
-          </TagWrapper>
+          </div>
         ))}
-      </TagGroupWrapper>
+      </div>
     );
   }
 

@@ -2,17 +2,8 @@ import React from 'react';
 import {Tag} from '@blueprintjs/core';
 import type {DeploymentElement} from 'src/models/deployment';
 import {DeployerType} from 'src/models/deployment';
-import styled from 'styled-components';
 import '@blueprintjs/popover2/lib/css/blueprint-popover2.css';
 import {useTranslation} from 'react-i18next';
-
-const TagWrapper = styled.div`
-  display: flex;
-  margin: 2px;
-  margin-top: auto;
-  margin-bottom: 1rem;
-  
-`;
 
 const countNodesByType = (deploymentElements: DeploymentElement[]) => {
   let [virtualMachines, switches, templates] = [0, 0, 0];
@@ -44,9 +35,9 @@ const countNodesByType = (deploymentElements: DeploymentElement[]) => {
 };
 
 const InfoTag = ({name, count}: {name: string; count: number}) => (
-  <TagWrapper>
+  <div className='flex m-0.5 mt-auto mb-4'>
     <Tag>{name}: {count}</Tag>
-  </TagWrapper>
+  </div>
 );
 
 const InfoTags = (

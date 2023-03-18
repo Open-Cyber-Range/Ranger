@@ -30,10 +30,12 @@ const TloRow = ({exerciseId, deploymentId, tloKey, tlo}:
       return (
         <td>
           {latestScoresByVm.map(element => (
-            <li key={element.id}>
-              {metricName} - {element.vmName}: {roundToDecimalPlaces(
-                element.value)} {t('tloTable.points')}
-            </li>
+            <div key={element.id} className='pl-4'>
+              <li key={element.id}>
+                {metricName} - {element.vmName}: {roundToDecimalPlaces(
+                  element.value)} {t('tloTable.points')}
+              </li>
+            </div>
           ))}
         </td>
       );

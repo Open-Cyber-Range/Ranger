@@ -17,7 +17,6 @@ import {
   useGetDeploymentQuery,
   useGetDeploymentScoresQuery,
 } from 'src/slices/apiSlice';
-import styled from 'styled-components';
 import {Colors} from '@blueprintjs/core';
 import zoomPlugin from 'chartjs-plugin-zoom';
 import {type Score} from 'src/models/score';
@@ -44,16 +43,6 @@ ChartJS.register(
   Decimation,
   zoomPlugin,
 );
-
-const FallbackTextWrapper = styled.div`
-  display: flex;
-  justify-content: center;
-  align-self: center;
-  margin: 2px;
-  margin-top: auto;
-  margin-bottom: 1rem;
-  color: ${Colors.GRAY3};
-`;
 
 const DeploymentDetailsGraph = ({exerciseId, deploymentId}:
 {exerciseId: string | undefined;
@@ -202,9 +191,11 @@ const DeploymentDetailsGraph = ({exerciseId, deploymentId}:
   }
 
   return (
-    <FallbackTextWrapper>
+    <div className='
+    flex justify-center align-center m-2 mt-auto mb-4 text-gray-400'
+    >
       {t('chart.scoring.noScoreData')}
-    </FallbackTextWrapper>
+    </div>
   );
 };
 
