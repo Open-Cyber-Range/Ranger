@@ -63,9 +63,8 @@ const TloTable = ({exerciseId, deploymentId, tloMap}:
       <div className='flex flex-col mt-2'>
         {roles.map(role => {
           const tloMap = tloMapsByRole[role];
-          if (tloMap) {
+          if (tloMap && Object.keys(tloMap).length > 0) {
             const tloKeys = Object.keys(tloMap);
-
             return (
               <div key={role} className='flex flex-col mt-2 text-center'>
                 <div className='flex flex-col mt-6 font-bold'>

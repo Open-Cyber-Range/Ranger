@@ -13,7 +13,7 @@ const TloRow = ({exerciseId, deploymentId, tloKey, tlo}:
 {exerciseId: string;
   deploymentId: string;
   tloKey: string;
-  tlo: TrainingLearningObjective;
+  tlo: TrainingLearningObjective | undefined;
 }) => {
   const {t} = useTranslation();
   const queryArguments = exerciseId && deploymentId
