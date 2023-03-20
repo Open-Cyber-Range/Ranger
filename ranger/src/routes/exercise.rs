@@ -30,6 +30,7 @@ use log::{error, info};
 use sdl_parser::{
     entity::Entities,
     evaluation::Evaluation,
+    node::Nodes,
     training_learning_objective::TrainingLearningObjectives,
     {parse_sdl, Scenario},
 };
@@ -331,4 +332,24 @@ pub async fn get_exercise_deployment_tlo_evaluation_metric_scores(
         .map_err(create_database_error_handler("Get scores"))?;
 
     Ok(Json(scores))
+}
+
+#[get("exercise/{exercise_uuid}/deployment/{deployment_uuid}/nodes")]
+pub async fn get_exercise_deployment_nodes(
+    path_variables: Path<(Uuid, Uuid)>,
+    app_state: Data<AppState>,
+) -> Result<Json<Option<Nodes>>, RangerError> {
+    let (_, deployment_uuid) = path_variables.into_inner();
+    let deployment = app_state
+        .database_address
+        .send(GetDeployment(deployment_uuid))
+        .await
+        .map_err(create_mailbox_error_handler("Database"))?
+        .map_err(create_database_error_handler("Get deployment"))?;
+    let scenario = parse_sdl(&deployment.sdl_schema).map_err(|error| {
+        error!("Failed to parse sdl: {error}");
+        RangerError::ScenarioParsingFailed
+    })?;
+
+    Ok(Json(scenario.nodes))
 }
