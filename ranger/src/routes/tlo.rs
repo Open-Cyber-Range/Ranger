@@ -79,7 +79,7 @@ pub async fn get_exercise_deployment_scores(
 ) -> Result<Json<Vec<Score>>, RangerError> {
     let (exercise_uuid, deployment_uuid) = path_variables.into_inner();
 
-    let condition_messages = app_state
+    let mut condition_messages = app_state
         .database_address
         .send(GetConditionMessagesByDeploymentId(deployment_uuid))
         .await
@@ -123,6 +123,11 @@ pub async fn get_exercise_deployment_scores(
 
     if let Some(metrics) = scenario.metrics {
         let mut scores: Vec<Score> = vec![];
+
+        condition_messages.retain(|condition| {
+            condition.created_at > deployment.start_time
+                && condition.created_at < deployment.end_time
+        });
 
         for condition_message in condition_messages.iter() {
             if let Some((metric_name, metric)) = metrics.iter().find(|(_, metric)| {
