@@ -75,10 +75,10 @@ impl DeployableTemplates for Scenario {
         deployment: &Deployment,
         exercise: &Exercise,
     ) -> Result<()> {
-        let nodes = self
-            .nodes
-            .as_ref()
-            .ok_or_else(|| anyhow!("Nodes not found"))?;
+        let nodes = match self.nodes.as_ref() {
+            Some(nodes) => nodes,
+            None => return Ok(()),
+        };
         try_join_all(
             nodes
                 .iter()
