@@ -1,4 +1,7 @@
-use lettre::{message::MultiPart, Message};
+use lettre::{
+    message::{header, SinglePart},
+    Message,
+};
 use serde::{Deserialize, Serialize};
 use std::error::Error;
 
@@ -72,9 +75,10 @@ impl Email {
             }
         }
 
-        Ok(message_builder.multipart(MultiPart::alternative_plain_html(
-            String::from("Hello from OCR!"),
-            self.body.clone(),
-        ))?)
+        Ok(message_builder.singlepart(
+            SinglePart::builder()
+                .header(header::ContentType::TEXT_HTML)
+                .body(self.body.clone()),
+        )?)
     }
 }
