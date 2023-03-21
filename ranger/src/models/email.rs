@@ -54,24 +54,32 @@ impl Email {
             .subject(self.subject.clone());
 
         for to_address in self.to_addresses.clone() {
-            message_builder = message_builder.to(to_address.trim().parse()?);
+            if !to_address.trim().is_empty() {
+                message_builder = message_builder.to(to_address.trim().parse()?);
+            }
         }
 
         if let Some(reply_to_addresses) = &self.reply_to_addresses {
             for reply_to_address in reply_to_addresses.clone() {
-                message_builder = message_builder.reply_to(reply_to_address.trim().parse()?);
+                if !reply_to_address.trim().is_empty() {
+                    message_builder = message_builder.reply_to(reply_to_address.trim().parse()?);
+                }
             }
         }
 
         if let Some(cc_addresses) = &self.cc_addresses {
             for cc_address in cc_addresses.clone() {
-                message_builder = message_builder.cc(cc_address.trim().parse()?);
+                if !cc_address.trim().is_empty() {
+                    message_builder = message_builder.cc(cc_address.trim().parse()?);
+                }
             }
         }
 
         if let Some(bcc_addresses) = &self.bcc_addresses {
             for bcc_address in bcc_addresses.clone() {
-                message_builder = message_builder.bcc(bcc_address.trim().parse()?);
+                if !bcc_address.trim().is_empty() {
+                    message_builder = message_builder.bcc(bcc_address.trim().parse()?);
+                }
             }
         }
 
