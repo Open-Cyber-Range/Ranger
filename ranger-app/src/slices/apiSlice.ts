@@ -17,12 +17,7 @@ import {type Score} from 'src/models/score';
 export const apiSlice = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({baseUrl: BASE_URL}),
-  tagTypes: [
-    'Deployment',
-    'Exercise',
-    'Record<string, TrainingLearningObjective>',
-    'Score',
-  ],
+  tagTypes: ['Deployment', 'Exercise', 'Score'],
   endpoints: builder => ({
     getExercises: builder.query<Exercise[], void>({
       query: () => '/exercise',
@@ -138,6 +133,8 @@ export const {
   useAddDeploymentMutation,
   useDeleteDeploymentMutation,
   useGetDeploymentElementsQuery,
+  useGetDeploymentQuery,
+  useGetDeploymentScoresQuery,
   useGetDeploymentGroupsQuery,
   useSendEmailMutation,
   useGetEmailFormQuery,

@@ -20,18 +20,18 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Schema {
-    pub entities: Entities,
-    pub goals: Goals,
-    pub tlos: TrainingLearningObjectives,
-    pub evaluations: Evaluations,
-    pub metrics: Metrics,
+    pub entities: Option<Entities>,
+    pub goals: Option<Goals>,
+    pub tlos: Option<TrainingLearningObjectives>,
+    pub evaluations: Option<Evaluations>,
+    pub metrics: Option<Metrics>,
 }
 
 #[get("exercise/{exercise_uuid}/deployment/{deployment_uuid}/schema")]
 pub async fn get_exercise_deployment_schema(
     path_variables: Path<(Uuid, Uuid)>,
     app_state: Data<AppState>,
-) -> Result<Option<Json<Schema>>, RangerError> {
+) -> Result<Json<Schema>, RangerError> {
     let (_, deployment_uuid) = path_variables.into_inner();
 
     let deployment = app_state
@@ -46,27 +46,11 @@ pub async fn get_exercise_deployment_schema(
         RangerError::ScenarioParsingFailed
     })?;
 
-    if let (
-        Some(scenario_entities),
-        Some(scenario_goal),
-        Some(scenario_tlos),
-        Some(scenario_evaluations),
-        Some(scenario_metrics),
-    ) = (
-        scenario.entities,
-        scenario.goals,
-        scenario.tlos,
-        scenario.evaluations,
-        scenario.metrics,
-    ) {
-        let schema = Schema {
-            entities: scenario_entities,
-            goals: scenario_goal,
-            tlos: scenario_tlos,
-            evaluations: scenario_evaluations,
-            metrics: scenario_metrics,
-        };
-        return Ok(Some(Json(schema)));
-    }
-    Ok(None)
+    Ok(Json(Schema {
+        entities: scenario.entities,
+        goals: scenario.goals,
+        tlos: scenario.tlos,
+        evaluations: scenario.evaluations,
+        metrics: scenario.metrics,
+    }))
 }

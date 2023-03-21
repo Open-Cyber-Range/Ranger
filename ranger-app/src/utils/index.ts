@@ -2,7 +2,7 @@
 import {Colors} from '@blueprintjs/core';
 import type {Deployment} from 'src/models/deployment';
 import type {Exercise} from 'src/models/exercise';
-import {ExerciseRole} from 'src/models/scenario/entity';
+import {ExerciseRole} from 'src/models/scenario';
 import {type Score} from 'src/models/score';
 
 export function sortByUpdatedAtAscending<

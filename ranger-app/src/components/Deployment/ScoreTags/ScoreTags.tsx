@@ -1,27 +1,24 @@
 import React from 'react';
 import '@blueprintjs/popover2/lib/css/blueprint-popover2.css';
-import {
-  useGetDeploymentEntitiesQuery,
-  useGetDeploymentGoalsQuery,
-} from 'src/slices/apiSlice';
-import {exerciseRoleOrder} from 'src/models/scenario/entity';
+import {useGetDeploymentSchemaQuery} from 'src/slices/apiSlice';
 import {isNonNullable} from 'src/utils';
+import {ExerciseRoleOrder} from 'src/models/scenario';
 import ScoreTagBody from './ScoreTagBody';
 
 const ScoreTags = ({exerciseId, deploymentId}:
 {exerciseId: string;
   deploymentId: string;
 }) => {
-  const {data: entityMap}
-  = useGetDeploymentEntitiesQuery({exerciseId, deploymentId});
-  const {data: goalMap}
-  = useGetDeploymentGoalsQuery({exerciseId, deploymentId});
+  const queryParameters = {exerciseId, deploymentId};
+  const {data: schema} = useGetDeploymentSchemaQuery(queryParameters);
+  const goalMap = schema?.goals;
+  const entityMap = schema?.entities;
 
   if (entityMap && goalMap) {
     const roles = Object.values(entityMap)
       .filter(entity => entity.role)
       .map(entity => entity.role!);
-    roles.sort((a, b) => exerciseRoleOrder[a] - exerciseRoleOrder[b]);
+    roles.sort((a, b) => ExerciseRoleOrder[a] - ExerciseRoleOrder[b]);
 
     return (
       <div className='flex m-1 mt-auto mb-auto'>

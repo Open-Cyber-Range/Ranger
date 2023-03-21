@@ -6,11 +6,10 @@ use ranger::routes::deployers::get_deployers;
 use ranger::routes::email::{get_email_form, send_email};
 use ranger::routes::exercise::{
     delete_exercise_deployment, get_exercise, get_exercise_deployment_elements,
-    get_exercise_deployment_nodes, get_exercise_deployments, get_exercises, subscribe_to_exercise,
+    get_exercise_deployment_scores, get_exercise_deployments, get_exercises, subscribe_to_exercise,
     update_exercise,
 };
 use ranger::routes::schema::get_exercise_deployment_schema;
-use ranger::routes::tlo::get_exercise_deployment_scores;
 use ranger::routes::{
     basic::{status, version},
     exercise::{add_exercise, add_exercise_deployment, delete_exercise},
@@ -41,8 +40,6 @@ async fn main() -> Result<(), Error> {
                     .service(update_exercise)
                     .service(get_exercise)
                     .service(get_deployers)
-                    .service(send_email)
-                    .service(get_exercise_deployment_nodes)
                     .service(get_exercise_deployment_scores)
                     .service(get_exercise_deployment_schema)
                     .service(send_email),

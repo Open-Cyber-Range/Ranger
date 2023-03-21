@@ -1,13 +1,13 @@
 import React from 'react';
 import {skipToken} from '@reduxjs/toolkit/dist/query';
 import {useTranslation} from 'react-i18next';
-import {type TrainingLearningObjective} from 'src/models/scenario/tlo';
 import {
   useGetDeploymentSchemaQuery,
   useGetDeploymentScoresQuery,
 } from 'src/slices/apiSlice';
 import {findLatestScoresByVms, groupBy, roundToDecimalPlaces} from 'src/utils';
 import {type Score} from 'src/models/score';
+import {type TrainingLearningObjective} from 'src/models/scenario';
 
 const TloRow = ({exerciseId, deploymentId, tloKey, tlo}:
 {exerciseId: string;
@@ -52,7 +52,7 @@ const TloRow = ({exerciseId, deploymentId, tloKey, tlo}:
     );
   };
 
-  if (tlo) {
+  if (tlo && schema?.evaluations) {
     const tloEvaluation = schema?.evaluations[tlo.evaluation];
     if (tloEvaluation && scores) {
       const scoresByMetric = groupBy(scores, score => score.metricName);

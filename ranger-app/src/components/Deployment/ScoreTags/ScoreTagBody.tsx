@@ -15,29 +15,30 @@ import {
   roundToDecimalPlaces,
 } from 'src/utils';
 import {skipToken} from '@reduxjs/toolkit/dist/query';
-import {type ExerciseRole} from 'src/models/scenario/entity';
-import {type Schema} from 'src/models/schema';
 import {type Score} from 'src/models/score';
+import {type Schema, type ExerciseRole} from 'src/models/scenario';
 
 const calculateTotalScoreForRole = ({schema, scores, role}: {
   schema: Schema;
   scores: Score[];
   role: ExerciseRole;
 }) => {
-  if (scores.length > 0) {
-    const entityValues = Object.values(schema.entities);
+  const {entities, goals, tlos, evaluations} = schema;
+
+  if (entities && goals && tlos && evaluations && scores.length > 0) {
+    const entityValues = Object.values(entities);
     const roleEntities = entityValues.slice().filter(entity =>
       entity.role?.valueOf() === role,
     );
 
     const roleTloNames = roleEntities.flatMap(entity =>
-      entity.goals?.flatMap(goal_ref => schema.goals[goal_ref]?.tlos));
+      entity.goals?.flatMap(goal_ref => goals[goal_ref]?.tlos));
     // eslint-disable-next-line unicorn/no-array-callback-reference
     const roleEvaluationNames = roleTloNames.filter(isNonNullable)
-      .flatMap(tloName => schema.tlos[tloName]?.evaluation);
+      .flatMap(tloName => tlos[tloName]?.evaluation);
     const roleMetricNames = new Set(roleEvaluationNames
       .flatMap(evaluationName =>
-        schema.evaluations[evaluationName]?.metrics));
+        evaluations[evaluationName]?.metrics));
     const roleScores = scores.filter(score =>
       roleMetricNames.has(score.metricName));
 

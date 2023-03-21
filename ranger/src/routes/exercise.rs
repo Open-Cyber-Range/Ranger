@@ -2,10 +2,11 @@ use crate::{
     errors::RangerError,
     models::{
         helpers::uuid::Uuid, Deployment, DeploymentElement, Exercise, NewDeployment,
-        NewDeploymentResource, NewExercise, UpdateExercise,
+        NewDeploymentResource, NewExercise, Score, UpdateExercise,
     },
     services::{
         database::{
+            condition::GetConditionMessagesByDeploymentId,
             deployment::{
                 CreateDeployment, DeleteDeployment, GetDeployment,
                 GetDeploymentElementByDeploymentId, GetDeployments,
@@ -15,7 +16,9 @@ use crate::{
         deployment::{RemoveDeployment, StartDeployment},
         websocket::ExerciseWebsocket,
     },
-    utilities::{create_database_error_handler, create_mailbox_error_handler, Validation},
+    utilities::{
+        create_database_error_handler, create_mailbox_error_handler, try_some, Validation,
+    },
     AppState,
 };
 use actix_web::{
@@ -25,12 +28,14 @@ use actix_web::{
 };
 use actix_web_actors::ws;
 use anyhow::Result;
+use bigdecimal::BigDecimal;
 use log::{error, info};
+use ranger_grpc::capabilities::DeployerTypes as GrpcDeployerTypes;
 use sdl_parser::{
-    entity::Entities,
     node::Nodes,
     {parse_sdl, Scenario},
 };
+use std::collections::HashMap;
 
 #[post("exercise")]
 pub async fn add_exercise(
@@ -269,26 +274,6 @@ pub async fn subscribe_to_exercise(
     ws::start(exercise_socket, &req, stream)
 }
 
-#[get("/exercise/{exercise_uuid}/deployment/{deployment_uuid}/entities")]
-pub async fn get_deployment_entities(
-    path_variables: Path<(Uuid, Uuid)>,
-    app_state: Data<AppState>,
-) -> Result<Json<Option<Entities>>, RangerError> {
-    let (_, deployment_uuid) = path_variables.into_inner();
-    let deployment = app_state
-        .database_address
-        .send(GetDeployment(deployment_uuid))
-        .await
-        .map_err(create_mailbox_error_handler("Database"))?
-        .map_err(create_database_error_handler("Get deployment"))?;
-    let scenario = parse_sdl(&deployment.sdl_schema).map_err(|error| {
-        error!("Failed to parse sdl: {error}");
-        RangerError::ScenarioParsingFailed
-    })?;
-    let entities = scenario.entities;
-    Ok(Json(entities))
-}
-
 #[get("exercise/{exercise_uuid}/deployment/{deployment_uuid}/nodes")]
 pub async fn get_exercise_deployment_nodes(
     path_variables: Path<(Uuid, Uuid)>,
@@ -307,4 +292,88 @@ pub async fn get_exercise_deployment_nodes(
     })?;
 
     Ok(Json(scenario.nodes))
+}
+
+#[get("exercise/{exercise_uuid}/deployment/{deployment_uuid}/score")]
+pub async fn get_exercise_deployment_scores(
+    path_variables: Path<(Uuid, Uuid)>,
+    app_state: Data<AppState>,
+) -> Result<Json<Vec<Score>>, RangerError> {
+    let (exercise_uuid, deployment_uuid) = path_variables.into_inner();
+
+    let mut condition_messages = app_state
+        .database_address
+        .send(GetConditionMessagesByDeploymentId(deployment_uuid))
+        .await
+        .map_err(create_mailbox_error_handler("Database"))?
+        .map_err(create_database_error_handler("Get condition_messages"))?;
+
+    let deployment = app_state
+        .database_address
+        .send(GetDeployment(deployment_uuid))
+        .await
+        .map_err(create_mailbox_error_handler("Database"))?
+        .map_err(create_database_error_handler("Get deployment"))?;
+
+    let scenario = parse_sdl(&deployment.sdl_schema).map_err(|error| {
+        error!("Failed to parse sdl: {error}");
+        RangerError::ScenarioParsingFailed
+    })?;
+
+    let deployment_elements = app_state
+        .database_address
+        .send(GetDeploymentElementByDeploymentId(deployment_uuid))
+        .await
+        .map_err(create_mailbox_error_handler("Database"))?
+        .map_err(create_database_error_handler("Get deployment elements"))?;
+
+    let vm_deplyoment_elements = deployment_elements
+        .iter()
+        .filter(|element| {
+            matches!(element.deployer_type.0, GrpcDeployerTypes::VirtualMachine)
+                && element.handler_reference.is_some()
+        })
+        .map(|element| {
+            let vm_id = try_some(
+                element.handler_reference.to_owned(),
+                "VM element missing handler reference",
+            )?;
+            Ok((vm_id, element.scenario_reference.to_owned()))
+        })
+        .collect::<Result<HashMap<String, String>>>()
+        .map_err(create_database_error_handler("Get deployment elements"))?;
+
+    if let Some(metrics) = scenario.metrics {
+        let mut scores: Vec<Score> = vec![];
+
+        condition_messages.retain(|condition| {
+            condition.created_at > deployment.start_time
+                && condition.created_at < deployment.end_time
+        });
+
+        for condition_message in condition_messages.iter() {
+            if let Some((metric_name, metric)) = metrics.iter().find(|(_, metric)| {
+                metric
+                    .condition
+                    .eq(&Some(condition_message.clone().condition_name))
+            }) {
+                if let Some(vm_name) =
+                    vm_deplyoment_elements.get(&condition_message.virtual_machine_id.to_string())
+                {
+                    scores.push(Score::new(
+                        exercise_uuid,
+                        deployment_uuid,
+                        metric_name.to_owned(),
+                        vm_name.to_owned(),
+                        condition_message.virtual_machine_id,
+                        condition_message.clone().value * BigDecimal::from(metric.max_score),
+                        condition_message.created_at,
+                    ))
+                }
+            }
+        }
+
+        return Ok(Json(scores));
+    }
+    Ok(Json(vec![]))
 }

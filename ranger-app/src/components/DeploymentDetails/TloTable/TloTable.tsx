@@ -2,16 +2,13 @@ import React from 'react';
 import {skipToken} from '@reduxjs/toolkit/dist/query';
 import {useTranslation} from 'react-i18next';
 import ScoreTagBody from 'src/components/Deployment/ScoreTags/ScoreTagBody';
-import {
-  type ExerciseRole,
-  exerciseRoleOrder,
-} from 'src/models/scenario/entity';
-import {type TrainingLearningObjective} from 'src/models/scenario/tlo';
-import {
-  useGetDeploymentEntitiesQuery,
-  useGetDeploymentGoalsQuery,
-} from 'src/slices/apiSlice';
+import {useGetDeploymentSchemaQuery} from 'src/slices/apiSlice';
 import {isNonNullable} from 'src/utils';
+import {
+  type TrainingLearningObjective,
+  ExerciseRoleOrder,
+  type ExerciseRole,
+} from 'src/models/scenario';
 import TloRow from './TloRow';
 
 const TloTable = ({exerciseId, deploymentId, tloMap}:
@@ -20,19 +17,17 @@ const TloTable = ({exerciseId, deploymentId, tloMap}:
   tloMap: Record<string, TrainingLearningObjective> | undefined;
 }) => {
   const {t} = useTranslation();
-  const queryParameters = exerciseId && deploymentId
-    ? {exerciseId, deploymentId} : skipToken;
-  const {data: entityMap}
-  = useGetDeploymentEntitiesQuery(queryParameters);
-  const {data: goalMap}
-    = useGetDeploymentGoalsQuery(queryParameters);
+  const {data: schema} = useGetDeploymentSchemaQuery(exerciseId && deploymentId
+    ? {exerciseId, deploymentId} : skipToken);
+  const goalMap = schema?.goals;
+  const entityMap = schema?.entities;
 
   if (tloMap && entityMap && goalMap) {
     const entities = Object.values(entityMap);
     const roles = entities
       .filter(entity => entity.role)
       .map(entity => entity.role!);
-    roles.sort((a, b) => exerciseRoleOrder[a] - exerciseRoleOrder[b]);
+    roles.sort((a, b) => ExerciseRoleOrder[a] - ExerciseRoleOrder[b]);
 
     type TloMapsByRole = {
       [key in ExerciseRole]?: Record<string, TrainingLearningObjective>};
