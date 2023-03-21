@@ -45,7 +45,7 @@ const TloRow = ({exerciseId, deploymentId, tloKey, tlo}:
       <td>
         <div className='pl-4'>
           <li>
-            {t('tloTable.noMetricData')}
+            {metricName} - {t('tloTable.noMetricData')}
           </li>
         </div>
       </td>
