@@ -6,9 +6,10 @@ use ranger::routes::deployers::get_deployers;
 use ranger::routes::email::send_email;
 use ranger::routes::exercise::{
     delete_exercise_deployment, get_deployment_entities, get_exercise,
-    get_exercise_deployment_elements, get_exercise_deployment_tlo_evaluation,
-    get_exercise_deployment_tlo_evaluation_metric_scores, get_exercise_deployment_tlos,
-    get_exercise_deployments, get_exercises, subscribe_to_exercise, update_exercise,
+    get_exercise_deployment_elements, get_exercise_deployment_nodes,
+    get_exercise_deployment_tlo_evaluation, get_exercise_deployment_tlo_evaluation_metric_scores,
+    get_exercise_deployment_tlos, get_exercise_deployments, get_exercises, subscribe_to_exercise,
+    update_exercise,
 };
 use ranger::routes::{
     basic::{status, version},
@@ -44,7 +45,8 @@ async fn main() -> Result<(), Error> {
                     .service(get_exercise_deployment_tlos)
                     .service(get_exercise_deployment_tlo_evaluation)
                     .service(get_exercise_deployment_tlo_evaluation_metric_scores)
-                    .service(send_email),
+                    .service(send_email)
+                    .service(get_exercise_deployment_nodes),
             )
     })
     .bind((host, port))?
