@@ -4302,6 +4302,11 @@ snake-case@^3.0.4:
     dot-case "^3.0.4"
     tslib "^2.0.3"
 
+sort-by-property@^1.2.4:
+  version "1.2.4"
+  resolved "https://registry.yarnpkg.com/sort-by-property/-/sort-by-property-1.2.4.tgz#6108f4e1b0f23cce4b813c0d23ba753dfefbea5c"
+  integrity sha512-qbTjMGSPChPjISl5QTOJ66bK7HMC5KWabsfPN3ScHR8lvduaOvqh1RlxnyfBptTVM6t7tPC17n5+f1FJTdPXIw==
+
 source-map-js@^1.0.2:
   version "1.0.2"
   resolved "https://registry.npmjs.org/source-map-js/-/source-map-js-1.0.2.tgz"

@@ -1,7 +1,7 @@
 import React from 'react';
 import {useGetExercisesQuery} from 'src/slices/apiSlice';
-import {sortByUpdatedAtDescending} from 'src/utils';
 import humanInterval from 'human-interval';
+import {sortByProperty} from 'sort-by-property';
 import ExerciseCard from './Card';
 
 const ExerciseList = () => {
@@ -12,7 +12,7 @@ const ExerciseList = () => {
     {pollingInterval: humanInterval('5 seconds')},
   );
   let exercises = potentialExercises ?? [];
-  exercises = exercises.slice().sort(sortByUpdatedAtDescending);
+  exercises = exercises.slice().sort(sortByProperty('updatedAt', 'desc'));
 
   return (
     <div className='flex flex-col [&>div]:mb-8'>

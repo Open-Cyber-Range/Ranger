@@ -1,45 +1,7 @@
 /* eslint-disable unicorn/no-array-reduce */
 import {Colors} from '@blueprintjs/core';
-import type {Deployment} from 'src/models/deployment';
-import type {Exercise} from 'src/models/exercise';
 import {ExerciseRole} from 'src/models/scenario';
 import {type Score} from 'src/models/score';
-
-export function sortByUpdatedAtAscending<
-  T extends Deployment | Exercise>(a: T, b: T) {
-  if (!a.updatedAt || a.updatedAt < b.updatedAt) {
-    return -1;
-  }
-
-  if (!b.updatedAt || a.updatedAt > b.updatedAt) {
-    return 1;
-  }
-
-  return 0;
-}
-
-export function sortByUpdatedAtDescending<
-  T extends Deployment | Exercise>(a: T, b: T) {
-  return sortByUpdatedAtAscending(a, b) * -1;
-}
-
-export function sortByCreatedAtAscending<
-  T extends Deployment | Exercise | Score >(a: T, b: T) {
-  if (!a.createdAt || a.createdAt < b.createdAt) {
-    return -1;
-  }
-
-  if (!b.createdAt || a.createdAt > b.createdAt) {
-    return 1;
-  }
-
-  return 0;
-}
-
-export function sortByCreatedAtDescending<
-  T extends Deployment | Exercise | Score >(a: T, b: T) {
-  return sortByCreatedAtAscending(a, b) * -1;
-}
 
 export const getWebsocketBase = () => {
   const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
@@ -127,8 +89,8 @@ export function isNonNullable<T>(value: T): value is NonNullable<T> {
 export const findLatestScore = (scores: Score[]) => {
   if (scores.length > 0) {
     const latestScore = scores.reduce((previous, current) =>
-      (Date.parse(previous?.createdAt)
-      > Date.parse(current?.createdAt)) ? previous : current);
+      (Date.parse(previous?.timestamp)
+      > Date.parse(current?.timestamp)) ? previous : current);
     return latestScore;
   }
 

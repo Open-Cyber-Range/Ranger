@@ -25,12 +25,12 @@ import {
   defaultColors,
   groupByMetricNameAndVmName,
   roundToDecimalPlaces,
-  sortByCreatedAtAscending,
 } from 'src/utils';
 // eslint-disable-next-line import/no-unassigned-import
 import 'chartjs-adapter-moment';
 import {useTranslation} from 'react-i18next';
 import {skipToken} from '@reduxjs/toolkit/dist/query';
+import {sortByProperty} from 'sort-by-property';
 
 ChartJS.register(
   CategoryScale,
@@ -89,7 +89,7 @@ const DeploymentDetailsGraph = ({exerciseId, deploymentId}:
         };
 
         for (const score of scoresByMetric[metricName]
-          .sort(sortByCreatedAtAscending)
+          .sort(sortByProperty('timestamp', 'asc'))
         ) {
           const graphPoint = intoGraphPoint(score);
           (baseDataset.data).push(graphPoint);

@@ -5,7 +5,7 @@ import type {Deployment} from 'src/models/deployment';
 import ScoreTags from 'src/components/Deployment/ScoreTags/ScoreTags';
 import {H4} from '@blueprintjs/core';
 import {useNavigate} from 'react-router-dom';
-import {sortByUpdatedAtDescending} from 'src/utils';
+import {sortByProperty} from 'sort-by-property';
 
 const ScoresPanel = ({deployments}:
 {deployments: Deployment[] | undefined;
@@ -18,7 +18,7 @@ const ScoresPanel = ({deployments}:
   };
 
   if (deployments) {
-    deployments = deployments.slice().sort(sortByUpdatedAtDescending);
+    deployments = deployments.slice().sort(sortByProperty('updatedAt', 'desc'));
 
     return (
       <PageHolder>
