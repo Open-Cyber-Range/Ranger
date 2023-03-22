@@ -9,7 +9,7 @@ import {
 } from '@blueprintjs/core';
 import {useTranslation} from 'react-i18next';
 import {Controller, type SubmitHandler, useForm} from 'react-hook-form';
-import {useSendMailMutation} from 'src/slices/apiSlice';
+import {useGetEmailFormQuery, useSendEmailMutation} from 'src/slices/apiSlice';
 import {toastSuccess, toastWarning} from 'src/components/Toaster';
 import nunjucks from 'nunjucks';
 import Editor from '@monaco-editor/react';
@@ -21,7 +21,8 @@ const EditorHolder = styled.div`
 
 const SendEmail = ({exercise}: {exercise: Exercise}) => {
   const {t} = useTranslation();
-  const [sendMail, {isSuccess, error}] = useSendMailMutation();
+  const {data: fromAddress} = useGetEmailFormQuery(exercise.id);
+  const [sendMail, {isSuccess, error}] = useSendEmailMutation();
 
   const {handleSubmit, control} = useForm<EmailForm>({
     defaultValues: {
@@ -71,6 +72,15 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <div>
+        <FormGroup
+          label={t('emails.form.from.title')}
+        >
+          <InputGroup
+            large
+            disabled
+            placeholder={fromAddress ?? ''}
+          />
+        </FormGroup>
         <Controller
           control={control}
           name='toAddresses'

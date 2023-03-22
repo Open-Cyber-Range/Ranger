@@ -94,13 +94,16 @@ export const apiSlice = createApi({
     getDeploymentGroups: builder.query<Deployers, void>({
       query: () => '/deployer',
     }),
-    sendMail: builder
+    sendEmail: builder
       .mutation <EmailForm, {email: EmailForm; exerciseId: string} >({
       query: ({email, exerciseId}) => ({
         url: `/exercise/${exerciseId}/email`,
         method: 'POST',
         body: email,
       }),
+    }),
+    getEmailForm: builder.query <string, string>({
+      query: exerciseId => `/exercise/${exerciseId}/email`,
     }),
   }),
 });
@@ -116,5 +119,6 @@ export const {
   useDeleteDeploymentMutation,
   useGetDeploymentElementsQuery,
   useGetDeploymentGroupsQuery,
-  useSendMailMutation,
+  useSendEmailMutation,
+  useGetEmailFormQuery,
 } = apiSlice;

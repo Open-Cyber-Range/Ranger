@@ -66,6 +66,9 @@ const language = {
     sendingFail: 'Error trying to send the email: {{errorMessage}}',
     sendingFailWithoutMessage: 'Failed to send the email',
     form: {
+      from: {
+        title: 'From',
+      },
       to: {
         title: 'To',
         required: 'Receiver address is required',
