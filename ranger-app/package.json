@@ -3,7 +3,7 @@
   "version": "0.5.0",
   "private": true,
   "dependencies": {
-    "@blueprintjs/core": "^4.11.5",
+    "@blueprintjs/core": "^4.17.7",
     "@blueprintjs/docs-theme": "^4.4.23",
     "@blueprintjs/popover2": "^1.8.0",
     "@blueprintjs/select": "^4.8.12",

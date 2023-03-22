@@ -13,10 +13,10 @@ type Exercise = {
 type UpdateExercise = NewExercise;
 
 type EmailForm = {
-  toAddress: string;
-  replyToAddress?: string;
-  ccAddress?: string;
-  bccAddress?: string;
+  toAddresses: string[];
+  replyToAddresses?: string[];
+  ccAddresses?: string[];
+  bccAddresses?: string[];
   subject: string;
   body: string;
 };

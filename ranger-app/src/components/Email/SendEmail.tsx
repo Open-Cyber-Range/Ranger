@@ -1,6 +1,12 @@
 import React, {useEffect} from 'react';
 import type {EmailForm, Exercise} from 'src/models/exercise';
-import {Button, FormGroup, InputGroup, Intent} from '@blueprintjs/core';
+import {
+  Button,
+  FormGroup,
+  InputGroup,
+  Intent,
+  TagInput,
+} from '@blueprintjs/core';
 import {useTranslation} from 'react-i18next';
 import {Controller, type SubmitHandler, useForm} from 'react-hook-form';
 import {useSendMailMutation} from 'src/slices/apiSlice';
@@ -19,7 +25,10 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
 
   const {handleSubmit, control} = useForm<EmailForm>({
     defaultValues: {
-      toAddress: '',
+      toAddresses: [],
+      replyToAddresses: [],
+      ccAddresses: [],
+      bccAddresses: [],
       subject: '',
       body: '',
     },
@@ -64,29 +73,29 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
       <div>
         <Controller
           control={control}
-          name='toAddress'
+          name='toAddresses'
           rules={{required: t('emails.form.to.required') ?? ''}}
           render={({
-            field: {onChange, onBlur, ref, value}, fieldState: {error},
+            field: {onChange, ref, value}, fieldState: {error},
           }) => {
             const intent = error ? Intent.DANGER : Intent.NONE;
             return (
               <FormGroup
-                labelFor='email-to'
                 labelInfo='(required)'
                 helperText={error?.message}
                 intent={intent}
                 label={t('emails.form.to.title')}
               >
-                <InputGroup
+                <TagInput
                   large
-                  type='email'
-                  intent={intent}
-                  value={value}
+                  addOnBlur
+                  addOnPaste
                   inputRef={ref}
-                  id='email-to'
+                  intent={intent}
+                  placeholder={t('emails.form.emailPlaceholder') ?? ''}
+                  values={value}
+                  tagProps={{interactive: true}}
                   onChange={onChange}
-                  onBlur={onBlur}
                 />
               </FormGroup>
             );
@@ -94,66 +103,69 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
         />
         <Controller
           control={control}
-          name='replyToAddress'
+          name='replyToAddresses'
           render={({
-            field: {onChange, onBlur, ref, value},
+            field: {onChange, ref, value},
           }) => (
             <FormGroup
               labelFor='email-reply-to'
               label={t('emails.form.replyTo.title')}
             >
-              <InputGroup
+              <TagInput
                 large
-                type='email'
-                value={value}
+                addOnBlur
+                addOnPaste
                 inputRef={ref}
-                id='email-reply-to'
+                placeholder={t('emails.form.emailPlaceholder') ?? ''}
+                values={value}
+                tagProps={{interactive: true}}
                 onChange={onChange}
-                onBlur={onBlur}
               />
             </FormGroup>
           )}
         />
         <Controller
           control={control}
-          name='ccAddress'
+          name='ccAddresses'
           render={({
-            field: {onChange, onBlur, ref, value},
+            field: {onChange, ref, value},
           }) => (
             <FormGroup
               labelFor='email-cc'
               label={t('emails.form.cc.title')}
             >
-              <InputGroup
+              <TagInput
                 large
-                type='email'
-                value={value}
+                addOnBlur
+                addOnPaste
                 inputRef={ref}
-                id='email-cc'
+                placeholder={t('emails.form.emailPlaceholder') ?? ''}
+                values={value}
+                tagProps={{interactive: true}}
                 onChange={onChange}
-                onBlur={onBlur}
               />
             </FormGroup>
           )}
         />
         <Controller
           control={control}
-          name='bccAddress'
+          name='bccAddresses'
           render={({
-            field: {onChange, onBlur, ref, value},
+            field: {onChange, ref, value},
           }) => (
             <FormGroup
               labelFor='email-bcc'
               label={t('emails.form.bcc.title')}
             >
-              <InputGroup
+              <TagInput
                 large
-                type='email'
-                value={value}
+                addOnBlur
+                addOnPaste
                 inputRef={ref}
-                id='email-bcc'
+                placeholder={t('emails.form.emailPlaceholder') ?? ''}
+                values={value}
+                tagProps={{interactive: true}}
                 onChange={onChange}
-                onBlur={onBlur}
               />
             </FormGroup>
           )}
