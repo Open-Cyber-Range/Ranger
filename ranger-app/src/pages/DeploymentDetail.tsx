@@ -7,13 +7,13 @@ import TloTable from 'src/components/DeploymentDetails/TloTable/TloTable';
 import {useTranslation} from 'react-i18next';
 import BackButton from 'src/components/BackButton';
 import {skipToken} from '@reduxjs/toolkit/dist/query';
-import {useGetDeploymentSchemaQuery} from 'src/slices/apiSlice';
+import {useGetDeploymentScenarioQuery} from 'src/slices/apiSlice';
 
 const DeploymentDetail = () => {
   const {t} = useTranslation();
   const {exerciseId, deploymentId}
   = useParams<DeploymentDetailRouteParameters>();
-  const {data: schema} = useGetDeploymentSchemaQuery(
+  const {data: scenario} = useGetDeploymentScenarioQuery(
     exerciseId && deploymentId ? {exerciseId, deploymentId} : skipToken);
 
   if (exerciseId && deploymentId) {
@@ -27,7 +27,7 @@ const DeploymentDetail = () => {
         <TloTable
           exerciseId={exerciseId}
           deploymentId={deploymentId}
-          tloMap={schema?.tlos}/>
+          tloMap={scenario?.tlos}/>
       </PageHolder>
     );
   }

@@ -1,6 +1,6 @@
 import React from 'react';
 import '@blueprintjs/popover2/lib/css/blueprint-popover2.css';
-import {useGetDeploymentSchemaQuery} from 'src/slices/apiSlice';
+import {useGetDeploymentScenarioQuery} from 'src/slices/apiSlice';
 import {isNonNullable} from 'src/utils';
 import {ExerciseRoleOrder} from 'src/models/scenario';
 import ScoreTagBody from './ScoreTagBody';
@@ -10,9 +10,9 @@ const ScoreTags = ({exerciseId, deploymentId}:
   deploymentId: string;
 }) => {
   const queryParameters = {exerciseId, deploymentId};
-  const {data: schema} = useGetDeploymentSchemaQuery(queryParameters);
-  const goalMap = schema?.goals;
-  const entityMap = schema?.entities;
+  const {data: scenario} = useGetDeploymentScenarioQuery(queryParameters);
+  const goalMap = scenario?.goals;
+  const entityMap = scenario?.entities;
 
   if (entityMap && goalMap) {
     const roles = Object.values(entityMap)

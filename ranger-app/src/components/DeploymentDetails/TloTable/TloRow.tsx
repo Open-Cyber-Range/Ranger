@@ -2,7 +2,7 @@ import React from 'react';
 import {skipToken} from '@reduxjs/toolkit/dist/query';
 import {useTranslation} from 'react-i18next';
 import {
-  useGetDeploymentSchemaQuery,
+  useGetDeploymentScenarioQuery,
   useGetDeploymentScoresQuery,
 } from 'src/slices/apiSlice';
 import {findLatestScoresByVms, groupBy, roundToDecimalPlaces} from 'src/utils';
@@ -18,7 +18,7 @@ const TloRow = ({exerciseId, deploymentId, tloKey, tlo}:
   const {t} = useTranslation();
   const queryArguments = exerciseId && deploymentId
     ? {exerciseId, deploymentId} : skipToken;
-  const {data: schema} = useGetDeploymentSchemaQuery(queryArguments);
+  const {data: scenario} = useGetDeploymentScenarioQuery(queryArguments);
   const {data: scores} = useGetDeploymentScoresQuery(queryArguments);
 
   const MetricsCell = ({scores, metricName}:
@@ -52,8 +52,8 @@ const TloRow = ({exerciseId, deploymentId, tloKey, tlo}:
     );
   };
 
-  if (tlo && schema?.evaluations) {
-    const tloEvaluation = schema?.evaluations[tlo.evaluation];
+  if (tlo && scenario?.evaluations) {
+    const tloEvaluation = scenario?.evaluations[tlo.evaluation];
     if (tloEvaluation && scores) {
       const scoresByMetric = groupBy(scores, score => score.metricName);
 

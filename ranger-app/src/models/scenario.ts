@@ -156,14 +156,6 @@ export type Vulnerability = {
   class: string;
 };
 
-export type Schema = {
-  entities?: Record<string, Entity>;
-  goals?: Record<string, Goal>;
-  tlos?: Record<string, TrainingLearningObjective>;
-  evaluations?: Record<string, Evaluation>;
-  metrics?: Record<string, Metric>;
-};
-
 export type Scenario = {
   name: string;
   description?: string;

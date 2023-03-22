@@ -2,7 +2,7 @@ import React from 'react';
 import {skipToken} from '@reduxjs/toolkit/dist/query';
 import {useTranslation} from 'react-i18next';
 import ScoreTagBody from 'src/components/Deployment/ScoreTags/ScoreTagBody';
-import {useGetDeploymentSchemaQuery} from 'src/slices/apiSlice';
+import {useGetDeploymentScenarioQuery} from 'src/slices/apiSlice';
 import {isNonNullable} from 'src/utils';
 import {
   type TrainingLearningObjective,
@@ -17,10 +17,10 @@ const TloTable = ({exerciseId, deploymentId, tloMap}:
   tloMap: Record<string, TrainingLearningObjective> | undefined;
 }) => {
   const {t} = useTranslation();
-  const {data: schema} = useGetDeploymentSchemaQuery(exerciseId && deploymentId
-    ? {exerciseId, deploymentId} : skipToken);
-  const goalMap = schema?.goals;
-  const entityMap = schema?.entities;
+  const {data: scenario} = useGetDeploymentScenarioQuery(
+    exerciseId && deploymentId ? {exerciseId, deploymentId} : skipToken);
+  const goalMap = scenario?.goals;
+  const entityMap = scenario?.entities;
 
   if (tloMap && entityMap && goalMap) {
     const entities = Object.values(entityMap);

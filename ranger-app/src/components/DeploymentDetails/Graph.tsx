@@ -15,6 +15,7 @@ import {
 import {Line} from 'react-chartjs-2';
 import {
   useGetDeploymentQuery,
+  useGetDeploymentScenarioQuery,
   useGetDeploymentScoresQuery,
 } from 'src/slices/apiSlice';
 import {Colors} from '@blueprintjs/core';
@@ -56,6 +57,7 @@ const DeploymentDetailsGraph = ({exerciseId, deploymentId}:
     ? {exerciseId, deploymentId} : skipToken;
   const {data: scores} = useGetDeploymentScoresQuery(queryArguments);
   const {data: deployment} = useGetDeploymentQuery(queryArguments);
+  const {data: scenario} = useGetDeploymentScenarioQuery(queryArguments);
 
   const intoGraphPoint = (score: Score) => ({
     x: Date.parse(score.createdAt),
@@ -100,8 +102,9 @@ const DeploymentDetailsGraph = ({exerciseId, deploymentId}:
     return graphData;
   }
 
-  if (deployment && scores && scores.length > 0) {
+  if (deployment && scenario && scores && scores.length > 0) {
     const groupedScores = groupByMetricNameAndVmName(scores);
+    const minZoomRangeMillis = 60 * 1000;
     return (
       <Line
         data={intoGraphData(groupedScores)}
@@ -138,8 +141,9 @@ const DeploymentDetailsGraph = ({exerciseId, deploymentId}:
               },
               limits: {
                 x: {
-                  min: Date.parse(deployment.startTime),
-                  max: Date.parse(deployment.endTime),
+                  minRange: minZoomRangeMillis,
+                  min: Date.parse(scenario?.start),
+                  max: Date.parse(scenario?.end),
                 },
                 y: {
                   min: 'original',
@@ -149,6 +153,7 @@ const DeploymentDetailsGraph = ({exerciseId, deploymentId}:
               zoom: {
                 wheel: {
                   enabled: true,
+                  speed: 0.2,
                 },
                 pinch: {
                   enabled: true,
@@ -171,8 +176,8 @@ const DeploymentDetailsGraph = ({exerciseId, deploymentId}:
                 display: true,
                 text: xAxisTitle,
               },
-              min: deployment.startTime,
-              max: deployment.endTime,
+              min: Date.parse(scenario?.start),
+              max: Date.parse(scenario?.end),
               ticks: {
                 source: 'auto',
               },

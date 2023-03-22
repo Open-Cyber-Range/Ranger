@@ -12,12 +12,13 @@ import {
   type NewExercise,
   type UpdateExercise,
 } from 'src/models/exercise';
+import {type Scenario} from 'src/models/scenario';
 import {type Score} from 'src/models/score';
 
 export const apiSlice = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({baseUrl: BASE_URL}),
-  tagTypes: ['Deployment', 'Exercise', 'Score'],
+  tagTypes: ['Deployment', 'Exercise', 'Score', 'Scenario'],
   endpoints: builder => ({
     getExercises: builder.query<Exercise[], void>({
       query: () => '/exercise',
@@ -120,6 +121,14 @@ export const apiSlice = createApi({
       query: ({exerciseId, deploymentId}) =>
         `/exercise/${exerciseId}/deployment/${deploymentId}/score`,
     }),
+    getDeploymentScenario: builder.query<Scenario | undefined,
+    {
+      exerciseId: string;
+      deploymentId: string;
+    }>({
+      query: ({exerciseId, deploymentId}) =>
+        `/exercise/${exerciseId}/deployment/${deploymentId}/scenario`,
+    }),
   }),
 });
 
@@ -138,4 +147,5 @@ export const {
   useGetDeploymentGroupsQuery,
   useSendEmailMutation,
   useGetEmailFormQuery,
+  useGetDeploymentScenarioQuery,
 } = apiSlice;
