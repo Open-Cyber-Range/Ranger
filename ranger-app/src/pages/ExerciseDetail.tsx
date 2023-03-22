@@ -1,5 +1,5 @@
 import React from 'react';
-import {useParams} from 'react-router-dom';
+import {Link, useParams} from 'react-router-dom';
 import type {ExerciseDetailRouteParameters} from 'src/models/routes';
 import PageHolder from 'src/components/PageHolder';
 import {
@@ -113,6 +113,14 @@ const ExerciseDetail = () => {
           />
         </Header>
         <DeploymentList deployments={deployments ?? []}/>
+
+        <Link
+          role='button'
+          className='bp4-button bp4-intent-primary bp4-large'
+          to={`/exercises/${exercise.id}/email`}
+        >
+          {t('emails.send')}
+        </Link>
       </PageHolder>
     );
   }
