@@ -1,6 +1,0 @@
-ALTER TABLE deployments
-ADD start_time TIMESTAMP NOT NULL DEFAULT '1970-01-01 00:00:01'
-AFTER sdl_schema;
-ALTER TABLE deployments
-ADD end_time TIMESTAMP NOT NULL DEFAULT '1970-01-01 00:00:01'
-AFTER start_time;

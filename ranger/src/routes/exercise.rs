@@ -162,12 +162,7 @@ pub async fn add_exercise_deployment(
         RangerError::DeploymentFailed
     })?;
 
-    let deployment = NewDeployment::new(
-        deployment_resource,
-        exercise_id,
-        scenario.start.naive_utc(),
-        scenario.end.naive_utc(),
-    );
+    let deployment = NewDeployment::new(deployment_resource, exercise_id);
 
     log::debug!(
         "Adding deployment {} for exercise {}",
@@ -347,8 +342,8 @@ pub async fn get_exercise_deployment_scores(
         let mut scores: Vec<Score> = vec![];
 
         condition_messages.retain(|condition| {
-            condition.created_at > deployment.start_time
-                && condition.created_at < deployment.end_time
+            condition.created_at > scenario.start.naive_utc()
+                && condition.created_at < scenario.end.naive_utc()
         });
 
         for condition_message in condition_messages.iter() {

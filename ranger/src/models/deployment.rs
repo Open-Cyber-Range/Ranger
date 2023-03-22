@@ -40,26 +40,17 @@ pub struct NewDeployment {
     pub name: String,
     pub deployment_group: Option<String>,
     pub sdl_schema: String,
-    pub start_time: NaiveDateTime,
-    pub end_time: NaiveDateTime,
     pub exercise_id: Uuid,
 }
 
 impl NewDeployment {
-    pub fn new(
-        resource: NewDeploymentResource,
-        exercise_id: Uuid,
-        start_time: NaiveDateTime,
-        end_time: NaiveDateTime,
-    ) -> Self {
+    pub fn new(resource: NewDeploymentResource, exercise_id: Uuid) -> Self {
         Self {
             id: resource.id,
             name: resource.name,
             deployment_group: resource.deployment_group,
             sdl_schema: resource.sdl_schema,
             exercise_id,
-            start_time,
-            end_time,
         }
     }
 
@@ -85,8 +76,6 @@ pub struct Deployment {
     pub name: String,
     pub deployment_group: Option<String>,
     pub sdl_schema: String,
-    pub start_time: NaiveDateTime,
-    pub end_time: NaiveDateTime,
     pub exercise_id: Uuid,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
