@@ -9,6 +9,7 @@ const WidthBox = styled.div`
 
 const PageWrapper = styled.div`
   padding-top: 2rem;
+  padding-bottom: 2rem;
   max-width: 60rem;
   width: 100%;
 `;
