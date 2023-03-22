@@ -4,7 +4,7 @@ export type Score = {
   deploymentId: string;
   metricName: string;
   value: number;
-  createdAt: string;
+  timestamp: string;
   vmName: string;
   vmUuid: string;
 };

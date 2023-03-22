@@ -60,7 +60,7 @@ const DeploymentDetailsGraph = ({exerciseId, deploymentId}:
   const {data: scenario} = useGetDeploymentScenarioQuery(queryArguments);
 
   const intoGraphPoint = (score: Score) => ({
-    x: Date.parse(score.createdAt),
+    x: Date.parse(score.timestamp),
     y: roundToDecimalPlaces(score.value),
   });
 

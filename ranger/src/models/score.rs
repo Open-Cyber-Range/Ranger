@@ -14,7 +14,7 @@ pub struct Score {
     pub vm_name: String,
     pub vm_uuid: Uuid,
     pub value: BigDecimal,
-    pub created_at: NaiveDateTime,
+    pub timestamp: NaiveDateTime,
 }
 
 impl Score {
@@ -25,7 +25,7 @@ impl Score {
         vm_name: String,
         vm_uuid: Uuid,
         value: BigDecimal,
-        created_at: NaiveDateTime,
+        timestamp: NaiveDateTime,
     ) -> Self {
         Self {
             id: Uuid::random(),
@@ -35,7 +35,7 @@ impl Score {
             vm_name,
             vm_uuid,
             value,
-            created_at,
+            timestamp,
         }
     }
 }
