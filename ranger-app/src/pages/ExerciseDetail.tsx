@@ -119,7 +119,7 @@ const ExerciseDetail = () => {
           className='bp4-button bp4-intent-primary bp4-large'
           to={`/exercises/${exercise.id}/email`}
         >
-          {t('emails.send')}
+          {t('emails.link')}
         </Link>
       </PageHolder>
     );

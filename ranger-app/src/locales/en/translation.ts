@@ -50,6 +50,7 @@ const language = {
     templates: 'Templates',
   },
   emails: {
+    link: 'Send email',
     emailLog: 'Email log:',
     status: 'Status',
     timestamp: 'Timestamp',
@@ -61,7 +62,7 @@ const language = {
     bcc: 'Bcc',
     cc: 'Cc',
     body: 'Body',
-    send: 'Send email',
+    send: 'Send',
     sendingSuccess: 'Email sent',
     sendingFail: 'Error trying to send the email: {{errorMessage}}',
     sendingFailWithoutMessage: 'Failed to send the email',
