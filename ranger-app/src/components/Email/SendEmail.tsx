@@ -1,3 +1,4 @@
+
 import React, {useEffect} from 'react';
 import type {EmailForm, Exercise} from 'src/models/exercise';
 import {
@@ -17,6 +18,12 @@ import styled from 'styled-components';
 
 const EditorHolder = styled.div`
   height: 40vh;
+  padding: 0.5vh;
+  border-radius: 2px;
+  box-shadow: 0 0 0 0 rgba(45, 114, 210, 0),
+    0 0 0 0 rgba(45, 114, 210, 0),
+    inset 0 0 0 1px rgba(17, 20, 24, 0.2),
+    inset 0 1px 1px rgba(17, 20, 24, 0.5);
 `;
 
 const SendEmail = ({exercise}: {exercise: Exercise}) => {
