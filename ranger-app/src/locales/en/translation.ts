@@ -8,6 +8,8 @@ const language = {
     addingFail: 'Failed to add the exercise',
     name: 'Exercise name',
     scenarioSDL: 'Scenario SDL',
+    noDeployments: 'No deployments',
+    noDeploymentInfo: 'No deployment info',
     deleteSuccess: 'Exercise {{exerciseName}} deleted',
     deleteFail: 'Failed to delete the exercise {{exerciseName}}',
     tabs: {
@@ -47,6 +49,7 @@ const language = {
   common: {
     submit: 'Submit',
     delete: 'Delete',
+    back: 'Back',
     deleting: 'Deleting',
     add: 'Add',
     virtualMachines: 'Virtual Machines',
