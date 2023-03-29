@@ -50,7 +50,7 @@ const language = {
     templates: 'Templates',
   },
   emails: {
-    link: 'Send email',
+    link: 'Create and send emails to participants',
     emailLog: 'Email log:',
     status: 'Status',
     timestamp: 'Timestamp',
