@@ -15,7 +15,7 @@ const ExerciseList = () => {
   exercises = exercises.slice().sort(sortByProperty('updatedAt', 'desc'));
 
   return (
-    <div className='flex flex-col [&>div]:mb-8'>
+    <div className='flex flex-col gap-8'>
       {exercises.map(exercise => (
         <ExerciseCard key={exercise.id} exercise={exercise}/>
       ))}

@@ -7,7 +7,7 @@ const DeploymentList = ({deployments}: {deployments: Deployment[]}) => {
   deployments = deployments.slice().sort(sortByProperty('updatedAt', 'desc'));
 
   return (
-    <div className='flex flex-col [&>div]:mb-8'>
+    <div className='flex flex-col gap-8'>
       {deployments.map(deployment => (
         <div key={deployment.id}>
           <DeploymentCard key={deployment.id} deployment={deployment}/>
