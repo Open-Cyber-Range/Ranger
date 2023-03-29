@@ -1,5 +1,5 @@
 import React from 'react';
-import type {ChartData, ChartDataset} from 'chart.js';
+import type {ChartData} from 'chart.js';
 import {
   Decimation,
   Chart as ChartJS,
@@ -18,19 +18,17 @@ import {
   useGetDeploymentScenarioQuery,
   useGetDeploymentScoresQuery,
 } from 'src/slices/apiSlice';
-import {Colors} from '@blueprintjs/core';
 import zoomPlugin from 'chartjs-plugin-zoom';
 import {type Score} from 'src/models/score';
-import {
-  defaultColors,
-  groupByMetricNameAndVmName,
-  roundToDecimalPlaces,
-} from 'src/utils';
+import {groupByMetricNameAndVmName, roundToDecimalPlaces} from 'src/utils';
 // eslint-disable-next-line import/no-unassigned-import
 import 'chartjs-adapter-moment';
 import {useTranslation} from 'react-i18next';
 import {skipToken} from '@reduxjs/toolkit/dist/query';
 import {sortByProperty} from 'sort-by-property';
+import {LINE_DATASET_TEMPLATE} from 'src/constants';
+import cloneDeep from 'lodash.clonedeep';
+import {getLineChartOptions} from 'src/utils/graph';
 
 ChartJS.register(
   CategoryScale,
@@ -71,22 +69,9 @@ const DeploymentDetailsGraph = ({exerciseId, deploymentId}:
     };
 
     for (const metricName in scoresByMetric) {
-      if (Object.prototype.hasOwnProperty.call(scoresByMetric, metricName)
-      ) {
-        const baseDataset: ChartDataset<'line'> = {
-          type: 'line',
-          label: metricName,
-          tension: 0.3,
-          borderColor: defaultColors,
-          backgroundColor: defaultColors,
-          pointBackgroundColor: Colors.WHITE,
-          pointBorderColor: Colors.GRAY3,
-          borderWidth: 1,
-          parsing: false,
-          fill: false,
-          pointRadius: 1.5,
-          data: [],
-        };
+      if (scoresByMetric[metricName]) {
+        const baseDataset = cloneDeep(LINE_DATASET_TEMPLATE);
+        baseDataset.label = metricName;
 
         for (const score of scoresByMetric[metricName]
           .sort(sortByProperty('timestamp', 'asc'))
@@ -104,94 +89,18 @@ const DeploymentDetailsGraph = ({exerciseId, deploymentId}:
 
   if (deployment && scenario && scores && scores.length > 0) {
     const groupedScores = groupByMetricNameAndVmName(scores);
-    const minZoomRangeMillis = 60 * 1000;
+    const options = getLineChartOptions({
+      minLimit: Date.parse(scenario?.start),
+      maxLimit: Date.parse(scenario?.end),
+      chartTitle,
+      xAxisTitle,
+      yAxisTitle},
+    );
+
     return (
       <Line
         data={intoGraphData(groupedScores)}
-        options={{
-          showLine: true,
-          animation: false,
-          parsing: false,
-          interaction: {
-            mode: 'point',
-            axis: 'x',
-            intersect: false,
-          },
-          indexAxis: 'x',
-          plugins: {
-            tooltip: {
-              displayColors: false,
-            },
-
-            decimation: {
-              enabled: true,
-              algorithm: 'lttb',
-              threshold: 100,
-              samples: 100,
-            },
-
-            title: {
-              display: true,
-              text: chartTitle,
-            },
-            zoom: {
-              pan: {
-                enabled: true,
-                mode: 'xy',
-              },
-              limits: {
-                x: {
-                  minRange: minZoomRangeMillis,
-                  min: Date.parse(scenario?.start),
-                  max: Date.parse(scenario?.end),
-                },
-                y: {
-                  min: 'original',
-                  max: 'original',
-                },
-              },
-              zoom: {
-                wheel: {
-                  enabled: true,
-                  speed: 0.2,
-                },
-                pinch: {
-                  enabled: true,
-                },
-                mode: 'x',
-              },
-            },
-          },
-          responsive: true,
-          scales: {
-            y: {
-              title: {
-                display: true,
-                text: yAxisTitle,
-              },
-              min: 0,
-            },
-            x: {
-              title: {
-                display: true,
-                text: xAxisTitle,
-              },
-              min: Date.parse(scenario?.start),
-              max: Date.parse(scenario?.end),
-              ticks: {
-                source: 'auto',
-              },
-              type: 'time',
-              time: {
-                displayFormats: {
-                  hour: 'HH:mm',
-                  minute: 'HH:mm',
-                  second: 'HH:mm:ss',
-                },
-              },
-            },
-          },
-        }}/>
+        options={options}/>
     );
   }
 
