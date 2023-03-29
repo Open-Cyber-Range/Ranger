@@ -27,6 +27,7 @@ const language = {
     deleteFail: 'Failed to delete the deployment',
     form: {
       group: {
+        placeholder: 'Select group...',
         title: 'Deployment group',
         required: 'Deployment group is required',
       },
