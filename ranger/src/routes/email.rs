@@ -5,7 +5,7 @@ use crate::{
     AppState,
 };
 use actix_web::{
-    post,
+    get, post,
     web::{Data, Json},
 };
 use anyhow::Result;
@@ -38,4 +38,18 @@ pub async fn send_email(
     }
 
     Ok(Json(email))
+}
+
+#[get("exercise/{exercise_uuid}/email")]
+pub async fn get_email_form(app_state: Data<AppState>) -> Result<Json<String>, RangerError> {
+    let mailer_configuration = app_state.configuration.mailer_configuration.clone();
+    let from_address;
+
+    if let Some(mailer_configuration) = mailer_configuration {
+        from_address = mailer_configuration.from_address;
+    } else {
+        return Err(RangerError::MailerConfigurationNotFound);
+    }
+
+    Ok(Json(from_address))
 }

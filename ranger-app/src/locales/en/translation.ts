@@ -50,6 +50,7 @@ const language = {
     templates: 'Templates',
   },
   emails: {
+    link: 'Create and send emails',
     emailLog: 'Email log:',
     status: 'Status',
     timestamp: 'Timestamp',
@@ -61,6 +62,39 @@ const language = {
     bcc: 'Bcc',
     cc: 'Cc',
     body: 'Body',
+    send: 'Send',
+    sendingSuccess: 'Email sent',
+    sendingFail: 'Error trying to send the email: {{errorMessage}}',
+    sendingFailWithoutMessage: 'Failed to send the email',
+    invalidEmailAddress: 'Invalid email address(es): {{invalidEmailAddresses}}',
+    form: {
+      from: {
+        title: 'From',
+      },
+      to: {
+        title: 'To',
+        required: 'To address is required',
+      },
+      replyTo: {
+        title: 'Reply to',
+      },
+      cc: {
+        title: 'Cc',
+      },
+      bcc: {
+        title: 'Bcc',
+      },
+      subject: {
+        title: 'Email subject',
+        required: 'Email subject is required',
+      },
+      body: {
+        title: 'Email body',
+        required: 'Email body is required',
+      },
+      emailPlaceholder:
+      'Enter email address, multiple addresses separated by comma',
+    },
   },
 };
 

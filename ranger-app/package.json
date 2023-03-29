@@ -3,7 +3,7 @@
   "version": "0.5.0",
   "private": true,
   "dependencies": {
-    "@blueprintjs/core": "^4.11.5",
+    "@blueprintjs/core": "^4.17.7",
     "@blueprintjs/docs-theme": "^4.4.23",
     "@blueprintjs/popover2": "^1.8.0",
     "@blueprintjs/select": "^4.8.12",
@@ -23,6 +23,7 @@
     "i18next": "^22.0.4",
     "i18next-browser-languagedetector": "^7.0.0",
     "keycloak-js": "^20.0.2",
+    "nunjucks": "^3.2.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.36.1",
@@ -55,6 +56,7 @@
   "proxy": "http://localhost:8085",
   "devDependencies": {
     "@types/lodash": "^4.14.191",
+    "@types/nunjucks": "^3.2.2",
     "@vitejs/plugin-react": "^3.1.0",
     "autoprefixer": "^10.4.13",
     "eslint-config-xo-react": "^0.27.0",
@@ -66,9 +68,9 @@
     "postcss": "^8.4.21",
     "tailwindcss": "^3.2.7",
     "vite": "^4.1.4",
+    "vite-plugin-env-compatible": "^1.1.1",
     "vite-plugin-svgr": "^2.4.0",
     "vite-tsconfig-paths": "^4.0.5",
-    "vite-plugin-env-compatible": "^1.1.1",
     "xo": "^0.53"
   },
   "xo": {

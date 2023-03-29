@@ -16,6 +16,16 @@ import {toastSuccess, toastWarning} from 'src/components/Toaster';
 import Header from 'src/components/Header';
 import useExerciseStreaming from 'src/hooks/useExerciseStreaming';
 import AddDialog from 'src/components/Deployment/AddDialog';
+import styled from 'styled-components';
+import {AnchorButton} from '@blueprintjs/core';
+
+const HeaderHolder = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  max-height: 2.5rem;
+`;
 
 const ExerciseDetail = () => {
   const {t} = useTranslation();
@@ -96,7 +106,18 @@ const ExerciseDetail = () => {
   if (exercise && deployments) {
     return (
       <PageHolder>
-        <h2>{exercise.name}</h2>
+        <HeaderHolder>
+          <h2>{exercise.name}</h2>
+
+          <AnchorButton
+            large
+            intent='primary'
+            text={t('emails.link')}
+            href={`/exercises/${exercise.id}/email`}
+            icon='envelope'
+            rightIcon='arrow-right'
+          />
+        </HeaderHolder>
 
         <ExerciseForm exercise={exercise}/>
         <br/>

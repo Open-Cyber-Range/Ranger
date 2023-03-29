@@ -12,6 +12,15 @@ type Exercise = {
 
 type UpdateExercise = NewExercise;
 
+type EmailForm = {
+  toAddresses: string[];
+  replyToAddresses?: string[];
+  ccAddresses?: string[];
+  bccAddresses?: string[];
+  subject: string;
+  body: string;
+};
+
 export enum EmailStatus {
   Delivered = 'delivered',
   BeingSent = 'being sent',
@@ -33,4 +42,10 @@ type Email = {
   status: EmailStatus;
 };
 
-export type {NewExercise, Exercise, UpdateExercise, Email};
+export type {
+  NewExercise,
+  Exercise,
+  UpdateExercise,
+  EmailForm,
+  Email,
+};
