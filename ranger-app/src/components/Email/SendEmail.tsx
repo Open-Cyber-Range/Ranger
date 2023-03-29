@@ -58,13 +58,11 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
     email.subject = nunjucks
       .renderString(
         email.subject,
-        // Needs more variables for participant info, entity info, etc.
         {exerciseName: exercise.name});
 
     email.body = nunjucks
       .renderString(
         email.body,
-        // Needs more variables for participant info, entity info, etc.
         {exerciseName: exercise.name});
 
     await sendMail({email, exerciseId: exercise.id});
