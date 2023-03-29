@@ -8,6 +8,7 @@ import {
 import {findLatestScoresByVms, groupBy, roundToDecimalPlaces} from 'src/utils';
 import {type Score} from 'src/models/score';
 import {type TrainingLearningObjective} from 'src/models/scenario';
+import {H5} from '@blueprintjs/core';
 
 const TloRow = ({exerciseId, deploymentId, tloKey, tlo}:
 {exerciseId: string;
@@ -60,11 +61,11 @@ const TloRow = ({exerciseId, deploymentId, tloKey, tlo}:
       return (
         <tr key={tloKey}>
           <td>
-            <h4>{tlo.name ?? tloKey}</h4>
+            <H5>{tlo.name ?? tloKey}</H5>
             <p>{tlo.description}</p>
           </td>
           <td>
-            <h4>{tlo.evaluation}</h4>
+            <H5>{tlo.evaluation}</H5>
             <p>{tloEvaluation.description}</p>
           </td>
           {tloEvaluation.metrics.map(metricName => (
