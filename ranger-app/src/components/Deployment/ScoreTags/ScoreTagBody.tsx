@@ -1,4 +1,3 @@
-/* eslint-disable unicorn/no-array-reduce */
 import React from 'react';
 import {Tag} from '@blueprintjs/core';
 import '@blueprintjs/popover2/lib/css/blueprint-popover2.css';
@@ -33,7 +32,6 @@ const calculateTotalScoreForRole = ({scenario, scores, role}: {
 
     const roleTloNames = roleEntities.flatMap(entity =>
       entity.goals?.flatMap(goal_ref => goals[goal_ref]?.tlos));
-    // eslint-disable-next-line unicorn/no-array-callback-reference
     const roleEvaluationNames = roleTloNames.filter(isNonNullable)
       .flatMap(tloName => tlos[tloName]?.evaluation);
     const roleMetricNames = new Set(roleEvaluationNames
@@ -44,7 +42,7 @@ const calculateTotalScoreForRole = ({scenario, scores, role}: {
 
     const uniqueVmNames = [...new Set(roleScores.map(score => score.vmName))];
     const totalRoleScore = uniqueVmNames.reduce((scoreSum, vmName) => {
-      const vmScores: Score[] = roleScores.filter(score =>
+      const vmScores = roleScores.filter(score =>
         score.vmName === vmName);
 
       const scoresByMetric = groupBy(vmScores, score => score.metricName);

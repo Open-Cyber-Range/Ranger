@@ -152,6 +152,8 @@
           "code": 80
         }
       ],
+      "unicorn/no-array-reduce": "off",
+      "unicorn/no-array-callback-reference": "off",
       "react/jsx-max-props-per-line": [
         "error",
         {

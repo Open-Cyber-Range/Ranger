@@ -41,7 +41,6 @@ const TloTable = ({exerciseId, deploymentId, tloMap}:
 
       const roleTloKeys = roleEntities.flatMap(entity =>
         entity.goals?.flatMap(goalKey => goalMap[goalKey]?.tlos))
-        // eslint-disable-next-line unicorn/no-array-callback-reference
         .filter(isNonNullable);
 
       const tloByTloName: Record<string, TrainingLearningObjective> = {};

@@ -1,4 +1,3 @@
-/* eslint-disable unicorn/no-array-reduce */
 import {Colors} from '@blueprintjs/core';
 import {ExerciseRole} from 'src/models/scenario';
 import {type Score} from 'src/models/score';
