@@ -43,6 +43,18 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
   });
 
   const onSubmit: SubmitHandler<EmailForm> = async email => {
+    const invalidEmailAddresses = [validateEmails(email.toAddresses)].flat()
+      .concat(validateEmails(email.replyToAddresses ?? []))
+      .concat(validateEmails(email.ccAddresses ?? []))
+      .concat(validateEmails(email.bccAddresses ?? []));
+
+    if (invalidEmailAddresses.length > 0) {
+      toastWarning(t('emails.invalidEmailAddress', {
+        invalidEmailAddresses: invalidEmailAddresses.join(', '),
+      }));
+      return;
+    }
+
     email.subject = nunjucks
       .renderString(
         email.subject,
@@ -56,6 +68,22 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
         {exerciseName: exercise.name});
 
     await sendMail({email, exerciseId: exercise.id});
+  };
+
+  const validateEmails = (emails: string[]) => {
+    const faultyEmails = [];
+    for (const email of emails) {
+      if (email.trim().length > 0
+       && !/^[\w.%+-]+@[a-z\d.-]+\.[a-z]{2,4}$/i.test(email)) {
+        faultyEmails.push(email);
+      }
+    }
+
+    if (faultyEmails.length > 0) {
+      return faultyEmails;
+    }
+
+    return [];
   };
 
   useEffect(() => {
@@ -125,7 +153,6 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
             field: {onChange, ref, value},
           }) => (
             <FormGroup
-              labelFor='email-reply-to'
               label={t('emails.form.replyTo.title')}
             >
               <TagInput
@@ -148,7 +175,6 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
             field: {onChange, ref, value},
           }) => (
             <FormGroup
-              labelFor='email-cc'
               label={t('emails.form.cc.title')}
             >
               <TagInput
@@ -171,7 +197,6 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
             field: {onChange, ref, value},
           }) => (
             <FormGroup
-              labelFor='email-bcc'
               label={t('emails.form.bcc.title')}
             >
               <TagInput
@@ -197,7 +222,6 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
             const intent = error ? Intent.DANGER : Intent.NONE;
             return (
               <FormGroup
-                labelFor='email-subject'
                 labelInfo='(required)'
                 helperText={error?.message}
                 intent={intent}
@@ -226,7 +250,6 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
             const intent = error ? Intent.DANGER : Intent.NONE;
             return (
               <FormGroup
-                labelFor='email-body'
                 labelInfo='(required)'
                 helperText={error?.message}
                 intent={intent}

@@ -66,13 +66,14 @@ const language = {
     sendingSuccess: 'Email sent',
     sendingFail: 'Error trying to send the email: {{errorMessage}}',
     sendingFailWithoutMessage: 'Failed to send the email',
+    invalidEmailAddress: 'Invalid email address(es): {{invalidEmailAddresses}}',
     form: {
       from: {
         title: 'From',
       },
       to: {
         title: 'To',
-        required: 'Receiver address is required',
+        required: 'To address is required',
       },
       replyTo: {
         title: 'Reply to',
