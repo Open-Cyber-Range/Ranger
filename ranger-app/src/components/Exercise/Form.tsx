@@ -1,8 +1,8 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import type {SubmitHandler} from 'react-hook-form';
 import {useForm, Controller} from 'react-hook-form';
 import {Button, FormGroup, InputGroup, Intent} from '@blueprintjs/core';
-import {AppToaster} from 'src/components/Toaster';
+import {toastSuccess, toastWarning} from 'src/components/Toaster';
 import type {Exercise, UpdateExercise} from 'src/models/exercise';
 import {useUpdateExerciseMutation} from 'src/slices/apiSlice';
 import Editor from '@monaco-editor/react';
@@ -21,24 +21,31 @@ const ExerciseForm = ({exercise}: {exercise: Exercise}) => {
       sdlSchema: exercise.sdlSchema ?? '',
     },
   });
-  const [updateExercise, _newExercise] = useUpdateExerciseMutation();
+  const [updateExercise, {isSuccess, error}] = useUpdateExerciseMutation();
 
   const onSubmit: SubmitHandler<UpdateExercise> = async exerciseUpdate => {
-    try {
-      await updateExercise({exerciseUpdate, exerciseId: exercise.id});
-      AppToaster.show({
-        icon: 'tick',
-        intent: Intent.SUCCESS,
-        message: `Exercise "${exerciseUpdate.name}" updated`,
-      });
-    } catch {
-      AppToaster.show({
-        icon: 'warning-sign',
-        intent: Intent.DANGER,
-        message: 'Failed to add the exercise',
-      });
-    }
+    await updateExercise({exerciseUpdate, exerciseId: exercise.id});
   };
+
+  useEffect(() => {
+    if (isSuccess) {
+      toastSuccess(t('exercises.updateSuccess', {
+        exerciseName: JSON.stringify(exercise.name),
+      }));
+    }
+  }, [isSuccess, t, exercise.name]);
+
+  useEffect(() => {
+    if (error) {
+      if ('data' in error) {
+        toastWarning(t('exercises.updateFail', {
+          errorMessage: JSON.stringify(error.data),
+        }));
+      } else {
+        toastWarning(t('exercises.updateFail'));
+      }
+    }
+  }, [error, t]);
 
   return (
     <form className='ExerciseForm' onSubmit={handleSubmit(onSubmit)}>
