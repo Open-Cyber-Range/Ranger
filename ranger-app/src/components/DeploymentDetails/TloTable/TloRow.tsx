@@ -6,7 +6,6 @@ import {
   useGetDeploymentScoresQuery,
 } from 'src/slices/apiSlice';
 import {findLatestScoresByVms, groupBy, roundToDecimalPlaces} from 'src/utils';
-import {type Score} from 'src/models/score';
 import {type TrainingLearningObjective} from 'src/models/scenario';
 import {H5} from '@blueprintjs/core';
 
@@ -21,37 +20,6 @@ const TloRow = ({exerciseId, deploymentId, tloKey, tlo}:
     ? {exerciseId, deploymentId} : skipToken;
   const {data: scenario} = useGetDeploymentScenarioQuery(queryArguments);
   const {data: scores} = useGetDeploymentScoresQuery(queryArguments);
-
-  const MetricsCell = ({scores, metricName}:
-  {scores: Score[]; metricName: string}) => {
-    if (scores && scores.length > 0) {
-      const latestScoresByVm = findLatestScoresByVms(scores);
-      latestScoresByVm.sort((a, b) => a.vmName.localeCompare(b.vmName));
-
-      return (
-        <td>
-          {latestScoresByVm.map(element => (
-            <div key={element.id} className='pl-4'>
-              <li key={element.id}>
-                {metricName} - {element.vmName}: {roundToDecimalPlaces(
-                  element.value)} {t('tloTable.points')}
-              </li>
-            </div>
-          ))}
-        </td>
-      );
-    }
-
-    return (
-      <td>
-        <div className='pl-4'>
-          <li>
-            {metricName} - {t('tloTable.noMetricData')}
-          </li>
-        </div>
-      </td>
-    );
-  };
 
   if (tlo && scenario?.evaluations) {
     const tloEvaluation = scenario?.evaluations[tlo.evaluation];
@@ -68,13 +36,37 @@ const TloRow = ({exerciseId, deploymentId, tloKey, tlo}:
             <H5>{tlo.evaluation}</H5>
             <p>{tloEvaluation.description}</p>
           </td>
-          {tloEvaluation.metrics.map(metricName => (
-            <MetricsCell
-              key={metricName}
-              metricName={metricName}
-              scores={scoresByMetric[metricName]}
-            />
-          ))}
+          {tloEvaluation.metrics.map(metricName => {
+            const scores = scoresByMetric[metricName];
+            if (scores && scores.length > 0) {
+              const latestScoresByVm = findLatestScoresByVms(scores);
+              latestScoresByVm.sort((a, b) => a.vmName.localeCompare(b.vmName));
+
+              return (
+                <td key={metricName}>
+                  {latestScoresByVm.map(element => (
+                    <div key={element.id} className='pl-4'>
+                      <li key={element.id}>
+                        {metricName} - {element.vmName}: {roundToDecimalPlaces(
+                          element.value)} {t('tloTable.points')}
+                      </li>
+                    </div>
+                  ))}
+                </td>
+              );
+            }
+
+            return (
+              <td key={metricName}>
+                <div className='pl-4'>
+                  <li>
+                    {metricName} - {t('tloTable.noMetricData')}
+                  </li>
+                </div>
+              </td>
+            );
+          },
+          )}
         </tr>
       );
     }
