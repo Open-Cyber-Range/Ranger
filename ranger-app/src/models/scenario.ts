@@ -177,3 +177,6 @@ export type Scenario = {
   scripts?: Record<string, Script>;
   stories?: Record<string, Story>;
 };
+
+export type TloMapsByRole = {
+  [key in ExerciseRole]?: Record<string, TrainingLearningObjective>};

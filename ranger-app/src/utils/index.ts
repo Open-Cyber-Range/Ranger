@@ -1,5 +1,11 @@
 import {Colors} from '@blueprintjs/core';
-import {ExerciseRole} from 'src/models/scenario';
+import {
+  type Entity,
+  ExerciseRole,
+  type Goal,
+  type TloMapsByRole,
+  type TrainingLearningObjective,
+} from 'src/models/scenario';
 import {type Score} from 'src/models/score';
 
 export const getWebsocketBase = () => {
@@ -114,3 +120,76 @@ export const findLatestScoresByVms = (scores: Score[]) => {
 
   return latestScoresByVm;
 };
+
+export function sumScoresByMetric(
+  metricNames: string[], scoresByMetric: Record<string, Score[]>) {
+  return metricNames.reduce(
+    (metricScoreSum, metricName) => {
+      if (scoresByMetric[metricName]) {
+        const currentScore = findLatestScore(scoresByMetric[metricName]);
+        if (currentScore?.value) {
+          metricScoreSum += Number(currentScore?.value);
+        }
+      }
+
+      return metricScoreSum;
+    }, 0);
+}
+
+export function sumScoresByRole(uniqueVmNames: string[], roleScores: Score[]) {
+  return uniqueVmNames.reduce((totalScoreSum, vmName) => {
+    const vmScores = roleScores.filter(score => score.vmName === vmName);
+
+    const scoresByMetric = groupBy(vmScores, score => score.metricName);
+    const metricNames = Object.keys(scoresByMetric);
+    const metricScoreSum = sumScoresByMetric(metricNames, scoresByMetric);
+    totalScoreSum += metricScoreSum;
+    return totalScoreSum;
+  }, 0);
+}
+
+export function getTloNamesByRole(
+  entities: Record<string, Entity>,
+  goals: Record<string, Goal>,
+  role: ExerciseRole) {
+  const entityValues = Object.values(entities);
+  const roleEntities = entityValues.slice().filter(entity =>
+    entity.role?.valueOf() === role,
+  );
+
+  const tloNames = roleEntities.slice().reduce<string []>(
+    (tloNames, entity) => {
+      if (entity.goals) {
+        for (const goalName of entity.goals) {
+          tloNames = tloNames.concat(goals[goalName]?.tlos);
+        }
+      }
+
+      return tloNames;
+    }, []);
+  return tloNames;
+}
+
+export function groupTloMapsByRoles(
+  entities: Record<string, Entity>,
+  goals: Record<string, Goal>,
+  tlos: Record<string, TrainingLearningObjective>,
+  roles: ExerciseRole[],
+) {
+  const tloMapsByRole = roles.reduce<TloMapsByRole>((tloMapsByRole, role) => {
+    const roleTloNames = getTloNamesByRole(entities, goals, role);
+    const roleTloMap
+      = roleTloNames.reduce<Record<string, TrainingLearningObjective>>(
+        (roleTloMap, tloName) => {
+          if (tlos[tloName]) {
+            roleTloMap[tloName] = tlos[tloName];
+          }
+
+          return roleTloMap;
+        }, {});
+
+    tloMapsByRole[role] = roleTloMap;
+    return tloMapsByRole;
+  }, {});
+  return tloMapsByRole;
+}

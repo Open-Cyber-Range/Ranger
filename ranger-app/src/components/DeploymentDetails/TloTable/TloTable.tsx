@@ -3,12 +3,11 @@ import {skipToken} from '@reduxjs/toolkit/dist/query';
 import {useTranslation} from 'react-i18next';
 import ScoreTagBody from 'src/components/Deployment/ScoreTags/ScoreTagBody';
 import {useGetDeploymentScenarioQuery} from 'src/slices/apiSlice';
-import {isNonNullable} from 'src/utils';
 import {
   type TrainingLearningObjective,
   ExerciseRoleOrder,
-  type ExerciseRole,
 } from 'src/models/scenario';
+import {groupTloMapsByRoles} from 'src/utils';
 import TloRow from './TloRow';
 
 const TloTable = ({exerciseId, deploymentId, tloMap}:
@@ -28,30 +27,8 @@ const TloTable = ({exerciseId, deploymentId, tloMap}:
       .filter(entity => entity.role)
       .map(entity => entity.role!);
     roles.sort((a, b) => ExerciseRoleOrder[a] - ExerciseRoleOrder[b]);
-
-    type TloMapsByRole = {
-      [key in ExerciseRole]?: Record<string, TrainingLearningObjective>};
-
-    const tloMapsByRole: TloMapsByRole = {};
-
-    for (const role of roles) {
-      const roleEntities = entities.filter(entity =>
-        entity.role?.valueOf() === role,
-      );
-
-      const roleTloKeys = roleEntities.flatMap(entity =>
-        entity.goals?.flatMap(goalKey => goalMap[goalKey]?.tlos))
-        .filter(isNonNullable);
-
-      const tloByTloName: Record<string, TrainingLearningObjective> = {};
-      for (const key of roleTloKeys) {
-        if (tloMap[key]) {
-          tloByTloName[key] = tloMap[key];
-        }
-      }
-
-      tloMapsByRole[role] = tloByTloName;
-    }
+    const tloMapsByRole = groupTloMapsByRoles(
+      entityMap, goalMap, tloMap, roles);
 
     return (
       <div className='flex flex-col mt-2'>
