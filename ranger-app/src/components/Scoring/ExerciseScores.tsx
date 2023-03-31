@@ -2,10 +2,10 @@ import type React from 'react';
 import PageHolder from 'src/components/PageHolder';
 import {useTranslation} from 'react-i18next';
 import type {Deployment} from 'src/models/deployment';
-import ScoreTags from 'src/components/Deployment/ScoreTags/ScoreTags';
 import {H4} from '@blueprintjs/core';
 import {useNavigate} from 'react-router-dom';
 import {sortByProperty} from 'sort-by-property';
+import ScoreTagGroup from 'src/components/Scoring/ScoreTagGroup';
 
 const ScoresPanel = ({deployments}:
 {deployments: Deployment[] | undefined;
@@ -38,7 +38,7 @@ const ScoresPanel = ({deployments}:
                 >
                   <td className='flex flex-row justify-between'>
                     <H4 className='mb-0'>{deployment.name}</H4>
-                    <ScoreTags
+                    <ScoreTagGroup
                       exerciseId={deployment.exerciseId}
                       deploymentId={deployment.id}/>
                   </td>

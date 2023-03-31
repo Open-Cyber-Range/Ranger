@@ -9,7 +9,7 @@ import {findLatestScoresByVms, groupBy, roundToDecimalPlaces} from 'src/utils';
 import {type TrainingLearningObjective} from 'src/models/scenario';
 import {H5} from '@blueprintjs/core';
 
-const TloRow = ({exerciseId, deploymentId, tloKey, tlo}:
+const TloTableRow = ({exerciseId, deploymentId, tloKey, tlo}:
 {exerciseId: string;
   deploymentId: string;
   tloKey: string;
@@ -96,4 +96,4 @@ const TloRow = ({exerciseId, deploymentId, tloKey, tlo}:
   );
 };
 
-export default TloRow;
+export default TloTableRow;

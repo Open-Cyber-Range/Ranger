@@ -1,6 +1,6 @@
 import React from 'react';
-import type {ChartData} from 'chart.js';
 import {
+  type ChartData,
   Decimation,
   Chart as ChartJS,
   CategoryScale,

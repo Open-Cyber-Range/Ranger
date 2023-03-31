@@ -8,9 +8,9 @@ import {
 import {toastSuccess, toastWarning} from 'src/components/Toaster';
 import {useTranslation} from 'react-i18next';
 import {useNavigate} from 'react-router-dom';
+import ScoreTagGroup from 'src/components/Scoring/ScoreTagGroup';
 import StatusBar from './ProgressBar';
 import InfoTags from './InfoTags';
-import ScoreTags from './ScoreTags/ScoreTags';
 
 const DeploymentCard = ({deployment}: {deployment: Deployment}) => {
   const {t} = useTranslation();
@@ -70,7 +70,7 @@ const DeploymentCard = ({deployment}: {deployment: Deployment}) => {
         deploymentElements={deploymentElements}
       />
       <div className='flex items-start mt-4'>
-        <ScoreTags
+        <ScoreTagGroup
           exerciseId={deployment.exerciseId}
           deploymentId={deployment.id}/>
       </div>

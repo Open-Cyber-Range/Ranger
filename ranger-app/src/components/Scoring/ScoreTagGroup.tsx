@@ -3,9 +3,9 @@ import '@blueprintjs/popover2/lib/css/blueprint-popover2.css';
 import {useGetDeploymentScenarioQuery} from 'src/slices/apiSlice';
 import {ExerciseRoleOrder} from 'src/models/scenario';
 import {getTloNamesByRole} from 'src/utils';
-import ScoreTagBody from './ScoreTagBody';
+import ScoreTag from './ScoreTag';
 
-const ScoreTags = ({exerciseId, deploymentId}:
+const ScoreTagGroup = ({exerciseId, deploymentId}:
 {exerciseId: string;
   deploymentId: string;
 }) => {
@@ -30,7 +30,7 @@ const ScoreTags = ({exerciseId, deploymentId}:
           if (roleHasTlos) {
             return (
               <div key={role} className='flex mr-1'>
-                <ScoreTagBody
+                <ScoreTag
                   key={role}
                   exerciseId={exerciseId}
                   deploymentId={deploymentId}
@@ -50,4 +50,4 @@ const ScoreTags = ({exerciseId, deploymentId}:
   return null;
 };
 
-export default ScoreTags;
+export default ScoreTagGroup;

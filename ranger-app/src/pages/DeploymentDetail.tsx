@@ -2,12 +2,12 @@ import React from 'react';
 import {useParams} from 'react-router-dom';
 import PageHolder from 'src/components/PageHolder';
 import type {DeploymentDetailRouteParameters} from 'src/models/routes';
-import DeploymentDetailsGraph from 'src/components/DeploymentDetails/Graph';
-import TloTable from 'src/components/DeploymentDetails/TloTable/TloTable';
 import {useTranslation} from 'react-i18next';
 import BackButton from 'src/components/BackButton';
 import {skipToken} from '@reduxjs/toolkit/dist/query';
 import {useGetDeploymentScenarioQuery} from 'src/slices/apiSlice';
+import DeploymentDetailsGraph from 'src/components/Scoring/Graph';
+import TloTable from 'src/components/Scoring/TloTable';
 
 const DeploymentDetail = () => {
   const {t} = useTranslation();

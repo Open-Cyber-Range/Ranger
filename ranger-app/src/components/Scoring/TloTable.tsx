@@ -1,14 +1,14 @@
 import React from 'react';
 import {skipToken} from '@reduxjs/toolkit/dist/query';
 import {useTranslation} from 'react-i18next';
-import ScoreTagBody from 'src/components/Deployment/ScoreTags/ScoreTagBody';
+import ScoreTag from 'src/components/Scoring/ScoreTag';
 import {useGetDeploymentScenarioQuery} from 'src/slices/apiSlice';
 import {
   type TrainingLearningObjective,
   ExerciseRoleOrder,
 } from 'src/models/scenario';
 import {groupTloMapsByRoles} from 'src/utils';
-import TloRow from './TloRow';
+import TloTableRow from './TloTableRow';
 
 const TloTable = ({exerciseId, deploymentId, tloMap}:
 {exerciseId: string;
@@ -39,7 +39,7 @@ const TloTable = ({exerciseId, deploymentId, tloMap}:
             return (
               <div key={role} className='flex flex-col mt-2 text-center'>
                 <div className='flex flex-col mt-6 font-bold'>
-                  <ScoreTagBody
+                  <ScoreTag
                     key={role}
                     large
                     exerciseId={exerciseId}
@@ -61,7 +61,7 @@ const TloTable = ({exerciseId, deploymentId, tloMap}:
                     </tr>
 
                     { tloKeys.map(tloKey => (
-                      <TloRow
+                      <TloTableRow
                         key={tloKey}
                         exerciseId={exerciseId}
                         deploymentId={deploymentId}

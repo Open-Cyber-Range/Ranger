@@ -9,9 +9,9 @@ import {
 import {skipToken} from '@reduxjs/toolkit/dist/query';
 import {useTranslation} from 'react-i18next';
 import {H2, Tab, Tabs} from '@blueprintjs/core';
-import DashboardPanel from 'src/components/ExerciseDetails/Panels/Dashboard';
-import ScoresPanel from 'src/components/ExerciseDetails/Panels/Scores';
 import SendEmail from 'src/components/Email/SendEmail';
+import DashboardPanel from 'src/components/Exercise/Dashboard';
+import ScoresPanel from 'src/components/Scoring/ExerciseScores';
 
 const ExerciseDetail = () => {
   const {t} = useTranslation();
@@ -39,15 +39,15 @@ const ExerciseDetail = () => {
             id='Scores'
             title={t('exercises.tabs.scores')}
             icon='chart'
-            panel={<SendEmail exercise={exercise}/>}
+            disabled={!hasDeployments}
+            panel={<ScoresPanel
+              deployments={deployments}/>}
           />
           <Tab
             id='Emails'
             title={t('emails.link')}
             icon='envelope'
-            disabled={!hasDeployments}
-            panel={<ScoresPanel
-              deployments={deployments}/>}
+            panel={<SendEmail exercise={exercise}/>}
           />
         </Tabs>
       </PageHolder>

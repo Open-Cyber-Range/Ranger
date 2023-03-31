@@ -41,7 +41,7 @@ const calculateTotalScoreForRole = ({scenario, scores, role}: {
   return 0;
 };
 
-const ScoreTagBody = ({exerciseId, deploymentId, role, large = false}:
+const ScoreTag = ({exerciseId, deploymentId, role, large = false}:
 {exerciseId: string;
   deploymentId: string;
   role: ExerciseRole;
@@ -72,4 +72,4 @@ const ScoreTagBody = ({exerciseId, deploymentId, role, large = false}:
   return null;
 };
 
-export default ScoreTagBody;
+export default ScoreTag;
