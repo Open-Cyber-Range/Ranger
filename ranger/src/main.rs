@@ -45,6 +45,7 @@ async fn main() -> Result<(), Error> {
                     .service(get_exercise_deployment_scores)
                     .service(get_exercise_deployment_scenario)
                     .service(send_email)
+                    .service(get_email_form)
                     .service(get_exercise_deployment_nodes),
             )
     })

@@ -26,6 +26,7 @@ const ExerciseDetail = () => {
         <H2>{exercise.name}</H2>
         <Tabs
           large
+          renderActiveTabPanelOnly
         >
           <Tab
             id='Dash'
