@@ -1935,8 +1935,9 @@ checksum = "9c8132065adcfd6e02db789d9285a0deb2f3fcb04002865ab67d5fb103533898"
 
 [[package]]
 name = "sdl-parser"
-version = "0.9.0"
-source = "git+ssh://git@code.ocr.cr14.net/open-cyber-range/public/sdl-parser?branch=develop#4ce00757184be060cf7856a503094b0dd871796a"
+version = "0.10.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ab22851fbb3756b18b3c668871f00246168f15a093c3dba97713c6438bc7861a"
 dependencies = [
  "anyhow",
  "bytesize",
