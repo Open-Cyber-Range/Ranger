@@ -145,7 +145,9 @@ impl Handler<DeleteCondition> for ConditionClient {
 #[derive(Message)]
 #[rtype(result = "Result<()>")]
 pub struct ConditionStream(
+    pub Uuid,
     pub DeploymentElement,
+    pub String,
     pub Addr<Database>,
     pub Streaming<ConditionStreamResponse>,
 );
@@ -153,9 +155,11 @@ impl Handler<ConditionStream> for DeployerDistribution {
     type Result = ResponseActFuture<Self, Result<()>>;
 
     fn handle(&mut self, msg: ConditionStream, _ctx: &mut Self::Context) -> Self::Result {
-        let deployment_element = msg.0;
-        let database_address = msg.1;
-        let mut stream = msg.2;
+        let exercise_id = msg.0;
+        let deployment_element = msg.1;
+        let virtual_machine_id = msg.2;
+        let database_address = msg.3;
+        let mut stream = msg.4;
 
         Box::pin(
             async move {
@@ -170,7 +174,7 @@ impl Handler<ConditionStream> for DeployerDistribution {
                     let value = BigDecimal::from_f32(stream_item.command_return_value)
                         .ok_or_else(|| anyhow!("Error converting Condition Return value"))?;
 
-                    log::info!(
+                    log::debug!(
                         "Received Condition Id: {:?}, Value: {:?}",
                         stream_item.response,
                         stream_item.command_return_value,
@@ -178,7 +182,10 @@ impl Handler<ConditionStream> for DeployerDistribution {
                     database_address
                         .clone()
                         .send(CreateConditionMessage(NewConditionMessage::new(
+                            exercise_id,
                             deployment_element.deployment_id,
+                            Uuid::try_from(virtual_machine_id.as_str())?,
+                            deployment_element.scenario_reference.to_owned(),
                             condition_id,
                             value,
                         )))

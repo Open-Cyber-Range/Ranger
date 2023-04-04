@@ -1,14 +1,5 @@
-
 import React, {useState} from 'react';
 import {Button, H2} from '@blueprintjs/core';
-import styled from 'styled-components';
-
-const HeaderHolder = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  margin-bottom: 4rem;
-`;
 
 // eslint-disable-next-line @typescript-eslint/comma-dangle
 const Header = <T,>(
@@ -28,7 +19,7 @@ const Header = <T,>(
 
   return (
     <>
-      <HeaderHolder>
+      <div className='flex flex-row justify-between mb-16'>
         <H2>{headerTitle}</H2>
         {children && (
           <Button
@@ -40,7 +31,7 @@ const Header = <T,>(
               setIsOpen(true);
             }}/>
         )}
-      </HeaderHolder>
+      </div>
       {children && React.Children.map(children, child => {
         if (React.isValidElement(child)) {
           return React

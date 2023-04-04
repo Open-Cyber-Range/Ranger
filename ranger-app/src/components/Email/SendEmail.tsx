@@ -14,17 +14,6 @@ import {useGetEmailFormQuery, useSendEmailMutation} from 'src/slices/apiSlice';
 import {toastSuccess, toastWarning} from 'src/components/Toaster';
 import nunjucks from 'nunjucks';
 import Editor from '@monaco-editor/react';
-import styled from 'styled-components';
-
-const EditorHolder = styled.div`
-  height: 40vh;
-  padding: 0.5vh;
-  border-radius: 2px;
-  box-shadow: 0 0 0 0 rgba(45, 114, 210, 0),
-    0 0 0 0 rgba(45, 114, 210, 0),
-    inset 0 0 0 1px rgba(17, 20, 24, 0.2),
-    inset 0 1px 1px rgba(17, 20, 24, 0.5);
-`;
 
 const SendEmail = ({exercise}: {exercise: Exercise}) => {
   const {t} = useTranslation();
@@ -253,13 +242,13 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
                 intent={intent}
                 label={t('emails.form.body.title')}
               >
-                <EditorHolder>
+                <div className='h-[40vh] p-[0.5vh] rounded-sm shadow-inner'>
                   <Editor
                     value={value}
                     defaultLanguage='html'
                     onChange={onChange}
                   />
-                </EditorHolder>
+                </div>
               </FormGroup>
             );
           }}

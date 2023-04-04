@@ -2,7 +2,6 @@ pub(crate) mod account;
 pub(crate) mod condition;
 pub(crate) mod deployment;
 pub(crate) mod exercise;
-pub(crate) mod score;
 
 use crate::{models::helpers::uuid::Uuid, utilities::run_migrations};
 use actix::{Actor, Addr};

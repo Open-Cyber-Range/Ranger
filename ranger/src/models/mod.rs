@@ -4,7 +4,7 @@ mod deployment;
 mod email;
 mod exercise;
 pub(crate) mod helpers;
-mod score;
+pub mod score;
 
 pub use account::*;
 pub use condition::*;

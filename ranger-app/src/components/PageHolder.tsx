@@ -1,25 +1,12 @@
 import type {ReactNode} from 'react';
 import React from 'react';
-import styled from 'styled-components';
-
-const WidthBox = styled.div`
-  display: flex;
-  justify-content: center;
-`;
-
-const PageWrapper = styled.div`
-  padding-top: 2rem;
-  padding-bottom: 2rem;
-  max-width: 60rem;
-  width: 100%;
-`;
 
 const PageHolder = ({children}: {children: ReactNode}) => (
-  <WidthBox>
-    <PageWrapper>
+  <div className='flex justify-center'>
+    <div className='pt-8 max-w-4xl w-full'>
       {children}
-    </PageWrapper>
-  </WidthBox>
+    </div>
+  </div>
 );
 
 export default PageHolder;

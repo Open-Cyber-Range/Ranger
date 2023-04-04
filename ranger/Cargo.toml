@@ -45,7 +45,7 @@ actix-http = { version = "3", features = ["http2", "ws"] }
 anyhow = "1"
 async-trait = "0.1"
 bigdecimal = { version = "0.3", features = ["serde"] }
-chrono = "0.4"
+chrono = {version = "0.4", features = ["serde"]}
 diesel = { version = "2", features = ["mysql", "r2d2", "chrono", "numeric"] }
 diesel_migrations = "2"
 env_logger = "0.9"
@@ -56,7 +56,7 @@ lazy_static = "1.4"
 lettre = "0.10"
 rand = "0.8"
 ranger-grpc = { path = "../ranger-grpc" }
-sdl-parser = { git = "ssh://git@code.ocr.cr14.net/open-cyber-range/public/sdl-parser", branch = "develop" }
+sdl-parser = "0.10"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1"
 serde_yaml = "0.9"
@@ -76,6 +76,4 @@ uuid = { version = "1.1", features = ["v4", "serde"] }
 
 [dev-dependencies]
 actix-rt = "2"
-sdl-parser = { git = "ssh://git@code.ocr.cr14.net/open-cyber-range/public/sdl-parser", branch = "develop", features = [
-  "test",
-] }
+sdl-parser = {version="0.10", features = ["test"]}

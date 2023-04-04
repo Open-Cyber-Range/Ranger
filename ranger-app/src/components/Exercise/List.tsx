@@ -1,18 +1,8 @@
 import React from 'react';
-import styled from 'styled-components';
 import {useGetExercisesQuery} from 'src/slices/apiSlice';
-import {sortByUpdatedAtDescending} from 'src/utils';
 import humanInterval from 'human-interval';
+import {sortByProperty} from 'sort-by-property';
 import ExerciseCard from './Card';
-
-const Wrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-
-  > div {
-    margin-bottom: 2rem;
-  }
-`;
 
 const ExerciseList = () => {
   const {
@@ -22,15 +12,15 @@ const ExerciseList = () => {
     {pollingInterval: humanInterval('5 seconds')},
   );
   let exercises = potentialExercises ?? [];
-  exercises = exercises.slice().sort(sortByUpdatedAtDescending);
+  exercises = exercises.slice().sort(sortByProperty('updatedAt', 'desc'));
 
   return (
-    <Wrapper>
+    <div className='flex flex-col gap-8'>
       {exercises.map(exercise => (
         <ExerciseCard key={exercise.id} exercise={exercise}/>
       ))}
 
-    </Wrapper>
+    </div>
 
   );
 };

@@ -1,5 +1,8 @@
 type ExerciseDetailRouteParameters = {
   exerciseId: string;
 };
-
-export type {ExerciseDetailRouteParameters};
+type DeploymentDetailRouteParameters = {
+  exerciseId: string;
+  deploymentId: string;
+};
+export type {ExerciseDetailRouteParameters, DeploymentDetailRouteParameters};

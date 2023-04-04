@@ -52,8 +52,7 @@ impl<'de> Deserialize<'de> for DeployerType {
             "condition" => Ok(DeployerType(GrpcDeployerTypes::Condition)),
             "inject" => Ok(DeployerType(GrpcDeployerTypes::Inject)),
             _ => Err(serde::de::Error::custom(format!(
-                "Invalid deployer type: {}",
-                type_string
+                "Invalid deployer type: {type_string}"
             ))),
         }
     }
@@ -78,7 +77,7 @@ impl FromSql<Text, Mysql> for DeployerType {
 
 impl Display for DeployerType {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "{:?}", self)
+        write!(f, "{self:?}")
     }
 }
 
