@@ -88,8 +88,7 @@ export const apiSlice = createApi({
       query: ({exerciseId, deploymentId}) => ({
         url: `/exercise/${exerciseId}/deployment/${deploymentId}`,
         method: 'DELETE',
-        responseHandler: async response => response.text(),
-
+        responseHandler: 'text',
       }),
       invalidatesTags: (result, error, {deploymentId}) =>
         [{type: 'Deployment', id: deploymentId}],

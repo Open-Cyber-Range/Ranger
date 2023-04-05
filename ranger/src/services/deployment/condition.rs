@@ -83,6 +83,7 @@ impl DeployableConditions
                                         Box::new(condition_name.to_owned()),
                                         DeployerTypes::Condition,
                                     ),
+                                    true,
                                 ))
                                 .await??;
 
@@ -136,6 +137,7 @@ impl DeployableConditions
                                         .send(UpdateDeploymentElement(
                                             *exercise_id,
                                             condition_deployment_element,
+                                            true,
                                         ))
                                         .await??;
                                     return Err(error);

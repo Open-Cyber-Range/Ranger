@@ -1,7 +1,6 @@
 use super::condition::DeployableConditions;
 use super::feature::DeployableFeatures;
-use crate::models::helpers::deployer_type::DeployerType;
-use crate::models::helpers::uuid::Uuid;
+use crate::models::helpers::{deployer_type::DeployerType, uuid::Uuid};
 use crate::models::{Deployment, DeploymentElement, ElementStatus, Exercise};
 use crate::services::client::{Deployable, DeploymentInfo};
 use crate::services::database::deployment::{
@@ -15,9 +14,9 @@ use actix::Addr;
 use anyhow::{anyhow, Ok, Result};
 use async_trait::async_trait;
 use futures::future::try_join_all;
-use ranger_grpc::capabilities::DeployerTypes;
 use ranger_grpc::{
-    Configuration, DeploySwitch, DeployVirtualMachine, Identifier, MetaInfo, Switch, VirtualMachine,
+    capabilities::DeployerTypes, Configuration, DeploySwitch, DeployVirtualMachine, Identifier,
+    MetaInfo, Switch, VirtualMachine,
 };
 use sdl_parser::{
     common::Source,
@@ -68,14 +67,14 @@ impl Deployable
 
 #[async_trait]
 pub trait DeployableNodes {
-    async fn deploy_nodes<'a>(
-        &'a self,
-        distributor_address: &'a Addr<DeployerDistribution>,
-        scheduler_address: &'a Addr<Scheduler>,
-        database_address: &'a Addr<Database>,
-        exercise: &'a Exercise,
-        deployment: &'a Deployment,
-        deployers: &'a [String],
+    async fn deploy_nodes(
+        &self,
+        distributor_address: &Addr<DeployerDistribution>,
+        scheduler_address: &Addr<Scheduler>,
+        database_address: &Addr<Database>,
+        exercise: &Exercise,
+        deployment: &Deployment,
+        deployers: &[String],
     ) -> Result<()>;
 }
 
@@ -89,6 +88,7 @@ async fn get_template_id(
             .send(GetDeploymentElementByDeploymentIdByScenarioReference(
                 deployment_id,
                 Box::new(source.to_owned()),
+                true,
             ))
             .await??;
 
@@ -99,14 +99,14 @@ async fn get_template_id(
 
 #[async_trait]
 impl DeployableNodes for Scenario {
-    async fn deploy_nodes<'a>(
-        &'a self,
-        distributor_address: &'a Addr<DeployerDistribution>,
-        scheduler_address: &'a Addr<Scheduler>,
-        database_address: &'a Addr<Database>,
-        exercise: &'a Exercise,
-        deployment: &'a Deployment,
-        deployers: &'a [String],
+    async fn deploy_nodes(
+        &self,
+        distributor_address: &Addr<DeployerDistribution>,
+        scheduler_address: &Addr<Scheduler>,
+        database_address: &Addr<Database>,
+        exercise: &Exercise,
+        deployment: &Deployment,
+        deployers: &[String],
     ) -> Result<()> {
         let deployment_schedule = scheduler_address
             .send(CreateDeploymentSchedule(self.clone()))
@@ -128,6 +128,7 @@ impl DeployableNodes for Scenario {
                                     Box::new(unique_name.to_string()),
                                     deployer_type,
                                 ),
+                                true,
                             ))
                             .await??;
                         let links =
@@ -138,6 +139,7 @@ impl DeployableNodes for Scenario {
                                             GetDeploymentElementByDeploymentIdByScenarioReference(
                                                 deployment.id,
                                                 Box::new(link_name.to_string()),
+                                                true,
                                             ),
                                         )
                                         .await??;
@@ -172,6 +174,7 @@ impl DeployableNodes for Scenario {
                                     .send(UpdateDeploymentElement(
                                         exercise.id,
                                         deployment_element.clone(),
+                                        true,
                                     ))
                                     .await??;
 
@@ -212,7 +215,11 @@ impl DeployableNodes for Scenario {
                             Err(error) => {
                                 deployment_element.status = ElementStatus::Failed;
                                 database_address
-                                    .send(UpdateDeploymentElement(exercise.id, deployment_element))
+                                    .send(UpdateDeploymentElement(
+                                        exercise.id,
+                                        deployment_element,
+                                        true,
+                                    ))
                                     .await??;
                                 Err(error)
                             }
@@ -266,6 +273,7 @@ impl RemoveableNodes for Vec<DeploymentElement> {
                                     .send(UpdateDeploymentElement(
                                         exercise_id.to_owned(),
                                         element_update,
+                                        true,
                                     ))
                                     .await??;
                                 Ok(())
@@ -276,6 +284,7 @@ impl RemoveableNodes for Vec<DeploymentElement> {
                                     .send(UpdateDeploymentElement(
                                         exercise_id.to_owned(),
                                         element_update,
+                                        true,
                                     ))
                                     .await??;
                                 Err(error)

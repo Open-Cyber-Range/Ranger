@@ -82,6 +82,7 @@ impl DeployableInject
                     Box::new(inject_name.to_owned()),
                     DeployerTypes::Inject,
                 ),
+                false,
             ))
             .await??;
 
@@ -118,6 +119,7 @@ impl DeployableInject
                         .send(UpdateDeploymentElement(
                             *exercise_id,
                             inject_deployment_element,
+                            false,
                         ))
                         .await??;
 
@@ -134,6 +136,7 @@ impl DeployableInject
                         .send(UpdateDeploymentElement(
                             *exercise_id,
                             inject_deployment_element,
+                            false,
                         ))
                         .await??;
                     return Err(error);

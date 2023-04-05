@@ -15,6 +15,7 @@ use diesel::{
     r2d2::{ConnectionManager, Pool, PooledConnection},
     sql_function, Insertable,
 };
+use std::sync::{Arc, Mutex};
 
 use super::websocket::WebSocketManager;
 
@@ -41,9 +42,11 @@ pub type Create<Type, Table> = InsertStatement<Table, <Type as Insertable<Table>
 pub type CreateOrIgnore<Type, Table> =
     InsertOrIgnoreStatement<Table, <Type as Insertable<Table>>::Values>;
 
+pub type ArcDatabaseConnection = Arc<Mutex<PooledConnection<ConnectionManager<MysqlConnection>>>>;
 pub struct Database {
     websocket_manager_address: Addr<WebSocketManager>,
     connection_pool: Pool<ConnectionManager<MysqlConnection>>,
+    shared_connection: ArcDatabaseConnection,
 }
 
 impl Actor for Database {
@@ -59,16 +62,28 @@ impl Database {
         let mut connection = connection_pool
             .get()
             .map_err(|error| anyhow!("Failed to get database connection: {}", error))?;
+        let shared_connection = connection_pool.get()?;
 
-        run_migrations(&mut connection)
+        run_migrations(&mut *connection)
             .map_err(|error| anyhow!("Failed to run database migrations: {}", error))?;
+
         Ok(Self {
             connection_pool,
             websocket_manager_address: websocket_manager.clone(),
+            shared_connection: Arc::new(Mutex::new(shared_connection)),
         })
     }
 
     pub fn get_connection(&self) -> Result<PooledConnection<ConnectionManager<MysqlConnection>>> {
         Ok(self.connection_pool.get()?)
+    }
+    pub fn get_shared_connection(&self) -> Result<ArcDatabaseConnection> {
+        Ok(self.shared_connection.clone())
+    }
+    pub fn pick_connection(&self, use_shared_connection: bool) -> Result<ArcDatabaseConnection> {
+        match use_shared_connection {
+            true => self.get_shared_connection(),
+            false => Ok(Arc::new(Mutex::new(self.get_connection()?))),
+        }
     }
 }

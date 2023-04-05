@@ -166,7 +166,7 @@ impl Handler<RemoveDeployment> for DeploymentManager {
             async move {
                 let deployers = deployers_result?;
                 let deployment_elements = database_address
-                    .send(GetDeploymentElementByDeploymentId(deployment.id))
+                    .send(GetDeploymentElementByDeploymentId(deployment.id, false))
                     .await??;
                 deployment_elements
                     .undeploy_nodes(

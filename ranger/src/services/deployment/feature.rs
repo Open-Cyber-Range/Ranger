@@ -87,6 +87,7 @@ impl DeployableFeatures
                                     Box::new(feature_name.to_string()),
                                     DeployerTypes::Feature,
                                 ),
+                                true,
                             ))
                             .await??;
 
@@ -156,6 +157,7 @@ impl DeployableFeatures
                                         .send(UpdateDeploymentElement(
                                             *exercise_id,
                                             feature_deployment_element,
+                                            true,
                                         ))
                                         .await??;
                                     Ok(())
@@ -166,6 +168,7 @@ impl DeployableFeatures
                                         .send(UpdateDeploymentElement(
                                             *exercise_id,
                                             feature_deployment_element,
+                                            true,
                                         ))
                                         .await??;
                                     Err(err)
