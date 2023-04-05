@@ -208,7 +208,7 @@ pub async fn delete_exercise_deployment(
     info!("Deleting deployment {:?}", deployment_uuid.0);
     app_state
         .database_address
-        .send(DeleteDeployment(deployment_uuid))
+        .send(DeleteDeployment(deployment_uuid, false))
         .await
         .map_err(create_mailbox_error_handler("Database"))?
         .map_err(create_database_error_handler("Delete deployment"))?;
@@ -230,7 +230,7 @@ pub async fn get_exercise_deployment_elements(
         .map_err(create_database_error_handler("Get deployment"))?;
     let elements = app_state
         .database_address
-        .send(GetDeploymentElementByDeploymentId(deployment.id))
+        .send(GetDeploymentElementByDeploymentId(deployment.id, false))
         .await
         .map_err(create_mailbox_error_handler("Database"))?
         .map_err(create_database_error_handler("Get deployment elements"))?;
@@ -317,7 +317,7 @@ pub async fn get_exercise_deployment_scores(
 
     let deployment_elements = app_state
         .database_address
-        .send(GetDeploymentElementByDeploymentId(deployment_uuid))
+        .send(GetDeploymentElementByDeploymentId(deployment_uuid, false))
         .await
         .map_err(create_mailbox_error_handler("Database"))?
         .map_err(create_database_error_handler("Get deployment elements"))?;

@@ -197,7 +197,7 @@ impl DeploymentElement {
         self.handler_reference = handler_reference;
 
         database_address
-            .send(UpdateDeploymentElement(exercise_id, self.clone()))
+            .send(UpdateDeploymentElement(exercise_id, self.clone(), true))
             .await??;
         Ok(())
     }
