@@ -5,6 +5,7 @@ use crate::{
     errors::RangerError,
 };
 use actix::MailboxError;
+use anyhow::{anyhow, Result};
 use diesel::mysql::Mysql;
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 use log::error;
@@ -23,7 +24,7 @@ pub fn create_database_error_handler(
 ) -> impl Fn(anyhow::Error) -> RangerError + '_ {
     move |err| {
         error!("{} error: {}", action_name, err);
-        let error_string = format!("{}", err);
+        let error_string = format!("{err}");
         if error_string.contains(FOREIGN_KEY_CONSTRAINT_FAILS) {
             return RangerError::DatabaseConflict;
         } else if error_string.contains(RECORD_NOT_FOUND) {
@@ -41,4 +42,8 @@ pub fn run_migrations(
     connection.run_pending_migrations(MIGRATIONS)?;
 
     Ok(())
+}
+
+pub fn try_some<T>(item: Option<T>, error_message: &str) -> Result<T> {
+    item.ok_or_else(|| anyhow!("{:?}", error_message))
 }

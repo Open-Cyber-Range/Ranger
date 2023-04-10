@@ -1,5 +1,9 @@
-use lettre::{address::AddressError, Message};
+use lettre::{
+    message::{header, SinglePart},
+    Message,
+};
 use serde::{Deserialize, Serialize};
+use std::error::Error;
 
 use super::helpers::uuid::Uuid;
 
@@ -8,7 +12,10 @@ use super::helpers::uuid::Uuid;
 pub struct EmailResource {
     #[serde(default = "Uuid::random")]
     pub id: Uuid,
-    pub to_address: String,
+    pub to_addresses: Vec<String>,
+    pub reply_to_addresses: Option<Vec<String>>,
+    pub cc_addresses: Option<Vec<String>>,
+    pub bcc_addresses: Option<Vec<String>>,
     pub subject: String,
     pub body: String,
 }
@@ -19,7 +26,10 @@ pub struct Email {
     #[serde(default = "Uuid::random")]
     pub id: Uuid,
     pub from_address: String,
-    pub to_address: String,
+    pub to_addresses: Vec<String>,
+    pub reply_to_addresses: Option<Vec<String>>,
+    pub cc_addresses: Option<Vec<String>>,
+    pub bcc_addresses: Option<Vec<String>>,
     pub subject: String,
     pub body: String,
 }
@@ -29,18 +39,54 @@ impl Email {
         Self {
             id: resource.id,
             from_address,
-            to_address: resource.to_address,
+            to_addresses: resource.to_addresses,
+            reply_to_addresses: resource.reply_to_addresses,
+            cc_addresses: resource.cc_addresses,
+            bcc_addresses: resource.bcc_addresses,
             subject: resource.subject,
             body: resource.body,
         }
     }
 
-    pub fn create_message(&self) -> Result<Message, AddressError> {
-        Ok(Message::builder()
+    pub fn create_message(&self) -> Result<Message, Box<dyn Error>> {
+        let mut message_builder = Message::builder()
             .from(self.from_address.parse()?)
-            .to(self.to_address.parse()?)
-            .subject(self.subject.clone())
-            .body(self.body.clone())
-            .unwrap())
+            .subject(self.subject.clone());
+
+        for to_address in self.to_addresses.clone() {
+            if !to_address.trim().is_empty() {
+                message_builder = message_builder.to(to_address.trim().parse()?);
+            }
+        }
+
+        if let Some(reply_to_addresses) = &self.reply_to_addresses {
+            for reply_to_address in reply_to_addresses.clone() {
+                if !reply_to_address.trim().is_empty() {
+                    message_builder = message_builder.reply_to(reply_to_address.trim().parse()?);
+                }
+            }
+        }
+
+        if let Some(cc_addresses) = &self.cc_addresses {
+            for cc_address in cc_addresses.clone() {
+                if !cc_address.trim().is_empty() {
+                    message_builder = message_builder.cc(cc_address.trim().parse()?);
+                }
+            }
+        }
+
+        if let Some(bcc_addresses) = &self.bcc_addresses {
+            for bcc_address in bcc_addresses.clone() {
+                if !bcc_address.trim().is_empty() {
+                    message_builder = message_builder.bcc(bcc_address.trim().parse()?);
+                }
+            }
+        }
+
+        Ok(message_builder.singlepart(
+            SinglePart::builder()
+                .header(header::ContentType::TEXT_HTML)
+                .body(self.body.clone()),
+        )?)
     }
 }

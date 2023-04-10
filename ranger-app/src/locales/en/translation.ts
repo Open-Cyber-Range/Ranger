@@ -8,8 +8,14 @@ const language = {
     addingFail: 'Failed to add the exercise',
     name: 'Exercise name',
     scenarioSDL: 'Scenario SDL',
+    noDeployments: 'No deployments',
+    noDeploymentInfo: 'No deployment info',
     deleteSuccess: 'Exercise {{exerciseName}} deleted',
     deleteFail: 'Failed to delete the exercise {{exerciseName}}',
+    tabs: {
+      dashboard: 'Dashboard',
+      scores: 'Scores',
+    },
   },
   deployments: {
     title: 'New deployment',
@@ -21,6 +27,7 @@ const language = {
     deleteFail: 'Failed to delete the deployment',
     form: {
       group: {
+        placeholder: 'Select group...',
         title: 'Deployment group',
         required: 'Deployment group is required',
       },
@@ -43,13 +50,16 @@ const language = {
   common: {
     submit: 'Submit',
     delete: 'Delete',
+    back: 'Back',
     deleting: 'Deleting',
     add: 'Add',
     virtualMachines: 'Virtual Machines',
     switches: 'Switches',
     templates: 'Templates',
+    team: 'Team',
   },
   emails: {
+    link: 'Create and send emails',
     emailLog: 'Email log:',
     status: 'Status',
     timestamp: 'Timestamp',
@@ -61,6 +71,58 @@ const language = {
     bcc: 'Bcc',
     cc: 'Cc',
     body: 'Body',
+    send: 'Send',
+    sendingSuccess: 'Email sent',
+    sendingFail: 'Error trying to send the email: {{errorMessage}}',
+    sendingFailWithoutMessage: 'Failed to send the email',
+    invalidEmailAddress: 'Invalid email address(es): {{invalidEmailAddresses}}',
+    form: {
+      from: {
+        title: 'From',
+      },
+      to: {
+        title: 'To',
+        required: 'To address is required',
+      },
+      replyTo: {
+        title: 'Reply to',
+      },
+      cc: {
+        title: 'Cc',
+      },
+      bcc: {
+        title: 'Bcc',
+      },
+      subject: {
+        title: 'Email subject',
+        required: 'Email subject is required',
+      },
+      body: {
+        title: 'Email body',
+        required: 'Email body is required',
+      },
+      emailPlaceholder:
+      'Enter email address, multiple addresses separated by comma',
+    },
+  },
+  tloTable: {
+    headers: {
+      tlo: 'Training Learning Objective',
+      evaluation: 'Evaluation',
+      metric: 'Metric - VM Name: Current Score',
+    },
+    points: 'points',
+    noEvaluations: 'No Evaluations to display',
+    noTlos: 'No Training Learning Objectives to display',
+    noMetricData: 'No metric scores to display',
+  },
+  chart: {
+    scoring: {
+      title: 'Score',
+      xAxisTitle: 'Time',
+      yAxisTitle: 'Points',
+      noScoreData: 'No score data to display graph',
+    },
   },
 };
 

@@ -6,12 +6,7 @@ import {AppToaster} from 'src/components/Toaster';
 import type {Exercise, UpdateExercise} from 'src/models/exercise';
 import {useUpdateExerciseMutation} from 'src/slices/apiSlice';
 import Editor from '@monaco-editor/react';
-import styled from 'styled-components';
 import {useTranslation} from 'react-i18next';
-
-const EditorHolder = styled.div`
-  height: 40vh;
-`;
 
 const ExerciseForm = ({exercise}: {exercise: Exercise}) => {
   const {t} = useTranslation();
@@ -85,13 +80,13 @@ const ExerciseForm = ({exercise}: {exercise: Exercise}) => {
               intent={intent}
               label={t('exercises.scenarioSDL')}
             >
-              <EditorHolder>
+              <div className='h-[40vh]'>
                 <Editor
                   value={value}
                   defaultLanguage='yaml'
                   onChange={onChange}
                 />
-              </EditorHolder>
+              </div>
             </FormGroup>
           );
         }}

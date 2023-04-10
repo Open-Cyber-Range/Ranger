@@ -6,12 +6,19 @@ import type {
   DeploymentElement,
   NewDeployment,
 } from 'src/models/deployment';
-import type {Exercise, NewExercise, UpdateExercise} from 'src/models/exercise';
+import {
+  type EmailForm,
+  type Exercise,
+  type NewExercise,
+  type UpdateExercise,
+} from 'src/models/exercise';
+import {type Scenario} from 'src/models/scenario';
+import {type Score} from 'src/models/score';
 
 export const apiSlice = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({baseUrl: BASE_URL}),
-  tagTypes: ['Deployment', 'Exercise'],
+  tagTypes: ['Deployment', 'Exercise', 'Score', 'Scenario'],
   endpoints: builder => ({
     getExercises: builder.query<Exercise[], void>({
       query: () => '/exercise',
@@ -70,13 +77,18 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: [{type: 'Deployment', id: 'LIST'}],
     }),
+
+    getDeployment: builder.query<Deployment,
+    {exerciseId: string; deploymentId: string}>({
+      query: ({exerciseId, deploymentId}) =>
+        `/exercise/${exerciseId}/deployment/${deploymentId}`,
+    }),
     deleteDeployment: builder
       .mutation<string, {exerciseId: string; deploymentId: string}>({
       query: ({exerciseId, deploymentId}) => ({
         url: `/exercise/${exerciseId}/deployment/${deploymentId}`,
         method: 'DELETE',
-        responseHandler: async response => response.text(),
-
+        responseHandler: 'text',
       }),
       invalidatesTags: (result, error, {deploymentId}) =>
         [{type: 'Deployment', id: deploymentId}],
@@ -88,6 +100,33 @@ export const apiSlice = createApi({
     }),
     getDeploymentGroups: builder.query<Deployers, void>({
       query: () => '/deployer',
+    }),
+    sendEmail: builder
+      .mutation <EmailForm, {email: EmailForm; exerciseId: string} >({
+      query: ({email, exerciseId}) => ({
+        url: `/exercise/${exerciseId}/email`,
+        method: 'POST',
+        body: email,
+      }),
+    }),
+    getEmailForm: builder.query <string, string>({
+      query: exerciseId => `/exercise/${exerciseId}/email`,
+    }),
+    getDeploymentScores: builder.query<Score[],
+    {
+      exerciseId: string;
+      deploymentId: string;
+    }>({
+      query: ({exerciseId, deploymentId}) =>
+        `/exercise/${exerciseId}/deployment/${deploymentId}/score`,
+    }),
+    getDeploymentScenario: builder.query<Scenario | undefined,
+    {
+      exerciseId: string;
+      deploymentId: string;
+    }>({
+      query: ({exerciseId, deploymentId}) =>
+        `/exercise/${exerciseId}/deployment/${deploymentId}/scenario`,
     }),
   }),
 });
@@ -102,5 +141,10 @@ export const {
   useAddDeploymentMutation,
   useDeleteDeploymentMutation,
   useGetDeploymentElementsQuery,
+  useGetDeploymentQuery,
+  useGetDeploymentScoresQuery,
   useGetDeploymentGroupsQuery,
+  useSendEmailMutation,
+  useGetEmailFormQuery,
+  useGetDeploymentScenarioQuery,
 } = apiSlice;

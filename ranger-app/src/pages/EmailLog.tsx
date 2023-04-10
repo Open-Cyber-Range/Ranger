@@ -1,7 +1,7 @@
 import {H1} from '@blueprintjs/core';
 import React from 'react';
 import {useTranslation} from 'react-i18next';
-import EmailTable from 'src/components/EmailTable';
+import EmailTable from 'src/components/Email/EmailTable';
 import PageHolder from 'src/components/PageHolder';
 
 const EmailLog = () => {

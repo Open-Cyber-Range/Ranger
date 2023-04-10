@@ -1,6 +1,5 @@
-import React from 'react';
+import type React from 'react';
 import {Button, Card, H2} from '@blueprintjs/core';
-import styled from 'styled-components';
 import type {Deployment} from 'src/models/deployment';
 import {
   useDeleteDeploymentMutation,
@@ -8,37 +7,21 @@ import {
 } from 'src/slices/apiSlice';
 import {toastSuccess, toastWarning} from 'src/components/Toaster';
 import {useTranslation} from 'react-i18next';
+import {useNavigate} from 'react-router-dom';
+import ScoreTagGroup from 'src/components/Scoring/ScoreTagGroup';
 import StatusBar from './ProgressBar';
-import Tags from './Tags';
-
-const CardRow = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-`;
-
-const ActionButtons = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-end;
-  > button {
-    margin-left: 1rem;
-    margin-bottom: 0.5rem;
-    align-self: center;
-  }
-`;
-
-const Status = styled.div`
-  display: flex;
-  align-items: end;
-  margin-left: auto;
-  margin-right: 2rem;
-`;
+import InfoTags from './InfoTags';
 
 const DeploymentCard = ({deployment}: {deployment: Deployment}) => {
   const {t} = useTranslation();
   const [deleteDeployment, _deploymentId] = useDeleteDeploymentMutation();
-  const deleteCurrentDeployment = async () => {
+  const navigate = useNavigate();
+  const routeChange = () => {
+    navigate(`deployments/${deployment.id}`);
+  };
+
+  const deleteCurrentDeployment
+  = async () => {
     try {
       const response = await deleteDeployment({
         exerciseId: deployment.exerciseId,
@@ -61,29 +44,36 @@ const DeploymentCard = ({deployment}: {deployment: Deployment}) => {
   const deploymentElements = potentialDeploymentElements ?? [];
 
   return (
-    <Card interactive elevation={2}>
-      <CardRow>
+    <Card interactive elevation={2} onClick={routeChange}>
+      <div className='flex flex-row justify-between'>
         <H2>{deployment.name}</H2>
-        <Status>
-          <Tags deploymentElements={deploymentElements}/>
-        </Status>
-
-        <ActionButtons>
+        <div className='flex items-end ml-auto mr-8 mt-auto mb-auto'>
+          <InfoTags deploymentElements={deploymentElements}/>
+        </div>
+        <div className='
+          flex flex-row justify-end [&>button]:ml-4 [&>button]:mb-2'
+        >
           <Button
             large
             intent='danger'
-            onClick={async () => {
+            onClick={async event => {
+              event.stopPropagation();
               await deleteCurrentDeployment();
             }}
           > {t('common.delete')}
           </Button>
-        </ActionButtons>
-      </CardRow>
+        </div>
+      </div>
       <StatusBar
         key={deployment.id}
         deployment={deployment}
         deploymentElements={deploymentElements}
       />
+      <div className='flex items-start mt-4'>
+        <ScoreTagGroup
+          exerciseId={deployment.exerciseId}
+          deploymentId={deployment.id}/>
+      </div>
     </Card>
   );
 };

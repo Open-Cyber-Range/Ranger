@@ -75,10 +75,10 @@ impl DeployableTemplates for Scenario {
         deployment: &Deployment,
         exercise: &Exercise,
     ) -> Result<()> {
-        let nodes = self
-            .nodes
-            .as_ref()
-            .ok_or_else(|| anyhow!("Nodes not found"))?;
+        let nodes = match self.nodes.as_ref() {
+            Some(nodes) => nodes,
+            None => return Ok(()),
+        };
         try_join_all(
             nodes
                 .iter()
@@ -102,6 +102,7 @@ impl DeployableTemplates for Scenario {
                                 DeployerTypes::Template,
                                 ElementStatus::Ongoing,
                             ),
+                            true,
                         ))
                         .await??;
 
@@ -136,7 +137,11 @@ impl DeployableTemplates for Scenario {
                             deployment_element.handler_reference = Some(template_id);
 
                             database_address
-                                .send(UpdateDeploymentElement(exercise.id, deployment_element))
+                                .send(UpdateDeploymentElement(
+                                    exercise.id,
+                                    deployment_element,
+                                    true,
+                                ))
                                 .await??;
                             Ok::<()>(())
                         }
@@ -145,7 +150,11 @@ impl DeployableTemplates for Scenario {
                             deployment_element.status = ElementStatus::Failed;
 
                             database_address
-                                .send(UpdateDeploymentElement(exercise.id, deployment_element))
+                                .send(UpdateDeploymentElement(
+                                    exercise.id,
+                                    deployment_element,
+                                    true,
+                                ))
                                 .await??;
                             Err(error)
                         }

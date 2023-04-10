@@ -3,7 +3,6 @@ import {useEffect, useState} from 'react';
 import {AnchorButton, Card, H2} from '@blueprintjs/core';
 import {useNavigate} from 'react-router-dom';
 import type {Exercise} from 'src/models/exercise';
-import styled from 'styled-components';
 import {useTranslation} from 'react-i18next';
 import {
   useDeleteExerciseMutation,
@@ -11,21 +10,6 @@ import {
 } from 'src/slices/apiSlice';
 import {toastSuccess, toastWarning} from 'src/components/Toaster';
 import {Tooltip2} from '@blueprintjs/popover2';
-
-const CardRow = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-`;
-
-const ActionButtons = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-end;
-  > button {
-    margin-left: 1rem;
-  }
-`;
 
 const ExerciseCard = ({exercise}: {exercise: Exercise}) => {
   const {t} = useTranslation();
@@ -66,39 +50,35 @@ const ExerciseCard = ({exercise}: {exercise: Exercise}) => {
 
   return (
     <Card interactive elevation={2} onClick={handleCardClick}>
-      <CardRow>
+      <div className='flex flex-row justify-between'>
         <H2>{exercise.name}</H2>
-        <ActionButtons>
-
-          <Tooltip2
-            content='This exercise has active deployments!'
-            disabled={!deploymentsExist}
+        <Tooltip2
+          content='This exercise has active deployments!'
+          disabled={!deploymentsExist}
+        >
+          <div
+            onMouseLeave={() => {
+              setIsPopoverOpen(false);
+            }}
           >
-            <div
-              onMouseLeave={() => {
-                setIsPopoverOpen(false);
+            <AnchorButton
+              large
+              intent='danger'
+              disabled={isLoading || deploymentsExist}
+              onClick={async event => {
+                event.stopPropagation();
+                await deleteExercise({
+                  exerciseId: exercise.id,
+                });
               }}
+              onMouseOver={onMouseOver}
             >
-              <AnchorButton
-                large
-                intent='danger'
-                disabled={isLoading
-|| deploymentsExist}
-                onClick={async event => {
-                  event.stopPropagation();
-                  await deleteExercise({
-                    exerciseId: exercise.id,
-                  });
-                }}
-                onMouseOver={onMouseOver}
-              >
-                {isLoading ? t('common.deleting') : t('common.delete')}
-              </AnchorButton>
-            </div>
-          </Tooltip2>
+              {isLoading ? t('common.deleting') : t('common.delete')}
+            </AnchorButton>
+          </div>
+        </Tooltip2>
 
-        </ActionButtons>
-      </CardRow>
+      </div>
     </Card>
   );
 };

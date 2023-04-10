@@ -32,7 +32,7 @@ impl FromSql<Text, Mysql> for ElementStatus {
 
 impl Display for ElementStatus {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "{:?}", self)
+        write!(f, "{self:?}")
     }
 }
 

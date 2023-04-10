@@ -58,8 +58,7 @@ impl<'de> Deserialize<'de> for Uuid {
         match uuid::Uuid::parse_str(&uuid_string) {
             Ok(uuid) => Ok(Uuid(uuid)),
             Err(_) => Err(serde::de::Error::custom(format!(
-                "Invalid UUID string: {}",
-                uuid_string
+                "Invalid UUID string: {uuid_string}"
             ))),
         }
     }
