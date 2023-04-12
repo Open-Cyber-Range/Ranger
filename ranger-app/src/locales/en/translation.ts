@@ -10,8 +10,14 @@ const language = {
     addingFail: 'Failed to add the exercise',
     updateSuccess: 'Exercise {{exerciseName}} updated',
     updateFail: 'Failed to update the exercise: {{errorMessage}}',
+    noDeployments: 'No deployments',
+    noDeploymentInfo: 'No deployment info',
     deleteSuccess: 'Exercise {{exerciseName}} deleted',
     deleteFail: 'Failed to delete the exercise {{exerciseName}}',
+    tabs: {
+      dashboard: 'Dashboard',
+      scores: 'Scores',
+    },
   },
   deployments: {
     title: 'New deployment',
@@ -23,6 +29,7 @@ const language = {
     deleteFail: 'Failed to delete the deployment',
     form: {
       group: {
+        placeholder: 'Select group...',
         title: 'Deployment group',
         required: 'Deployment group is required',
       },
@@ -45,11 +52,13 @@ const language = {
   common: {
     submit: 'Submit',
     delete: 'Delete',
+    back: 'Back',
     deleting: 'Deleting',
     add: 'Add',
     virtualMachines: 'Virtual Machines',
     switches: 'Switches',
     templates: 'Templates',
+    team: 'Team',
   },
   emails: {
     link: 'Create and send emails',
@@ -96,6 +105,25 @@ const language = {
       },
       emailPlaceholder:
       'Enter email address, multiple addresses separated by comma',
+    },
+  },
+  tloTable: {
+    headers: {
+      tlo: 'Training Learning Objective',
+      evaluation: 'Evaluation',
+      metric: 'Metric - VM Name: Current Score',
+    },
+    points: 'points',
+    noEvaluations: 'No Evaluations to display',
+    noTlos: 'No Training Learning Objectives to display',
+    noMetricData: 'No metric scores to display',
+  },
+  chart: {
+    scoring: {
+      title: 'Score',
+      xAxisTitle: 'Time',
+      yAxisTitle: 'Points',
+      noScoreData: 'No score data to display graph',
     },
   },
 };

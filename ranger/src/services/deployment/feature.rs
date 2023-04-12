@@ -12,7 +12,7 @@ use futures::future::try_join_all;
 use log::info;
 use ranger_grpc::capabilities::DeployerTypes;
 use ranger_grpc::{
-    Account as GrpcAccount, Feature as GrpcFeature, FeatureResponse,
+    Account as GrpcAccount, Feature as GrpcFeature, ExecutorResponse,
     FeatureType as GrpcFeatureType, Source as GrpcSource,
 };
 use sdl_parser::feature::FeatureType;
@@ -87,6 +87,7 @@ impl DeployableFeatures
                                     Box::new(feature_name.to_string()),
                                     DeployerTypes::Feature,
                                 ),
+                                true,
                             ))
                             .await??;
 
@@ -132,7 +133,7 @@ impl DeployableFeatures
                                 .await?
                             {
                                 anyhow::Result::Ok(result) => {
-                                    let feature_response = FeatureResponse::try_from(result)?;
+                                    let feature_response = ExecutorResponse::try_from(result)?;
 
                                     let id = feature_response
                                         .identifier
@@ -156,6 +157,7 @@ impl DeployableFeatures
                                         .send(UpdateDeploymentElement(
                                             *exercise_id,
                                             feature_deployment_element,
+                                            true,
                                         ))
                                         .await??;
                                     Ok(())
@@ -166,6 +168,7 @@ impl DeployableFeatures
                                         .send(UpdateDeploymentElement(
                                             *exercise_id,
                                             feature_deployment_element,
+                                            true,
                                         ))
                                         .await??;
                                     Err(err)

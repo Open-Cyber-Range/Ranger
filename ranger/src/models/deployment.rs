@@ -3,11 +3,13 @@ use crate::{
     errors::RangerError,
     schema::{deployment_elements, deployments},
     services::database::{
-        All, Create, CreateOrIgnore, FilterExisting, SelectById, SoftDelete, SoftDeleteById,
-        UpdateById,
+        deployment::UpdateDeploymentElement, All, Create, CreateOrIgnore, Database, FilterExisting,
+        SelectById, SoftDelete, SoftDeleteById, UpdateById,
     },
     utilities::Validation,
 };
+use actix::Addr;
+use anyhow::Result;
 use chrono::NaiveDateTime;
 use diesel::{
     helper_types::{Eq, Filter},
@@ -144,6 +146,11 @@ type ByDeploymentIdByScenarioReference<T> = Filter<
     Eq<deployment_elements::scenario_reference, String>,
 >;
 
+type ByDeploymentIdByHandlerReference<T> = Filter<
+    ByDeploymentId<All<deployment_elements::table, T>>,
+    Eq<deployment_elements::handler_reference, String>,
+>;
+
 impl DeploymentElement {
     pub fn new_ongoing(
         deployment_id: Uuid,
@@ -177,6 +184,22 @@ impl DeploymentElement {
             status,
             executor_log: None,
         }
+    }
+
+    pub async fn update(
+        &mut self,
+        database_address: &Addr<Database>,
+        exercise_id: Uuid,
+        status: ElementStatus,
+        handler_reference: Option<String>,
+    ) -> Result<()> {
+        self.status = status;
+        self.handler_reference = handler_reference;
+
+        database_address
+            .send(UpdateDeploymentElement(exercise_id, self.clone(), true))
+            .await??;
+        Ok(())
     }
 
     fn all_with_deleted() -> All<deployment_elements::table, Self> {
@@ -214,6 +237,15 @@ impl DeploymentElement {
         Self::all()
             .filter(deployment_elements::deployment_id.eq(deployment_id))
             .filter(deployment_elements::scenario_reference.eq(scenario_reference.reference()))
+    }
+
+    pub fn by_deployment_id_by_handler_reference(
+        deployment_id: Uuid,
+        handler_reference: String,
+    ) -> ByDeploymentIdByHandlerReference<Self> {
+        Self::all()
+            .filter(deployment_elements::deployment_id.eq(deployment_id))
+            .filter(deployment_elements::handler_reference.eq(handler_reference))
     }
 
     pub fn create_insert(&self) -> Create<&Self, deployment_elements::table> {

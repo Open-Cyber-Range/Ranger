@@ -12,7 +12,7 @@ pub use condition::*;
 pub use feature::*;
 pub use inject::*;
 use ranger_grpc::ConditionStreamResponse;
-use ranger_grpc::{FeatureResponse, Identifier, TemplateResponse};
+use ranger_grpc::{ExecutorResponse, Identifier, TemplateResponse};
 use std::any::Any;
 pub use switch::*;
 pub use template::*;
@@ -22,7 +22,7 @@ pub use virtual_machine::*;
 pub type ConditionResponse = (Identifier, Streaming<ConditionStreamResponse>);
 pub enum DeploymentClientResponse {
     Identifier(Identifier),
-    FeatureResponse(FeatureResponse),
+    ExecutorResponse(ExecutorResponse),
     TemplateResponse(TemplateResponse),
     ConditionResponse(ConditionResponse),
 }
@@ -61,14 +61,14 @@ impl TryFrom<DeploymentClientResponse> for Identifier {
     }
 }
 
-impl TryFrom<DeploymentClientResponse> for FeatureResponse {
+impl TryFrom<DeploymentClientResponse> for ExecutorResponse {
     type Error = anyhow::Error;
 
     fn try_from(client_response: DeploymentClientResponse) -> Result<Self> {
         match client_response {
-            DeploymentClientResponse::FeatureResponse(feature_response) => Ok(feature_response),
+            DeploymentClientResponse::ExecutorResponse(executor_response) => Ok(executor_response),
             _ => Err(anyhow!(
-                "Unable to convert ClientResponse into FeatureResponse"
+                "Unable to convert ClientResponse into ExecutorResponse"
             )),
         }
     }

@@ -55,6 +55,6 @@ impl ResponseError for RangerError {
 
     fn error_response(&self) -> HttpResponse<BoxBody> {
         error!("Error: {:?}", self);
-        HttpResponse::with_body(self.status_code(), format!("{}", self)).map_into_boxed_body()
+        HttpResponse::with_body(self.status_code(), format!("{self}")).map_into_boxed_body()
     }
 }

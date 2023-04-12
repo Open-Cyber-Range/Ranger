@@ -25,17 +25,18 @@ const AddDialog = (
       count,
       name,
       deploymentGroup,
-    }: {count: number; name: string; deploymentGroup: string}) => void;
+    }: DeploymentForm) => void;
     onCancel?: () => void;
   },
 ) => {
   const {t} = useTranslation();
   const {data: deployers} = useGetDeploymentGroupsQuery();
 
-  const {handleSubmit, control} = useForm<DeploymentForm>({
+  const {handleSubmit, control, register, formState: {errors}}
+  = useForm<DeploymentForm>({
     defaultValues: {
       name: '',
-      deploymentGroup: '',
+      deploymentGroup: undefined,
       count: 1,
     },
   });
@@ -64,9 +65,8 @@ const AddDialog = (
             <Controller
               control={control}
               name='deploymentGroup'
-              rules={{required: t('deployments.group.required') ?? ''}}
               render={({
-                field: {onChange, onBlur, ref, value}, fieldState: {error},
+                field: {onChange, onBlur, value}, fieldState: {error},
               }) => {
                 const intent = error ? Intent.DANGER : Intent.NONE;
                 return (
@@ -78,21 +78,29 @@ const AddDialog = (
                     label={t('deployments.form.group.title')}
                   >
                     <Label>
-                      {t('deployments.form.group.title')}
                       <HTMLSelect
-                        ref={ref}
+                        {...register('deploymentGroup',
+                          {required: true})}
                         autoFocus
                         large
                         fill
                         id='deployment-group'
                         value={value}
-                        onChange={onChange}
+                        defaultValue=''
                         onBlur={onBlur}
+                        onChange={onChange}
                       >
-                        <option>{t('select group')}</option>
+                        <option disabled hidden value=''>
+                          {t('deployments.form.group.placeholder')}
+                        </option>
                         {Object.keys((deployers ?? {})).map(groupName =>
                           <option key={groupName}>{groupName}</option>)}
                       </HTMLSelect>
+                      {errors.deploymentGroup && (
+                        <span className='text-xs text-red-800'>
+                          {t('deployments.form.group.required')}
+                        </span>
+                      ) }
                     </Label>
                   </FormGroup>
                 );
