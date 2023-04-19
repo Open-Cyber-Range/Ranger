@@ -7,6 +7,7 @@ import type {Exercise, UpdateExercise} from 'src/models/exercise';
 import {useUpdateExerciseMutation} from 'src/slices/apiSlice';
 import Editor from '@monaco-editor/react';
 import {useTranslation} from 'react-i18next';
+import init, {parse_and_verify_sdl} from 'wasm-sdl-parser';
 
 const ExerciseForm = ({exercise}: {exercise: Exercise}) => {
   const {t} = useTranslation();
@@ -19,6 +20,17 @@ const ExerciseForm = ({exercise}: {exercise: Exercise}) => {
   const [updateExercise, {isSuccess, error}] = useUpdateExerciseMutation();
 
   const onSubmit: SubmitHandler<UpdateExercise> = async exerciseUpdate => {
+    await init();
+
+    if (exerciseUpdate.sdlSchema) {
+      try {
+        parse_and_verify_sdl(exerciseUpdate.sdlSchema);
+      } catch (error: unknown) {
+        toastWarning(error as string);
+        return;
+      }
+    }
+
     await updateExercise({exerciseUpdate, exerciseId: exercise.id});
   };
 

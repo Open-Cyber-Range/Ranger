@@ -3,10 +3,15 @@ import react from '@vitejs/plugin-react';
 import viteTsconfigPaths from 'vite-tsconfig-paths';
 import svgrPlugin from 'vite-plugin-svgr';
 import envCompatible from 'vite-plugin-env-compatible';
+import wasmPack from 'vite-plugin-wasm-pack';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react(), viteTsconfigPaths(), svgrPlugin(), envCompatible()],
+  plugins: [react(),
+    viteTsconfigPaths(),
+    svgrPlugin(),
+    envCompatible(),
+    wasmPack([], ['wasm-sdl-parser'])],
   server: {
     proxy: {
       '/api': {
