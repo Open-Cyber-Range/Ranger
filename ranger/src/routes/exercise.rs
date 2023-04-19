@@ -77,15 +77,6 @@ pub async fn update_exercise(
     let exercise_uuid = path_variables.into_inner();
     let update_exercise = update_exercise.into_inner();
 
-    if let Some(sdl) = &update_exercise.sdl_schema {
-        if !sdl.is_empty() {
-            Scenario::from_yaml(sdl).map_err(|error| {
-                error!("SDL parsing error: {error}");
-                RangerError::ScenarioParsingFailed
-            })?;
-        }
-    }
-
     let exercise = app_state
         .database_address
         .send(crate::services::database::exercise::UpdateExercise(
