@@ -6,6 +6,7 @@ const language = {
     add: 'Add exercise',
     name: 'Exercise name',
     scenarioSDL: 'Scenario SDL',
+    SDLParserError: 'SDL Parser Error',
     addingSuccess: 'Exercise {{exerciseName}} added',
     addingFail: 'Failed to add the exercise',
     updateSuccess: 'Exercise {{exerciseName}} updated',

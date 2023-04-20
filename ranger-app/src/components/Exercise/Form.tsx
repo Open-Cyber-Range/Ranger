@@ -20,8 +20,6 @@ const ExerciseForm = ({exercise}: {exercise: Exercise}) => {
   const [updateExercise, {isSuccess, error}] = useUpdateExerciseMutation();
 
   const onSubmit: SubmitHandler<UpdateExercise> = async exerciseUpdate => {
-    await init();
-
     if (exerciseUpdate.sdlSchema) {
       try {
         parse_and_verify_sdl(exerciseUpdate.sdlSchema);
@@ -33,6 +31,17 @@ const ExerciseForm = ({exercise}: {exercise: Exercise}) => {
 
     await updateExercise({exerciseUpdate, exerciseId: exercise.id});
   };
+
+  useEffect(() => {
+    const initializeSdlParser = async () => {
+      await init();
+    };
+
+    initializeSdlParser()
+      .catch(_ => {
+        toastWarning(t('exercises.sdlParserInitFail'));
+      });
+  }, [t]);
 
   useEffect(() => {
     if (isSuccess) {
