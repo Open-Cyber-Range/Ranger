@@ -1,12 +1,13 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import type {SubmitHandler} from 'react-hook-form';
 import {useForm, Controller} from 'react-hook-form';
 import {Button, FormGroup, InputGroup, Intent} from '@blueprintjs/core';
-import {AppToaster} from 'src/components/Toaster';
+import {toastSuccess, toastWarning} from 'src/components/Toaster';
 import type {Exercise, UpdateExercise} from 'src/models/exercise';
 import {useUpdateExerciseMutation} from 'src/slices/apiSlice';
 import Editor from '@monaco-editor/react';
 import {useTranslation} from 'react-i18next';
+import init, {parse_and_verify_sdl} from 'wasm-sdl-parser';
 
 const ExerciseForm = ({exercise}: {exercise: Exercise}) => {
   const {t} = useTranslation();
@@ -16,24 +17,56 @@ const ExerciseForm = ({exercise}: {exercise: Exercise}) => {
       sdlSchema: exercise.sdlSchema ?? '',
     },
   });
-  const [updateExercise, _newExercise] = useUpdateExerciseMutation();
+  const [updateExercise, {isSuccess, error}] = useUpdateExerciseMutation();
 
   const onSubmit: SubmitHandler<UpdateExercise> = async exerciseUpdate => {
-    try {
-      await updateExercise({exerciseUpdate, exerciseId: exercise.id});
-      AppToaster.show({
-        icon: 'tick',
-        intent: Intent.SUCCESS,
-        message: `Exercise "${exerciseUpdate.name}" updated`,
-      });
-    } catch {
-      AppToaster.show({
-        icon: 'warning-sign',
-        intent: Intent.DANGER,
-        message: 'Failed to add the exercise',
-      });
+    if (exerciseUpdate.sdlSchema) {
+      try {
+        parse_and_verify_sdl(exerciseUpdate.sdlSchema);
+      } catch (error: unknown) {
+        if (typeof error === 'string') {
+          toastWarning(error);
+        } else {
+          toastWarning(t('exercises.sdlParsingFail'));
+        }
+
+        return;
+      }
     }
+
+    await updateExercise({exerciseUpdate, exerciseId: exercise.id});
   };
+
+  useEffect(() => {
+    const initializeSdlParser = async () => {
+      await init();
+    };
+
+    initializeSdlParser()
+      .catch(() => {
+        toastWarning(t('exercises.sdlParserInitFail'));
+      });
+  }, [t]);
+
+  useEffect(() => {
+    if (isSuccess) {
+      toastSuccess(t('exercises.updateSuccess', {
+        exerciseName: JSON.stringify(exercise.name),
+      }));
+    }
+  }, [isSuccess, t, exercise.name]);
+
+  useEffect(() => {
+    if (error) {
+      if ('data' in error) {
+        toastWarning(t('exercises.updateFail', {
+          errorMessage: JSON.stringify(error.data),
+        }));
+      } else {
+        toastWarning(t('exercises.updateFail'));
+      }
+    }
+  }, [error, t]);
 
   return (
     <form className='ExerciseForm' onSubmit={handleSubmit(onSubmit)}>

@@ -76,6 +76,7 @@ pub async fn update_exercise(
 ) -> Result<Json<Exercise>, RangerError> {
     let exercise_uuid = path_variables.into_inner();
     let update_exercise = update_exercise.into_inner();
+
     let exercise = app_state
         .database_address
         .send(crate::services::database::exercise::UpdateExercise(
