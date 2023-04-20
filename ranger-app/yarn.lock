@@ -4630,10 +4630,10 @@ warning@^4.0.2, warning@^4.0.3:
   dependencies:
     loose-envify "^1.0.0"
 
-wasm-sdl-parser@^0.1.6:
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/wasm-sdl-parser/-/wasm-sdl-parser-0.1.0.tgz#1068ae39a9de3646d3d08f7383c73ff7aedf07ba"
-  integrity sha512-+exwvJSQAtbUHOD0MmP2zykJyLDMKysaFnUZ2v1ODUJQkm0N0OGI9PI6ELCkiDQmspNWlMnm2K/Q6agCuJLhig==
+wasm-sdl-parser@^0.1.0:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/wasm-sdl-parser/-/wasm-sdl-parser-0.1.1.tgz#8781776a1ee53b0868dd79fae75ebc227f1c6404"
+  integrity sha512-7yHoMUvs8E6vBnsbudeCsOWSkGj9ogHjiVRaP4hpysRxt+32s6ofvZnbUcggqPubkUi3TBwNTJ4BHWCyy2ul0w==
 
 web-vitals@^2.1.0:
   version "2.1.4"
