@@ -24,9 +24,7 @@ const ExerciseForm = ({exercise}: {exercise: Exercise}) => {
       try {
         parse_and_verify_sdl(exerciseUpdate.sdlSchema);
       } catch (error: unknown) {
-        if (error instanceof Error) {
-          toastWarning(error.message);
-        } else if (typeof error === 'string') {
+        if (typeof error === 'string') {
           toastWarning(error);
         } else {
           toastWarning(t('exercises.sdlParsingFail'));
@@ -45,7 +43,7 @@ const ExerciseForm = ({exercise}: {exercise: Exercise}) => {
     };
 
     initializeSdlParser()
-      .catch(_ => {
+      .catch(() => {
         toastWarning(t('exercises.sdlParserInitFail'));
       });
   }, [t]);
