@@ -7,6 +7,7 @@ import {
 } from 'src/slices/apiSlice';
 import {useTranslation} from 'react-i18next';
 import {
+  flattenEntities,
   getRoleColor,
   getTloNamesByRole,
   roundToDecimalPlaces,
@@ -24,7 +25,8 @@ const calculateTotalScoreForRole = ({scenario, scores, role}: {
   const {entities, goals, tlos, evaluations} = scenario;
 
   if (entities && goals && tlos && evaluations && scores.length > 0) {
-    const roleTloNames = getTloNamesByRole(entities, goals, role);
+    const flattenedEntities = flattenEntities(entities);
+    const roleTloNames = getTloNamesByRole(flattenedEntities, goals, role);
     const roleEvaluationNames = roleTloNames.flatMap(tloName =>
       tlos[tloName]?.evaluation);
     const roleMetricNames = new Set(roleEvaluationNames

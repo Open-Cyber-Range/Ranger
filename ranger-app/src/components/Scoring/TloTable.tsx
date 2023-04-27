@@ -7,7 +7,7 @@ import {
   type TrainingLearningObjective,
   ExerciseRoleOrder,
 } from 'src/models/scenario';
-import {groupTloMapsByRoles} from 'src/utils';
+import {flattenEntities, getUniqueRoles, groupTloMapsByRoles} from 'src/utils';
 import TloTableRow from './TloTableRow';
 
 const TloTable = ({exerciseId, deploymentId, tloMap}:
@@ -18,17 +18,15 @@ const TloTable = ({exerciseId, deploymentId, tloMap}:
   const {t} = useTranslation();
   const {data: scenario} = useGetDeploymentScenarioQuery(
     exerciseId && deploymentId ? {exerciseId, deploymentId} : skipToken);
-  const goalMap = scenario?.goals;
-  const entityMap = scenario?.entities;
+  const goals = scenario?.goals;
+  const entities = scenario?.entities;
 
-  if (tloMap && entityMap && goalMap) {
-    const entities = Object.values(entityMap);
-    const roles = entities
-      .filter(entity => entity.role)
-      .map(entity => entity.role!);
+  if (tloMap && entities && goals) {
+    const flattenedEntities = flattenEntities(entities);
+    const roles = getUniqueRoles(flattenedEntities);
     roles.sort((a, b) => ExerciseRoleOrder[a] - ExerciseRoleOrder[b]);
     const tloMapsByRole = groupTloMapsByRoles(
-      entityMap, goalMap, tloMap, roles);
+      flattenedEntities, goals, tloMap, roles);
 
     return (
       <div className='flex flex-col mt-2'>
