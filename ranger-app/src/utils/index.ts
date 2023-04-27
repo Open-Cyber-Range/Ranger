@@ -193,3 +193,34 @@ export function groupTloMapsByRoles(
   }, {});
   return tloMapsByRole;
 }
+
+export function flattenEntities(entities: Record<string, Entity>) {
+  const outputEntities: Record<string, Entity> = {};
+
+  for (const key of Object.keys(entities)) {
+    const childEntity = entities[key];
+    outputEntities[key] = childEntity;
+
+    if (childEntity.entities) {
+      const nested = flattenEntities(childEntity.entities);
+      for (const nestedKey of Object.keys(nested)) {
+        outputEntities[`${key}.${nestedKey}`] = nested[nestedKey];
+      }
+    }
+  }
+
+  return outputEntities;
+}
+
+export function getUniqueRoles(entities: Record<string, Entity>) {
+  const rolesSet = Object.values(entities)
+    .reduce<Set<ExerciseRole>>((accumulator, entity) => {
+    if (entity?.role) {
+      accumulator.add(entity.role);
+    }
+
+    return accumulator;
+  }, new Set<ExerciseRole>());
+
+  return Array.from(rolesSet);
+}

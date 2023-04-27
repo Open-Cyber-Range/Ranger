@@ -13,6 +13,7 @@ import {
   TimeScale,
 } from 'chart.js';
 import {Line} from 'react-chartjs-2';
+import {DateTime} from 'luxon';
 import {
   useGetDeploymentQuery,
   useGetDeploymentScenarioQuery,
@@ -22,7 +23,7 @@ import zoomPlugin from 'chartjs-plugin-zoom';
 import {type Score} from 'src/models/score';
 import {groupByMetricNameAndVmName, roundToDecimalPlaces} from 'src/utils';
 // eslint-disable-next-line import/no-unassigned-import
-import 'chartjs-adapter-moment';
+import 'chartjs-adapter-luxon';
 import {useTranslation} from 'react-i18next';
 import {skipToken} from '@reduxjs/toolkit/dist/query';
 import {sortByProperty} from 'sort-by-property';
@@ -58,7 +59,7 @@ const DeploymentDetailsGraph = ({exerciseId, deploymentId}:
   const {data: scenario} = useGetDeploymentScenarioQuery(queryArguments);
 
   const intoGraphPoint = (score: Score) => ({
-    x: Date.parse(score.timestamp),
+    x: DateTime.fromISO(score.timestamp, {zone: 'utc'}).toMillis(),
     y: roundToDecimalPlaces(score.value),
   });
 
