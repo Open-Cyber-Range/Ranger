@@ -14,10 +14,21 @@ import {
 } from 'src/models/exercise';
 import {type Scenario} from 'src/models/scenario';
 import {type Score} from 'src/models/score';
+import {type RootState} from 'src/store';
 
 export const apiSlice = createApi({
   reducerPath: 'api',
-  baseQuery: fetchBaseQuery({baseUrl: BASE_URL}),
+  baseQuery: fetchBaseQuery({
+    baseUrl: BASE_URL,
+    prepareHeaders(headers, {getState}) {
+      const token = (getState() as RootState).token.token;
+      if (token) {
+        headers.set('authorization', `Bearer ${token}`);
+      }
+
+      return headers;
+    },
+  }),
   tagTypes: ['Deployment', 'Exercise', 'Score', 'Scenario'],
   endpoints: builder => ({
     getExercises: builder.query<Exercise[], void>({

@@ -1,7 +1,9 @@
 use actix_web::web::scope;
 use actix_web::{web::Data, App, HttpServer};
+use actix_web_httpauth::middleware::HttpAuthentication;
 use anyhow::Error;
 use ranger::app_setup;
+use ranger::claims::validator;
 use ranger::routes::deployers::get_deployers;
 use ranger::routes::email::{get_email_form, send_email};
 use ranger::routes::exercise::{
@@ -24,12 +26,14 @@ async fn main() -> Result<(), Error> {
     let app_data = Data::new(app_state);
 
     HttpServer::new(move || {
+        let auth = HttpAuthentication::bearer(validator);
         App::new()
             .app_data(app_data.to_owned())
             .service(status)
             .service(version)
             .service(
                 scope("/api/v1")
+                    .wrap(auth)
                     .service(get_exercise_deployment_elements)
                     .service(get_exercise_deployments)
                     .service(add_exercise_deployment)

@@ -41,16 +41,19 @@ systemd-units = { unit-name = "ranger", unit-scripts = "assets/unit-scripts" }
 actix = "0.13"
 actix-web = "4"
 actix-web-actors = "4"
+actix-web-grants = "3"
 actix-http = { version = "3", features = ["http2", "ws"] }
+actix-web-httpauth = "0.8"
 anyhow = "1"
 async-trait = "0.1"
 bigdecimal = { version = "0.3", features = ["serde"] }
-chrono = {version = "0.4", features = ["serde"]}
+chrono = { version = "0.4", features = ["serde"] }
 diesel = { version = "2", features = ["mysql", "r2d2", "chrono", "numeric"] }
 diesel_migrations = "2"
 env_logger = "0.9"
 futures = "0.3"
 insta = { version = "1", features = ["redactions", "yaml"] }
+jsonwebtoken = "8"
 log = "0.4"
 lazy_static = "1.4"
 lettre = "0.10"
@@ -76,4 +79,4 @@ uuid = { version = "1.1", features = ["v4", "serde"] }
 
 [dev-dependencies]
 actix-rt = "2"
-sdl-parser = {version="0.10", features = ["test"]}
+sdl-parser = { version = "0.10", features = ["test"] }

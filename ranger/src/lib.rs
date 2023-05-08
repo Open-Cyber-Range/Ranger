@@ -1,3 +1,4 @@
+pub mod claims;
 pub(crate) mod configuration;
 mod constants;
 pub mod errors;

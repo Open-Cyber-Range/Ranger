@@ -19,6 +19,7 @@ pub struct Configuration {
     pub default_deployment_group: String,
     pub deployment_groups: DeploymentGroupMap,
     pub database_url: String,
+    pub authentication_pem_content: String,
     pub mailer_configuration: Option<MailerConfiguration>,
 }
 
