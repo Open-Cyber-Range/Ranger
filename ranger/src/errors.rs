@@ -35,6 +35,8 @@ pub enum RangerError {
     EmailMessageCreationFailed,
     #[error("Failed to send email")]
     EmailSendingFailed,
+    #[error("Keycloak query failed")]
+    KeycloakQueryFailed,
 }
 
 impl ResponseError for RangerError {

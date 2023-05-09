@@ -11,6 +11,15 @@ fn deployment_group_name() -> String {
 }
 
 #[derive(Debug, Default, Serialize, Deserialize, Clone)]
+pub struct KeycloakConfiguration {
+    pub authentication_pem_content: String,
+    pub base_url: String,
+    pub realm: String,
+    pub client_id: String,
+    pub client_secret: String,
+}
+
+#[derive(Debug, Default, Serialize, Deserialize, Clone)]
 pub struct Configuration {
     pub host: String,
     pub port: u16,
@@ -19,7 +28,7 @@ pub struct Configuration {
     pub default_deployment_group: String,
     pub deployment_groups: DeploymentGroupMap,
     pub database_url: String,
-    pub authentication_pem_content: String,
+    pub keycloak: KeycloakConfiguration,
     pub mailer_configuration: Option<MailerConfiguration>,
 }
 
@@ -72,7 +81,12 @@ mod tests {
                         - my-machiner-deployer
                         - my-switch-deployer
                 database_url: mysql://user:pass@mariadb:3306/app-database
-                authentication_pem_content: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuZ93I6qDRnVOENLIsunn4vfExdSEPOy0nEE9gWl/bx6pvug+izqsWfx9XDMRQN/A5AfiSemQ2TvJQch+IZxo46me3Ft3fcfutgiCZTVTT1P5UxP/EBHMl2ifHLmXxBvjq8cJs6E3cXiQgM1tJIwi1SBoL0p8XiJZbho+sNlm0grroqZxpvZ0T4puWs6toFZFU2J6gTtw8NdQhWgxGAx34CWxLJgL5nz0DFPJFF0IAwnYN1QBJhObJMQzBsS4lx05PEGbDN5b+TMAwuf4OMkkauo0OdylOzRId1TIVvrX+cY30U/NOMFxbNMrBz3H9qZJxHdTtNfwp4lEsVfDmodfLwIDAQAB
+                keycloak:
+                    base_url: http://development-keycloak:8080
+                    realm: OCR
+                    client_id: exercise-client
+                    client_secret: oSeKTkRNcabbj6cc4PlwpEcRoshWYC8y
+                    authentication_pem_content: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuZ93I6qDRnVOENLIsunn4vfExdSEPOy0nEE9gWl/bx6pvug+izqsWfx9XDMRQN/A5AfiSemQ2TvJQch+IZxo46me3Ft3fcfutgiCZTVTT1P5UxP/EBHMl2ifHLmXxBvjq8cJs6E3cXiQgM1tJIwi1SBoL0p8XiJZbho+sNlm0grroqZxpvZ0T4puWs6toFZFU2J6gTtw8NdQhWgxGAx34CWxLJgL5nz0DFPJFF0IAwnYN1QBJhObJMQzBsS4lx05PEGbDN5b+TMAwuf4OMkkauo0OdylOzRId1TIVvrX+cY30U/NOMFxbNMrBz3H9qZJxHdTtNfwp4lEsVfDmodfLwIDAQAB
                 "#
         )?;
         let arguments = vec![String::from("program-name"), path_string];
@@ -105,7 +119,13 @@ mod tests {
             username: username
             password: password
             from_address: address
-        authentication_pem_content: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuZ93I6qDRnVOENLIsunn4vfExdSEPOy0nEE9gWl/bx6pvug+izqsWfx9XDMRQN/A5AfiSemQ2TvJQch+IZxo46me3Ft3fcfutgiCZTVTT1P5UxP/EBHMl2ifHLmXxBvjq8cJs6E3cXiQgM1tJIwi1SBoL0p8XiJZbho+sNlm0grroqZxpvZ0T4puWs6toFZFU2J6gTtw8NdQhWgxGAx34CWxLJgL5nz0DFPJFF0IAwnYN1QBJhObJMQzBsS4lx05PEGbDN5b+TMAwuf4OMkkauo0OdylOzRId1TIVvrX+cY30U/NOMFxbNMrBz3H9qZJxHdTtNfwp4lEsVfDmodfLwIDAQAB
+        keycloak:
+            base_url: http://development-keycloak:8080
+            realm: OCR
+            client_id: exercise-client
+            client_secret: oSeKTkRNcabbj6cc4PlwpEcRoshWYC8y
+            authentication_pem_content: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuZ93I6qDRnVOENLIsunn4vfExdSEPOy0nEE9gWl/bx6pvug+izqsWfx9XDMRQN/A5AfiSemQ2TvJQch+IZxo46me3Ft3fcfutgiCZTVTT1P5UxP/EBHMl2ifHLmXxBvjq8cJs6E3cXiQgM1tJIwi1SBoL0p8XiJZbho+sNlm0grroqZxpvZ0T4puWs6toFZFU2J6gTtw8NdQhWgxGAx34CWxLJgL5nz0DFPJFF0IAwnYN1QBJhObJMQzBsS4lx05PEGbDN5b+TMAwuf4OMkkauo0OdylOzRId1TIVvrX+cY30U/NOMFxbNMrBz3H9qZJxHdTtNfwp4lEsVfDmodfLwIDAQAB
+
         "#;
         serde_yaml::from_str::<Configuration>(sdl).unwrap();
     }

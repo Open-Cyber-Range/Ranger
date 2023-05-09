@@ -42,7 +42,7 @@ pub async fn validator(
     if let Some(app_data) = req.app_data::<Data<AppState>>() {
         let result = decode_jwt(
             credentials.token(),
-            &app_data.configuration.authentication_pem_content,
+            &app_data.configuration.keycloak.authentication_pem_content,
         );
         return match result {
             Ok(claims) => {
