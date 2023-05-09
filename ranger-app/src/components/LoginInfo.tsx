@@ -2,8 +2,9 @@ import React, {useEffect} from 'react';
 import {Alignment, Button, Navbar} from '@blueprintjs/core';
 import {useTranslation} from 'react-i18next';
 import {useKeycloak} from '@react-keycloak/web';
-import {setToken} from 'src/slices/tokenSlice';
+import {setToken} from 'src/slices/userSlice';
 import {useDispatch} from 'react-redux';
+import RoleSelect from './RoleSelect';
 
 const LoginInfo = () => {
   const {t} = useTranslation();
@@ -41,12 +42,17 @@ const LoginInfo = () => {
         <>
           {keycloak.tokenParsed?.preferred_username !== undefined && (
             <Navbar.Heading>
+
               {t('menu.greeting',
                 {
-                  username: keycloak.tokenParsed?.preferred_username as string,
+                  username: keycloak
+                    .tokenParsed?.preferred_username as string,
                 })}
             </Navbar.Heading>
           )}
+          <Navbar.Heading>
+            <RoleSelect keycloak={keycloak}/>
+          </Navbar.Heading>
           <Button
             minimal
             icon='log-out'

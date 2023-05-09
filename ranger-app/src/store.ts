@@ -1,12 +1,12 @@
 import {configureStore} from '@reduxjs/toolkit';
 import {apiSlice} from 'src/slices/apiSlice';
-import {tokenSlice} from 'src/slices/tokenSlice';
+import {userSlice} from 'src/slices/userSlice';
 import {useDispatch} from 'react-redux';
 
 const store = configureStore({
   reducer: {
     [apiSlice.reducerPath]: apiSlice.reducer,
-    [tokenSlice.name]: tokenSlice.reducer,
+    [userSlice.name]: userSlice.reducer,
   },
   middleware: getDefaultMiddleware =>
     getDefaultMiddleware().concat(apiSlice.middleware),

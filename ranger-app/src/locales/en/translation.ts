@@ -50,6 +50,11 @@ const language = {
     exercises: 'Exercises',
     logout: 'Logout',
     greeting: 'Hi, {{username}}!',
+    userRoles: {
+      'ranger-manager': 'Manager',
+      'ranger-participant': 'Participant',
+    },
+    noRole: 'NO ROLE',
   },
   common: {
     submit: 'Submit',
