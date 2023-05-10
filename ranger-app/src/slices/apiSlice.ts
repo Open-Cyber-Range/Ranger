@@ -21,7 +21,7 @@ export const apiSlice = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: BASE_URL,
     prepareHeaders(headers, {getState}) {
-      const token = (getState() as RootState).token.token;
+      const token = (getState() as RootState).user.token;
       if (token) {
         headers.set('authorization', `Bearer ${token}`);
       }
@@ -31,6 +31,12 @@ export const apiSlice = createApi({
   }),
   tagTypes: ['Deployment', 'Exercise', 'Score', 'Scenario'],
   endpoints: builder => ({
+    getGroups: builder.query<string[], void>({
+      query: () => '/admin/group',
+    }),
+    getGroupUsers: builder.query<string[], string>({
+      query: groupName => `/admin/group/${groupName}/users`,
+    }),
     getExercises: builder.query<Exercise[], void>({
       query: () => '/exercise',
       providesTags: (result = []) =>
@@ -143,6 +149,8 @@ export const apiSlice = createApi({
 });
 
 export const {
+  useGetGroupsQuery,
+  useGetGroupUsersQuery,
   useGetExerciseQuery,
   useGetExercisesQuery,
   useAddExerciseMutation,
