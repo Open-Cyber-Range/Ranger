@@ -737,6 +737,41 @@ dependencies = [
 ]
 
 [[package]]
+name = "darling"
+version = "0.10.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0d706e75d87e35569db781a9b5e2416cff1236a47ed380831f959382ccd5f858"
+dependencies = [
+ "darling_core",
+ "darling_macro",
+]
+
+[[package]]
+name = "darling_core"
+version = "0.10.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f0c960ae2da4de88a91b2d920c2a7233b400bc33cb28453a2987822d8392519b"
+dependencies = [
+ "fnv",
+ "ident_case",
+ "proc-macro2",
+ "quote",
+ "strsim",
+ "syn",
+]
+
+[[package]]
+name = "darling_macro"
+version = "0.10.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d9b5a2f4ac4969822c62224815d069952656cadc7084fdca9751e6d959189b72"
+dependencies = [
+ "darling_core",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "depper"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1969,6 +2004,8 @@ dependencies = [
  "tempfile",
  "thiserror",
  "tokio",
+ "toml",
+ "toml-query",
  "tonic",
  "uuid",
 ]
@@ -2576,6 +2613,31 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8d82e1a7758622a465f8cee077614c73484dac5b836c02ff6a40d5d1010324d7"
 dependencies = [
  "serde",
+]
+
+[[package]]
+name = "toml-query"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "54917c6214a2d2eb84108d70b534bf7a446ac94e9e6fe7d6a97bce0edf663720"
+dependencies = [
+ "is-match",
+ "lazy_static",
+ "regex",
+ "thiserror",
+ "toml",
+ "toml-query_derive",
+]
+
+[[package]]
+name = "toml-query_derive"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "be3988abb935301a4d2625c0146e6732961261d984e7e9a9999f1e5964494df3"
+dependencies = [
+ "darling",
+ "quote",
+ "syn",
 ]
 
 [[package]]

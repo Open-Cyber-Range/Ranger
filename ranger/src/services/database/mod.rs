@@ -2,8 +2,9 @@ pub(crate) mod account;
 pub(crate) mod condition;
 pub(crate) mod deployment;
 pub(crate) mod exercise;
+pub(crate) mod participant;
 
-use crate::{models::helpers::uuid::Uuid, utilities::run_migrations};
+use crate::{models::{helpers::uuid::Uuid}, utilities::run_migrations};
 use actix::{Actor, Addr};
 use anyhow::{anyhow, Result};
 use chrono::NaiveDateTime;
@@ -26,11 +27,14 @@ pub type FilterExisting<Target, DeletedAtColumn> =
     Filter<Target, Eq<DeletedAtColumn, NaiveDateTime>>;
 pub type ById<Id, R> = Filter<R, Eq<Id, Uuid>>;
 pub type ByTemplateId<TemplateId, R> = Filter<R, Eq<TemplateId, Uuid>>;
+pub type ByDeploymentId<DeploymentId, R> = Filter<R, Eq<DeploymentId, Uuid>>;
 pub type ByUsername<Username, R> = Filter<R, Eq<Username, String>>;
 pub type SelectById<Table, Id, DeletedAtColumn, T> =
     ById<Id, FilterExisting<All<Table, T>, DeletedAtColumn>>;
 pub type SelectByTemplateId<Table, TemplateId, DeletedAtColumn, T> =
     ByTemplateId<TemplateId, FilterExisting<All<Table, T>, DeletedAtColumn>>;
+pub type SelectByDeploymentId<Table, DeploymentId, DeletedAtColumn, T> =
+    ByDeploymentId<DeploymentId, FilterExisting<All<Table, T>, DeletedAtColumn>>;
 pub type SelectByTemplateIdAndUsername<Table, TemplateId, Username, DeletedAtColumn, T> =
     ByUsername<Username, ByTemplateId<TemplateId, FilterExisting<All<Table, T>, DeletedAtColumn>>>;
 type UpdateDeletedAt<DeletedAtColumn> = Eq<DeletedAtColumn, now>;

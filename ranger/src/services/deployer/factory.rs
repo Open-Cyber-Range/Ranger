@@ -44,7 +44,7 @@ impl DeployerFactory {
             ));
         }
         let capabilities: Capabilities = result?.into_inner();
-        let deployment_types: Vec<DeployerTypes> = capabilities.values().into_iter().collect();
+        let deployment_types: Vec<DeployerTypes> = capabilities.values().collect();
         Ok(deployment_types)
     }
 
