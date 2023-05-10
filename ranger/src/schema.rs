@@ -46,8 +46,11 @@ diesel::table! {
     deployments (id) {
         id -> Binary,
         name -> Tinytext,
+        group_name -> Nullable<Tinytext>,
         deployment_group -> Nullable<Tinytext>,
         sdl_schema -> Longtext,
+        start_time -> Timestamp,
+        end_time -> Timestamp,
         exercise_id -> Binary,
         created_at -> Timestamp,
         updated_at -> Timestamp,
@@ -59,6 +62,7 @@ diesel::table! {
     exercises (id) {
         id -> Binary,
         name -> Tinytext,
+        group_name -> Nullable<Tinytext>,
         sdl_schema -> Nullable<Longtext>,
         created_at -> Timestamp,
         updated_at -> Timestamp,

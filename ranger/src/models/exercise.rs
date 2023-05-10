@@ -22,6 +22,7 @@ pub struct NewExercise {
     pub id: Uuid,
     pub name: String,
     pub sdl_schema: Option<String>,
+    pub group_name: Option<String>,
 }
 
 impl NewExercise {
@@ -47,6 +48,7 @@ pub struct Exercise {
     pub id: Uuid,
     pub name: String,
     pub sdl_schema: Option<String>,
+    pub group_name: Option<String>,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
 }

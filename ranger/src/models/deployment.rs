@@ -29,6 +29,7 @@ pub struct NewDeploymentResource {
     pub id: Uuid,
     pub name: String,
     pub deployment_group: Option<String>,
+    pub group_name: Option<String>,
     pub sdl_schema: String,
 }
 
@@ -39,6 +40,7 @@ pub struct NewDeployment {
     pub id: Uuid,
     pub name: String,
     pub deployment_group: Option<String>,
+    pub group_name: Option<String>,
     pub sdl_schema: String,
     pub exercise_id: Uuid,
 }
@@ -49,6 +51,7 @@ impl NewDeployment {
             id: resource.id,
             name: resource.name,
             deployment_group: resource.deployment_group,
+            group_name: resource.group_name,
             sdl_schema: resource.sdl_schema,
             exercise_id,
         }
@@ -76,6 +79,7 @@ pub struct Deployment {
     pub name: String,
     pub deployment_group: Option<String>,
     pub sdl_schema: String,
+    pub group_name: Option<String>,
     pub exercise_id: Uuid,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
