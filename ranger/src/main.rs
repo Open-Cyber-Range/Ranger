@@ -4,6 +4,8 @@ use actix_web_httpauth::middleware::HttpAuthentication;
 use anyhow::Error;
 use ranger::app_setup;
 use ranger::claims::validator;
+use ranger::middleware::keycloak::KeycloakAccessMiddlewareFactory;
+use ranger::routes::admin::groups::get_participant_groups_users;
 use ranger::routes::deployers::get_deployers;
 use ranger::routes::email::{get_email_form, send_email};
 use ranger::routes::exercise::{
@@ -14,7 +16,7 @@ use ranger::routes::exercise::{
 };
 use ranger::routes::scenario::get_exercise_deployment_scenario;
 use ranger::routes::{
-    admin::groups::get_exercise_participant_groups,
+    admin::groups::get_participant_groups,
     basic::{status, version},
     exercise::{add_exercise, add_exercise_deployment, delete_exercise},
 };
@@ -35,7 +37,14 @@ async fn main() -> Result<(), Error> {
             .service(
                 scope("/api/v1")
                     .wrap(auth)
-                    .service(scope("/admin").service(get_exercise_participant_groups))
+                    .service(
+                        scope("/admin").service(
+                            scope("/group")
+                                .wrap(KeycloakAccessMiddlewareFactory)
+                                .service(get_participant_groups)
+                                .service(get_participant_groups_users),
+                        ),
+                    )
                     .service(get_exercise_deployment_elements)
                     .service(get_exercise_deployments)
                     .service(add_exercise_deployment)

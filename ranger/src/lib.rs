@@ -2,6 +2,7 @@ pub mod claims;
 pub(crate) mod configuration;
 mod constants;
 pub mod errors;
+pub mod middleware;
 pub mod models;
 pub mod routes;
 pub(crate) mod schema;
