@@ -66,10 +66,39 @@ diesel::table! {
     }
 }
 
+diesel::table! {
+    participants (id) {
+        id -> Binary,
+        deployment_id -> Binary,
+        user_id -> Tinytext,
+        selector -> Text,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
+        deleted_at -> Timestamp,
+    }
+}
+
+diesel::table! {
+    scores (id) {
+        id -> Binary,
+        exercise_id -> Binary,
+        deployment_id -> Binary,
+        tlo_name -> Tinytext,
+        metric_name -> Tinytext,
+        value -> Decimal,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
+        deleted_at -> Timestamp,
+    }
+}
+
 diesel::joinable!(accounts -> exercises (exercise_id));
 diesel::joinable!(condition_messages -> deployments (deployment_id));
 diesel::joinable!(deployment_elements -> deployments (deployment_id));
 diesel::joinable!(deployments -> exercises (exercise_id));
+diesel::joinable!(participants -> deployments (deployment_id));
+diesel::joinable!(scores -> deployments (deployment_id));
+diesel::joinable!(scores -> exercises (exercise_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     accounts,
@@ -77,4 +106,6 @@ diesel::allow_tables_to_appear_in_same_query!(
     deployment_elements,
     deployments,
     exercises,
+    participants,
+    scores,
 );

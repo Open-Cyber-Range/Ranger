@@ -25,6 +25,8 @@ pub enum RangerError {
     ScenarioParsingFailed,
     #[error("Internal server error")]
     DatabaseUnexpected,
+    #[error("Entity not found")]
+    EntityNotFound,
     #[error("Conflict")]
     DatabaseConflict,
     #[error("Not found")]
@@ -49,6 +51,7 @@ impl ResponseError for RangerError {
             RangerError::UuidParsingFailed => StatusCode::UNPROCESSABLE_ENTITY,
             RangerError::ScenarioParsingFailed => StatusCode::UNPROCESSABLE_ENTITY,
             RangerError::DatabaseConflict => StatusCode::CONFLICT,
+            RangerError::EntityNotFound => StatusCode::NOT_FOUND,
             RangerError::DatabaseRecordNotFound => StatusCode::NOT_FOUND,
             RangerError::MailerConfigurationNotFound => StatusCode::NOT_FOUND,
             _ => StatusCode::INTERNAL_SERVER_ERROR,

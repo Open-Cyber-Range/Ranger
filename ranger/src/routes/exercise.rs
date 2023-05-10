@@ -2,7 +2,7 @@ use crate::{
     errors::RangerError,
     models::{
         helpers::uuid::Uuid, Deployment, DeploymentElement, Exercise, NewDeployment,
-        NewDeploymentResource, NewExercise, Score, UpdateExercise,
+        NewDeploymentResource, NewExercise, Score, UpdateExercise, Participant, NewParticipantResource, NewParticipant
     },
     services::{
         database::{
@@ -12,6 +12,7 @@ use crate::{
                 GetDeploymentElementByDeploymentId, GetDeployments,
             },
             exercise::{CreateExercise, DeleteExercise, GetExercise, GetExercises},
+            participant::{DeleteParticipant, CreateParticipant, GetParticipants},
         },
         deployment::{RemoveDeployment, StartDeployment},
         websocket::ExerciseWebsocket,
@@ -21,6 +22,8 @@ use crate::{
     },
     AppState,
 };
+use toml::{value::Value};
+use toml_query::{read::TomlValueReadExt};
 use actix_web::{
     delete, get, post, put,
     web::{Data, Json, Path, Payload},
@@ -290,8 +293,82 @@ pub async fn get_exercise_deployment_nodes(
     Ok(Json(scenario.nodes))
 }
 
-#[get("exercise/{exercise_uuid}/deployment/{deployment_uuid}/score")]
-pub async fn get_exercise_deployment_scores(
+#[post("/exercise/{exercise_uuid}/deployment/{deployment_uuid}/participant")]
+pub async fn add_participant(
+    path_variables: Path<(Uuid, Uuid)>,
+    app_state: Data<AppState>,
+    participant_resource: Json<NewParticipantResource>,
+) -> Result<Json<Participant>, RangerError> {
+    let (_, deployment_uuid) = path_variables.into_inner();
+    let participant_resource = participant_resource.into_inner();
+    let deployment = app_state
+        .database_address
+        .send(GetDeployment(deployment_uuid))
+        .await
+        .map_err(create_mailbox_error_handler("Database"))?
+        .map_err(create_database_error_handler("Get deployment"))?;
+
+        let parsed_sdl: Value = serde_yaml::from_str(&deployment.sdl_schema).map_err(|error| {
+            error!("Failed to parse sdl: {error}");
+            RangerError::ScenarioParsingFailed
+        })?;
+    let selector = format!("entities.{}", participant_resource.selector);
+    let entity_option = parsed_sdl.read(&selector).map_err(|error| {
+        error!("Failed to read entities from sdl: {error}");
+        RangerError::ScenarioParsingFailed
+    })?;
+    if entity_option.is_none() {
+        return Err(RangerError::EntityNotFound);
+    }
+
+    let new_participant = NewParticipant{
+        id: Uuid::random(),
+        deployment_id: deployment.id,
+        selector: participant_resource.selector,
+        user_id: participant_resource.user_id,};
+
+    let participant = app_state
+        .database_address
+        .send(CreateParticipant (new_participant))
+        .await
+        .map_err(create_mailbox_error_handler("Database"))?
+        .map_err(create_database_error_handler("Create participant"))?;
+
+    Ok(Json(participant))
+}
+
+#[get("/exercise/{exercise_uuid}/deployment/{deployment_uuid}/participant")]
+pub async fn get_participants(
+    path_variables: Path<(Uuid, Uuid)>,
+    app_state: Data<AppState>,
+) -> Result<Json<Vec<Participant>>, RangerError> {
+    let (_, deployment_uuid) = path_variables.into_inner();
+    let participants = app_state
+        .database_address
+        .send(GetParticipants(deployment_uuid))
+        .await
+        .map_err(create_mailbox_error_handler("Database"))?
+        .map_err(create_database_error_handler("Get participants"))?;
+    Ok(Json(participants))
+}
+
+#[delete("/exercise/{exercise_uuid}/deployment/{deployment_uuid}/participant/{participant_uuid}")]
+pub async fn delete_participant(
+    path_variables: Path<(Uuid, Uuid, Uuid)>,
+    app_state: Data<AppState>,
+) -> Result<String, RangerError> {
+    let (_, _, participant_uuid) = path_variables.into_inner();
+    app_state
+        .database_address
+        .send(DeleteParticipant(participant_uuid))
+        .await
+        .map_err(create_mailbox_error_handler("Database"))?
+        .map_err(create_database_error_handler("Delete deployments"))?;
+    Ok(participant_uuid.to_string())
+}
+
+#[get("exercise/{exercise_uuid}/deployment/{deployment_uuid}/tlo")]
+pub async fn get_exercise_deployment_tlos(
     path_variables: Path<(Uuid, Uuid)>,
     app_state: Data<AppState>,
 ) -> Result<Json<Vec<Score>>, RangerError> {
