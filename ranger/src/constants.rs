@@ -21,3 +21,5 @@ lazy_static! {
     pub static ref DELETED_AT_DEFAULT_VALUE: NaiveDateTime =
         NaiveDateTime::parse_from_str(DELETED_AT_DEFAULT_STRING, DATETIME_FORMAT).unwrap();
 }
+
+pub(crate) const MANAGER_ROLE: &str = "ranger-manager";
