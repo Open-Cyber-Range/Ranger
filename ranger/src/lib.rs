@@ -1,6 +1,6 @@
 pub mod claims;
 pub(crate) mod configuration;
-mod constants;
+pub(crate) mod constants;
 pub mod errors;
 pub mod middleware;
 pub mod models;

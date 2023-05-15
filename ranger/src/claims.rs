@@ -1,3 +1,4 @@
+use actix_http::HttpMessage;
 use actix_web::web::Data;
 use actix_web::Error;
 use actix_web::{dev::ServiceRequest, error::ErrorUnauthorized};
@@ -17,7 +18,13 @@ pub(crate) struct RealmAccess {
 pub(crate) struct Claims {
     pub name: String,
     pub realm_access: RealmAccess,
+    pub sub: String,
     exp: i64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct UserDetails {
+    pub user_id: String,
 }
 
 fn decode_jwt(token: &str, pem: &str) -> Result<Claims, Error> {
@@ -47,6 +54,10 @@ pub async fn validator(
         return match result {
             Ok(claims) => {
                 req.attach(claims.realm_access.roles);
+                req.extensions_mut().insert(UserDetails {
+                    user_id: claims.sub,
+                });
+
                 Ok(req)
             }
             Err(e) => Err((e, req)),
