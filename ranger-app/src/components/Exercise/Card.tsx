@@ -5,8 +5,8 @@ import {useNavigate} from 'react-router-dom';
 import type {Exercise} from 'src/models/exercise';
 import {useTranslation} from 'react-i18next';
 import {
-  useDeleteExerciseMutation,
-  useGetDeploymentsQuery,
+  useAdminDeleteExerciseMutation,
+  useAdminGetDeploymentsQuery,
 } from 'src/slices/apiSlice';
 import {toastSuccess, toastWarning} from 'src/components/Toaster';
 import {Tooltip2} from '@blueprintjs/popover2';
@@ -15,10 +15,10 @@ const ExerciseCard = ({exercise}: {exercise: Exercise}) => {
   const {t} = useTranslation();
   const navigate = useNavigate();
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-  const {data: deployments} = useGetDeploymentsQuery(exercise.id);
+  const {data: deployments} = useAdminGetDeploymentsQuery(exercise.id);
   const deploymentsExist = deployments && deployments.length > 0;
   const [deleteExercise,
-    {isLoading, data, error}] = useDeleteExerciseMutation();
+    {isLoading, data, error}] = useAdminDeleteExerciseMutation();
 
   const handleCardClick = () => {
     if (!isLoading) {

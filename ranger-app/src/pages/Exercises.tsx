@@ -3,14 +3,14 @@ import List from 'src/components/Exercise/List';
 import PageHolder from 'src/components/PageHolder';
 import {toastSuccess, toastWarning} from 'src/components/Toaster';
 import type {NewExercise} from 'src/models/exercise';
-import {useAddExerciseMutation} from 'src/slices/apiSlice';
+import {useAdminAddExerciseMutation} from 'src/slices/apiSlice';
 import Header from 'src/components/Header';
 import {useTranslation} from 'react-i18next';
 import AddDialog from 'src/components/Exercise/AddDialog';
 
 const Exercise = () => {
   const {t} = useTranslation();
-  const [addExercise, _newExercise] = useAddExerciseMutation();
+  const [addExercise, _newExercise] = useAdminAddExerciseMutation();
   const addNewExercise = async (name: string) => {
     try {
       const newExercise: NewExercise = {

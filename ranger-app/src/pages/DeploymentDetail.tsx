@@ -5,7 +5,7 @@ import type {DeploymentDetailRouteParameters} from 'src/models/routes';
 import {useTranslation} from 'react-i18next';
 import BackButton from 'src/components/BackButton';
 import {skipToken} from '@reduxjs/toolkit/dist/query';
-import {useGetDeploymentScenarioQuery} from 'src/slices/apiSlice';
+import {useAdminGetDeploymentScenarioQuery} from 'src/slices/apiSlice';
 import DeploymentDetailsGraph from 'src/components/Scoring/Graph';
 import TloTable from 'src/components/Scoring/TloTable';
 
@@ -13,7 +13,7 @@ const DeploymentDetail = () => {
   const {t} = useTranslation();
   const {exerciseId, deploymentId}
   = useParams<DeploymentDetailRouteParameters>();
-  const {data: scenario} = useGetDeploymentScenarioQuery(
+  const {data: scenario} = useAdminGetDeploymentScenarioQuery(
     exerciseId && deploymentId ? {exerciseId, deploymentId} : skipToken);
 
   if (exerciseId && deploymentId) {

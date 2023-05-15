@@ -1,5 +1,5 @@
 import type React from 'react';
-import {useAddDeploymentMutation} from 'src/slices/apiSlice';
+import {useAdminAddDeploymentMutation} from 'src/slices/apiSlice';
 import {useTranslation} from 'react-i18next';
 import ExerciseForm from 'src/components/Exercise/Form';
 import DeploymentList from 'src/components/Deployment/List';
@@ -21,7 +21,7 @@ const DashboardPanel = ({exercise, deployments}:
 }) => {
   const {t} = useTranslation();
   useExerciseStreaming(exercise?.id);
-  const [addDeployment, _newDeployment] = useAddDeploymentMutation();
+  const [addDeployment, _newDeployment] = useAdminAddDeploymentMutation();
 
   const createNewDeployment = (
     name: string,

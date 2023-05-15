@@ -12,7 +12,7 @@ import {
   Intent,
   NumericInput,
 } from '@blueprintjs/core';
-import {useGetDeploymentGroupsQuery} from 'src/slices/apiSlice';
+import {useAdminGetDeploymentGroupsQuery} from 'src/slices/apiSlice';
 import {useTranslation} from 'react-i18next';
 import {Controller, useForm} from 'react-hook-form';
 
@@ -30,7 +30,7 @@ const AddDialog = (
   },
 ) => {
   const {t} = useTranslation();
-  const {data: deployers} = useGetDeploymentGroupsQuery();
+  const {data: deployers} = useAdminGetDeploymentGroupsQuery();
 
   const {handleSubmit, control, register, formState: {errors}}
   = useForm<DeploymentForm>({

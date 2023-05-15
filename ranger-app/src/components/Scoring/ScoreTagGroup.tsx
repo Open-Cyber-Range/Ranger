@@ -1,6 +1,6 @@
 import React from 'react';
 import '@blueprintjs/popover2/lib/css/blueprint-popover2.css';
-import {useGetDeploymentScenarioQuery} from 'src/slices/apiSlice';
+import {useAdminGetDeploymentScenarioQuery} from 'src/slices/apiSlice';
 import {ExerciseRoleOrder} from 'src/models/scenario';
 import {flattenEntities, getTloNamesByRole, getUniqueRoles} from 'src/utils';
 import ScoreTag from './ScoreTag';
@@ -10,7 +10,7 @@ const ScoreTagGroup = ({exerciseId, deploymentId}:
   deploymentId: string;
 }) => {
   const queryParameters = {exerciseId, deploymentId};
-  const {data: scenario} = useGetDeploymentScenarioQuery(queryParameters);
+  const {data: scenario} = useAdminGetDeploymentScenarioQuery(queryParameters);
   const goals = scenario?.goals;
   const entities = scenario?.entities;
 

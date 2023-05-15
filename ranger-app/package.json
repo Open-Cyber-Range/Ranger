@@ -154,7 +154,7 @@
       "max-len": [
         "error",
         {
-          "code": 80
+          "code": 100
         }
       ],
       "unicorn/no-array-reduce": "off",

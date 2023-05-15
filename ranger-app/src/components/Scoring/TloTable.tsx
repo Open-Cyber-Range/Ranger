@@ -2,7 +2,7 @@ import React from 'react';
 import {skipToken} from '@reduxjs/toolkit/dist/query';
 import {useTranslation} from 'react-i18next';
 import ScoreTag from 'src/components/Scoring/ScoreTag';
-import {useGetDeploymentScenarioQuery} from 'src/slices/apiSlice';
+import {useAdminGetDeploymentScenarioQuery} from 'src/slices/apiSlice';
 import {
   type TrainingLearningObjective,
   ExerciseRoleOrder,
@@ -16,7 +16,7 @@ const TloTable = ({exerciseId, deploymentId, tloMap}:
   tloMap: Record<string, TrainingLearningObjective> | undefined;
 }) => {
   const {t} = useTranslation();
-  const {data: scenario} = useGetDeploymentScenarioQuery(
+  const {data: scenario} = useAdminGetDeploymentScenarioQuery(
     exerciseId && deploymentId ? {exerciseId, deploymentId} : skipToken);
   const goals = scenario?.goals;
   const entities = scenario?.entities;

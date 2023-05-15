@@ -3,8 +3,8 @@ import {useParams} from 'react-router-dom';
 import type {ExerciseDetailRouteParameters} from 'src/models/routes';
 import PageHolder from 'src/components/PageHolder';
 import {
-  useGetDeploymentsQuery,
-  useGetExerciseQuery,
+  useAdminGetDeploymentsQuery,
+  useAdminGetExerciseQuery,
 } from 'src/slices/apiSlice';
 import {skipToken} from '@reduxjs/toolkit/dist/query';
 import {useTranslation} from 'react-i18next';
@@ -16,8 +16,8 @@ import ScoresPanel from 'src/components/Scoring/ExerciseScores';
 const ExerciseDetail = () => {
   const {t} = useTranslation();
   const {exerciseId} = useParams<ExerciseDetailRouteParameters>();
-  const {data: deployments} = useGetDeploymentsQuery(exerciseId ?? skipToken);
-  const {data: exercise} = useGetExerciseQuery(exerciseId ?? skipToken);
+  const {data: deployments} = useAdminGetDeploymentsQuery(exerciseId ?? skipToken);
+  const {data: exercise} = useAdminGetExerciseQuery(exerciseId ?? skipToken);
   const hasDeployments = deployments && deployments.length > 0;
 
   if (exercise && deployments) {

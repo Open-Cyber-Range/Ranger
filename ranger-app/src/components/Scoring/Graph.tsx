@@ -15,9 +15,9 @@ import {
 import {Line} from 'react-chartjs-2';
 import {DateTime} from 'luxon';
 import {
-  useGetDeploymentQuery,
-  useGetDeploymentScenarioQuery,
-  useGetDeploymentScoresQuery,
+  useAdminGetDeploymentQuery,
+  useAdminGetDeploymentScenarioQuery,
+  useAdminGetDeploymentScoresQuery,
 } from 'src/slices/apiSlice';
 import zoomPlugin from 'chartjs-plugin-zoom';
 import {type Score} from 'src/models/score';
@@ -54,9 +54,9 @@ const DeploymentDetailsGraph = ({exerciseId, deploymentId}:
   const chartTitle = t('chart.scoring.title');
   const queryArguments = exerciseId && deploymentId
     ? {exerciseId, deploymentId} : skipToken;
-  const {data: scores} = useGetDeploymentScoresQuery(queryArguments);
-  const {data: deployment} = useGetDeploymentQuery(queryArguments);
-  const {data: scenario} = useGetDeploymentScenarioQuery(queryArguments);
+  const {data: scores} = useAdminGetDeploymentScoresQuery(queryArguments);
+  const {data: deployment} = useAdminGetDeploymentQuery(queryArguments);
+  const {data: scenario} = useAdminGetDeploymentScenarioQuery(queryArguments);
 
   const intoGraphPoint = (score: Score) => ({
     x: DateTime.fromISO(score.timestamp, {zone: 'utc'}).toMillis(),

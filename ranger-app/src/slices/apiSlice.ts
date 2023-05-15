@@ -31,139 +31,140 @@ export const apiSlice = createApi({
   }),
   tagTypes: ['Deployment', 'Exercise', 'Score', 'Scenario'],
   endpoints: builder => ({
-    getGroups: builder.query<string[], void>({
+    adminGetGroups: builder.query<string[], void>({
       query: () => '/admin/group',
     }),
-    getGroupUsers: builder.query<string[], string>({
+    adminGetGroupUsers: builder.query<string[], string>({
       query: groupName => `/admin/group/${groupName}/users`,
     }),
-    getExercises: builder.query<Exercise[], void>({
-      query: () => '/exercise',
+    adminGetExercises: builder.query<Exercise[], void>({
+      query: () => '/admin/exercise',
       providesTags: (result = []) =>
         [
           ...result.map(({id}) => ({type: 'Exercise' as const, id})),
           {type: 'Exercise', id: 'LIST'},
         ],
     }),
-    getExercise: builder.query<Exercise, string>({
-      query: exerciseId => `/exercise/${exerciseId}`,
+    adminGetExercise: builder.query<Exercise, string>({
+      query: exerciseId => `/admin/exercise/${exerciseId}`,
       providesTags: (result, error, id) => [{type: 'Exercise', id}],
     }),
-    addExercise: builder.mutation<Exercise, NewExercise>({
+    adminAddExercise: builder.mutation<Exercise, NewExercise>({
       query: newExercise => ({
-        url: '/exercise', method: 'POST', body: newExercise,
+        url: '/admin/exercise', method: 'POST', body: newExercise,
       }),
       invalidatesTags: [{type: 'Exercise', id: 'LIST'}],
     }),
-    updateExercise: builder.mutation<Exercise, {
+    adminUpdateExercise: builder.mutation<Exercise, {
       exerciseUpdate: UpdateExercise; exerciseId: string;
     }>({
       query: ({exerciseUpdate, exerciseId}) => ({
-        url: `/exercise/${exerciseId}`, method: 'PUT', body: exerciseUpdate,
+        url: `/admin/exercise/${exerciseId}`,
+        method: 'PUT',
+        body: exerciseUpdate,
       }),
       invalidatesTags: (result, error, {exerciseId}) =>
         [{type: 'Exercise', id: exerciseId}],
     }),
-    deleteExercise: builder
+    adminDeleteExercise: builder
       .mutation<string, {exerciseId: string}>({
       query: ({exerciseId}) => ({
-        url: `/exercise/${exerciseId}`,
+        url: `/admin/exercise/${exerciseId}`,
         method: 'DELETE',
         responseHandler: 'text',
       }),
       invalidatesTags: (result, error, {exerciseId}) =>
         [{type: 'Exercise', id: exerciseId}],
     }),
-    getDeployments: builder.query<Deployment[], string>({
-      query: exerciseId => `/exercise/${exerciseId}/deployment`,
+    adminGetDeployments: builder.query<Deployment[], string>({
+      query: exerciseId => `/admin/exercise/${exerciseId}/deployment`,
       providesTags: (result = []) =>
         [
           ...result.map(({id}) => ({type: 'Deployment' as const, id})),
           {type: 'Deployment', id: 'LIST'},
         ],
     }),
-    addDeployment: builder
+    adminAddDeployment: builder
       .mutation<Deployment,
     {
       newDeployment: NewDeployment; exerciseId: string;
     }>({
       query: ({newDeployment, exerciseId}) => ({
-        url: `/exercise/${exerciseId}/deployment`,
+        url: `/admin/exercise/${exerciseId}/deployment`,
         method: 'POST',
         body: newDeployment,
       }),
       invalidatesTags: [{type: 'Deployment', id: 'LIST'}],
     }),
-
-    getDeployment: builder.query<Deployment,
+    adminGetDeployment: builder.query<Deployment,
     {exerciseId: string; deploymentId: string}>({
       query: ({exerciseId, deploymentId}) =>
-        `/exercise/${exerciseId}/deployment/${deploymentId}`,
+        `/admin/exercise/${exerciseId}/deployment/${deploymentId}`,
     }),
-    deleteDeployment: builder
+    adminDeleteDeployment: builder
       .mutation<string, {exerciseId: string; deploymentId: string}>({
       query: ({exerciseId, deploymentId}) => ({
-        url: `/exercise/${exerciseId}/deployment/${deploymentId}`,
+        url: `/admin/exercise/${exerciseId}/deployment/${deploymentId}`,
         method: 'DELETE',
         responseHandler: 'text',
       }),
       invalidatesTags: (result, error, {deploymentId}) =>
         [{type: 'Deployment', id: deploymentId}],
     }),
-    getDeploymentElements: builder
+    adminGetDeploymentElements: builder
       .query<DeploymentElement[], {exerciseId: string; deploymentId: string}>({
       query: ({exerciseId, deploymentId}) =>
-        `/exercise/${exerciseId}/deployment/${deploymentId}/deployment_element`,
+        `/admin/exercise/${exerciseId}/deployment/${deploymentId}/deployment_element`,
     }),
-    getDeploymentGroups: builder.query<Deployers, void>({
-      query: () => '/deployer',
+    adminGetDeploymentGroups: builder.query<Deployers, void>({
+      query: () => '/admin/deployer',
     }),
-    sendEmail: builder
+    adminSendEmail: builder
       .mutation <EmailForm, {email: EmailForm; exerciseId: string} >({
       query: ({email, exerciseId}) => ({
-        url: `/exercise/${exerciseId}/email`,
+        url: `/admin/exercise/${exerciseId}/email`,
         method: 'POST',
         body: email,
       }),
     }),
-    getEmailForm: builder.query <string, string>({
-      query: exerciseId => `/exercise/${exerciseId}/email`,
+    adminGetEmailForm: builder.query <string, string>({
+      query: exerciseId => `/admin/exercise/${exerciseId}/email`,
     }),
-    getDeploymentScores: builder.query<Score[],
+    adminGetDeploymentScores: builder.query<Score[],
     {
       exerciseId: string;
       deploymentId: string;
     }>({
       query: ({exerciseId, deploymentId}) =>
-        `/exercise/${exerciseId}/deployment/${deploymentId}/score`,
+        `/admin/exercise/${exerciseId}/deployment/${deploymentId}/score`,
     }),
-    getDeploymentScenario: builder.query<Scenario | undefined,
+    adminGetDeploymentScenario: builder.query<Scenario | undefined,
     {
       exerciseId: string;
       deploymentId: string;
     }>({
       query: ({exerciseId, deploymentId}) =>
-        `/exercise/${exerciseId}/deployment/${deploymentId}/scenario`,
+        `/admin/exercise/${exerciseId}/deployment/${deploymentId}/scenario`,
     }),
   }),
 });
 
 export const {
-  useGetGroupsQuery,
-  useGetGroupUsersQuery,
-  useGetExerciseQuery,
-  useGetExercisesQuery,
-  useAddExerciseMutation,
-  useDeleteExerciseMutation,
-  useUpdateExerciseMutation,
-  useGetDeploymentsQuery,
-  useAddDeploymentMutation,
-  useDeleteDeploymentMutation,
-  useGetDeploymentElementsQuery,
-  useGetDeploymentQuery,
-  useGetDeploymentScoresQuery,
-  useGetDeploymentGroupsQuery,
-  useSendEmailMutation,
-  useGetEmailFormQuery,
-  useGetDeploymentScenarioQuery,
+  useAdminGetGroupsQuery,
+  useAdminGetGroupUsersQuery,
+  useAdminGetExerciseQuery,
+  useAdminGetExercisesQuery,
+  useAdminAddExerciseMutation,
+  useAdminDeleteExerciseMutation,
+  useAdminUpdateExerciseMutation,
+  useAdminGetDeploymentsQuery,
+  useAdminAddDeploymentMutation,
+  useAdminDeleteDeploymentMutation,
+  useAdminGetDeploymentElementsQuery,
+  useAdminGetDeploymentQuery,
+  useAdminGetDeploymentScoresQuery,
+  useAdminGetDeploymentGroupsQuery,
+  useAdminSendEmailMutation,
+  useAdminGetEmailFormQuery,
+  useAdminGetDeploymentScenarioQuery,
 } = apiSlice;

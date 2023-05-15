@@ -2,8 +2,8 @@ import React from 'react';
 import {skipToken} from '@reduxjs/toolkit/dist/query';
 import {useTranslation} from 'react-i18next';
 import {
-  useGetDeploymentScenarioQuery,
-  useGetDeploymentScoresQuery,
+  useAdminGetDeploymentScenarioQuery,
+  useAdminGetDeploymentScoresQuery,
 } from 'src/slices/apiSlice';
 import {findLatestScoresByVms, groupBy, roundToDecimalPlaces} from 'src/utils';
 import {type TrainingLearningObjective} from 'src/models/scenario';
@@ -18,8 +18,8 @@ const TloTableRow = ({exerciseId, deploymentId, tloKey, tlo}:
   const {t} = useTranslation();
   const queryArguments = exerciseId && deploymentId
     ? {exerciseId, deploymentId} : skipToken;
-  const {data: scenario} = useGetDeploymentScenarioQuery(queryArguments);
-  const {data: scores} = useGetDeploymentScoresQuery(queryArguments);
+  const {data: scenario} = useAdminGetDeploymentScenarioQuery(queryArguments);
+  const {data: scores} = useAdminGetDeploymentScoresQuery(queryArguments);
 
   if (tlo && scenario?.evaluations) {
     const tloEvaluation = scenario?.evaluations[tlo.evaluation];

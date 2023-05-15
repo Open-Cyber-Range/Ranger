@@ -39,6 +39,16 @@ pub enum RangerError {
     EmailSendingFailed,
     #[error("Keycloak query failed")]
     KeycloakQueryFailed,
+    #[error("User info missing")]
+    UserInfoMissing,
+    #[error("Application cannot access necessary configuration")]
+    ConfigurationMissing,
+    #[error("Access forbidden for this path")]
+    AccessForbidden,
+    #[error("Token expired")]
+    TokenExpired,
+    #[error("Token missing")]
+    TokenMissing,
 }
 
 impl ResponseError for RangerError {
@@ -54,6 +64,9 @@ impl ResponseError for RangerError {
             RangerError::EntityNotFound => StatusCode::NOT_FOUND,
             RangerError::DatabaseRecordNotFound => StatusCode::NOT_FOUND,
             RangerError::MailerConfigurationNotFound => StatusCode::NOT_FOUND,
+            RangerError::AccessForbidden => StatusCode::FORBIDDEN,
+            RangerError::TokenExpired => StatusCode::UNAUTHORIZED,
+            RangerError::TokenMissing => StatusCode::UNAUTHORIZED,
             _ => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }

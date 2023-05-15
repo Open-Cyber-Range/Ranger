@@ -2,8 +2,8 @@ import type React from 'react';
 import {Button, Card, H2} from '@blueprintjs/core';
 import type {Deployment} from 'src/models/deployment';
 import {
-  useDeleteDeploymentMutation,
-  useGetDeploymentElementsQuery,
+  useAdminDeleteDeploymentMutation,
+  useAdminGetDeploymentElementsQuery,
 } from 'src/slices/apiSlice';
 import {toastSuccess, toastWarning} from 'src/components/Toaster';
 import {useTranslation} from 'react-i18next';
@@ -14,7 +14,7 @@ import InfoTags from './InfoTags';
 
 const DeploymentCard = ({deployment}: {deployment: Deployment}) => {
   const {t} = useTranslation();
-  const [deleteDeployment, _deploymentId] = useDeleteDeploymentMutation();
+  const [deleteDeployment, _deploymentId] = useAdminDeleteDeploymentMutation();
   const navigate = useNavigate();
   const routeChange = () => {
     navigate(`deployments/${deployment.id}`);
@@ -37,7 +37,7 @@ const DeploymentCard = ({deployment}: {deployment: Deployment}) => {
     }
   };
 
-  const {data: potentialDeploymentElements} = useGetDeploymentElementsQuery({
+  const {data: potentialDeploymentElements} = useAdminGetDeploymentElementsQuery({
     exerciseId: deployment.exerciseId,
     deploymentId: deployment.id,
   });

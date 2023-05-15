@@ -4,7 +4,7 @@ import {useForm, Controller} from 'react-hook-form';
 import {Button, FormGroup, InputGroup, Intent} from '@blueprintjs/core';
 import {toastSuccess, toastWarning} from 'src/components/Toaster';
 import type {Exercise, UpdateExercise} from 'src/models/exercise';
-import {useUpdateExerciseMutation} from 'src/slices/apiSlice';
+import {useAdminUpdateExerciseMutation} from 'src/slices/apiSlice';
 import Editor from '@monaco-editor/react';
 import {useTranslation} from 'react-i18next';
 import init, {parse_and_verify_sdl} from 'wasm-sdl-parser';
@@ -17,7 +17,7 @@ const ExerciseForm = ({exercise}: {exercise: Exercise}) => {
       sdlSchema: exercise.sdlSchema ?? '',
     },
   });
-  const [updateExercise, {isSuccess, error}] = useUpdateExerciseMutation();
+  const [updateExercise, {isSuccess, error}] = useAdminUpdateExerciseMutation();
 
   const onSubmit: SubmitHandler<UpdateExercise> = async exerciseUpdate => {
     if (exerciseUpdate.sdlSchema) {

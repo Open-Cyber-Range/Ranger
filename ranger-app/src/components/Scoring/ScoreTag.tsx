@@ -2,8 +2,8 @@ import React from 'react';
 import {Tag} from '@blueprintjs/core';
 import '@blueprintjs/popover2/lib/css/blueprint-popover2.css';
 import {
-  useGetDeploymentScenarioQuery,
-  useGetDeploymentScoresQuery,
+  useAdminGetDeploymentScenarioQuery,
+  useAdminGetDeploymentScoresQuery,
 } from 'src/slices/apiSlice';
 import {useTranslation} from 'react-i18next';
 import {
@@ -51,8 +51,8 @@ const ScoreTag = ({exerciseId, deploymentId, role, large = false}:
 }) => {
   const queryArguments = exerciseId && deploymentId
     ? {exerciseId, deploymentId} : skipToken;
-  const {data: scores} = useGetDeploymentScoresQuery(queryArguments);
-  const {data: scenario} = useGetDeploymentScenarioQuery(queryArguments);
+  const {data: scores} = useAdminGetDeploymentScoresQuery(queryArguments);
+  const {data: scenario} = useAdminGetDeploymentScenarioQuery(queryArguments);
   const {t} = useTranslation();
   const backgroundColor = getRoleColor(role);
 
