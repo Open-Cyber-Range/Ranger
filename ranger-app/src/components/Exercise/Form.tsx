@@ -111,7 +111,26 @@ const ExerciseForm = ({exercise}: {exercise: Exercise}) => {
               labelFor='sdl-schema'
               helperText={error?.message}
               intent={intent}
-              label={t('exercises.scenarioSDL')}
+              label={
+                <>
+                  <span>
+                    {t('exercises.scenarioSDL')}
+                  </span>
+                  <span className='px-4'>
+                    <a
+                      className='underline text-blue-500'
+                      href={
+                        'https://documentation.opencyberrange.ee/'
+                      + 'docs/sdl-reference-guide/sdl'
+                      }
+                      target='_blank'
+                      rel='noopener noreferrer'
+                    >
+                      {t('exercises.sdlGuide')}
+                    </a>
+                  </span>
+                </>
+              }
             >
               <div className='h-[40vh]'>
                 <Editor
