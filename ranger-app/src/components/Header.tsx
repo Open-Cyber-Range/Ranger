@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
 import {Alert, Button, H2} from '@blueprintjs/core';
+import {useTranslation} from "react-i18next";
 
 // eslint-disable-next-line @typescript-eslint/comma-dangle
 const Header = <T,>(
@@ -16,6 +17,7 @@ const Header = <T,>(
     }, any>;
   },
 ) => {
+  const {t} = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
 
@@ -39,15 +41,12 @@ const Header = <T,>(
         )}
       </div>
       <Alert
-        confirmButtonText='OK'
         isOpen={isAlertOpen}
         onConfirm={() => {
           setIsAlertOpen(false);
         }}
       >
-        <p>
-          You have unsaved changes in SDL
-        </p>
+        <p>{t('exercises.sdlNotSaved')}</p>
       </Alert>
 
       {children && React.Children.map(children, child => {

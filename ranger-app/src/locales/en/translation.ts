@@ -9,6 +9,7 @@ const language = {
     sdlGuide: 'SDL Reference Guide',
     sdlParserInitFail: 'SDL Parser Initialization Failed',
     sdlParsingFail: 'SDL Parsing failed',
+    sdlNotSaved: 'You have unsaved changes in SDL',
     addingSuccess: 'Exercise {{exerciseName}} added',
     addingFail: 'Failed to add the exercise',
     updateSuccess: 'Exercise {{exerciseName}} updated',
