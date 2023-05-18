@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import {Alert, Button, H2} from '@blueprintjs/core';
-import {useTranslation} from "react-i18next";
+import {useTranslation} from 'react-i18next';
 
 // eslint-disable-next-line @typescript-eslint/comma-dangle
 const Header = <T,>(
