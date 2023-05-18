@@ -14,6 +14,7 @@ import useExerciseStreaming from 'src/hooks/useExerciseStreaming';
 import AddDialog from 'src/components/Deployment/AddDialog';
 
 import {type Exercise} from 'src/models/exercise';
+import {useState} from 'react';
 
 const DashboardPanel = ({exercise, deployments}:
 {exercise: Exercise | undefined;
@@ -22,6 +23,7 @@ const DashboardPanel = ({exercise, deployments}:
   const {t} = useTranslation();
   useExerciseStreaming(exercise?.id);
   const [addDeployment, _newDeployment] = useAdminAddDeploymentMutation();
+  const [isModified, setIsModified] = useState(false);
 
   const createNewDeployment = (
     name: string,
@@ -93,11 +95,16 @@ const DashboardPanel = ({exercise, deployments}:
   if (exercise && deployments) {
     return (
       <>
-        <ExerciseForm exercise={exercise}/>
+        <ExerciseForm
+          exercise={exercise}
+          onContentChange={isChanged => {
+            setIsModified(isChanged);
+          }}/>
         <br/>
         <Header
           headerTitle={t('deployments.title')}
           buttonTitle={t('deployments.add')}
+          askAlert={isModified}
           onSubmit={async (value: DeploymentForm) => {
             await addNewDeployment(value);
           }}

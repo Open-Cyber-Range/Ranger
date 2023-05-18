@@ -1,12 +1,13 @@
 import React, {useState} from 'react';
-import {Button, H2} from '@blueprintjs/core';
+import {Alert, Button, H2} from '@blueprintjs/core';
 
 // eslint-disable-next-line @typescript-eslint/comma-dangle
 const Header = <T,>(
-  {onSubmit, buttonTitle, headerTitle, children}: {
+  {onSubmit, buttonTitle, headerTitle, children, askAlert = false}: {
     onSubmit: (value: T) => void;
     buttonTitle: string;
     headerTitle: string;
+    askAlert?: boolean;
     children?: React.ReactElement<{
       onCancel: () => void;
       onSubmit: (value: T) => void;
@@ -16,6 +17,7 @@ const Header = <T,>(
   },
 ) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
 
   return (
     <>
@@ -28,10 +30,26 @@ const Header = <T,>(
             intent='success'
             text={buttonTitle}
             onClick={() => {
-              setIsOpen(true);
+              if (askAlert) {
+                setIsAlertOpen(true);
+              } else {
+                setIsOpen(true);
+              }
             }}/>
         )}
       </div>
+      <Alert
+        confirmButtonText='Ok'
+        isOpen={isAlertOpen}
+        onConfirm={() => {
+          setIsAlertOpen(false);
+        }}
+      >
+        <p>
+          You have unsaved changes in SDL
+        </p>
+      </Alert>
+
       {children && React.Children.map(children, child => {
         if (React.isValidElement(child)) {
           return React
@@ -41,8 +59,12 @@ const Header = <T,>(
                 setIsOpen(false);
               },
               onSubmit(value: T) {
-                setIsOpen(false);
-                onSubmit(value);
+                if (askAlert) {
+                  setIsAlertOpen(true);
+                } else {
+                  setIsOpen(false);
+                  onSubmit(value);
+                }
               },
             });
         }
