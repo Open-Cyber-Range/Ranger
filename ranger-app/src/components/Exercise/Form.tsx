@@ -9,14 +9,16 @@ import Editor from '@monaco-editor/react';
 import {useTranslation} from 'react-i18next';
 import init, {parse_and_verify_sdl} from 'wasm-sdl-parser';
 
-const ExerciseForm = ({exercise}: {exercise: Exercise}) => {
+const ExerciseForm = ({exercise, onContentChange}:
+{exercise: Exercise; onContentChange: (isChanged: boolean) => void}) => {
   const {t} = useTranslation();
-  const {handleSubmit, control} = useForm<UpdateExercise>({
+  const {handleSubmit, control, watch} = useForm<UpdateExercise>({
     defaultValues: {
       name: exercise.name,
       sdlSchema: exercise.sdlSchema ?? '',
     },
   });
+  const liveSDLSchema = watch('sdlSchema');
   const [updateExercise, {isSuccess, error}] = useAdminUpdateExerciseMutation();
 
   const onSubmit: SubmitHandler<UpdateExercise> = async exerciseUpdate => {
@@ -36,6 +38,10 @@ const ExerciseForm = ({exercise}: {exercise: Exercise}) => {
 
     await updateExercise({exerciseUpdate, exerciseId: exercise.id});
   };
+
+  useEffect(() => {
+    onContentChange(liveSDLSchema !== exercise.sdlSchema);
+  }, [onContentChange, liveSDLSchema, exercise.sdlSchema]);
 
   useEffect(() => {
     const initializeSdlParser = async () => {
