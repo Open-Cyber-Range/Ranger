@@ -41,7 +41,7 @@ const ExerciseForm = ({exercise, onContentChange}:
 
   useEffect(() => {
     onContentChange(liveSDLSchema !== exercise.sdlSchema);
-  }, [liveSDLSchema, exercise.sdlSchema]);
+  }, [onContentChange, liveSDLSchema, exercise.sdlSchema]);
 
   useEffect(() => {
     const initializeSdlParser = async () => {

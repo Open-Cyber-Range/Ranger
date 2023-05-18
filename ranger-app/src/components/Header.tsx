@@ -39,7 +39,7 @@ const Header = <T,>(
         )}
       </div>
       <Alert
-        confirmButtonText='Ok'
+        confirmButtonText='OK'
         isOpen={isAlertOpen}
         onConfirm={() => {
           setIsAlertOpen(false);

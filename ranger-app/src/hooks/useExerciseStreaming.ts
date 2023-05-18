@@ -12,7 +12,8 @@ const websocketHandler = (
   dispatch: AppDispatch,
 ) => (event: MessageEvent<string>) => {
   const data: WebsocketWrapper = JSON.parse(event.data) as WebsocketWrapper;
-
+  /* eslint-disable @typescript-eslint/no-unsafe-assignment */
+  /* eslint-disable @typescript-eslint/no-unsafe-call */
   switch (data.type) {
     case WebsocketMessageType.ExerciseUpdate: {
       const exerciseUpdate = data.content;
@@ -73,6 +74,8 @@ const websocketHandler = (
       break;
     }
   }
+  /* eslint-enable @typescript-eslint/no-unsafe-assignment */
+  /* eslint-enable @typescript-eslint/no-unsafe-call */
 };
 
 const useExerciseStreaming = (exerciseId?: string) => {
