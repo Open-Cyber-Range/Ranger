@@ -18,15 +18,14 @@ const TloTable = ({exerciseId, deploymentId, tloMap}:
   const {t} = useTranslation();
   const {data: scenario} = useAdminGetDeploymentScenarioQuery(
     exerciseId && deploymentId ? {exerciseId, deploymentId} : skipToken);
-  const goals = scenario?.goals;
   const entities = scenario?.entities;
 
-  if (tloMap && entities && goals) {
+  if (tloMap && entities) {
     const flattenedEntities = flattenEntities(entities);
     const roles = getUniqueRoles(flattenedEntities);
     roles.sort((a, b) => ExerciseRoleOrder[a] - ExerciseRoleOrder[b]);
     const tloMapsByRole = groupTloMapsByRoles(
-      flattenedEntities, goals, tloMap, roles);
+      flattenedEntities, tloMap, roles);
 
     return (
       <div className='flex flex-col mt-2'>

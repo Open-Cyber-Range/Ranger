@@ -2175,9 +2175,9 @@ checksum = "9c8132065adcfd6e02db789d9285a0deb2f3fcb04002865ab67d5fb103533898"
 
 [[package]]
 name = "sdl-parser"
-version = "0.10.2"
+version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ab22851fbb3756b18b3c668871f00246168f15a093c3dba97713c6438bc7861a"
+checksum = "81ed53d59030ba3c4766c957ba62be30872707d96bd66e277dcf3b410356a5dc"
 dependencies = [
  "anyhow",
  "bytesize",

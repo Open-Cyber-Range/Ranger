@@ -11,10 +11,9 @@ const ScoreTagGroup = ({exerciseId, deploymentId}:
 }) => {
   const queryParameters = {exerciseId, deploymentId};
   const {data: scenario} = useAdminGetDeploymentScenarioQuery(queryParameters);
-  const goals = scenario?.goals;
   const entities = scenario?.entities;
 
-  if (entities && goals) {
+  if (entities) {
     const flattenedEntities = flattenEntities(entities);
     const roles = getUniqueRoles(flattenedEntities);
     roles.sort((a, b) => ExerciseRoleOrder[a] - ExerciseRoleOrder[b]);
@@ -23,7 +22,7 @@ const ScoreTagGroup = ({exerciseId, deploymentId}:
       <div className='flex m-1 mt-auto mb-auto'>
         {roles.map(role => {
           const roleTloNames
-          = getTloNamesByRole(flattenedEntities, goals, role);
+          = getTloNamesByRole(flattenedEntities, role);
 
           const roleHasTlos = roleTloNames && roleTloNames.length > 0;
 

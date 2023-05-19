@@ -89,23 +89,26 @@ pub fn filter_entities_by_role(entities: Entities, role: ExerciseRole) -> HashMa
         .collect::<HashMap<String, Entity>>()
 }
 
-pub fn get_goals_by_entities(scenario: &Scenario, entities: &Entities) -> Goals {
-    let goal_names = entities.values().fold(vec![], |mut accumulator, entity| {
-        if let Some(goal_names) = entity.goals.clone() {
-            accumulator.extend(goal_names);
+pub fn get_tlos_by_entities(
+    scenario: &Scenario,
+    entities: &Entities,
+) -> TrainingLearningObjectives {
+    let tlo_names = entities.values().fold(vec![], |mut accumulator, entity| {
+        if let Some(tlo_names) = entity.tlos.clone() {
+            accumulator.extend(tlo_names);
         }
         accumulator
     });
 
-    goal_names
+    tlo_names
         .into_iter()
-        .fold(HashMap::new(), |mut goals, goal_name| {
-            if let Some(scenario_goals) = scenario.goals.clone() {
-                if scenario_goals.contains_key(&goal_name) {
-                    goals.insert(goal_name.to_owned(), scenario_goals[&goal_name].clone());
+        .fold(HashMap::new(), |mut tlos, tlo_name| {
+            if let Some(scenario_tlos) = scenario.tlos.clone() {
+                if scenario_tlos.contains_key(&tlo_name) {
+                    tlos.insert(tlo_name.to_owned(), scenario_tlos[&tlo_name].clone());
                 }
             }
-            goals
+            tlos
         })
 }
 
@@ -177,23 +180,20 @@ pub fn get_vulnerability_connections(
     (capabilities, features, nodes)
 }
 
-pub fn get_tlos_by_goals(scenario: &Scenario, goals: &Goals) -> TrainingLearningObjectives {
-    let tlo_names = goals
-        .values()
-        .flat_map(|goal| goal.tlos.clone())
-        .collect::<Vec<String>>();
+pub fn get_goals_by_tlos(scenario: &Scenario, tlos: &TrainingLearningObjectives) -> Goals {
+    let mut goals = HashMap::new();
 
-    tlo_names
-        .into_iter()
-        .fold(HashMap::new(), |mut tlos, tlo_name| {
-            if let Some(scenario_tlos) = scenario.tlos.clone() {
-                if scenario_tlos.contains_key(&tlo_name) {
-                    let tlo = scenario_tlos[&tlo_name].clone();
-                    tlos.insert(tlo_name, tlo);
+    if let Some(scenario_goals) = &scenario.goals {
+        scenario_goals.iter().for_each(|(key, goal)| {
+            goal.tlos.iter().for_each(|goal_tlo_name| {
+                if tlos.contains_key(goal_tlo_name) {
+                    goals.insert(key.to_owned(), goal.clone());
                 }
-            }
-            tlos
+            })
         })
+    }
+
+    goals
 }
 
 pub fn get_tlo_connections(
@@ -501,8 +501,8 @@ pub fn filter_scenario_by_role(scenario: &Scenario, role: ExerciseRole) -> Scena
     let (mut capabilities, mut features, mut nodes) =
         get_vulnerability_connections(scenario, &vulnerabilities);
     let mut conditions = get_conditions_by_capabilities(scenario, &capabilities);
-    let goals = get_goals_by_entities(scenario, &flattened_entities);
-    let tlos = get_tlos_by_goals(scenario, &goals);
+    let tlos = get_tlos_by_entities(scenario, &flattened_entities);
+    let goals = get_goals_by_tlos(scenario, &tlos);
     let (mut injects, evaluations) = get_tlo_connections(scenario, &tlos);
     let metrics = get_metrics_by_evaluations(scenario, &evaluations);
     let metric_conditions = get_conditions_by_metrics(scenario, &metrics);
