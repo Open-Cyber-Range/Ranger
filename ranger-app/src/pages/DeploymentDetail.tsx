@@ -5,9 +5,14 @@ import type {DeploymentDetailRouteParameters} from 'src/models/routes';
 import {useTranslation} from 'react-i18next';
 import BackButton from 'src/components/BackButton';
 import {skipToken} from '@reduxjs/toolkit/dist/query';
-import {useAdminGetDeploymentScenarioQuery} from 'src/slices/apiSlice';
+import {
+  useAdminGetDeploymentQuery,
+  useAdminGetDeploymentScenarioQuery,
+} from 'src/slices/apiSlice';
 import DeploymentDetailsGraph from 'src/components/Scoring/Graph';
 import TloTable from 'src/components/Scoring/TloTable';
+import Editor from '@monaco-editor/react';
+import {H2} from '@blueprintjs/core';
 
 const DeploymentDetail = () => {
   const {t} = useTranslation();
@@ -15,11 +20,21 @@ const DeploymentDetail = () => {
   = useParams<DeploymentDetailRouteParameters>();
   const {data: scenario} = useAdminGetDeploymentScenarioQuery(
     exerciseId && deploymentId ? {exerciseId, deploymentId} : skipToken);
+  const {data: deployment} = useAdminGetDeploymentQuery(
+    exerciseId && deploymentId ? {exerciseId, deploymentId} : skipToken);
 
   if (exerciseId && deploymentId) {
     return (
       <PageHolder>
-        <BackButton/>
+        <H2>{deployment?.name}</H2>
+        <br/>
+        <div className='h-[40vh]'>
+          <Editor
+            value={deployment?.sdlSchema}
+            defaultLanguage='yaml'
+            options={{readOnly: true}}
+          />
+        </div>
         <DeploymentDetailsGraph
           exerciseId={exerciseId}
           deploymentId={deploymentId}
@@ -28,6 +43,7 @@ const DeploymentDetail = () => {
           exerciseId={exerciseId}
           deploymentId={deploymentId}
           tloMap={scenario?.tlos}/>
+        <BackButton/>
       </PageHolder>
     );
   }
