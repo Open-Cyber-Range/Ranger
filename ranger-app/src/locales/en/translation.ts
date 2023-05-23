@@ -18,19 +18,24 @@ const language = {
     noDeploymentInfo: 'No deployment info',
     deleteSuccess: 'Exercise {{exerciseName}} deleted',
     deleteFail: 'Failed to delete the exercise {{exerciseName}}',
+    easeDevelopment: 'To ease the development of the exercise open: ',
+    mustHaveName: 'Exercise must have a name',
+    adGroup: 'AD Group',
     tabs: {
       dashboard: 'Dashboard',
       scores: 'Scores',
     },
   },
   deployments: {
-    title: 'New deployment',
-    add: 'Add Deployments',
+    title: 'Deployments',
+    add: 'Add new',
+    create: 'Create a new deployment',
     addingSuccess: 'Deployment {{newDeploymentName}} added',
     addingFail: 'Failed to add the deployment',
     sdlMissing: 'Exercise must have an sdl-schema',
     deleteSuccess: 'Deployment {{deploymentName}} deleted',
     deleteFail: 'Failed to delete the deployment',
+    noDeployments: 'No deployments',
     form: {
       group: {
         placeholder: 'Select group...',
@@ -59,6 +64,7 @@ const language = {
     noRole: 'NO ROLE',
   },
   common: {
+    required: '(required)',
     submit: 'Submit',
     delete: 'Delete',
     back: 'Back',
@@ -68,9 +74,10 @@ const language = {
     switches: 'Switches',
     templates: 'Templates',
     team: 'Team',
+    noResults: 'No results',
   },
   emails: {
-    link: 'Create and send emails',
+    link: 'Emails',
     emailLog: 'Email log:',
     status: 'Status',
     timestamp: 'Timestamp',

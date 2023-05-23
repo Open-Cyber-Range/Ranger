@@ -8,6 +8,7 @@ type DeploymentForm = {
 type NewDeployment = {
   name: string;
   deploymentGroup?: string;
+  groupName?: string;
   sdlSchema: string;
 };
 

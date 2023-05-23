@@ -1,14 +1,12 @@
 import React, {useState} from 'react';
-import {Alert, Button, H2} from '@blueprintjs/core';
-import {useTranslation} from 'react-i18next';
+import {Button, H2} from '@blueprintjs/core';
 
 // eslint-disable-next-line @typescript-eslint/comma-dangle
 const Header = <T,>(
-  {onSubmit, buttonTitle, headerTitle, children, askAlert = false}: {
+  {onSubmit, buttonTitle, headerTitle, children}: {
     onSubmit: (value: T) => void;
     buttonTitle: string;
     headerTitle: string;
-    askAlert?: boolean;
     children?: React.ReactElement<{
       onCancel: () => void;
       onSubmit: (value: T) => void;
@@ -17,9 +15,7 @@ const Header = <T,>(
     }, any>;
   },
 ) => {
-  const {t} = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
-  const [isAlertOpen, setIsAlertOpen] = useState(false);
 
   return (
     <>
@@ -32,22 +28,10 @@ const Header = <T,>(
             intent='success'
             text={buttonTitle}
             onClick={() => {
-              if (askAlert) {
-                setIsAlertOpen(true);
-              } else {
-                setIsOpen(true);
-              }
+              setIsOpen(true);
             }}/>
         )}
       </div>
-      <Alert
-        isOpen={isAlertOpen}
-        onConfirm={() => {
-          setIsAlertOpen(false);
-        }}
-      >
-        <p>{t('exercises.sdlNotSaved')}</p>
-      </Alert>
 
       {children && React.Children.map(children, child => {
         if (React.isValidElement(child)) {
@@ -58,12 +42,8 @@ const Header = <T,>(
                 setIsOpen(false);
               },
               onSubmit(value: T) {
-                if (askAlert) {
-                  setIsAlertOpen(true);
-                } else {
-                  setIsOpen(false);
-                  onSubmit(value);
-                }
+                setIsOpen(false);
+                onSubmit(value);
               },
             });
         }

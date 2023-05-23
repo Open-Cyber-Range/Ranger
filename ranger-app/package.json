@@ -6,7 +6,7 @@
     "@blueprintjs/core": "^4.17.7",
     "@blueprintjs/docs-theme": "^4.4.23",
     "@blueprintjs/popover2": "^1.8.0",
-    "@blueprintjs/select": "^4.8.12",
+    "@blueprintjs/select": "^4.9.18",
     "@monaco-editor/react": "^4.4.6",
     "@popperjs/core": "^2.11.6",
     "@react-keycloak/web": "^3.4.0",
@@ -80,7 +80,7 @@
     "vite-plugin-svgr": "^2.4.0",
     "vite-plugin-wasm-pack": "0.1.11",
     "vite-tsconfig-paths": "^4.0.5",
-    "xo": "^0.53"
+    "xo": "^0.54"
   },
   "xo": {
     "ignores": [

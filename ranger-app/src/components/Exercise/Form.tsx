@@ -1,16 +1,34 @@
-import React, {useEffect} from 'react';
+import type React from 'react';
+import {useEffect} from 'react';
 import type {SubmitHandler} from 'react-hook-form';
 import {useForm, Controller} from 'react-hook-form';
-import {Button, FormGroup, InputGroup, Intent} from '@blueprintjs/core';
+import {
+  Button,
+  Callout,
+  FormGroup,
+  InputGroup,
+  Intent,
+  MenuItem,
+} from '@blueprintjs/core';
 import {toastSuccess, toastWarning} from 'src/components/Toaster';
 import type {Exercise, UpdateExercise} from 'src/models/exercise';
-import {useAdminUpdateExerciseMutation} from 'src/slices/apiSlice';
+import {type AdGroup} from 'src/models/groups';
+import {
+  useAdminGetGroupsQuery,
+  useAdminUpdateExerciseMutation,
+} from 'src/slices/apiSlice';
 import Editor from '@monaco-editor/react';
 import {useTranslation} from 'react-i18next';
-import init, {parse_and_verify_sdl} from 'wasm-sdl-parser';
+import init, {parse_and_verify_sdl as parseAndVerifySDL} from 'wasm-sdl-parser';
+import {Suggest2} from '@blueprintjs/select';
+import {MenuItem2} from '@blueprintjs/popover2';
 
-const ExerciseForm = ({exercise, onContentChange}:
-{exercise: Exercise; onContentChange: (isChanged: boolean) => void}) => {
+const ExerciseForm = ({exercise, onContentChange, children}:
+{
+  exercise: Exercise;
+  onContentChange: (isChanged: boolean) => void;
+  children?: React.ReactNode;
+}) => {
   const {t} = useTranslation();
   const {handleSubmit, control, watch} = useForm<UpdateExercise>({
     defaultValues: {
@@ -18,13 +36,25 @@ const ExerciseForm = ({exercise, onContentChange}:
       sdlSchema: exercise.sdlSchema ?? '',
     },
   });
-  const liveSDLSchema = watch('sdlSchema');
+  const {data: groups} = useAdminGetGroupsQuery();
+
+  useEffect(() => {
+    const subscription = watch((value, {name, type}) => {
+      if (name === 'sdlSchema' && type === 'change') {
+        onContentChange(true);
+      }
+    });
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [watch, onContentChange]);
+
   const [updateExercise, {isSuccess, error}] = useAdminUpdateExerciseMutation();
 
   const onSubmit: SubmitHandler<UpdateExercise> = async exerciseUpdate => {
     if (exerciseUpdate.sdlSchema) {
       try {
-        parse_and_verify_sdl(exerciseUpdate.sdlSchema);
+        parseAndVerifySDL(exerciseUpdate.sdlSchema);
       } catch (error: unknown) {
         if (typeof error === 'string') {
           toastWarning(error);
@@ -38,10 +68,6 @@ const ExerciseForm = ({exercise, onContentChange}:
 
     await updateExercise({exerciseUpdate, exerciseId: exercise.id});
   };
-
-  useEffect(() => {
-    onContentChange(liveSDLSchema !== exercise.sdlSchema);
-  }, [onContentChange, liveSDLSchema, exercise.sdlSchema]);
 
   useEffect(() => {
     const initializeSdlParser = async () => {
@@ -79,7 +105,7 @@ const ExerciseForm = ({exercise, onContentChange}:
       <Controller
         control={control}
         name='name'
-        rules={{required: 'Exercise must have a name'}}
+        rules={{required: t('exercises.mustHaveName') ?? ''}}
         render={({
           field: {onChange, onBlur, ref, value}, fieldState: {error},
         }) => {
@@ -87,7 +113,7 @@ const ExerciseForm = ({exercise, onContentChange}:
           return (
             <FormGroup
               labelFor='execise-name'
-              labelInfo='(required)'
+              labelInfo={t('common.required')}
               helperText={error?.message}
               intent={intent}
               label={t('exercises.name')}
@@ -107,6 +133,59 @@ const ExerciseForm = ({exercise, onContentChange}:
       />
       <Controller
         control={control}
+        name='groupName'
+        render={({
+          field: {onBlur, ref, value, onChange}, fieldState: {error},
+        }) => {
+          const intent = error ? Intent.DANGER : Intent.NONE;
+          const activeItem = groups?.find(group => group.name === value);
+          return (
+            <FormGroup
+              labelFor='execise-group'
+              helperText={error?.message}
+              intent={intent}
+              label={t('exercises.adGroup')}
+            >
+              <Suggest2<AdGroup>
+                inputProps={{
+                  onBlur,
+                  inputRef: ref,
+                  placeholder: '',
+                }}
+                activeItem={activeItem}
+                inputValueRenderer={item => item.name}
+                itemPredicate={(query, item) =>
+                  item.name.toLowerCase().includes(query.toLowerCase())}
+                itemRenderer={(item, {handleClick, handleFocus}) => (
+                  <MenuItem2
+                    key={item.id}
+                    text={item.name}
+                    onClick={handleClick}
+                    onFocus={handleFocus}
+                  />
+                )}
+                items={groups ?? []}
+                noResults={
+                  <MenuItem
+                    disabled
+                    text={t('common.noResults')}
+                    roleStructure='listoption'/>
+                }
+                onItemSelect={item => {
+                  const event = {
+                    target: {
+                      value: item.name,
+                    },
+                  };
+                  onChange(event);
+                }}
+              />
+            </FormGroup>
+          );
+        }}
+      />
+      <Controller
+        control={control}
         name='sdlSchema'
         render={({
           field: {onChange, value}, fieldState: {error},
@@ -118,24 +197,20 @@ const ExerciseForm = ({exercise, onContentChange}:
               helperText={error?.message}
               intent={intent}
               label={
-                <>
-                  <span>
-                    {t('exercises.scenarioSDL')}
-                  </span>
-                  <span className='px-4'>
-                    <a
-                      className='underline text-blue-500'
-                      href={
-                        'https://documentation.opencyberrange.ee/'
-                      + 'docs/sdl-reference-guide/sdl'
-                      }
-                      target='_blank'
-                      rel='noopener noreferrer'
-                    >
-                      {t('exercises.sdlGuide')}
-                    </a>
-                  </span>
-                </>
+                <Callout intent='primary' title={t('exercises.scenarioSDL') ?? ''}>
+                  <span>{t('exercises.easeDevelopment')}</span>
+                  <a
+                    className='underline text-blue-500'
+                    href={
+                      'https://documentation.opencyberrange.ee/'
+                  + 'docs/sdl-reference-guide/sdl'
+                    }
+                    target='_blank'
+                    rel='noopener noreferrer'
+                  >
+                    {t('exercises.sdlGuide')}
+                  </a>
+                </Callout>
               }
             >
               <div className='h-[40vh]'>
@@ -149,12 +224,15 @@ const ExerciseForm = ({exercise, onContentChange}:
           );
         }}
       />
-      <Button
-        large
-        type='submit'
-        intent='primary'
-      >{t('common.submit')}
-      </Button>
+      <div className='flex justify-end mt-[2rem] gap-[2rem]'>
+        {children}
+        <Button
+          large
+          type='submit'
+          intent='primary'
+        >{t('common.submit')}
+        </Button>
+      </div>
     </form>
 
   );

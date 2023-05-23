@@ -20,13 +20,13 @@ const AddDialog = (
   {isOpen, title, onSubmit, onCancel}:
   {
     title: string;
-    isOpen?: boolean;
-    onSubmit?: ({
+    isOpen: boolean;
+    onSubmit: ({
       count,
       name,
       deploymentGroup,
     }: DeploymentForm) => void;
-    onCancel?: () => void;
+    onCancel: () => void;
   },
 ) => {
   const {t} = useTranslation();
@@ -47,7 +47,7 @@ const AddDialog = (
     }
   };
 
-  if (isOpen !== undefined && onSubmit && onCancel) {
+  if (isOpen !== undefined) {
     return (
       <Dialog isOpen={isOpen}>
         <div className={Classes.DIALOG_HEADER}>

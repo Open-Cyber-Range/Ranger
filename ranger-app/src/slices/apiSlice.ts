@@ -12,6 +12,7 @@ import {
   type NewExercise,
   type UpdateExercise,
 } from 'src/models/exercise';
+import {type AdGroup, type AdUser} from 'src/models/groups';
 import {type Scenario} from 'src/models/scenario';
 import {type Score} from 'src/models/score';
 import {type RootState} from 'src/store';
@@ -31,10 +32,10 @@ export const apiSlice = createApi({
   }),
   tagTypes: ['Deployment', 'Exercise', 'Score', 'Scenario'],
   endpoints: builder => ({
-    adminGetGroups: builder.query<string[], void>({
+    adminGetGroups: builder.query<AdGroup[], void>({
       query: () => '/admin/group',
     }),
-    adminGetGroupUsers: builder.query<string[], string>({
+    adminGetGroupUsers: builder.query<AdUser[], string>({
       query: groupName => `/admin/group/${groupName}/users`,
     }),
     adminGetExercises: builder.query<Exercise[], void>({

@@ -2,6 +2,7 @@
 type NewExercise = {
   name: string;
   sdlSchema?: string;
+  groupName?: string;
 };
 
 type Exercise = {
