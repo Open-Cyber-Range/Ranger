@@ -57,63 +57,69 @@ const SideBar = ({renderMainContent}: {
       <div className='flex h-[100%]'>
         <div className='pb-[2rem]'>
           <Menu large className='max-w-[10rem] bp4-elevation-3 h-[100%]'>
-            <div className='mt-[2rem] px-[7px]'>
-              <H2>{exercise.name}</H2>
+            <div className='flex flex-col max-h-[100%] overflow-y-auto'>
+              <div className='mt-[2rem] px-[7px]'>
+                <H2>{exercise.name}</H2>
+              </div>
+              <MenuDivider/>
+              <MenuItem
+                active={!deploymentId && activeTab === 'Dash'}
+                text={t('exercises.tabs.dashboard')}
+                icon='control'
+                onClick={() => {
+                  if (exerciseId) {
+                    navigate(`/exercises/${exerciseId}`);
+                  }
+
+                  setActiveTab('Dash');
+                }}
+              />
+              <MenuItem
+                disabled={!hasDeployments}
+                active={!deploymentId && activeTab === 'Scores'}
+                text={t('exercises.tabs.scores')}
+                icon='chart'
+                onClick={() => {
+                  if (exerciseId) {
+                    navigate(`/exercises/${exerciseId}#scores`);
+                  }
+
+                  setActiveTab('Scores');
+                }}
+              />
+              <MenuItem
+                active={!deploymentId && activeTab === 'Emails'}
+                text={t('emails.link')}
+                icon='envelope'
+                onClick={() => {
+                  if (exerciseId) {
+                    navigate(`/exercises/${exerciseId}#emails`);
+                  }
+
+                  setActiveTab('Emails');
+                }}
+              />
+
+              <li className={MENU_HEADER}>
+                <H6>{t('deployments.title')}</H6>
+              </li>
+
+              {hasDeployments && (
+                deployments.map(deployment => (
+                  <MenuItem
+                    key={deployment.id}
+                    active={deploymentId === deployment.id}
+                    text={deployment.name}
+                    icon='cloud-upload'
+                    onClick={() => {
+                      navigate(
+                        `/exercises/${deployment.exerciseId}/deployments/${deployment.id}`);
+                    }}
+                  />
+                ))
+              )}
+
             </div>
-            <MenuDivider/>
-            <MenuItem
-              active={!deploymentId && activeTab === 'Dash'}
-              text={t('exercises.tabs.dashboard')}
-              icon='control'
-              onClick={() => {
-                if (exerciseId) {
-                  navigate(`/exercises/${exerciseId}`);
-                }
-
-                setActiveTab('Dash');
-              }}
-            />
-            <MenuItem
-              disabled={!hasDeployments}
-              active={!deploymentId && activeTab === 'Scores'}
-              text={t('exercises.tabs.scores')}
-              icon='chart'
-              onClick={() => {
-                if (exerciseId) {
-                  navigate(`/exercises/${exerciseId}#scores`);
-                }
-
-                setActiveTab('Scores');
-              }}
-            />
-            <MenuItem
-              active={!deploymentId && activeTab === 'Emails'}
-              text={t('emails.link')}
-              icon='envelope'
-              onClick={() => {
-                if (exerciseId) {
-                  navigate(`/exercises/${exerciseId}#emails`);
-                }
-
-                setActiveTab('Emails');
-              }}
-            />
-            <li className={MENU_HEADER}>
-              <H6>{t('deployments.title')}</H6>
-            </li>
-            {hasDeployments && (
-              deployments.map(deployment => (
-                <MenuItem
-                  key={deployment.id}
-                  active={deploymentId === deployment.id}
-                  text={deployment.name}
-                  icon='cloud-upload'
-                  onClick={() => {
-                    navigate(`/exercises/${deployment.exerciseId}/deployments/${deployment.id}`);
-                  }}
-                />
-              ))
-            )}
           </Menu>
         </div>
         <div className='grow m-[2rem] flex justify-center'>
