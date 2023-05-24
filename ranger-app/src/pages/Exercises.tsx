@@ -40,7 +40,7 @@ const Exercise = () => {
         }}
       >
         <AddDialog
-          title={t('deployments.title')}
+          title={t('exercises.add')}
         />
       </Header>
       <List/>
