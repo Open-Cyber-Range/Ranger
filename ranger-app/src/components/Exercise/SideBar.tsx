@@ -1,5 +1,5 @@
 import type React from 'react';
-import {useNavigate, useParams} from 'react-router-dom';
+import {useLocation, useNavigate, useParams} from 'react-router-dom';
 import type {DeploymentDetailRouteParameters} from 'src/models/routes';
 import {
   useAdminGetDeploymentsQuery,
@@ -19,16 +19,37 @@ import {MENU_HEADER} from '@blueprintjs/core/lib/esm/common/classes';
 
 type ActiveTab = 'Dash' | 'Scores' | 'Emails' | undefined;
 
+const hashToTab = (hash: string): ActiveTab => {
+  switch (hash) {
+    case '#dash': {
+      return 'Dash';
+    }
+
+    case '#scores': {
+      return 'Scores';
+    }
+
+    case '#emails': {
+      return 'Emails';
+    }
+
+    default: {
+      return 'Dash';
+    }
+  }
+};
+
 const SideBar = ({renderMainContent}: {
   renderMainContent?: (activeTab: ActiveTab) => ReactNode | undefined;}) => {
   const {t} = useTranslation();
   const navigate = useNavigate();
   const {exerciseId, deploymentId}
     = useParams<DeploymentDetailRouteParameters>();
+  const {hash} = useLocation();
   const {data: deployments} = useAdminGetDeploymentsQuery(exerciseId ?? skipToken);
   const {data: exercise} = useAdminGetExerciseQuery(exerciseId ?? skipToken);
   const hasDeployments = deployments && deployments.length > 0;
-  const [activeTab, setActiveTab] = useState<ActiveTab>('Dash');
+  const [activeTab, setActiveTab] = useState<ActiveTab>(hashToTab(hash));
 
   if (exercise && deployments) {
     return (
@@ -45,6 +66,10 @@ const SideBar = ({renderMainContent}: {
               text={t('exercises.tabs.dashboard')}
               icon='control'
               onClick={() => {
+                if (exerciseId) {
+                  navigate(`/exercises/${exerciseId}`);
+                }
+
                 setActiveTab('Dash');
               }}
             />
@@ -54,6 +79,10 @@ const SideBar = ({renderMainContent}: {
               text={t('exercises.tabs.scores')}
               icon='chart'
               onClick={() => {
+                if (exerciseId) {
+                  navigate(`/exercises/${exerciseId}#scores`);
+                }
+
                 setActiveTab('Scores');
               }}
             />
@@ -62,6 +91,10 @@ const SideBar = ({renderMainContent}: {
               text={t('emails.link')}
               icon='envelope'
               onClick={() => {
+                if (exerciseId) {
+                  navigate(`/exercises/${exerciseId}#emails`);
+                }
+
                 setActiveTab('Emails');
               }}
             />
@@ -76,7 +109,7 @@ const SideBar = ({renderMainContent}: {
                   text={deployment.name}
                   icon='cloud-upload'
                   onClick={() => {
-                    navigate(`deployments/${deployment.id}`);
+                    navigate(`/exercises/${deployment.exerciseId}/deployments/${deployment.id}`);
                   }}
                 />
               ))
