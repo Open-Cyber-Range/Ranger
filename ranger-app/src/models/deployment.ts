@@ -2,6 +2,7 @@
 type DeploymentForm = {
   name: string;
   deploymentGroup?: string;
+  groupName?: string;
   count: number;
 };
 
@@ -17,6 +18,7 @@ type Deployment = {
   exerciseId: string;
   startTime: string;
   endTime: string;
+  groupName?: string;
   createdAt: string;
   updatedAt: string;
 } & NewDeployment;

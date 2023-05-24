@@ -144,7 +144,7 @@ const ExerciseForm = ({exercise, onContentChange, children}:
               labelFor='execise-group'
               helperText={error?.message}
               intent={intent}
-              label={t('exercises.adGroup')}
+              label={t('common.adGroup')}
             >
               <Suggest2<AdGroup>
                 inputProps={{

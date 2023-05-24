@@ -20,7 +20,6 @@ const language = {
     deleteFail: 'Failed to delete the exercise {{exerciseName}}',
     easeDevelopment: 'To ease the development of the exercise open: ',
     mustHaveName: 'Exercise must have a name',
-    adGroup: 'AD Group',
     tabs: {
       dashboard: 'Dashboard',
       scores: 'Scores',
@@ -75,6 +74,7 @@ const language = {
     templates: 'Templates',
     team: 'Team',
     noResults: 'No results',
+    adGroup: 'AD Group',
   },
   emails: {
     link: 'Emails',
