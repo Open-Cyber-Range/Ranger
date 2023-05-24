@@ -124,7 +124,10 @@ const DashboardPanel = ({exercise, deployments}:
           onCancel={() => {
             setIsAddDialogOpen(false);
           }}
-          onSubmit={addNewDeployment}
+          onSubmit={async deployment => {
+            await addNewDeployment(deployment);
+            setIsAddDialogOpen(false);
+          }}
         />
       </>
     );
