@@ -41,7 +41,7 @@ const SideBar = ({renderMainContent}: {
             </div>
             <MenuDivider/>
             <MenuItem
-              active={activeTab === 'Dash'}
+              active={!deploymentId && activeTab === 'Dash'}
               text={t('exercises.tabs.dashboard')}
               icon='control'
               onClick={() => {
@@ -50,7 +50,7 @@ const SideBar = ({renderMainContent}: {
             />
             <MenuItem
               disabled={!hasDeployments}
-              active={activeTab === 'Scores'}
+              active={!deploymentId && activeTab === 'Scores'}
               text={t('exercises.tabs.scores')}
               icon='chart'
               onClick={() => {
@@ -58,7 +58,7 @@ const SideBar = ({renderMainContent}: {
               }}
             />
             <MenuItem
-              active={activeTab === 'Emails'}
+              active={!deploymentId && activeTab === 'Emails'}
               text={t('emails.link')}
               icon='envelope'
               onClick={() => {
