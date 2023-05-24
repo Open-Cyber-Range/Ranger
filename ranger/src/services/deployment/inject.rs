@@ -54,7 +54,7 @@ impl DeployableInject
             .clone()
             .ok_or_else(|| anyhow!("Node roles not found"))?;
 
-        let (_, username) = roles
+        let (_, role) = roles
             .get_key_value(&role_name.clone())
             .ok_or_else(|| anyhow!("Username in roles list not found"))?;
 
@@ -70,7 +70,7 @@ impl DeployableInject
         let template_account = database_address
             .send(GetAccount(
                 template_id.as_str().try_into()?,
-                username.to_owned(),
+                role.username.to_owned(),
             ))
             .await??;
 
@@ -94,7 +94,7 @@ impl DeployableInject
                 version: inject_source.version.to_owned(),
             }),
             account: Some(GrpcAccount {
-                username: username.to_owned(),
+                username: role.username.to_owned(),
                 password: template_account.password.unwrap_or_default(),
                 private_key: template_account.private_key.unwrap_or_default(),
             }),

@@ -2,7 +2,6 @@ import {Colors} from '@blueprintjs/core';
 import {
   type Entity,
   ExerciseRole,
-  type Goal,
   type TloMapsByRole,
   type TrainingLearningObjective,
 } from 'src/models/scenario';
@@ -150,19 +149,15 @@ export function sumScoresByRole(uniqueVmNames: string[], roleScores: Score[]) {
 
 export function getTloNamesByRole(
   entities: Record<string, Entity>,
-  goals: Record<string, Goal>,
   role: ExerciseRole) {
   const entityValues = Object.values(entities);
   const roleEntities = entityValues.slice().filter(entity =>
     entity.role?.valueOf() === role,
   );
-
   const tloNames = roleEntities.slice().reduce<string []>(
     (tloNames, entity) => {
-      if (entity.goals) {
-        for (const goalName of entity.goals) {
-          tloNames = tloNames.concat(goals[goalName]?.tlos);
-        }
+      if (entity.tlos) {
+        tloNames = tloNames.concat(entity?.tlos);
       }
 
       return tloNames;
@@ -172,12 +167,11 @@ export function getTloNamesByRole(
 
 export function groupTloMapsByRoles(
   entities: Record<string, Entity>,
-  goals: Record<string, Goal>,
   tlos: Record<string, TrainingLearningObjective>,
   roles: ExerciseRole[],
 ) {
   const tloMapsByRole = roles.reduce<TloMapsByRole>((tloMapsByRole, role) => {
-    const roleTloNames = getTloNamesByRole(entities, goals, role);
+    const roleTloNames = getTloNamesByRole(entities, role);
     const roleTloMap
       = roleTloNames.reduce<Record<string, TrainingLearningObjective>>(
         (roleTloMap, tloName) => {

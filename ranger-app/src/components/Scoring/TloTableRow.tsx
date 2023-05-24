@@ -20,9 +20,11 @@ const TloTableRow = ({exerciseId, deploymentId, tloKey, tlo}:
     ? {exerciseId, deploymentId} : skipToken;
   const {data: scenario} = useAdminGetDeploymentScenarioQuery(queryArguments);
   const {data: scores} = useAdminGetDeploymentScoresQuery(queryArguments);
+  const scenarioEvaluations = scenario?.evaluations;
+  const scenarioMetrics = scenario?.metrics;
 
-  if (tlo && scenario?.evaluations) {
-    const tloEvaluation = scenario?.evaluations[tlo.evaluation];
+  if (tlo && scenarioEvaluations && scenarioMetrics) {
+    const tloEvaluation = scenarioEvaluations[tlo.evaluation];
     if (tloEvaluation && scores) {
       const scoresByMetric = groupBy(scores, score => score.metricName);
 
@@ -33,21 +35,24 @@ const TloTableRow = ({exerciseId, deploymentId, tloKey, tlo}:
             <p>{tlo.description}</p>
           </td>
           <td>
-            <H5>{tlo.evaluation}</H5>
+            <H5>{tloEvaluation.name ?? tlo.evaluation}</H5>
             <p>{tloEvaluation.description}</p>
           </td>
-          {tloEvaluation.metrics.map(metricName => {
-            const scores = scoresByMetric[metricName];
+          {tloEvaluation.metrics.map(metricKey => {
+            const metric = scenarioMetrics[metricKey];
+            const metricReference = metric.name ?? metricKey;
+            const scores = scoresByMetric[metricReference];
+
             if (scores && scores.length > 0) {
               const latestScoresByVm = findLatestScoresByVms(scores);
               latestScoresByVm.sort((a, b) => a.vmName.localeCompare(b.vmName));
 
               return (
-                <td key={metricName}>
+                <td key={metricKey}>
                   {latestScoresByVm.map(element => (
                     <div key={element.id} className='pl-4'>
                       <li key={element.id}>
-                        {metricName} - {element.vmName}: {roundToDecimalPlaces(
+                        {metricReference} - {element.vmName}: {roundToDecimalPlaces(
                           element.value)} {t('tloTable.points')}
                       </li>
                     </div>
@@ -57,10 +62,10 @@ const TloTableRow = ({exerciseId, deploymentId, tloKey, tlo}:
             }
 
             return (
-              <td key={metricName}>
+              <td key={metricKey}>
                 <div className='pl-4'>
                   <li>
-                    {metricName} - {t('tloTable.noMetricData')}
+                    {metricReference} - {t('tloTable.noMetricData')}
                   </li>
                 </div>
               </td>

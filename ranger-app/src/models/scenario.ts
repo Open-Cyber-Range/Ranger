@@ -1,12 +1,14 @@
 import {type RequireAtLeastOne} from 'src/utils';
 
 export type Capability = {
+  name?: string;
   description?: string;
   condition: string;
   vulnerabilities?: string[];
 };
 
 export type Condition = {
+  name?: string;
   command?: string;
   interval?: number;
   source?: Source;
@@ -33,7 +35,7 @@ export type Entity = {
   mission?: string;
   categories?: string[];
   vulnerabilities?: string[];
-  goals?: string[];
+  tlos?: string[];
   facts?: Record<string, string>;
   entities?: Record<string, Entity>;
 };
@@ -46,12 +48,14 @@ export type PotentialMinScore = {
 type MinScore = RequireAtLeastOne<PotentialMinScore, 'absolute' | 'percentage'>;
 
 export type Evaluation = {
+  name?: string;
   description?: string;
   metrics: string[];
   min_score?: MinScore;
 };
 
 type Event = {
+  name?: string;
   time?: number;
   conditions?: string[];
   injects: string[];
@@ -64,6 +68,7 @@ export enum FeatureType {
 }
 
 export type Feature = {
+  name?: string;
   feature_type: FeatureType;
   source?: Source;
   dependencies?: string[];
@@ -79,12 +84,14 @@ export type Goal = {
 };
 
 export type InfraNode = {
+  name?: string;
   count: number;
   links?: string[];
   dependencies?: string[];
 };
 
 export type Inject = {
+  name?: string;
   source?: Source;
   from_entity?: string;
   to_entities?: string[];
@@ -98,6 +105,7 @@ export enum MetricType {
 }
 
 export type Metric = {
+  name?: string;
   metric_type: MetricType;
   artifact?: boolean;
   max_score: number;
@@ -114,6 +122,11 @@ export type Resources = {
   cpu: number;
 };
 
+export type Role = {
+  username: string;
+  entities?: string[];
+};
+
 export type Node = {
   type_field: NodeType;
   description?: string;
@@ -122,10 +135,11 @@ export type Node = {
   features?: Record<string, string>;
   conditions?: Record<string, string>;
   vulnerabilities?: string[];
-  roles?: Record<string, string>;
+  roles?: Record<string, Role>;
 };
 
 export type Script = {
+  name?: string;
   start_time: bigint;
   end_time: bigint;
   speed: number;
@@ -138,6 +152,7 @@ export type Source = {
 };
 
 export type Story = {
+  name?: string;
   clock: bigint;
   scripts: string[];
 };

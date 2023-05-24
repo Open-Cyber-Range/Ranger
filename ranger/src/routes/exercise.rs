@@ -404,7 +404,7 @@ pub async fn get_exercise_deployment_scores(
         });
 
         for condition_message in condition_messages.iter() {
-            if let Some((metric_name, metric)) = metrics.iter().find(|(_, metric)| {
+            if let Some((metric_key, metric)) = metrics.iter().find(|(_, metric)| {
                 metric
                     .condition
                     .eq(&Some(condition_message.clone().condition_name))
@@ -412,10 +412,15 @@ pub async fn get_exercise_deployment_scores(
                 if let Some(vm_name) =
                     vm_deplyoment_elements.get(&condition_message.virtual_machine_id.to_string())
                 {
+                    let metric_reference = match &metric.name {
+                        Some(metric_name) => metric_name.to_owned(),
+                        None => metric_key.to_owned(),
+                    };
+
                     scores.push(Score::new(
                         exercise_uuid,
                         deployment_uuid,
-                        metric_name.to_owned(),
+                        metric_reference,
                         vm_name.to_owned(),
                         condition_message.virtual_machine_id,
                         condition_message.clone().value * BigDecimal::from(metric.max_score),

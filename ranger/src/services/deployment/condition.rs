@@ -19,6 +19,7 @@ use ranger_grpc::{
     Source as GrpcSource,
 };
 use sdl_parser::condition::Condition;
+use sdl_parser::node::Role;
 use sdl_parser::{node::Node, Scenario};
 use tonic::Streaming;
 
@@ -158,18 +159,21 @@ async fn create_condition_request(
     database_address: &Addr<Database>,
     virtual_machine_id: &str,
     template_id: &str,
-    roles: HashMap<String, String>,
+    roles: HashMap<String, Role>,
     condition: &Condition,
     node_condition_name: &str,
     node_role_name: &str,
 ) -> Result<Box<GrpcCondition>> {
-    let (_, username) = try_some(
+    let (_, role) = try_some(
         roles.get_key_value(node_role_name),
         "Username in roles list not found",
     )?;
 
     let template_account = database_address
-        .send(GetAccount(template_id.try_into()?, username.to_owned()))
+        .send(GetAccount(
+            template_id.try_into()?,
+            role.username.to_owned(),
+        ))
         .await??;
 
     let source: Option<GrpcSource> = match condition.clone().source {

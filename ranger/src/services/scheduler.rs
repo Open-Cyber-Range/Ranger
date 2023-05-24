@@ -1,6 +1,11 @@
 use actix::{Actor, Handler, Message};
 use anyhow::{anyhow, Ok, Result};
-use sdl_parser::{feature::Feature, infrastructure::InfraNode, node::Node, Scenario};
+use sdl_parser::{
+    feature::Feature,
+    infrastructure::InfraNode,
+    node::{Node, Role},
+    Scenario,
+};
 use std::collections::HashMap;
 
 #[derive(Default)]
@@ -44,7 +49,11 @@ impl CreateDeploymentSchedule {
                                 nodes.get(node_name).ok_or_else(|| anyhow!("Node value"))?;
                             for n in 0..infra_value.count {
                                 new_tranche.push((
-                                    Self::create_node_name(infra_value, node_name.clone(), n),
+                                    Self::create_node_name(
+                                        infra_value,
+                                        node_name.clone(),
+                                        n as u32,
+                                    ),
                                     node_value.clone(),
                                     infra_value.clone(),
                                 ));
@@ -64,11 +73,11 @@ impl CreateDeploymentSchedule {
 }
 
 #[derive(Message, Debug, PartialEq)]
-#[rtype(result = "Result<Vec<Vec<(String, Feature, String)>>>")]
+#[rtype(result = "Result<Vec<Vec<(String, Feature, Role)>>>")]
 pub struct CreateFeatureDeploymentSchedule(pub(crate) Scenario, pub(crate) Node);
 
 impl CreateFeatureDeploymentSchedule {
-    pub fn generate(&self) -> Result<Vec<Vec<(String, Feature, String)>>> {
+    pub fn generate(&self) -> Result<Vec<Vec<(String, Feature, Role)>>> {
         let scenario = &self.0;
         let node = &self.1;
         let mut tranches_with_roles: HashMap<&String, Vec<Vec<String>>> = HashMap::new();
@@ -94,7 +103,7 @@ impl CreateFeatureDeploymentSchedule {
             .ok_or_else(|| anyhow!("Node Roles not found"))?;
 
         if let Some(features) = &scenario.features {
-            let mut feature_schedule: Vec<Vec<(String, Feature, String)>> = Vec::new();
+            let mut feature_schedule: Vec<Vec<(String, Feature, Role)>> = Vec::new();
 
             tranches_with_roles
                 .iter()
@@ -139,7 +148,7 @@ impl Handler<CreateDeploymentSchedule> for Scheduler {
 }
 
 impl Handler<CreateFeatureDeploymentSchedule> for Scheduler {
-    type Result = Result<Vec<Vec<(String, Feature, String)>>>;
+    type Result = Result<Vec<Vec<(String, Feature, Role)>>>;
 
     fn handle(
         &mut self,
