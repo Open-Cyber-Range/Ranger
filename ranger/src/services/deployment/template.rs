@@ -9,8 +9,9 @@ use crate::{
             deployment::{CreateOrIgnoreDeploymentElement, UpdateDeploymentElement},
             Database,
         },
-        deployer::{Deploy, DeployerDistribution},
+        deployer::Deploy,
     },
+    Addressor,
 };
 use actix::Addr;
 use anyhow::{anyhow, Ok, Result};
@@ -33,9 +34,8 @@ impl Deployable for SDLSource {
 pub trait DeployableTemplates {
     async fn deploy_templates(
         &self,
-        deployer_distributor: &Addr<DeployerDistribution>,
+        addressor: &Addressor,
         deployers: &[String],
-        database_address: &Addr<Database>,
         deployment: &Deployment,
         exercise: &Exercise,
     ) -> Result<()>;
@@ -69,9 +69,8 @@ async fn save_accounts(
 impl DeployableTemplates for Scenario {
     async fn deploy_templates(
         &self,
-        deployer_distributor: &Addr<DeployerDistribution>,
+        addressor: &Addressor,
         deployers: &[String],
-        database_address: &Addr<Database>,
         deployment: &Deployment,
         exercise: &Exercise,
     ) -> Result<()> {
@@ -92,7 +91,8 @@ impl DeployableTemplates for Scenario {
                     let placeholder_template_id =
                         "00000000-0000-0000-0000-000000000000".to_string();
 
-                    let mut deployment_element = database_address
+                    let mut deployment_element = addressor
+                        .database
                         .send(CreateOrIgnoreDeploymentElement(
                             exercise.id,
                             DeploymentElement::new(
@@ -106,7 +106,8 @@ impl DeployableTemplates for Scenario {
                         ))
                         .await??;
 
-                    match deployer_distributor
+                    match addressor
+                        .distributor
                         .send(Deploy(
                             DeployerTypes::Template,
                             source.try_to_deployment_command()?,
@@ -124,7 +125,7 @@ impl DeployableTemplates for Scenario {
                             if !template_response.accounts.is_empty() {
                                 save_accounts(
                                     template_response.accounts,
-                                    database_address,
+                                    &addressor.database,
                                     Uuid::try_from(template_id.as_str())?,
                                     exercise.id,
                                 )
@@ -136,7 +137,8 @@ impl DeployableTemplates for Scenario {
                             deployment_element.status = ElementStatus::Success;
                             deployment_element.handler_reference = Some(template_id);
 
-                            database_address
+                            addressor
+                                .database
                                 .send(UpdateDeploymentElement(
                                     exercise.id,
                                     deployment_element,
@@ -149,7 +151,8 @@ impl DeployableTemplates for Scenario {
                         Err(error) => {
                             deployment_element.status = ElementStatus::Failed;
 
-                            database_address
+                            addressor
+                                .database
                                 .send(UpdateDeploymentElement(
                                     exercise.id,
                                     deployment_element,
