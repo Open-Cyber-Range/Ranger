@@ -1,11 +1,10 @@
 use crate::models::helpers::uuid::Uuid;
-use crate::models::{DeploymentElement, ElementStatus};
+use crate::models::{DeploymentElement, ElementStatus, Exercise};
 use crate::services::database::account::GetAccount;
 use crate::services::database::deployment::{CreateDeploymentElement, UpdateDeploymentElement};
-use crate::services::database::Database;
-use crate::services::deployer::{Deploy, DeployerDistribution};
-use crate::services::scheduler::{CreateFeatureDeploymentSchedule, Scheduler};
-use actix::Addr;
+use crate::services::deployer::Deploy;
+use crate::services::scheduler::CreateFeatureDeploymentSchedule;
+use crate::Addressor;
 use anyhow::{anyhow, Ok, Result};
 use async_trait::async_trait;
 use futures::future::try_join_all;
@@ -16,41 +15,76 @@ use ranger_grpc::{
     FeatureType as GrpcFeatureType, Source as GrpcSource,
 };
 use sdl_parser::feature::FeatureType;
+use sdl_parser::node::NodeType;
 use sdl_parser::{node::Node, Scenario};
 
 #[async_trait]
 pub trait DeployableFeatures {
-    async fn deploy_features(&self) -> Result<()>;
+    async fn deploy_scenario_features(
+        &self,
+        addressor: &Addressor,
+        exercise: &Exercise,
+        deployers: &[String],
+        deployed_nodes: &[(Node, DeploymentElement, Uuid)],
+    ) -> Result<()>;
+}
+#[async_trait]
+impl DeployableFeatures for Scenario {
+    async fn deploy_scenario_features(
+        &self,
+        addressor: &Addressor,
+        exercise: &Exercise,
+        deployers: &[String],
+        deployed_nodes: &[(Node, DeploymentElement, Uuid)],
+    ) -> Result<()> {
+        if self.features.is_some() {
+            try_join_all(deployed_nodes.iter().map(
+                |(node, deployment_element, template_id)| async move {
+                    if matches!(node.type_field, NodeType::VM) {
+                        (
+                            addressor.clone(),
+                            deployers.to_owned(),
+                            self.clone(),
+                            node.clone(),
+                            deployment_element.clone(),
+                            exercise.id,
+                            *template_id,
+                        )
+                            .deploy_node_features()
+                            .await?;
+                    }
+                    Ok(())
+                },
+            ))
+            .await?;
+        }
+        Ok(())
+    }
 }
 
 #[async_trait]
-impl DeployableFeatures
+pub trait DeployableNodeFeatures {
+    async fn deploy_node_features(&self) -> Result<()>;
+}
+
+#[async_trait]
+impl DeployableNodeFeatures
     for (
-        Addr<DeployerDistribution>,
-        Addr<Database>,
-        Addr<Scheduler>,
+        Addressor,
         Vec<String>,
         Scenario,
         Node,
         DeploymentElement,
         Uuid,
-        Option<String>,
+        Uuid,
     )
 {
-    async fn deploy_features(&self) -> Result<()> {
-        let (
-            distributor_address,
-            database_address,
-            scheduler_address,
-            deployers,
-            scenario,
-            node,
-            deployment_element,
-            exercise_id,
-            template_id,
-        ) = self;
+    async fn deploy_node_features(&self) -> Result<()> {
+        let (addressor, deployers, scenario, node, deployment_element, exercise_id, template_id) =
+            self;
 
-        let deployment_schedule = scheduler_address
+        let deployment_schedule = addressor
+            .scheduler
             .send(CreateFeatureDeploymentSchedule(
                 scenario.clone(),
                 node.clone(),
@@ -79,7 +113,8 @@ impl DeployableFeatures
                             .clone()
                             .ok_or_else(|| anyhow!("Feature source not found"))?;
 
-                        let mut feature_deployment_element = database_address
+                        let mut feature_deployment_element = addressor
+                            .database
                             .send(CreateDeploymentElement(
                                 *exercise_id,
                                 DeploymentElement::new_ongoing(
@@ -97,15 +132,9 @@ impl DeployableFeatures
                             FeatureType::Configuration => GrpcFeatureType::Configuration,
                         };
 
-                        let template_id = template_id
-                            .to_owned()
-                            .ok_or_else(|| anyhow!("Template id not found"))?;
-
-                        let account = database_address
-                            .send(GetAccount(
-                                template_id.as_str().try_into()?,
-                                role.username.to_owned(),
-                            ))
+                        let account = addressor
+                            .database
+                            .send(GetAccount(*template_id, role.username.to_owned()))
                             .await??;
 
                         let feature_deployment = Box::new(GrpcFeature {
@@ -124,7 +153,8 @@ impl DeployableFeatures
                         });
 
                         {
-                            match distributor_address
+                            match addressor
+                                .distributor
                                 .send(Deploy(
                                     DeployerTypes::Feature,
                                     feature_deployment,
@@ -153,7 +183,8 @@ impl DeployableFeatures
 
                                     feature_deployment_element.status = ElementStatus::Success;
                                     feature_deployment_element.handler_reference = Some(id);
-                                    database_address
+                                    addressor
+                                        .database
                                         .send(UpdateDeploymentElement(
                                             *exercise_id,
                                             feature_deployment_element,
@@ -164,7 +195,8 @@ impl DeployableFeatures
                                 }
                                 Err(err) => {
                                     feature_deployment_element.status = ElementStatus::Failed;
-                                    database_address
+                                    addressor
+                                        .database
                                         .send(UpdateDeploymentElement(
                                             *exercise_id,
                                             feature_deployment_element,

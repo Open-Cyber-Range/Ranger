@@ -4,6 +4,7 @@ use crate::{
         database::{condition::CreateConditionMessage, Database},
         deployer::DeployerDistribution,
     },
+    utilities::try_some,
 };
 
 use super::{DeploymentClient, DeploymentClientResponse, DeploymentInfo};
@@ -14,12 +15,13 @@ use actix::{
 use anyhow::{anyhow, Ok, Result};
 use async_trait::async_trait;
 use bigdecimal::{BigDecimal, FromPrimitive};
+use log::info;
 use ranger_grpc::{
     condition_service_client::ConditionServiceClient, Condition as GrpcCondition,
     ConditionStreamResponse, Identifier,
 };
+use sdl_parser::metric::Metrics;
 use std::any::Any;
-use sdl_parser::Scenario;
 use tonic::{transport::Channel, Streaming};
 
 impl DeploymentInfo for GrpcCondition {
@@ -148,10 +150,10 @@ impl Handler<DeleteCondition> for ConditionClient {
 pub struct ConditionStream(
     pub Uuid,
     pub DeploymentElement,
-    pub String,
+    pub DeploymentElement,
     pub Addr<Database>,
     pub Streaming<ConditionStreamResponse>,
-    pub Scenario,
+    pub Option<Metrics>,
     pub String,
 );
 impl Handler<ConditionStream> for DeployerDistribution {
@@ -159,17 +161,28 @@ impl Handler<ConditionStream> for DeployerDistribution {
 
     fn handle(&mut self, msg: ConditionStream, _ctx: &mut Self::Context) -> Self::Result {
         let exercise_id = msg.0;
-        let deployment_element = msg.1;
-        let virtual_machine_id = msg.2;
+        let condition_deployment_element = msg.1;
+        let node_deployment_element = msg.2;
         let database_address = msg.3;
         let mut stream = msg.4;
-        let scenario = msg.5;
+        let metrics = msg.5;
         let vm_name = msg.6;
 
         Box::pin(
             async move {
+                let virtual_machine_id = try_some(
+                    node_deployment_element.clone().handler_reference,
+                    "Deployment element handler reference not found",
+                )?;
+
+                info!(
+                    "Finished deploying {condition_name} on {node_name}, starting stream",
+                    condition_name = condition_deployment_element.scenario_reference,
+                    node_name = node_deployment_element.scenario_reference,
+                );
+
                 while let Some(stream_item) = stream.message().await? {
-                    let condition_id: Uuid = deployment_element
+                    let condition_id: Uuid = condition_deployment_element
                         .clone()
                         .handler_reference
                         .ok_or_else(|| anyhow!("Condition id not found"))?
@@ -188,15 +201,15 @@ impl Handler<ConditionStream> for DeployerDistribution {
                         .clone()
                         .send(CreateConditionMessage(
                             NewConditionMessage::new(
-                            exercise_id,
-                            deployment_element.deployment_id,
-                            Uuid::try_from(virtual_machine_id.as_str())?,
-                            deployment_element.scenario_reference.to_owned(),
-                            condition_id,
-                            value,
+                                exercise_id,
+                                condition_deployment_element.deployment_id,
+                                Uuid::try_from(virtual_machine_id.as_str())?,
+                                condition_deployment_element.scenario_reference.to_owned(),
+                                condition_id,
+                                value,
                             ),
-                            scenario.clone().metrics,
-                            vm_name.clone()
+                            metrics.clone(),
+                            vm_name.clone(),
                         ))
                         .await??;
                 }

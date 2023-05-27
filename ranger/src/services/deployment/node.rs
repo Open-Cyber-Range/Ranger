@@ -1,5 +1,3 @@
-use super::condition::DeployableConditions;
-use super::feature::DeployableFeatures;
 use crate::models::helpers::{deployer_type::DeployerType, uuid::Uuid};
 use crate::models::{Deployment, DeploymentElement, ElementStatus, Exercise};
 use crate::services::client::{Deployable, DeploymentInfo};
@@ -8,8 +6,10 @@ use crate::services::database::deployment::{
     UpdateDeploymentElement,
 };
 use crate::services::database::Database;
-use crate::services::deployer::{Deploy, DeployerDistribution, UnDeploy};
-use crate::services::scheduler::{CreateDeploymentSchedule, Scheduler};
+use crate::services::deployer::{Deploy, UnDeploy};
+use crate::services::scheduler::CreateDeploymentSchedule;
+use crate::utilities::try_some;
+use crate::Addressor;
 use actix::Addr;
 use anyhow::{anyhow, Ok, Result};
 use async_trait::async_trait;
@@ -24,16 +24,7 @@ use sdl_parser::{
     Scenario,
 };
 
-impl Deployable
-    for (
-        String,
-        Node,
-        Deployment,
-        String,
-        Vec<String>,
-        Option<String>,
-    )
-{
+impl Deployable for (String, Node, Deployment, String, Vec<String>, Uuid) {
     fn try_to_deployment_command(&self) -> Result<Box<dyn DeploymentInfo>> {
         let (name, node, deployment, exercise_name, links, template_id) = self;
         let meta_info = Some(MetaInfo {
@@ -51,9 +42,7 @@ impl Deployable
                         cpu: resource.cpu,
                         ram: resource.ram,
                     }),
-                    template_id: template_id
-                        .clone()
-                        .ok_or_else(|| anyhow!("Template not found"))?,
+                    template_id: template_id.to_string(),
                 }),
                 meta_info,
             }),
@@ -69,50 +58,55 @@ impl Deployable
 pub trait DeployableNodes {
     async fn deploy_nodes(
         &self,
-        distributor_address: &Addr<DeployerDistribution>,
-        scheduler_address: &Addr<Scheduler>,
-        database_address: &Addr<Database>,
+        addressor: &Addressor,
         exercise: &Exercise,
         deployment: &Deployment,
         deployers: &[String],
-    ) -> Result<()>;
+    ) -> Result<Vec<(Node, DeploymentElement, Uuid)>>;
 }
 
 async fn get_template_id(
     deployment_id: Uuid,
-    source: &Option<Source>,
+    node_source: &Option<Source>,
     database_address: &Addr<Database>,
-) -> Result<Option<String>> {
-    if let Some(source) = source {
-        let deployment_element = database_address
-            .send(GetDeploymentElementByDeploymentIdByScenarioReference(
-                deployment_id,
-                Box::new(source.to_owned()),
-                true,
-            ))
-            .await??;
+) -> Result<Uuid> {
+    let source = try_some(
+        node_source.clone(),
+        "Error getting Template Id: Node missing Source",
+    )?;
+    let deployment_element = database_address
+        .send(GetDeploymentElementByDeploymentIdByScenarioReference(
+            deployment_id,
+            Box::new(source.to_owned()),
+            true,
+        ))
+        .await??;
+    let template_id_string = try_some(
+        deployment_element.handler_reference,
+        "Error getting Template Id: Node Deployment Element missing Handler Reference",
+    )?;
+    let template_id: Uuid = template_id_string.as_str().try_into()?;
 
-        return Ok(deployment_element.handler_reference);
-    }
-    Ok(None)
+    Ok(template_id)
 }
 
 #[async_trait]
 impl DeployableNodes for Scenario {
     async fn deploy_nodes(
         &self,
-        distributor_address: &Addr<DeployerDistribution>,
-        scheduler_address: &Addr<Scheduler>,
-        database_address: &Addr<Database>,
+        addressor: &Addressor,
         exercise: &Exercise,
         deployment: &Deployment,
         deployers: &[String],
-    ) -> Result<()> {
-        let deployment_schedule = scheduler_address
+    ) -> Result<Vec<(Node, DeploymentElement, Uuid)>> {
+        let deployment_schedule = addressor
+            .scheduler
             .send(CreateDeploymentSchedule(self.clone()))
             .await??;
+
+        let mut deployment_results = vec![];
         for tranche in deployment_schedule.iter() {
-            try_join_all(
+            let tranche_results = try_join_all(
                 tranche
                     .iter()
                     .map(|(unique_name, node, infra_node)| async move {
@@ -120,7 +114,8 @@ impl DeployableNodes for Scenario {
                             sdl_parser::node::NodeType::VM => DeployerTypes::VirtualMachine,
                             sdl_parser::node::NodeType::Switch => DeployerTypes::Switch,
                         };
-                        let mut deployment_element = database_address
+                        let mut deployment_element = addressor
+                            .database
                             .send(CreateDeploymentElement(
                                 exercise.id,
                                 DeploymentElement::new_ongoing(
@@ -134,7 +129,8 @@ impl DeployableNodes for Scenario {
                         let links =
                             try_join_all(infra_node.links.clone().unwrap_or_default().iter().map(
                                 |link_name| async move {
-                                    let deployment_element = database_address
+                                    let deployment_element = addressor
+                                        .database
                                         .send(
                                             GetDeploymentElementByDeploymentIdByScenarioReference(
                                                 deployment.id,
@@ -150,18 +146,20 @@ impl DeployableNodes for Scenario {
                             ))
                             .await?;
                         let template_id =
-                            get_template_id(deployment.id, &node.source, database_address).await?;
+                            get_template_id(deployment.id, &node.source, &addressor.database)
+                                .await?;
                         let command = (
                             unique_name.clone(),
                             node.clone(),
                             deployment.to_owned(),
                             exercise.name.to_string(),
                             links,
-                            template_id.clone(),
+                            template_id,
                         )
                             .try_to_deployment_command()?;
 
-                        match distributor_address
+                        match addressor
+                            .distributor
                             .send(Deploy(deployer_type, command, deployers.to_owned()))
                             .await?
                         {
@@ -170,7 +168,8 @@ impl DeployableNodes for Scenario {
 
                                 deployment_element.status = ElementStatus::Success;
                                 deployment_element.handler_reference = Some(id);
-                                database_address
+                                addressor
+                                    .database
                                     .send(UpdateDeploymentElement(
                                         exercise.id,
                                         deployment_element.clone(),
@@ -178,43 +177,12 @@ impl DeployableNodes for Scenario {
                                     ))
                                     .await??;
 
-                                if node.type_field == NodeType::VM {
-                                    if node.features.is_some() {
-                                        (
-                                            distributor_address.clone(),
-                                            database_address.clone(),
-                                            scheduler_address.clone(),
-                                            deployers.to_owned(),
-                                            self.clone(),
-                                            node.clone(),
-                                            deployment_element.clone(),
-                                            exercise.id,
-                                            template_id.clone(),
-                                        )
-                                            .deploy_features()
-                                            .await?;
-                                    }
-                                    if node.conditions.is_some() {
-                                        (
-                                            distributor_address.clone(),
-                                            database_address.clone(),
-                                            deployers.to_owned(),
-                                            self.clone(),
-                                            node.clone(),
-                                            deployment_element,
-                                            exercise.id,
-                                            template_id,
-                                        )
-                                            .deploy_conditions()
-                                            .await?;
-                                    }
-                                };
-
-                                Ok(())
+                                Ok((node.clone(), deployment_element, template_id))
                             }
                             Err(error) => {
                                 deployment_element.status = ElementStatus::Failed;
-                                database_address
+                                addressor
+                                    .database
                                     .send(UpdateDeploymentElement(
                                         exercise.id,
                                         deployment_element,
@@ -228,30 +196,30 @@ impl DeployableNodes for Scenario {
                     .collect::<Vec<_>>(),
             )
             .await?;
+
+            deployment_results.push(tranche_results);
         }
-        Ok(())
+        Ok(deployment_results.concat())
     }
 }
 
 #[async_trait]
 pub trait RemoveableNodes {
-    async fn undeploy_nodes<'a>(
-        &'a self,
-        distributor_address: &'a Addr<DeployerDistribution>,
-        database_address: &'a Addr<Database>,
-        deployers: &'a [String],
-        exercise_id: &'a Uuid,
+    async fn undeploy_nodes(
+        self,
+        addressor: &Addressor,
+        deployers: &[String],
+        exercise_id: &Uuid,
     ) -> Result<()>;
 }
 
 #[async_trait]
 impl RemoveableNodes for Vec<DeploymentElement> {
-    async fn undeploy_nodes<'a>(
-        &'a self,
-        distributor_address: &'a Addr<DeployerDistribution>,
-        database_address: &'a Addr<Database>,
-        deployers: &'a [String],
-        exercise_id: &'a Uuid,
+    async fn undeploy_nodes(
+        self,
+        addressor: &Addressor,
+        deployers: &[String],
+        exercise_id: &Uuid,
     ) -> Result<()> {
         try_join_all(self.iter().map(|element| async move {
             match element.deployer_type {
@@ -259,7 +227,8 @@ impl RemoveableNodes for Vec<DeploymentElement> {
                     if let Some(handler_reference) = &element.handler_reference {
                         let mut element_update = element.clone();
 
-                        return match distributor_address
+                        return match addressor
+                            .distributor
                             .send(UnDeploy(
                                 element.deployer_type.0,
                                 handler_reference.to_string(),
@@ -269,7 +238,8 @@ impl RemoveableNodes for Vec<DeploymentElement> {
                         {
                             anyhow::Result::Ok(_) => {
                                 element_update.status = ElementStatus::Removed;
-                                database_address
+                                addressor
+                                    .database
                                     .send(UpdateDeploymentElement(
                                         exercise_id.to_owned(),
                                         element_update,
@@ -280,7 +250,8 @@ impl RemoveableNodes for Vec<DeploymentElement> {
                             }
                             Err(error) => {
                                 element_update.status = ElementStatus::RemoveFailed;
-                                database_address
+                                addressor
+                                    .database
                                     .send(UpdateDeploymentElement(
                                         exercise_id.to_owned(),
                                         element_update,
