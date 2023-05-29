@@ -146,15 +146,15 @@ impl Handler<SocketDeploymentElement> for WebSocketManager {
 #[rtype(result = "Result<()>")]
 pub struct SocketScoring(pub Uuid, pub WebsocketWrapper<Score>);
 
-impl Handler<Score> for WebSocketManager {
+impl Handler<SocketScoring> for WebSocketManager {
     type Result = Result<()>;
 
-    fn handle(&mut self, msg: Score, _: &mut Context<Self>) -> Self::Result {
-        let Score(exercise_uuid, deployment_element) = msg;
+    fn handle(&mut self, msg: SocketScoring, _: &mut Context<Self>) -> Self::Result {
+        let SocketScoring(exercise_uuid, score) = msg;
         let targets = self.get_exercise_targets(exercise_uuid);
         for target in targets {
             target.do_send(WebsocketStringMessage(serde_json::to_string(
-                &deployment_element,
+                &score,
             )?));
         }
 
