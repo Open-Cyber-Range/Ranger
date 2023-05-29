@@ -1,5 +1,4 @@
-use actix_web::web::scope;
-use actix_web::{web::Data, App, HttpServer};
+use actix_web::{web::scope, web::Data, App, HttpServer};
 use anyhow::Error;
 use ranger::app_setup;
 use ranger::middleware::authentication::AuthenticationMiddlewareFactory;
@@ -7,20 +6,19 @@ use ranger::middleware::deployment::DeploymentMiddlewareFactory;
 use ranger::middleware::exercise::ExerciseMiddlewareFactory;
 use ranger::middleware::keycloak::KeycloakAccessMiddlewareFactory;
 use ranger::roles::RangerRole;
-use ranger::routes::admin::groups::get_participant_groups_users;
-use ranger::routes::deployers::get_deployers;
-use ranger::routes::email::send_email;
-use ranger::routes::exercise::{
-    add_participant, delete_exercise_deployment, delete_participant, get_exercise,
-    get_exercise_deployment, get_exercise_deployment_elements, get_exercise_deployment_scores,
-    get_exercise_deployment_users, get_exercise_deployments, get_exercises, get_participants,
-    subscribe_to_exercise, update_exercise,
-};
-use ranger::routes::scenario::get_exercise_deployment_scenario;
 use ranger::routes::{
-    admin::groups::get_participant_groups,
+    admin::groups::{get_participant_groups, get_participant_groups_users},
     basic::{status, version},
-    exercise::{add_exercise, add_exercise_deployment, delete_exercise},
+    deployers::get_deployers,
+    email::send_email,
+    exercise::{
+        add_exercise, add_exercise_deployment, add_participant, delete_exercise,
+        delete_exercise_deployment, delete_participant, get_exercise, get_exercise_deployment,
+        get_exercise_deployment_users, get_exercise_deployment_elements,
+        get_exercise_deployment_scores, get_exercise_deployments,
+        get_exercises, get_participants, subscribe_to_exercise, update_exercise,
+    },
+    scenario::get_exercise_deployment_scenario,
 };
 
 #[actix_web::main]
