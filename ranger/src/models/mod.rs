@@ -4,13 +4,14 @@ mod deployment;
 mod email;
 mod exercise;
 pub(crate) mod helpers;
-pub mod score;
 mod participant;
+pub mod score;
+pub mod user;
 
 pub use account::*;
 pub use condition::*;
 pub use deployment::*;
 pub use email::*;
 pub use exercise::*;
-pub use score::*;
 pub use participant::*;
+pub use score::*;

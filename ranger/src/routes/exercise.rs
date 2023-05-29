@@ -1,16 +1,21 @@
 use crate::{
     errors::RangerError,
+    middleware::authentication::UserInfo,
     models::{
-        helpers::uuid::Uuid, Deployment, DeploymentElement, Exercise, NewDeployment,
-        NewDeploymentResource, NewExercise, NewParticipant, NewParticipantResource, Participant,
-        Score, UpdateExercise,
+        helpers::uuid::Uuid,
+        user::{User, UserAccount},
+        Deployment, DeploymentElement, Exercise, NewDeployment, NewDeploymentResource, NewExercise,
+        NewParticipant, NewParticipantResource, Participant, Score, UpdateExercise,
     },
+    roles::RangerRole,
     services::{
         database::{
+            account::GetAccount,
             condition::GetConditionMessagesByDeploymentId,
             deployment::{
                 CreateDeployment, DeleteDeployment, GetDeployment,
-                GetDeploymentElementByDeploymentId, GetDeployments,
+                GetDeploymentElementByDeploymentId,
+                GetDeploymentElementByDeploymentIdByScenarioReference, GetDeployments,
             },
             exercise::{CreateExercise, DeleteExercise, GetExercise, GetExercises},
             participant::{CreateParticipant, DeleteParticipant, GetParticipants},
@@ -19,7 +24,8 @@ use crate::{
         websocket::ExerciseWebsocket,
     },
     utilities::{
-        create_database_error_handler, create_mailbox_error_handler, try_some, Validation,
+        create_database_error_handler, create_mailbox_error_handler,
+        scenario::filter_node_roles_by_entity, try_some, Validation,
     },
     AppState,
 };
@@ -31,6 +37,7 @@ use actix_web::{
 use actix_web_actors::ws;
 use anyhow::Result;
 use bigdecimal::BigDecimal;
+use futures::future::try_join_all;
 use log::{error, info};
 use ranger_grpc::capabilities::DeployerTypes as GrpcDeployerTypes;
 use sdl_parser::{parse_sdl, Scenario};
@@ -433,4 +440,138 @@ pub async fn get_exercise_deployment_scores(
         return Ok(Json(scores));
     }
     Ok(Json(vec![]))
+}
+
+#[get("exercise/{exercise_uuid}/deployment/{deployment_uuid}/users")]
+pub async fn get_exercise_deployment_users(
+    path_variables: Path<(Uuid, Uuid)>,
+    app_state: Data<AppState>,
+    user_details: UserInfo,
+) -> Result<Json<Vec<User>>, RangerError> {
+    let (_, deployment_uuid) = path_variables.into_inner();
+
+    let deployment = app_state
+        .database_address
+        .send(GetDeployment(deployment_uuid))
+        .await
+        .map_err(create_mailbox_error_handler("Database"))?
+        .map_err(create_database_error_handler("Get deployment"))?;
+
+    let scenario = parse_sdl(&deployment.sdl_schema).map_err(|error| {
+        error!("Failed to parse sdl: {error}");
+        RangerError::ScenarioParsingFailed
+    })?;
+
+    if let Some(scenario_nodes) = scenario.nodes {
+        let requesters_nodes = match user_details.role {
+            RangerRole::Admin => scenario_nodes,
+            RangerRole::Participant => {
+                let participants = app_state
+                    .database_address
+                    .send(GetParticipants(deployment_uuid))
+                    .await
+                    .map_err(create_mailbox_error_handler("Database"))?
+                    .map_err(create_database_error_handler("Get participants"))?;
+                let participant = participants
+                    .into_iter()
+                    .filter_map(
+                        |participant| match participant.user_id.eq(&user_details.id) {
+                            true => Some(participant),
+                            false => None,
+                        },
+                    )
+                    .last()
+                    .ok_or(RangerError::DatabaseRecordNotFound)?;
+                let selector = participant.selector.replace("entities.", "");
+
+                scenario_nodes.into_iter().fold(
+                    HashMap::new(),
+                    |mut node_accumulator, (node_name, mut node)| {
+                        if let Some(node_roles) = node.roles {
+                            let filtered_node_roles =
+                                filter_node_roles_by_entity(node_roles, selector.as_str());
+
+                            if !filtered_node_roles.is_empty() {
+                                node.roles = Some(filtered_node_roles);
+                                node_accumulator.insert(node_name, node.clone());
+                            }
+                        }
+
+                        node_accumulator
+                    },
+                )
+            }
+        };
+
+        let roles_by_node = try_join_all(requesters_nodes.into_iter().map(|node| async {
+            let source = try_some(node.1.source, "Node has no source")?;
+            let sdl_roles = try_some(node.1.roles, "Node has no roles")?;
+            let roles = sdl_roles.into_iter().map(|role| role.1).collect::<Vec<_>>();
+            let template_deployment_element = app_state
+                .database_address
+                .send(GetDeploymentElementByDeploymentIdByScenarioReference(
+                    deployment_uuid,
+                    Box::new(source.clone()),
+                    false,
+                ))
+                .await??;
+            let vm_deployment_element = app_state
+                .database_address
+                .send(GetDeploymentElementByDeploymentIdByScenarioReference(
+                    deployment_uuid,
+                    Box::new(node.0),
+                    false,
+                ))
+                .await??;
+
+            let template_id_result = try_some(
+                template_deployment_element.handler_reference,
+                "Deployment element missing template id",
+            )?;
+            let vm_id_result = try_some(
+                vm_deployment_element.handler_reference,
+                "Deployment element missing vm id",
+            )?;
+            let template_id = Uuid::try_from(template_id_result.as_str())?;
+            let vm_id = Uuid::try_from(vm_id_result.as_str())?;
+            Ok((template_id, vm_id, roles))
+        }))
+        .await
+        .map_err(create_database_error_handler(
+            "Error getting node credentials",
+        ))?;
+
+        let users = try_join_all(
+            roles_by_node
+                .iter()
+                .map(|(template_id, vm_id, roles)| async {
+                    let accounts = try_join_all(roles.iter().map(|role| async {
+                        let template_account: UserAccount = app_state
+                            .database_address
+                            .clone()
+                            .send(GetAccount(*template_id, role.username.to_owned()))
+                            .await??
+                            .into();
+                        Ok(template_account)
+                    }))
+                    .await
+                    .map_err(create_database_error_handler(
+                        "Error getting account information",
+                    ))?;
+
+                    Ok(User {
+                        vm_id: *vm_id,
+                        accounts,
+                    })
+                })
+                .collect::<Vec<_>>(),
+        )
+        .await
+        .map_err(create_database_error_handler(
+            "Error gathering account information",
+        ))?;
+        Ok(Json(users))
+    } else {
+        Ok(Json(vec![]))
+    }
 }

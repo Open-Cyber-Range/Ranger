@@ -11,8 +11,8 @@ use ranger::routes::email::send_email;
 use ranger::routes::exercise::{
     add_participant, delete_exercise_deployment, delete_participant, get_exercise,
     get_exercise_deployment, get_exercise_deployment_elements, get_exercise_deployment_scores,
-    get_exercise_deployments, get_exercises, get_participants, subscribe_to_exercise,
-    update_exercise,
+    get_exercise_deployment_users, get_exercise_deployments, get_exercises, get_participants,
+    subscribe_to_exercise, update_exercise,
 };
 use ranger::routes::scenario::get_exercise_deployment_scenario;
 use ranger::routes::{
@@ -58,6 +58,7 @@ async fn main() -> Result<(), Error> {
                             .service(add_participant)
                             .service(get_participants)
                             .service(delete_participant)
+                            .service(get_exercise_deployment_users)
                             .service(
                                 scope("/group")
                                     .wrap(KeycloakAccessMiddlewareFactory)
@@ -68,6 +69,7 @@ async fn main() -> Result<(), Error> {
                     .service(
                         scope("/participant")
                             .service(get_exercise_deployment_scenario)
+                            .service(get_exercise_deployment_users)
                             .wrap(participant_auth_middleware),
                     ),
             )
