@@ -68,6 +68,20 @@ const websocketHandler = (
       break;
     }
 
+    case WebsocketMessageType.Score: {
+      const score = data.content;
+      dispatch(
+        apiSlice.util
+          .updateQueryData('adminGetDeploymentScores', {
+            exerciseId: score.exerciseId,
+            deploymentId: score.deploymentId,
+          },
+          scores => {
+            scores?.push(score);
+          }));
+      break;
+    }
+
     default: {
       break;
     }
