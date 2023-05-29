@@ -9,7 +9,7 @@ use sdl_parser::{
     infrastructure::Infrastructure,
     inject::Injects,
     metric::Metrics,
-    node::Nodes,
+    node::{Nodes, Role},
     script::Scripts,
     story::Stories,
     training_learning_objective::TrainingLearningObjectives,
@@ -551,4 +551,28 @@ pub fn filter_scenario_by_role(scenario: &Scenario, role: ExerciseRole) -> Scena
     participant_scenario.vulnerabilities = (!vulnerabilities.is_empty()).then_some(vulnerabilities);
 
     participant_scenario
+}
+
+pub fn filter_node_roles_by_entity(
+    node_roles: HashMap<String, Role>,
+    entity_selector: &str,
+) -> HashMap<String, Role> {
+    node_roles.into_iter().fold(
+        HashMap::new(),
+        |mut role_accumulator, (role_name, mut role)| {
+            let filtered_role_entities = match role.entities {
+                Some(mut entities) => {
+                    entities.retain(|entity| entity.eq(&entity_selector));
+                    (!entities.is_empty()).then_some(entities)
+                }
+                None => None,
+            };
+
+            if filtered_role_entities.is_some() {
+                role.entities = filtered_role_entities;
+                role_accumulator.insert(role_name, role);
+            }
+            role_accumulator
+        },
+    )
 }
