@@ -1,6 +1,6 @@
 use crate::{
     errors::RangerError,
-    middleware::authentication::UserInfo,
+    middleware::{authentication::UserInfo, deployment::DeploymentInfo},
     models::{
         helpers::uuid::Uuid,
         user::{User, UserAccount},
@@ -45,7 +45,7 @@ use std::collections::HashMap;
 use toml::value::Value;
 use toml_query::read::TomlValueReadExt;
 
-#[post("exercise")]
+#[post("")]
 pub async fn add_exercise(
     app_state: Data<AppState>,
     exercise: Json<NewExercise>,
@@ -64,7 +64,7 @@ pub async fn add_exercise(
     Ok(Json(exercise))
 }
 
-#[get("exercise")]
+#[get("")]
 pub async fn get_exercises(app_state: Data<AppState>) -> Result<Json<Vec<Exercise>>, RangerError> {
     let exercises = app_state
         .database_address
@@ -76,7 +76,7 @@ pub async fn get_exercises(app_state: Data<AppState>) -> Result<Json<Vec<Exercis
     Ok(Json(exercises))
 }
 
-#[put("exercise/{exercise_uuid}")]
+#[put("")]
 pub async fn update_exercise(
     path_variables: Path<Uuid>,
     update_exercise: Json<UpdateExercise>,
@@ -99,7 +99,7 @@ pub async fn update_exercise(
     Ok(Json(exercise))
 }
 
-#[get("exercise/{exercise_uuid}")]
+#[get("")]
 pub async fn get_exercise(
     path_variables: Path<Uuid>,
     app_state: Data<AppState>,
@@ -118,7 +118,7 @@ pub async fn get_exercise(
     Ok(Json(exercise))
 }
 
-#[delete("exercise/{exercise_uuid}")]
+#[delete("")]
 pub async fn delete_exercise(
     path_variables: Path<Uuid>,
     app_state: Data<AppState>,
@@ -135,23 +135,23 @@ pub async fn delete_exercise(
     Ok(exercise_uuid.to_string())
 }
 
-#[get("exercise/{exercise_uuid}/deployment/{deployment_uuid}")]
-pub async fn get_exercise_deployment(
-    path_variables: Path<(Uuid, Uuid)>,
+#[get("")]
+pub async fn get_exercise_deployments(
+    path_variables: Path<Uuid>,
     app_state: Data<AppState>,
-) -> Result<Json<Deployment>, RangerError> {
-    let (_, deployment_uuid) = path_variables.into_inner();
-    let deployment = app_state
+) -> Result<Json<Vec<Deployment>>, RangerError> {
+    let exercise_uuid = path_variables.into_inner();
+    let deployments = app_state
         .database_address
-        .send(GetDeployment(deployment_uuid))
+        .send(GetDeployments(exercise_uuid))
         .await
         .map_err(create_mailbox_error_handler("Database"))?
-        .map_err(create_database_error_handler("Get deployment"))?;
+        .map_err(create_database_error_handler("Get deployments"))?;
 
-    Ok(Json(deployment))
+    Ok(Json(deployments))
 }
 
-#[post("exercise/{exercise_uuid}/deployment")]
+#[post("")]
 pub async fn add_exercise_deployment(
     path_variables: Path<Uuid>,
     app_state: Data<AppState>,
@@ -192,7 +192,23 @@ pub async fn add_exercise_deployment(
     Ok(Json(deployment))
 }
 
-#[delete("exercise/{exercise_uuid}/deployment/{deployment_uuid}")]
+#[get("")]
+pub async fn get_exercise_deployment(
+    path_variables: Path<(Uuid, Uuid)>,
+    app_state: Data<AppState>,
+) -> Result<Json<Deployment>, RangerError> {
+    let (_, deployment_uuid) = path_variables.into_inner();
+    let deployment = app_state
+        .database_address
+        .send(GetDeployment(deployment_uuid))
+        .await
+        .map_err(create_mailbox_error_handler("Database"))?
+        .map_err(create_database_error_handler("Get deployment"))?;
+
+    Ok(Json(deployment))
+}
+
+#[delete("")]
 pub async fn delete_exercise_deployment(
     path_variables: Path<(Uuid, Uuid)>,
     app_state: Data<AppState>,
@@ -225,7 +241,7 @@ pub async fn delete_exercise_deployment(
     Ok(deployment_uuid.to_string())
 }
 
-#[get("exercise/{exercise_uuid}/deployment/{deployment_uuid}/deployment_element")]
+#[get("deployment_element")]
 pub async fn get_exercise_deployment_elements(
     path_variables: Path<(Uuid, Uuid)>,
     app_state: Data<AppState>,
@@ -247,23 +263,7 @@ pub async fn get_exercise_deployment_elements(
     Ok(Json(elements))
 }
 
-#[get("exercise/{exercise_uuid}/deployment")]
-pub async fn get_exercise_deployments(
-    path_variables: Path<Uuid>,
-    app_state: Data<AppState>,
-) -> Result<Json<Vec<Deployment>>, RangerError> {
-    let exercise_uuid = path_variables.into_inner();
-    let deployments = app_state
-        .database_address
-        .send(GetDeployments(exercise_uuid))
-        .await
-        .map_err(create_mailbox_error_handler("Database"))?
-        .map_err(create_database_error_handler("Get deployments"))?;
-
-    Ok(Json(deployments))
-}
-
-#[get("exercise/{exercise_uuid}/websocket")]
+#[get("websocket")]
 pub async fn subscribe_to_exercise(
     req: HttpRequest,
     path_variables: Path<Uuid>,
@@ -278,7 +278,7 @@ pub async fn subscribe_to_exercise(
     ws::start(exercise_socket, &req, stream)
 }
 
-#[post("/exercise/{exercise_uuid}/deployment/{deployment_uuid}/participant")]
+#[post("participant")]
 pub async fn add_participant(
     path_variables: Path<(Uuid, Uuid)>,
     app_state: Data<AppState>,
@@ -323,7 +323,7 @@ pub async fn add_participant(
     Ok(Json(participant))
 }
 
-#[get("/exercise/{exercise_uuid}/deployment/{deployment_uuid}/participant")]
+#[get("participant")]
 pub async fn get_participants(
     path_variables: Path<(Uuid, Uuid)>,
     app_state: Data<AppState>,
@@ -338,7 +338,7 @@ pub async fn get_participants(
     Ok(Json(participants))
 }
 
-#[delete("/exercise/{exercise_uuid}/deployment/{deployment_uuid}/participant/{participant_uuid}")]
+#[delete("participant/{participant_uuid}")]
 pub async fn delete_participant(
     path_variables: Path<(Uuid, Uuid, Uuid)>,
     app_state: Data<AppState>,
@@ -353,7 +353,7 @@ pub async fn delete_participant(
     Ok(participant_uuid.to_string())
 }
 
-#[get("exercise/{exercise_uuid}/deployment/{deployment_uuid}/score")]
+#[get("score")]
 pub async fn get_exercise_deployment_scores(
     path_variables: Path<(Uuid, Uuid)>,
     app_state: Data<AppState>,
@@ -442,21 +442,12 @@ pub async fn get_exercise_deployment_scores(
     Ok(Json(vec![]))
 }
 
-#[get("exercise/{exercise_uuid}/deployment/{deployment_uuid}/users")]
+#[get("users")]
 pub async fn get_exercise_deployment_users(
-    path_variables: Path<(Uuid, Uuid)>,
     app_state: Data<AppState>,
     user_details: UserInfo,
+    deployment: DeploymentInfo,
 ) -> Result<Json<Vec<User>>, RangerError> {
-    let (_, deployment_uuid) = path_variables.into_inner();
-
-    let deployment = app_state
-        .database_address
-        .send(GetDeployment(deployment_uuid))
-        .await
-        .map_err(create_mailbox_error_handler("Database"))?
-        .map_err(create_database_error_handler("Get deployment"))?;
-
     let scenario = parse_sdl(&deployment.sdl_schema).map_err(|error| {
         error!("Failed to parse sdl: {error}");
         RangerError::ScenarioParsingFailed
@@ -468,7 +459,7 @@ pub async fn get_exercise_deployment_users(
             RangerRole::Participant => {
                 let participants = app_state
                     .database_address
-                    .send(GetParticipants(deployment_uuid))
+                    .send(GetParticipants(deployment.id))
                     .await
                     .map_err(create_mailbox_error_handler("Database"))?
                     .map_err(create_database_error_handler("Get participants"))?;
@@ -510,7 +501,7 @@ pub async fn get_exercise_deployment_users(
             let template_deployment_element = app_state
                 .database_address
                 .send(GetDeploymentElementByDeploymentIdByScenarioReference(
-                    deployment_uuid,
+                    deployment.id,
                     Box::new(source.clone()),
                     false,
                 ))
@@ -518,7 +509,7 @@ pub async fn get_exercise_deployment_users(
             let vm_deployment_element = app_state
                 .database_address
                 .send(GetDeploymentElementByDeploymentIdByScenarioReference(
-                    deployment_uuid,
+                    deployment.id,
                     Box::new(node.0),
                     false,
                 ))

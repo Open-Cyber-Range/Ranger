@@ -19,7 +19,7 @@ use anyhow::Result;
 use log::error;
 use sdl_parser::{parse_sdl, Scenario};
 
-#[get("exercise/{exercise_uuid}/deployment/{deployment_uuid}/scenario")]
+#[get("scenario")]
 pub async fn get_exercise_deployment_scenario(
     path_variables: Path<(Uuid, Uuid)>,
     app_state: Data<AppState>,

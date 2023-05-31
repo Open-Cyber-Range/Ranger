@@ -11,7 +11,7 @@ use actix_web::{
 use anyhow::Result;
 use log::error;
 
-#[post("exercise/{exercise_uuid}/email")]
+#[post("email")]
 pub async fn send_email(
     app_state: Data<AppState>,
     email_resource: Json<EmailResource>,
@@ -40,7 +40,7 @@ pub async fn send_email(
     Ok(Json(email))
 }
 
-#[get("exercise/{exercise_uuid}/email")]
+#[get("email")]
 pub async fn get_email_form(app_state: Data<AppState>) -> Result<Json<String>, RangerError> {
     let mailer_configuration = app_state.configuration.mailer_configuration.clone();
     let from_address;

@@ -3,6 +3,8 @@ use actix_web::{web::Data, App, HttpServer};
 use anyhow::Error;
 use ranger::app_setup;
 use ranger::middleware::authentication::AuthenticationMiddlewareFactory;
+use ranger::middleware::deployment::DeploymentMiddlewareFactory;
+use ranger::middleware::exercise::ExerciseMiddlewareFactory;
 use ranger::middleware::keycloak::KeycloakAccessMiddlewareFactory;
 use ranger::roles::RangerRole;
 use ranger::routes::admin::groups::get_participant_groups_users;
@@ -39,32 +41,50 @@ async fn main() -> Result<(), Error> {
                 scope("/api/v1")
                     .service(
                         scope("/admin")
-                            .wrap(admin_auth_middleware)
-                            .service(get_exercise_deployment_elements)
-                            .service(get_exercise_deployments)
-                            .service(add_exercise_deployment)
-                            .service(get_exercise_deployment)
-                            .service(delete_exercise_deployment)
-                            .service(subscribe_to_exercise)
-                            .service(get_exercises)
-                            .service(add_exercise)
-                            .service(delete_exercise)
-                            .service(update_exercise)
-                            .service(get_exercise)
+                            .service(
+                                scope("/exercise")
+                                    .service(get_exercises)
+                                    .service(add_exercise)
+                                    .service(
+                                        scope("/{exercise_uuid}")
+                                            .wrap(ExerciseMiddlewareFactory)
+                                            .service(get_exercise)
+                                            .service(update_exercise)
+                                            .service(delete_exercise)
+                                            .service(subscribe_to_exercise)
+                                            .service(send_email)
+                                            .service(
+                                                scope("/deployment")
+                                                    .service(get_exercise_deployments)
+                                                    .service(add_exercise_deployment)
+                                                    .service(
+                                                        scope("/{deployment_uuid}")
+                                                            .service(get_exercise_deployment)
+                                                            .service(
+                                                                get_exercise_deployment_elements,
+                                                            )
+                                                            .service(delete_exercise_deployment)
+                                                            .service(get_participants)
+                                                            .service(add_participant)
+                                                            .service(delete_participant)
+                                                            .service(get_exercise_deployment_scores)
+                                                            .service(
+                                                                get_exercise_deployment_scenario,
+                                                            )
+                                                            .service(get_exercise_deployment_users)
+                                                            .wrap(DeploymentMiddlewareFactory),
+                                                    ),
+                                            ),
+                                    ),
+                            )
                             .service(get_deployers)
-                            .service(get_exercise_deployment_scores)
-                            .service(get_exercise_deployment_scenario)
-                            .service(send_email)
-                            .service(add_participant)
-                            .service(get_participants)
-                            .service(delete_participant)
-                            .service(get_exercise_deployment_users)
                             .service(
                                 scope("/group")
                                     .wrap(KeycloakAccessMiddlewareFactory)
                                     .service(get_participant_groups)
                                     .service(get_participant_groups_users),
-                            ),
+                            )
+                            .wrap(admin_auth_middleware),
                     )
                     .service(
                         scope("/participant")

@@ -65,6 +65,7 @@ impl From<(Token, RangerRole)> for User {
     }
 }
 
+#[derive(Clone)]
 pub struct UserInfo(pub Rc<User>);
 
 impl FromRequest for UserInfo {
@@ -109,7 +110,7 @@ where
     fn new_transform(&self, service: S) -> Self::Future {
         ready(Ok(AuhtenticationMiddleware {
             service: Rc::new(service),
-            expected_role: self.0.clone(),
+            expected_role: self.0,
         }))
     }
 }
@@ -133,7 +134,7 @@ where
 
     fn call(&self, req: ServiceRequest) -> Self::Future {
         let service = self.service.clone();
-        let expected_role = self.expected_role.clone();
+        let expected_role = self.expected_role;
         let app_state = req.app_data::<Data<AppState>>().cloned();
         let auht_header = req.headers().get("Authorization").cloned();
 
