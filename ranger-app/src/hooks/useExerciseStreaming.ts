@@ -7,7 +7,7 @@ import {apiSlice} from 'src/slices/apiSlice';
 import type {AppDispatch, RootState} from 'src/store';
 import {useAppDispatch} from 'src/store';
 import {getWebsocketBase} from 'src/utils';
-import {useSelector} from "react-redux";
+import {useSelector} from 'react-redux';
 
 const websocketHandler = (
   dispatch: AppDispatch,
@@ -95,12 +95,12 @@ const useExerciseStreaming = (exerciseId?: string) => {
   const [trigger, setTrigger] = useState<boolean>(true);
   const token = useSelector((state: RootState) => state.user.token);
   useEffect(() => {
-    if (
-      exerciseId
-      && (
-        websocket.current === undefined
+    if (!token || !exerciseId) {
+      return;
+    }
+
+    if (websocket.current === undefined
         || websocket.current.readyState !== WebSocket.OPEN
-      )
     ) {
       websocket.current = new WebSocket(
         `${getWebsocketBase()}${BASE_URL}/admin/exercise/${exerciseId}/websocket`,
@@ -125,7 +125,7 @@ const useExerciseStreaming = (exerciseId?: string) => {
         thisInstance.close();
       };
     }
-  }, [dispatch, exerciseId, trigger, setTrigger]);
+  }, [dispatch, exerciseId, trigger, token, setTrigger]);
 };
 
 export default useExerciseStreaming;
