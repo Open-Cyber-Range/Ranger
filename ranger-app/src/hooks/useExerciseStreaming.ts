@@ -4,9 +4,10 @@ import {BASE_URL} from 'src/constants';
 import type {WebsocketWrapper} from 'src/models/websocket';
 import {WebsocketMessageType} from 'src/models/websocket';
 import {apiSlice} from 'src/slices/apiSlice';
-import type {AppDispatch} from 'src/store';
+import type {AppDispatch, RootState} from 'src/store';
 import {useAppDispatch} from 'src/store';
 import {getWebsocketBase} from 'src/utils';
+import {useSelector} from "react-redux";
 
 const websocketHandler = (
   dispatch: AppDispatch,
@@ -92,6 +93,7 @@ const useExerciseStreaming = (exerciseId?: string) => {
   const dispatch = useAppDispatch();
   const websocket = useRef<WebSocket | undefined>();
   const [trigger, setTrigger] = useState<boolean>(true);
+  const token = useSelector((state: RootState) => state.user.token);
   useEffect(() => {
     if (
       exerciseId
@@ -101,7 +103,8 @@ const useExerciseStreaming = (exerciseId?: string) => {
       )
     ) {
       websocket.current = new WebSocket(
-        `${getWebsocketBase()}${BASE_URL}/exercise/${exerciseId}/websocket`,
+        `${getWebsocketBase()}${BASE_URL}/admin/exercise/${exerciseId}/websocket`,
+        `${token}`,
       );
       const thisInstance = websocket.current;
       thisInstance.addEventListener('message', websocketHandler(dispatch));
