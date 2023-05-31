@@ -20,7 +20,13 @@ use std::{
     rc::Rc,
 };
 
-pub struct DeploymentInfo(pub Rc<Deployment>);
+pub struct DeploymentInfo(pub Deployment);
+
+impl DeploymentInfo {
+    pub fn into_inner(self) -> Deployment {
+        self.0
+    }
+}
 
 impl FromRequest for DeploymentInfo {
     type Error = Error;
@@ -30,7 +36,7 @@ impl FromRequest for DeploymentInfo {
         req: &actix_web::HttpRequest,
         _payload: &mut actix_web::dev::Payload,
     ) -> Self::Future {
-        let value = req.extensions().get::<Rc<Deployment>>().cloned();
+        let value = req.extensions().get::<Deployment>().cloned();
         let result = match value {
             Some(v) => Ok(DeploymentInfo(v)),
             None => Err(RangerError::KeycloakQueryFailed.into()),
@@ -40,7 +46,7 @@ impl FromRequest for DeploymentInfo {
 }
 
 impl std::ops::Deref for DeploymentInfo {
-    type Target = Rc<Deployment>;
+    type Target = Deployment;
 
     fn deref(&self) -> &Self::Target {
         &self.0
@@ -119,7 +125,7 @@ where
                 }
                 _ => Err(RangerError::ExericseNotFound),
             }?;
-            req.extensions_mut().insert(Rc::new(deployment));
+            req.extensions_mut().insert(deployment);
 
             let res = service.call(req).await?;
             Ok(res)

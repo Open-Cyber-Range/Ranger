@@ -1,9 +1,8 @@
 use crate::{
     errors::RangerError,
-    middleware::authentication::UserInfo,
-    models::helpers::uuid::Uuid,
+    middleware::{authentication::UserInfo, deployment::DeploymentInfo},
     roles::RangerRole,
-    services::database::{deployment::GetDeployment, participant::GetParticipants},
+    services::database::participant::GetParticipants,
     utilities::{
         create_database_error_handler, create_mailbox_error_handler,
         scenario::{filter_scenario_by_role, flatten_entities},
@@ -13,7 +12,7 @@ use crate::{
 };
 use actix_web::{
     get,
-    web::{Data, Json, Path},
+    web::{Data, Json},
 };
 use anyhow::Result;
 use log::error;
@@ -21,19 +20,10 @@ use sdl_parser::{parse_sdl, Scenario};
 
 #[get("scenario")]
 pub async fn get_exercise_deployment_scenario(
-    path_variables: Path<(Uuid, Uuid)>,
     app_state: Data<AppState>,
     user_details: UserInfo,
+    deployment: DeploymentInfo,
 ) -> Result<Json<Scenario>, RangerError> {
-    let (_, deployment_uuid) = path_variables.into_inner();
-
-    let deployment = app_state
-        .database_address
-        .send(GetDeployment(deployment_uuid))
-        .await
-        .map_err(create_mailbox_error_handler("Database"))?
-        .map_err(create_database_error_handler("Get deployment"))?;
-
     let scenario = parse_sdl(&deployment.sdl_schema).map_err(|error| {
         error!("Failed to parse sdl: {error}");
         RangerError::ScenarioParsingFailed
@@ -44,7 +34,7 @@ pub async fn get_exercise_deployment_scenario(
         RangerRole::Participant => {
             let participants = app_state
                 .database_address
-                .send(GetParticipants(deployment_uuid))
+                .send(GetParticipants(deployment.id))
                 .await
                 .map_err(create_mailbox_error_handler("Database"))?
                 .map_err(create_database_error_handler("Get participants"))?;

@@ -20,7 +20,13 @@ use std::{
     rc::Rc,
 };
 
-pub struct ExerciseInfo(pub Rc<Exercise>);
+pub struct ExerciseInfo(pub Exercise);
+
+impl ExerciseInfo {
+    pub fn into_inner(self) -> Exercise {
+        self.0
+    }
+}
 
 impl FromRequest for ExerciseInfo {
     type Error = Error;
@@ -30,7 +36,7 @@ impl FromRequest for ExerciseInfo {
         req: &actix_web::HttpRequest,
         _payload: &mut actix_web::dev::Payload,
     ) -> Self::Future {
-        let value = req.extensions().get::<Rc<Exercise>>().cloned();
+        let value = req.extensions().get::<Exercise>().cloned();
         let result = match value {
             Some(v) => Ok(ExerciseInfo(v)),
             None => Err(RangerError::KeycloakQueryFailed.into()),
@@ -40,7 +46,7 @@ impl FromRequest for ExerciseInfo {
 }
 
 impl std::ops::Deref for ExerciseInfo {
-    type Target = Rc<Exercise>;
+    type Target = Exercise;
 
     fn deref(&self) -> &Self::Target {
         &self.0
@@ -119,7 +125,7 @@ where
                 }
                 _ => Err(RangerError::ExericseNotFound),
             }?;
-            req.extensions_mut().insert(Rc::new(exercise));
+            req.extensions_mut().insert(exercise);
 
             let res = service.call(req).await?;
             Ok(res)
