@@ -2,6 +2,7 @@ use super::helpers::uuid::Uuid;
 use bigdecimal::BigDecimal;
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
+use crate::models::ConditionMessage;
 
 #[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -36,6 +37,21 @@ impl Score {
             vm_uuid,
             value,
             timestamp,
+        }
+    }
+}
+
+impl From<ConditionMessage> for Score {
+    fn from(condition_message: ConditionMessage) -> Self {
+        Score {
+            id: condition_message.id,
+            exercise_id: condition_message.exercise_id,
+            deployment_id: condition_message.deployment_id,
+            metric_name: condition_message.condition_name,
+            vm_name: condition_message.virtual_machine_id.to_string(),
+            vm_uuid: condition_message.virtual_machine_id,
+            value: condition_message.value,
+            timestamp: condition_message.created_at,
         }
     }
 }
