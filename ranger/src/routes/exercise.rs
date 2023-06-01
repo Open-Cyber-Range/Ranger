@@ -39,7 +39,10 @@ use bigdecimal::BigDecimal;
 use futures::future::try_join_all;
 use log::{error, info};
 use ranger_grpc::capabilities::DeployerTypes as GrpcDeployerTypes;
-use sdl_parser::{parse_sdl, Scenario};
+use sdl_parser::{
+    node::{Node, NodeType},
+    parse_sdl, Scenario,
+};
 use std::collections::HashMap;
 use toml::value::Value;
 use toml_query::read::TomlValueReadExt;
@@ -402,8 +405,13 @@ pub async fn get_exercise_deployment_users(
     })?;
 
     if let Some(scenario_nodes) = scenario.nodes {
+        let vm_nodes = scenario_nodes
+            .into_iter()
+            .filter(|node| matches!(node.1.type_field, NodeType::VM))
+            .collect::<HashMap<String, Node>>();
+
         let requesters_nodes = match user_details.role {
-            RangerRole::Admin => scenario_nodes,
+            RangerRole::Admin => vm_nodes,
             RangerRole::Participant => {
                 let participants = app_state
                     .database_address
@@ -423,7 +431,7 @@ pub async fn get_exercise_deployment_users(
                     .ok_or(RangerError::DatabaseRecordNotFound)?;
                 let selector = participant.selector.replace("entities.", "");
 
-                scenario_nodes.into_iter().fold(
+                vm_nodes.into_iter().fold(
                     HashMap::new(),
                     |mut node_accumulator, (node_name, mut node)| {
                         if let Some(node_roles) = node.roles {
