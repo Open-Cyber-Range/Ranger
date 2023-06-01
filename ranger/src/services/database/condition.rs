@@ -1,10 +1,11 @@
 use super::Database;
 use crate::models::helpers::uuid::Uuid;
-use crate::models::{ConditionMessage, NewConditionMessage};
+use crate::models::{ConditionMessage, NewConditionMessage, Score};
 use actix::{Handler, Message, ResponseActFuture, WrapFuture};
 use actix_web::web::block;
 use anyhow::{Ok, Result};
 use diesel::RunQueryDsl;
+use crate::services::websocket::SocketScoring;
 
 #[derive(Message)]
 #[rtype(result = "Result<ConditionMessage>")]
@@ -16,6 +17,7 @@ impl Handler<CreateConditionMessage> for Database {
     fn handle(&mut self, msg: CreateConditionMessage, _ctx: &mut Self::Context) -> Self::Result {
         let new_condition_message = msg.0;
         let connection_result = self.get_connection();
+        let websocket_manager = self.websocket_manager_address.clone();
 
         Box::pin(
             async move {
@@ -26,7 +28,12 @@ impl Handler<CreateConditionMessage> for Database {
                         .execute(&mut connection)?;
                     let condition_message =
                         ConditionMessage::by_id(new_condition_message.id).first(&mut connection)?;
-
+                    let score: Score = condition_message.clone().into();
+                    let scoring_msg = SocketScoring(
+                        score.id,
+                        (score.id, score.exercise_id, score.clone()).into(),
+                    );
+                    websocket_manager.do_send(scoring_msg);
                     Ok(condition_message)
                 })
                 .await??;
