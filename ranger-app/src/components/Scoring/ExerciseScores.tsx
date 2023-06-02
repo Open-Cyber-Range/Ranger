@@ -6,12 +6,16 @@ import {H4} from '@blueprintjs/core';
 import {useNavigate} from 'react-router-dom';
 import {sortByProperty} from 'sort-by-property';
 import ScoreTagGroup from 'src/components/Scoring/ScoreTagGroup';
+import useExerciseStreaming from "../../hooks/useExerciseStreaming";
+import {Exercise} from "../../models/exercise";
 
-const ScoresPanel = ({deployments}:
-{deployments: Deployment[] | undefined;
+const ScoresPanel = ({exercise, deployments}:
+  {exercise: Exercise | undefined;
+   deployments: Deployment[] | undefined;
 }) => {
   const {t} = useTranslation();
   const navigate = useNavigate();
+  useExerciseStreaming(exercise?.id)
 
   const handleClick = (deploymentId: string) => {
     navigate(`deployments/${deploymentId}`);

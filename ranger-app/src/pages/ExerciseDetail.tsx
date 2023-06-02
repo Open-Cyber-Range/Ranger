@@ -25,6 +25,7 @@ const ExerciseDetail = () => {
             deployments={deployments}
           />)}
           {activeTab === 'Scores' && (<ScoresPanel
+            exercise={exercise}
             deployments={deployments}
           />)}
           {activeTab === 'Emails' && (<SendEmail exercise={exercise}/>)}
