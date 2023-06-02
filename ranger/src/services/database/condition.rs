@@ -31,7 +31,7 @@ impl Handler<CreateConditionMessage> for Database {
                     let score: Score = condition_message.clone().into();
                     let scoring_msg = SocketScoring(
                         score.exercise_id,
-                        (score.id, score.exercise_id, score.clone()).into(),
+                        (score.id, score.exercise_id, score).into(),
                     );
                     websocket_manager.do_send(scoring_msg);
                     Ok(condition_message)
