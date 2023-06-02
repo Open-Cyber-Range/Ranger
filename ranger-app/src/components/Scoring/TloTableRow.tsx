@@ -8,6 +8,7 @@ import {
 import {findLatestScoresByVms, groupBy, roundToDecimalPlaces} from 'src/utils';
 import {type TrainingLearningObjective} from 'src/models/scenario';
 import {H5} from '@blueprintjs/core';
+import {sortByProperty} from 'sort-by-property';
 
 const TloTableRow = ({exerciseId, deploymentId, tloKey, tlo}:
 {exerciseId: string;
@@ -45,10 +46,10 @@ const TloTableRow = ({exerciseId, deploymentId, tloKey, tlo}:
 
             if (scores && scores.length > 0) {
               const latestScoresByVm = findLatestScoresByVms(scores);
-              latestScoresByVm.sort((a, b) => a.vmName.localeCompare(b.vmName));
+              latestScoresByVm.sort(sortByProperty('vmName', 'desc'));
 
               return (
-                <td key={metricKey}>
+                <div key={metricKey} className='text-left'>
                   {latestScoresByVm.map(element => (
                     <div key={element.id} className='pl-4'>
                       <li key={element.id}>
@@ -57,18 +58,18 @@ const TloTableRow = ({exerciseId, deploymentId, tloKey, tlo}:
                       </li>
                     </div>
                   ))}
-                </td>
+                </div>
               );
             }
 
             return (
-              <td key={metricKey}>
+              <div key={metricKey} className='text-left'>
                 <div className='pl-4'>
                   <li>
                     {metricReference} - {t('tloTable.noMetricData')}
                   </li>
                 </div>
-              </td>
+              </div>
             );
           },
           )}
