@@ -70,7 +70,7 @@ const DeploymentDetail = () => {
             deploymentId={deploymentId}
             tloMap={scenario?.tlos}
           />
-          <div className='flex justify-between items-center'>
+          <div className='flex justify-between items-center pb-4'>
             <BackButton/>
             <div>
               <AnchorButton
