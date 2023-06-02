@@ -30,7 +30,7 @@ import {sortByProperty} from 'sort-by-property';
 import {LINE_DATASET_TEMPLATE} from 'src/constants';
 import cloneDeep from 'lodash.clonedeep';
 import {getLineChartOptions} from 'src/utils/graph';
-import useExerciseStreaming from "../../hooks/useExerciseStreaming";
+import useExerciseStreaming from 'src/hooks/useExerciseStreaming';
 
 ChartJS.register(
   CategoryScale,

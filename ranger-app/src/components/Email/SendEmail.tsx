@@ -17,13 +17,13 @@ import {
 import {toastSuccess, toastWarning} from 'src/components/Toaster';
 import nunjucks from 'nunjucks';
 import Editor from '@monaco-editor/react';
-import useExerciseStreaming from "../../hooks/useExerciseStreaming";
+import useExerciseStreaming from 'src/hooks/useExerciseStreaming';
 
 const SendEmail = ({exercise}: {exercise: Exercise}) => {
   const {t} = useTranslation();
   const {data: fromAddress} = useAdminGetEmailFormQuery(exercise.id);
   const [sendMail, {isSuccess, error}] = useAdminSendEmailMutation();
-  useExerciseStreaming(exercise?.id);
+  useExerciseStreaming(exercise.id);
 
   const {handleSubmit, control} = useForm<EmailForm>({
     defaultValues: {
