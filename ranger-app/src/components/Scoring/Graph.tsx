@@ -30,6 +30,7 @@ import {sortByProperty} from 'sort-by-property';
 import {LINE_DATASET_TEMPLATE} from 'src/constants';
 import cloneDeep from 'lodash.clonedeep';
 import {getLineChartOptions} from 'src/utils/graph';
+import useExerciseStreaming from "../../hooks/useExerciseStreaming";
 
 ChartJS.register(
   CategoryScale,
@@ -54,6 +55,7 @@ const DeploymentDetailsGraph = ({exerciseId, deploymentId}:
   const chartTitle = t('chart.scoring.title');
   const queryArguments = exerciseId && deploymentId
     ? {exerciseId, deploymentId} : skipToken;
+  useExerciseStreaming(exerciseId);
   const {data: scores} = useAdminGetDeploymentScoresQuery(queryArguments);
   const {data: deployment} = useAdminGetDeploymentQuery(queryArguments);
   const {data: scenario} = useAdminGetDeploymentScenarioQuery(queryArguments);

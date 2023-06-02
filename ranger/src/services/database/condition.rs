@@ -30,7 +30,7 @@ impl Handler<CreateConditionMessage> for Database {
                         ConditionMessage::by_id(new_condition_message.id).first(&mut connection)?;
                     let score: Score = condition_message.clone().into();
                     let scoring_msg = SocketScoring(
-                        score.id,
+                        score.exercise_id,
                         (score.id, score.exercise_id, score.clone()).into(),
                     );
                     websocket_manager.do_send(scoring_msg);
