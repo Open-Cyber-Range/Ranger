@@ -14,11 +14,14 @@ import TloTable from 'src/components/Scoring/TloTable';
 import Editor from '@monaco-editor/react';
 import {AnchorButton, H2} from '@blueprintjs/core';
 import SideBar from 'src/components/Exercise/SideBar';
+import useExerciseStreaming from '../hooks/useExerciseStreaming';
 import {toastSuccess, toastWarning} from 'src/components/Toaster';
 
 const DeploymentDetail = () => {
   const {t} = useTranslation();
-  const {exerciseId, deploymentId} = useParams<DeploymentDetailRouteParameters>();
+  const {exerciseId, deploymentId}
+  = useParams<DeploymentDetailRouteParameters>();
+  useExerciseStreaming(exerciseId);
   const {data: scenario} = useAdminGetDeploymentScenarioQuery(
     exerciseId && deploymentId ? {exerciseId, deploymentId} : skipToken,
   );
