@@ -1,3 +1,14 @@
+ranger-server (0.7.0) stretch; urgency=medium
+
+  * Improve error handling for SDL parsing on Frontend
+  * Add Role selector to Frontend
+  * Add Participant and Mangager roles to Keycloak
+  * Add client verification for all API endpoints
+  * Add AD group field to Exercise Deployment
+  * Replace Deployment Cards with Sidebar
+
+ -- Rait Rotšan <rait.rotsan@cr14.ee>  Mon, 12 Jun 2023 13:12:52 +0200
+
 ranger-server (0.6.0) stretch; urgency=medium
 
   * Add scoring support for deployments
