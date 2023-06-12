@@ -17,7 +17,21 @@ Before opening the folder in `devcontainer` configurations for dependency servic
 
 ##### Keycloak
 
-User for the development keycloak server is test:Testimine.123.
+Users for the development keycloak server are:
+
+ | Username | Password    |
+ | :---: | :---: |
+ | test   | Testimine.123   |
+ | admin   | admin   |
+ | participant   | participant   |
+ | manager   | manager   |
+
+Test exercise users are:
+
+ | Username | Password    |
+ | :---: | :---: |
+ | noormeister   | noormeister   |
+ | noormeister1   | noormeister1   |
 
 To add new values to realm permanently follow these steps:
 

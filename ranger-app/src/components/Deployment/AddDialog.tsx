@@ -11,26 +11,34 @@ import {
   Label,
   Intent,
   NumericInput,
+  MenuItem,
 } from '@blueprintjs/core';
-import {useGetDeploymentGroupsQuery} from 'src/slices/apiSlice';
+import {
+  useAdminGetDeploymentGroupsQuery,
+  useAdminGetGroupsQuery,
+} from 'src/slices/apiSlice';
 import {useTranslation} from 'react-i18next';
 import {Controller, useForm} from 'react-hook-form';
+import {Suggest2} from '@blueprintjs/select';
+import {MenuItem2} from '@blueprintjs/popover2';
+import {type AdGroup} from 'src/models/groups';
 
 const AddDialog = (
   {isOpen, title, onSubmit, onCancel}:
   {
     title: string;
-    isOpen?: boolean;
-    onSubmit?: ({
+    isOpen: boolean;
+    onSubmit: ({
       count,
       name,
       deploymentGroup,
     }: DeploymentForm) => void;
-    onCancel?: () => void;
+    onCancel: () => void;
   },
 ) => {
   const {t} = useTranslation();
-  const {data: deployers} = useGetDeploymentGroupsQuery();
+  const {data: deployers} = useAdminGetDeploymentGroupsQuery();
+  const {data: groups} = useAdminGetGroupsQuery();
 
   const {handleSubmit, control, register, formState: {errors}}
   = useForm<DeploymentForm>({
@@ -47,7 +55,7 @@ const AddDialog = (
     }
   };
 
-  if (isOpen !== undefined && onSubmit && onCancel) {
+  if (isOpen !== undefined) {
     return (
       <Dialog isOpen={isOpen}>
         <div className={Classes.DIALOG_HEADER}>
@@ -130,6 +138,60 @@ const AddDialog = (
                       id='deployment-name'
                       onChange={onChange}
                       onBlur={onBlur}
+                    />
+                  </FormGroup>
+                );
+              }}
+            />
+            <Controller
+              control={control}
+              name='groupName'
+              render={({
+                field: {onBlur, ref, value, onChange}, fieldState: {error},
+              }) => {
+                const intent = error ? Intent.DANGER : Intent.NONE;
+                const activeItem = groups?.find(group => group.name === value);
+                return (
+                  <FormGroup
+                    labelFor='deployment-group'
+                    helperText={error?.message}
+                    intent={intent}
+                    label={t('common.adGroup')}
+                  >
+                    <Suggest2<AdGroup>
+                      inputProps={{
+                        id: 'deployment-group',
+                        onBlur,
+                        inputRef: ref,
+                        placeholder: '',
+                      }}
+                      activeItem={activeItem}
+                      inputValueRenderer={item => item.name}
+                      itemPredicate={(query, item) =>
+                        item.name.toLowerCase().includes(query.toLowerCase())}
+                      itemRenderer={(item, {handleClick, handleFocus}) => (
+                        <MenuItem2
+                          key={item.id}
+                          text={item.name}
+                          onClick={handleClick}
+                          onFocus={handleFocus}
+                        />
+                      )}
+                      items={groups ?? []}
+                      noResults={
+                        <MenuItem
+                          disabled
+                          text={t('common.noResults')}
+                          roleStructure='listoption'/>
+                      }
+                      onItemSelect={item => {
+                        const event = {
+                          target: {
+                            value: item.name,
+                          },
+                        };
+                        onChange(event);
+                      }}
                     />
                   </FormGroup>
                 );

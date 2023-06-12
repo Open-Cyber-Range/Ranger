@@ -3,7 +3,7 @@ use actix::{Actor, Addr, Context, Handler, Message, ResponseFuture};
 use anyhow::{Ok, Result};
 use async_trait::async_trait;
 use ranger_grpc::{
-    feature_service_client::FeatureServiceClient, Feature as GrpcFeature, FeatureResponse,
+    feature_service_client::FeatureServiceClient, Feature as GrpcFeature, ExecutorResponse,
     Identifier,
 };
 use std::any::Any;
@@ -48,7 +48,7 @@ impl DeploymentClient<Box<dyn DeploymentInfo>> for Addr<FeatureClient> {
         );
         let feature_response = self.send(deployment).await??;
 
-        Ok(DeploymentClientResponse::FeatureResponse(feature_response))
+        Ok(DeploymentClientResponse::ExecutorResponse(feature_response))
     }
 
     async fn undeploy(&mut self, handler_reference: String) -> Result<()> {
@@ -62,11 +62,11 @@ impl DeploymentClient<Box<dyn DeploymentInfo>> for Addr<FeatureClient> {
 }
 
 #[derive(Message)]
-#[rtype(result = "Result<FeatureResponse>")]
+#[rtype(result = "Result<ExecutorResponse>")]
 pub struct CreateFeature(pub GrpcFeature);
 
 impl Handler<CreateFeature> for FeatureClient {
-    type Result = ResponseFuture<Result<FeatureResponse>>;
+    type Result = ResponseFuture<Result<ExecutorResponse>>;
 
     fn handle(&mut self, msg: CreateFeature, _ctx: &mut Self::Context) -> Self::Result {
         let feature_deployment = msg.0;

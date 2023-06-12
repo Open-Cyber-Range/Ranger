@@ -1,3 +1,4 @@
+pub mod scenario;
 mod validation;
 
 use crate::{

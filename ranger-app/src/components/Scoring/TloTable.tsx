@@ -2,12 +2,12 @@ import React from 'react';
 import {skipToken} from '@reduxjs/toolkit/dist/query';
 import {useTranslation} from 'react-i18next';
 import ScoreTag from 'src/components/Scoring/ScoreTag';
-import {useGetDeploymentScenarioQuery} from 'src/slices/apiSlice';
+import {useAdminGetDeploymentScenarioQuery} from 'src/slices/apiSlice';
 import {
   type TrainingLearningObjective,
   ExerciseRoleOrder,
 } from 'src/models/scenario';
-import {groupTloMapsByRoles} from 'src/utils';
+import {flattenEntities, getUniqueRoles, groupTloMapsByRoles} from 'src/utils';
 import TloTableRow from './TloTableRow';
 
 const TloTable = ({exerciseId, deploymentId, tloMap}:
@@ -16,19 +16,16 @@ const TloTable = ({exerciseId, deploymentId, tloMap}:
   tloMap: Record<string, TrainingLearningObjective> | undefined;
 }) => {
   const {t} = useTranslation();
-  const {data: scenario} = useGetDeploymentScenarioQuery(
+  const {data: scenario} = useAdminGetDeploymentScenarioQuery(
     exerciseId && deploymentId ? {exerciseId, deploymentId} : skipToken);
-  const goalMap = scenario?.goals;
-  const entityMap = scenario?.entities;
+  const entities = scenario?.entities;
 
-  if (tloMap && entityMap && goalMap) {
-    const entities = Object.values(entityMap);
-    const roles = entities
-      .filter(entity => entity.role)
-      .map(entity => entity.role!);
+  if (tloMap && entities) {
+    const flattenedEntities = flattenEntities(entities);
+    const roles = getUniqueRoles(flattenedEntities);
     roles.sort((a, b) => ExerciseRoleOrder[a] - ExerciseRoleOrder[b]);
     const tloMapsByRole = groupTloMapsByRoles(
-      entityMap, goalMap, tloMap, roles);
+      flattenedEntities, tloMap, roles);
 
     return (
       <div className='flex flex-col mt-2'>

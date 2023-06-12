@@ -2,7 +2,7 @@ use super::{DeploymentClient, DeploymentClientResponse, DeploymentInfo};
 use actix::{Actor, Addr, Context, Handler, Message, ResponseFuture};
 use anyhow::{Ok, Result};
 use async_trait::async_trait;
-use ranger_grpc::{inject_service_client::InjectServiceClient, Identifier, Inject as GrpcInject};
+use ranger_grpc::{inject_service_client::InjectServiceClient, Identifier, Inject as GrpcInject, ExecutorResponse};
 
 use std::any::Any;
 use tonic::transport::Channel;
@@ -44,9 +44,9 @@ impl DeploymentClient<Box<dyn DeploymentInfo>> for Addr<InjectClient> {
                 .unwrap()
                 .clone(),
         );
-        let identifier = self.send(deployment).await??;
+        let injector_response = self.send(deployment).await??;
 
-        Ok(DeploymentClientResponse::Identifier(identifier))
+        Ok(DeploymentClientResponse::ExecutorResponse(injector_response))
     }
 
     async fn undeploy(&mut self, handler_reference: String) -> Result<()> {
@@ -60,11 +60,11 @@ impl DeploymentClient<Box<dyn DeploymentInfo>> for Addr<InjectClient> {
 }
 
 #[derive(Message)]
-#[rtype(result = "Result<Identifier>")]
+#[rtype(result = "Result<ExecutorResponse>")]
 pub struct CreateInject(pub GrpcInject);
 
 impl Handler<CreateInject> for InjectClient {
-    type Result = ResponseFuture<Result<Identifier>>;
+    type Result = ResponseFuture<Result<ExecutorResponse>>;
 
     fn handle(&mut self, msg: CreateInject, _ctx: &mut Self::Context) -> Self::Result {
         let inject_deployment = msg.0;

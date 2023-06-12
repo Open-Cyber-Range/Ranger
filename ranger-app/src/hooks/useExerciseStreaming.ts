@@ -12,12 +12,11 @@ const websocketHandler = (
   dispatch: AppDispatch,
 ) => (event: MessageEvent<string>) => {
   const data: WebsocketWrapper = JSON.parse(event.data) as WebsocketWrapper;
-
   switch (data.type) {
     case WebsocketMessageType.ExerciseUpdate: {
       const exerciseUpdate = data.content;
       dispatch(
-        apiSlice.util.updateQueryData('getExercise',
+        apiSlice.util.updateQueryData('adminGetExercise',
           data.exerciseId,
           exercise => {
             Object.assign(exercise, exerciseUpdate);
@@ -29,7 +28,7 @@ const websocketHandler = (
       const deployment = data.content;
       dispatch(
         apiSlice.util
-          .updateQueryData('getDeployments',
+          .updateQueryData('adminGetDeployments',
             deployment.exerciseId,
             deployments => {
               deployments?.push(deployment);
@@ -41,7 +40,7 @@ const websocketHandler = (
       const deploymentElement = data.content;
       dispatch(
         apiSlice.util
-          .updateQueryData('getDeploymentElements', {
+          .updateQueryData('adminGetDeploymentElements', {
             exerciseId: data.exerciseId,
             deploymentId: deploymentElement.deploymentId,
           }, deploymentElements => {
@@ -54,7 +53,7 @@ const websocketHandler = (
       const deploymentElementUpdate = data.content;
       dispatch(
         apiSlice.util
-          .updateQueryData('getDeploymentElements', {
+          .updateQueryData('adminGetDeploymentElements', {
             exerciseId: data.exerciseId,
             deploymentId: deploymentElementUpdate.deploymentId,
           }, deploymentElements => {

@@ -4,11 +4,11 @@ import {useParams} from 'react-router-dom';
 import SendEmail from 'src/components/Email/SendEmail';
 import PageHolder from 'src/components/PageHolder';
 import {type ExerciseDetailRouteParameters} from 'src/models/routes';
-import {useGetExerciseQuery} from 'src/slices/apiSlice';
+import {useAdminGetExerciseQuery} from 'src/slices/apiSlice';
 
 const Email = () => {
   const {exerciseId} = useParams<ExerciseDetailRouteParameters>();
-  const {data: exercise} = useGetExerciseQuery(exerciseId ?? skipToken);
+  const {data: exercise} = useAdminGetExerciseQuery(exerciseId ?? skipToken);
 
   if (exercise) {
     return (

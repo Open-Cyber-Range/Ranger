@@ -1,8 +1,8 @@
 import React from 'react';
 import '@blueprintjs/popover2/lib/css/blueprint-popover2.css';
-import {useGetDeploymentScenarioQuery} from 'src/slices/apiSlice';
+import {useAdminGetDeploymentScenarioQuery} from 'src/slices/apiSlice';
 import {ExerciseRoleOrder} from 'src/models/scenario';
-import {getTloNamesByRole} from 'src/utils';
+import {flattenEntities, getTloNamesByRole, getUniqueRoles} from 'src/utils';
 import ScoreTag from './ScoreTag';
 
 const ScoreTagGroup = ({exerciseId, deploymentId}:
@@ -10,20 +10,19 @@ const ScoreTagGroup = ({exerciseId, deploymentId}:
   deploymentId: string;
 }) => {
   const queryParameters = {exerciseId, deploymentId};
-  const {data: scenario} = useGetDeploymentScenarioQuery(queryParameters);
-  const goals = scenario?.goals;
+  const {data: scenario} = useAdminGetDeploymentScenarioQuery(queryParameters);
   const entities = scenario?.entities;
 
-  if (entities && goals) {
-    const roleValues = Object.values(entities)
-      .filter(entity => entity.role)
-      .map(entity => entity.role!);
-    roleValues.sort((a, b) => ExerciseRoleOrder[a] - ExerciseRoleOrder[b]);
+  if (entities) {
+    const flattenedEntities = flattenEntities(entities);
+    const roles = getUniqueRoles(flattenedEntities);
+    roles.sort((a, b) => ExerciseRoleOrder[a] - ExerciseRoleOrder[b]);
 
     return (
       <div className='flex m-1 mt-auto mb-auto'>
-        {roleValues.map(role => {
-          const roleTloNames = getTloNamesByRole(entities, goals, role);
+        {roles.map(role => {
+          const roleTloNames
+          = getTloNamesByRole(flattenedEntities, role);
 
           const roleHasTlos = roleTloNames && roleTloNames.length > 0;
 

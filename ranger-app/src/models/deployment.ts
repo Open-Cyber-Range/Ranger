@@ -2,12 +2,14 @@
 type DeploymentForm = {
   name: string;
   deploymentGroup?: string;
+  groupName?: string;
   count: number;
 };
 
 type NewDeployment = {
   name: string;
   deploymentGroup?: string;
+  groupName?: string;
   sdlSchema: string;
 };
 
@@ -16,6 +18,7 @@ type Deployment = {
   exerciseId: string;
   startTime: string;
   endTime: string;
+  groupName?: string;
   createdAt: string;
   updatedAt: string;
 } & NewDeployment;

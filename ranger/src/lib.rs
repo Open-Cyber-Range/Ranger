@@ -1,7 +1,9 @@
 pub(crate) mod configuration;
-mod constants;
+pub(crate) mod constants;
 pub mod errors;
+pub mod middleware;
 pub mod models;
+pub mod roles;
 pub mod routes;
 pub(crate) mod schema;
 pub(crate) mod services;

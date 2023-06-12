@@ -2,11 +2,12 @@ import React from 'react';
 import {Tag} from '@blueprintjs/core';
 import '@blueprintjs/popover2/lib/css/blueprint-popover2.css';
 import {
-  useGetDeploymentScenarioQuery,
-  useGetDeploymentScoresQuery,
+  useAdminGetDeploymentScenarioQuery,
+  useAdminGetDeploymentScoresQuery,
 } from 'src/slices/apiSlice';
 import {useTranslation} from 'react-i18next';
 import {
+  flattenEntities,
   getRoleColor,
   getTloNamesByRole,
   roundToDecimalPlaces,
@@ -21,17 +22,27 @@ const calculateTotalScoreForRole = ({scenario, scores, role}: {
   scores: Score[];
   role: ExerciseRole;
 }) => {
-  const {entities, goals, tlos, evaluations} = scenario;
+  const {entities, tlos, evaluations, metrics} = scenario;
 
-  if (entities && goals && tlos && evaluations && scores.length > 0) {
-    const roleTloNames = getTloNamesByRole(entities, goals, role);
+  if (entities && tlos && evaluations && metrics && scores.length > 0) {
+    const flattenedEntities = flattenEntities(entities);
+    const roleTloNames = getTloNamesByRole(flattenedEntities, role);
     const roleEvaluationNames = roleTloNames.flatMap(tloName =>
       tlos[tloName]?.evaluation);
-    const roleMetricNames = new Set(roleEvaluationNames
+    const roleMetricKeys = Array.from(new Set(roleEvaluationNames
       .flatMap(evaluationName =>
-        evaluations[evaluationName]?.metrics));
+        evaluations[evaluationName]?.metrics)));
+    const roleMetrics: string[] = roleMetricKeys
+      .reduce<string[]>((roleMetricsReferences, metricKey) => {
+      if (metrics[metricKey]) {
+        roleMetricsReferences.push(metrics[metricKey].name ?? metricKey);
+      }
+
+      return roleMetricsReferences;
+    }, []);
+
     const roleScores = scores.filter(score =>
-      roleMetricNames.has(score.metricName));
+      roleMetrics.includes(score.metricName));
 
     const uniqueVmNames = [...new Set(roleScores.map(score => score.vmName))];
     const totalRoleScore = sumScoresByRole(uniqueVmNames, roleScores);
@@ -49,8 +60,8 @@ const ScoreTag = ({exerciseId, deploymentId, role, large = false}:
 }) => {
   const queryArguments = exerciseId && deploymentId
     ? {exerciseId, deploymentId} : skipToken;
-  const {data: scores} = useGetDeploymentScoresQuery(queryArguments);
-  const {data: scenario} = useGetDeploymentScenarioQuery(queryArguments);
+  const {data: scores} = useAdminGetDeploymentScoresQuery(queryArguments);
+  const {data: scenario} = useAdminGetDeploymentScenarioQuery(queryArguments);
   const {t} = useTranslation();
   const backgroundColor = getRoleColor(role);
 

@@ -12,7 +12,7 @@ use futures::future::try_join_all;
 use log::info;
 use ranger_grpc::capabilities::DeployerTypes;
 use ranger_grpc::{
-    Account as GrpcAccount, Feature as GrpcFeature, FeatureResponse,
+    Account as GrpcAccount, ExecutorResponse, Feature as GrpcFeature,
     FeatureType as GrpcFeatureType, Source as GrpcSource,
 };
 use sdl_parser::feature::FeatureType;
@@ -61,7 +61,7 @@ impl DeployableFeatures
             try_join_all(
                 tranche
                     .iter()
-                    .map(|(feature_name, feature, username)| async move {
+                    .map(|(feature_name, feature, role)| async move {
                         info!(
                             "Deploying feature '{feature_name}' for VM {node_name}",
                             node_name = deployment_element.scenario_reference
@@ -104,7 +104,7 @@ impl DeployableFeatures
                         let account = database_address
                             .send(GetAccount(
                                 template_id.as_str().try_into()?,
-                                username.to_owned(),
+                                role.username.to_owned(),
                             ))
                             .await??;
 
@@ -133,7 +133,7 @@ impl DeployableFeatures
                                 .await?
                             {
                                 anyhow::Result::Ok(result) => {
-                                    let feature_response = FeatureResponse::try_from(result)?;
+                                    let feature_response = ExecutorResponse::try_from(result)?;
 
                                     let id = feature_response
                                         .identifier

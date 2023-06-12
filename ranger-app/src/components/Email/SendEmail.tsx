@@ -10,15 +10,18 @@ import {
 } from '@blueprintjs/core';
 import {useTranslation} from 'react-i18next';
 import {Controller, type SubmitHandler, useForm} from 'react-hook-form';
-import {useGetEmailFormQuery, useSendEmailMutation} from 'src/slices/apiSlice';
+import {
+  useAdminGetEmailFormQuery,
+  useAdminSendEmailMutation,
+} from 'src/slices/apiSlice';
 import {toastSuccess, toastWarning} from 'src/components/Toaster';
 import nunjucks from 'nunjucks';
 import Editor from '@monaco-editor/react';
 
 const SendEmail = ({exercise}: {exercise: Exercise}) => {
   const {t} = useTranslation();
-  const {data: fromAddress} = useGetEmailFormQuery(exercise.id);
-  const [sendMail, {isSuccess, error}] = useSendEmailMutation();
+  const {data: fromAddress} = useAdminGetEmailFormQuery(exercise.id);
+  const [sendMail, {isSuccess, error}] = useAdminSendEmailMutation();
 
   const {handleSubmit, control} = useForm<EmailForm>({
     defaultValues: {

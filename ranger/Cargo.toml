@@ -1,6 +1,6 @@
 [package]
 name = "ranger"
-version = "0.6.0"
+version = "0.7.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -41,28 +41,35 @@ systemd-units = { unit-name = "ranger", unit-scripts = "assets/unit-scripts" }
 actix = "0.13"
 actix-web = "4"
 actix-web-actors = "4"
+actix-web-grants = "3"
 actix-http = { version = "3", features = ["http2", "ws"] }
+actix-web-httpauth = "0.8"
 anyhow = "1"
 async-trait = "0.1"
 bigdecimal = { version = "0.3", features = ["serde"] }
-chrono = {version = "0.4", features = ["serde"]}
+chrono = { version = "0.4", features = ["serde"] }
 diesel = { version = "2", features = ["mysql", "r2d2", "chrono", "numeric"] }
 diesel_migrations = "2"
 env_logger = "0.9"
 futures = "0.3"
-insta = { version = "1", features = ["redactions", "yaml"] }
+futures-util = "0.3"
+jsonwebtoken = "8"
+keycloak = "21"
 log = "0.4"
 lazy_static = "1.4"
 lettre = "0.10"
 rand = "0.8"
 ranger-grpc = { path = "../ranger-grpc" }
-sdl-parser = "0.10"
+reqwest = { version = "0.11", features = ["json", "default-tls"] }
+sdl-parser = "0.11"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1"
 serde_yaml = "0.9"
 semver = "1"
 tempfile = "3"
 thiserror = "1"
+toml-query = "0.10"
+toml = "0.5.6"
 tokio = { version = "1", features = [
   "rt-multi-thread",
   "time",
@@ -76,4 +83,5 @@ uuid = { version = "1.1", features = ["v4", "serde"] }
 
 [dev-dependencies]
 actix-rt = "2"
-sdl-parser = {version="0.10", features = ["test"]}
+insta = { version = "1", features = ["redactions", "yaml"] }
+sdl-parser = { version = "0.11", features = ["test"] }

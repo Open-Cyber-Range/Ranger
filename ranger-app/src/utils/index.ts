@@ -2,7 +2,6 @@ import {Colors} from '@blueprintjs/core';
 import {
   type Entity,
   ExerciseRole,
-  type Goal,
   type TloMapsByRole,
   type TrainingLearningObjective,
 } from 'src/models/scenario';
@@ -150,19 +149,15 @@ export function sumScoresByRole(uniqueVmNames: string[], roleScores: Score[]) {
 
 export function getTloNamesByRole(
   entities: Record<string, Entity>,
-  goals: Record<string, Goal>,
   role: ExerciseRole) {
   const entityValues = Object.values(entities);
   const roleEntities = entityValues.slice().filter(entity =>
     entity.role?.valueOf() === role,
   );
-
   const tloNames = roleEntities.slice().reduce<string []>(
     (tloNames, entity) => {
-      if (entity.goals) {
-        for (const goalName of entity.goals) {
-          tloNames = tloNames.concat(goals[goalName]?.tlos);
-        }
+      if (entity.tlos) {
+        tloNames = tloNames.concat(entity?.tlos);
       }
 
       return tloNames;
@@ -172,12 +167,11 @@ export function getTloNamesByRole(
 
 export function groupTloMapsByRoles(
   entities: Record<string, Entity>,
-  goals: Record<string, Goal>,
   tlos: Record<string, TrainingLearningObjective>,
   roles: ExerciseRole[],
 ) {
   const tloMapsByRole = roles.reduce<TloMapsByRole>((tloMapsByRole, role) => {
-    const roleTloNames = getTloNamesByRole(entities, goals, role);
+    const roleTloNames = getTloNamesByRole(entities, role);
     const roleTloMap
       = roleTloNames.reduce<Record<string, TrainingLearningObjective>>(
         (roleTloMap, tloName) => {
@@ -192,4 +186,35 @@ export function groupTloMapsByRoles(
     return tloMapsByRole;
   }, {});
   return tloMapsByRole;
+}
+
+export function flattenEntities(entities: Record<string, Entity>) {
+  const outputEntities: Record<string, Entity> = {};
+
+  for (const key of Object.keys(entities)) {
+    const childEntity = entities[key];
+    outputEntities[key] = childEntity;
+
+    if (childEntity.entities) {
+      const nested = flattenEntities(childEntity.entities);
+      for (const nestedKey of Object.keys(nested)) {
+        outputEntities[`${key}.${nestedKey}`] = nested[nestedKey];
+      }
+    }
+  }
+
+  return outputEntities;
+}
+
+export function getUniqueRoles(entities: Record<string, Entity>) {
+  const rolesSet = Object.values(entities)
+    .reduce<Set<ExerciseRole>>((accumulator, entity) => {
+    if (entity?.role) {
+      accumulator.add(entity.role);
+    }
+
+    return accumulator;
+  }, new Set<ExerciseRole>());
+
+  return Array.from(rolesSet);
 }

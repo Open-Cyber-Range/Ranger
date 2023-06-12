@@ -17,6 +17,8 @@ pub enum RangerError {
     DeployerGroupNotfound,
     #[error("Exercise name too long")]
     ExerciseNameTooLong,
+    #[error("Exercise not found")]
+    ExericseNotFound,
     #[error("Deployment name too long")]
     DeploymentNameTooLong,
     #[error("Failed to parse uuid")]
@@ -25,6 +27,8 @@ pub enum RangerError {
     ScenarioParsingFailed,
     #[error("Internal server error")]
     DatabaseUnexpected,
+    #[error("Entity not found")]
+    EntityNotFound,
     #[error("Conflict")]
     DatabaseConflict,
     #[error("Not found")]
@@ -35,6 +39,20 @@ pub enum RangerError {
     EmailMessageCreationFailed,
     #[error("Failed to send email")]
     EmailSendingFailed,
+    #[error("Keycloak query failed")]
+    KeycloakQueryFailed,
+    #[error("User info missing")]
+    UserInfoMissing,
+    #[error("Application cannot access necessary configuration")]
+    ConfigurationMissing,
+    #[error("Access forbidden for this path")]
+    AccessForbidden,
+    #[error("Token expired")]
+    TokenExpired,
+    #[error("Token missing")]
+    TokenMissing,
+    #[error("App state missing")]
+    AppStateMissing,
 }
 
 impl ResponseError for RangerError {
@@ -43,12 +61,17 @@ impl ResponseError for RangerError {
             RangerError::ScenarioNotFound => StatusCode::NOT_FOUND,
             RangerError::DeployerGroupNotfound => StatusCode::NOT_FOUND,
             RangerError::ExerciseNameTooLong => StatusCode::UNPROCESSABLE_ENTITY,
+            RangerError::ExericseNotFound => StatusCode::NOT_FOUND,
             RangerError::DeploymentNameTooLong => StatusCode::UNPROCESSABLE_ENTITY,
             RangerError::UuidParsingFailed => StatusCode::UNPROCESSABLE_ENTITY,
             RangerError::ScenarioParsingFailed => StatusCode::UNPROCESSABLE_ENTITY,
             RangerError::DatabaseConflict => StatusCode::CONFLICT,
+            RangerError::EntityNotFound => StatusCode::NOT_FOUND,
             RangerError::DatabaseRecordNotFound => StatusCode::NOT_FOUND,
             RangerError::MailerConfigurationNotFound => StatusCode::NOT_FOUND,
+            RangerError::AccessForbidden => StatusCode::FORBIDDEN,
+            RangerError::TokenExpired => StatusCode::UNAUTHORIZED,
+            RangerError::TokenMissing => StatusCode::UNAUTHORIZED,
             _ => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
