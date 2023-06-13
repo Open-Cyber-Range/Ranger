@@ -2,10 +2,12 @@ use super::helpers::uuid::Uuid;
 use crate::{
     constants::{MAX_EXERCISE_NAME_LENGTH, NAIVEDATETIME_DEFAULT_VALUE},
     errors::RangerError,
+    middleware::keycloak::KeycloakInfo,
     schema::exercises,
     services::database::{All, Create, FilterExisting, SelectById, SoftDeleteById, UpdateById},
     utilities::Validation,
 };
+use anyhow::{anyhow, Result};
 use chrono::NaiveDateTime;
 use diesel::{
     insert_into, AsChangeset, ExpressionMethods, Insertable, QueryDsl, Queryable, Selectable,
@@ -73,6 +75,36 @@ impl Exercise {
     ) -> SoftDeleteById<exercises::id, exercises::deleted_at, exercises::table> {
         diesel::update(exercises::table.filter(exercises::id.eq(self.id)))
             .set(exercises::deleted_at.eq(diesel::dsl::now))
+    }
+
+    pub async fn is_member(
+        &self,
+        user_id: Uuid,
+        keycloak_info: KeycloakInfo,
+        realm_name: String,
+    ) -> Result<bool> {
+        let role_name = self
+            .group_name
+            .clone()
+            .ok_or_else(|| anyhow!("Exercise group name is not set"))?;
+        let users = keycloak_info
+            .service_user
+            .realm_clients_with_id_roles_with_role_name_users_get(
+                &realm_name,
+                &keycloak_info.client_id,
+                &role_name,
+                None,
+                None,
+            )
+            .await?;
+        for user in users {
+            if let Some(loop_user_id) = user.id {
+                if loop_user_id == user_id.to_string() {
+                    return Ok(true);
+                }
+            }
+        }
+        Ok(false)
     }
 }
 

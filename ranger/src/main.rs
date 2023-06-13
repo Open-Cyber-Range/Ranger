@@ -78,7 +78,6 @@ async fn main() -> Result<(), Error> {
                             .service(get_deployers)
                             .service(
                                 scope("/group")
-                                    .wrap(KeycloakAccessMiddlewareFactory)
                                     .service(get_participant_groups)
                                     .service(get_participant_groups_users),
                             )
