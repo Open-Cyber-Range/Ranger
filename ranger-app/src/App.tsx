@@ -8,6 +8,7 @@ import {useKeycloak} from '@react-keycloak/web';
 import {useSelector} from 'react-redux';
 import ParticipantNavBar from './components/ParticipantNavBar';
 import DeploymentDetail from './pages/DeploymentDetail';
+import ParticipantDeploymentDetail from './pages/participant/DeploymentDetail';
 import EmailLog from './pages/EmailLog';
 import SendEmail from './pages/Email';
 import {selectedRoleSelector} from './slices/userSlice';
@@ -40,11 +41,9 @@ const App = () => {
         <ParticipantNavBar/>
         <Routes>
           <Route path='/' element={<Home/>}/>
-          <Route path='/exercises' element={<Exercises/>}/>
-          <Route path='/exercises/:exerciseId' element={<ExerciseDetail/>}/>
           <Route
             path='/exercises/:exerciseId/deployments/:deploymentId'
-            element={<DeploymentDetail/>}/>
+            element={<ParticipantDeploymentDetail/>}/>
         </Routes>
       </Router>
     );
