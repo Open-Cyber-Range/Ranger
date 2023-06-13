@@ -37,6 +37,7 @@ async fn main() -> Result<(), Error> {
             .service(version)
             .service(
                 scope("/api/v1")
+                    .wrap(KeycloakAccessMiddlewareFactory)
                     .service(
                         scope("/admin")
                             .service(
