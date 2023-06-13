@@ -147,6 +147,30 @@ export const apiSlice = createApi({
       query: ({exerciseId, deploymentId}) =>
         `/admin/exercise/${exerciseId}/deployment/${deploymentId}/scenario`,
     }),
+    participantGetDeployment: builder.query<Deployment,
+    {
+      exerciseId: string;
+      deploymentId: string;
+    }>({
+      query: ({exerciseId, deploymentId}) =>
+        `/participant/exercise/${exerciseId}/deployment/${deploymentId}`,
+    }),
+    participantGetDeploymentScores: builder.query<Score[],
+    {
+      exerciseId: string;
+      deploymentId: string;
+    }>({
+      query: ({exerciseId, deploymentId}) =>
+        `/participant/exercise/${exerciseId}/deployment/${deploymentId}/score`,
+    }),
+    participantGetDeploymentScenario: builder.query<Scenario | undefined,
+    {
+      exerciseId: string;
+      deploymentId: string;
+    }>({
+      query: ({exerciseId, deploymentId}) =>
+        `/participant/exercise/${exerciseId}/deployment/${deploymentId}/scenario`,
+    }),
   }),
 });
 
@@ -168,4 +192,7 @@ export const {
   useAdminSendEmailMutation,
   useAdminGetEmailFormQuery,
   useAdminGetDeploymentScenarioQuery,
+  useParticipantGetDeploymentQuery,
+  useParticipantGetDeploymentScoresQuery,
+  useParticipantGetDeploymentScenarioQuery,
 } = apiSlice;
