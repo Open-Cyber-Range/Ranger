@@ -29,16 +29,6 @@ const RoleSelect = ({keycloak}: {keycloak: Keycloak}) => {
     dispatch(setRoles(newRoles));
   }, [keycloak, dispatch]);
 
-  useEffect(() => {
-    if (currentRole === undefined) {
-      if (keycloak.hasRealmRole(UserRole.MANAGER.toString())) {
-        dispatch(selectRole(UserRole.MANAGER));
-      } else if (keycloak.hasRealmRole(UserRole.PARTICIPANT.toString())) {
-        dispatch(selectRole(UserRole.PARTICIPANT));
-      }
-    }
-  }, [currentRole, keycloak, dispatch]);
-
   return (
     <div className='
     bp4-html-select
