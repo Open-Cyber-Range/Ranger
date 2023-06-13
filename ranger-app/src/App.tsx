@@ -5,6 +5,7 @@ import Exercises from 'src/pages/Exercises';
 import MainNavbar from 'src/components/MainNavBar';
 import Home from 'src/pages/Home';
 import {useKeycloak} from '@react-keycloak/web';
+import ParticipantExercises from './pages/participant/Exercises';
 import ParticipantNavBar from './components/ParticipantNavBar';
 import DeploymentDetail from './pages/DeploymentDetail';
 import ParticipantDeploymentDetail from './pages/participant/DeploymentDetail';
@@ -41,6 +42,7 @@ const App = () => {
         <ParticipantNavBar/>
         <Routes>
           <Route path='/' element={<Home/>}/>
+          <Route path='/exercises' element={<ParticipantExercises/>}/>
           <Route
             path='/exercises/:exerciseId/deployments/:deploymentId'
             element={<ParticipantDeploymentDetail/>}/>
