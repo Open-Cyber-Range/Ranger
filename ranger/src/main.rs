@@ -88,7 +88,6 @@ async fn main() -> Result<(), Error> {
                         scope("/participant")
                             .service(get_exercise_deployment_scenario)
                             .service(get_exercise_deployment_users)
-                            .service(get_exercise_deployment_scores)
                             .wrap(participant_auth_middleware),
                     ),
             )
