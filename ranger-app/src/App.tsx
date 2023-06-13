@@ -5,18 +5,18 @@ import Exercises from 'src/pages/Exercises';
 import MainNavbar from 'src/components/MainNavBar';
 import Home from 'src/pages/Home';
 import {useKeycloak} from '@react-keycloak/web';
-import {useSelector} from 'react-redux';
 import ParticipantNavBar from './components/ParticipantNavBar';
 import DeploymentDetail from './pages/DeploymentDetail';
 import ParticipantDeploymentDetail from './pages/participant/DeploymentDetail';
 import EmailLog from './pages/EmailLog';
 import SendEmail from './pages/Email';
-import {selectedRoleSelector} from './slices/userSlice';
 import {UserRole} from './models/userRoles';
+import useDefaultRoleSelect from './hooks/useDefaultRoleSelect';
 
 const App = () => {
   const {keycloak: {authenticated}} = useKeycloak();
-  const currentRole = useSelector(selectedRoleSelector);
+  const currentRole = useDefaultRoleSelect();
+
   if (authenticated && (currentRole === UserRole.MANAGER)) {
     return (
       <Router>

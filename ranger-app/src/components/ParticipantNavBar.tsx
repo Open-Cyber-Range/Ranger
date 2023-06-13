@@ -18,13 +18,6 @@ const ParticipantNavBar = () => {
         >
           {t('menu.home')}
         </Link>
-        <Link
-          role='button'
-          className='bp4-button bp4-minimal bp4-icon-document'
-          to='/exercises'
-        >
-          {t('menu.exercises')}
-        </Link>
       </Navbar.Group>
       <LoginInfo/>
     </Navbar>
