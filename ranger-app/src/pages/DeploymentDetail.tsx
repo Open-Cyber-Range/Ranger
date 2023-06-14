@@ -52,7 +52,18 @@ const DeploymentDetail = () => {
     return (
       <SideBar renderMainContent={() => (
         <>
-          <H2>{deployment?.name}</H2>
+          <div className='flex'>
+            <H2>{deployment?.name}</H2>
+            <span className='ml-auto'>
+              <AnchorButton
+                icon='trash'
+                intent='danger'
+                onClick={handleDeleteDeployment}
+              >
+                {t('common.delete')}
+              </AnchorButton>
+            </span>
+          </div>
           <br/>
           <div className='h-[40vh]'>
             <Editor
@@ -72,15 +83,6 @@ const DeploymentDetail = () => {
           />
           <div className='flex justify-between items-center pb-4'>
             <BackButton/>
-            <div>
-              <AnchorButton
-                icon='trash'
-                intent='danger'
-                onClick={handleDeleteDeployment}
-              >
-                {t('common.delete')}
-              </AnchorButton>
-            </div>
           </div>
         </>
       )}

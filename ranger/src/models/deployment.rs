@@ -1,5 +1,5 @@
 use crate::{
-    constants::{DELETED_AT_DEFAULT_VALUE, MAX_DEPLOYMENT_NAME_LENGTH},
+    constants::{MAX_DEPLOYMENT_NAME_LENGTH, NAIVEDATETIME_DEFAULT_VALUE},
     errors::RangerError,
     schema::{deployment_elements, deployments},
     services::database::{
@@ -138,6 +138,7 @@ pub struct DeploymentElement {
     pub deployer_type: DeployerType,
     pub status: ElementStatus,
     pub executor_log: Option<String>,
+    pub event_id: Option<Uuid>,
 }
 
 type ByDeploymentId<T> = Filter<
@@ -155,11 +156,17 @@ type ByDeploymentIdByHandlerReference<T> = Filter<
     Eq<deployment_elements::handler_reference, String>,
 >;
 
+type ByEventId<T> = Filter<
+    FilterExisting<T, deployment_elements::deleted_at>,
+    Eq<deployment_elements::event_id, Uuid>,
+>;
+
 impl DeploymentElement {
     pub fn new_ongoing(
         deployment_id: Uuid,
         source_box: Box<dyn ScenarioReference>,
         deployer_type: DeployerTypes,
+        event_id: Option<Uuid>,
     ) -> Self {
         Self {
             id: Uuid::random(),
@@ -169,6 +176,7 @@ impl DeploymentElement {
             deployer_type: DeployerType(deployer_type),
             status: ElementStatus::Ongoing,
             executor_log: None,
+            event_id,
         }
     }
 
@@ -187,6 +195,7 @@ impl DeploymentElement {
             deployer_type: DeployerType(deployer_type),
             status,
             executor_log: None,
+            event_id: None,
         }
     }
 
@@ -214,7 +223,7 @@ impl DeploymentElement {
     ) -> FilterExisting<All<deployment_elements::table, Self>, deployment_elements::deleted_at>
     {
         Self::all_with_deleted()
-            .filter(deployment_elements::deleted_at.eq(*DELETED_AT_DEFAULT_VALUE))
+            .filter(deployment_elements::deleted_at.eq(*NAIVEDATETIME_DEFAULT_VALUE))
     }
 
     pub fn by_id(
@@ -252,6 +261,10 @@ impl DeploymentElement {
             .filter(deployment_elements::handler_reference.eq(handler_reference))
     }
 
+    pub fn by_event_id(event_id: Uuid) -> ByEventId<All<deployment_elements::table, Self>> {
+        Self::all().filter(deployment_elements::event_id.eq(event_id))
+    }
+
     pub fn create_insert(&self) -> Create<&Self, deployment_elements::table> {
         diesel::insert_into(deployment_elements::table).values(self)
     }
@@ -270,7 +283,7 @@ impl DeploymentElement {
     > {
         diesel::update(deployment_elements::table)
             .filter(deployment_elements::id.eq(self.id))
-            .filter(deployment_elements::deleted_at.eq(*DELETED_AT_DEFAULT_VALUE))
+            .filter(deployment_elements::deleted_at.eq(*NAIVEDATETIME_DEFAULT_VALUE))
             .set(self)
     }
 }
@@ -281,7 +294,7 @@ impl Deployment {
     }
 
     pub fn all() -> FilterExisting<All<deployments::table, Self>, deployments::deleted_at> {
-        Self::all_with_deleted().filter(deployments::deleted_at.eq(*DELETED_AT_DEFAULT_VALUE))
+        Self::all_with_deleted().filter(deployments::deleted_at.eq(*NAIVEDATETIME_DEFAULT_VALUE))
     }
 
     pub fn by_id(
@@ -302,7 +315,7 @@ impl Deployment {
     ) -> SoftDelete<ByDeploymentId<deployment_elements::table>, deployment_elements::deleted_at>
     {
         diesel::update(deployment_elements::table)
-            .filter(deployment_elements::deleted_at.eq(*DELETED_AT_DEFAULT_VALUE))
+            .filter(deployment_elements::deleted_at.eq(*NAIVEDATETIME_DEFAULT_VALUE))
             .filter(deployment_elements::deployment_id.eq(self.id))
             .set(deployment_elements::deleted_at.eq(diesel::dsl::now))
     }

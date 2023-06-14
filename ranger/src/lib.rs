@@ -15,7 +15,7 @@ use anyhow::Result;
 use configuration::{read_configuration, Configuration};
 use services::{
     deployer::DeployerFactory,
-    deployment::{condition::ConditionAggregator, DeploymentManager},
+    deployment::{condition::ConditionAggregator, event::EventPoller, DeploymentManager},
     websocket::WebSocketManager,
 };
 
@@ -25,6 +25,7 @@ pub struct Addressor {
     pub distributor: Addr<DeployerDistribution>,
     pub database: Addr<Database>,
     pub condition_aggregator: Addr<ConditionAggregator>,
+    pub event_poller: Addr<EventPoller>,
 }
 
 impl Addressor {
@@ -36,12 +37,14 @@ impl Addressor {
         let distributor = deployer_distributor.start();
         let condition_aggregator = ConditionAggregator::new().start();
         let database = database.start();
+        let event_poller = EventPoller::new().start();
 
         Ok(Self {
             scheduler,
             distributor,
             database,
             condition_aggregator,
+            event_poller,
         })
     }
 }

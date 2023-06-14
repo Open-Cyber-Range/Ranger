@@ -14,10 +14,10 @@ pub const RECORD_NOT_FOUND: &str = "Record not found";
 pub const DUPLICATE_ENTRY: &str = "Duplicate entry";
 pub const FOREIGN_KEY_CONSTRAINT_FAILS: &str = "a foreign key constraint fails";
 
-pub const DELETED_AT_DEFAULT_STRING: &str = "1970-01-01 00:00:01";
+pub const NAIVEDATETIME_DEFAULT_STRING: &str = "1970-01-01 00:00:01";
 pub const DATETIME_FORMAT: &str = "%Y-%m-%d %H:%M:%S";
 
 lazy_static! {
-    pub static ref DELETED_AT_DEFAULT_VALUE: NaiveDateTime =
-        NaiveDateTime::parse_from_str(DELETED_AT_DEFAULT_STRING, DATETIME_FORMAT).unwrap();
+    pub static ref NAIVEDATETIME_DEFAULT_VALUE: NaiveDateTime =
+        NaiveDateTime::parse_from_str(NAIVEDATETIME_DEFAULT_STRING, DATETIME_FORMAT).unwrap();
 }

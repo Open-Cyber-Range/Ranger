@@ -1,10 +1,11 @@
 pub(crate) mod account;
 pub(crate) mod condition;
 pub(crate) mod deployment;
+pub(crate) mod event;
 pub(crate) mod exercise;
 pub(crate) mod participant;
 
-use crate::{models::{helpers::uuid::Uuid}, utilities::run_migrations};
+use crate::{models::helpers::uuid::Uuid, utilities::run_migrations};
 use actix::{Actor, Addr};
 use anyhow::{anyhow, Result};
 use chrono::NaiveDateTime;
