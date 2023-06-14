@@ -1,6 +1,7 @@
 use crate::{
     constants::{MAX_DEPLOYMENT_NAME_LENGTH, NAIVEDATETIME_DEFAULT_VALUE},
     errors::RangerError,
+    middleware::keycloak::KeycloakInfo,
     schema::{deployment_elements, deployments},
     services::database::{
         deployment::UpdateDeploymentElement, All, Create, CreateOrIgnore, Database, FilterExisting,
@@ -9,7 +10,7 @@ use crate::{
     utilities::Validation,
 };
 use actix::Addr;
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use chrono::NaiveDateTime;
 use diesel::{
     helper_types::{Eq, Filter},
@@ -84,6 +85,24 @@ pub struct Deployment {
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
     pub deleted_at: NaiveDateTime,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ParticipantDeployment {
+    pub id: Uuid,
+    pub name: String,
+    pub exercise_id: Uuid,
+}
+
+impl From<Deployment> for ParticipantDeployment {
+    fn from(deployment: Deployment) -> Self {
+        Self {
+            id: deployment.id,
+            name: deployment.name,
+            exercise_id: deployment.exercise_id,
+        }
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, FromSqlRow, AsExpression, Eq, Deserialize, Serialize)]
@@ -325,5 +344,35 @@ impl Deployment {
     ) -> SoftDeleteById<deployments::id, deployments::deleted_at, deployments::table> {
         diesel::update(deployments::table.filter(deployments::id.eq(self.id)))
             .set(deployments::deleted_at.eq(diesel::dsl::now))
+    }
+
+    pub async fn is_member(
+        &self,
+        user_id: String,
+        keycloak_info: KeycloakInfo,
+        realm_name: String,
+    ) -> Result<bool> {
+        let role_name = self
+            .group_name
+            .clone()
+            .ok_or_else(|| anyhow!("Exercise group name is not set"))?;
+        let users = keycloak_info
+            .service_user
+            .realm_clients_with_id_roles_with_role_name_users_get(
+                &realm_name,
+                &keycloak_info.client_id,
+                &role_name,
+                None,
+                None,
+            )
+            .await?;
+        for user in users {
+            if let Some(loop_user_id) = user.id {
+                if loop_user_id == user_id {
+                    return Ok(true);
+                }
+            }
+        }
+        Ok(false)
     }
 }

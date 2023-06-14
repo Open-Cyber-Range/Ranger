@@ -15,6 +15,9 @@ use ranger::routes::exercise::{
     get_exercise_deployment_users, get_exercise_deployments, get_exercises, get_participants,
     subscribe_to_exercise, update_exercise,
 };
+use ranger::routes::participant::deployment::{
+    get_participant_deployment, get_participant_deployments,
+};
 use ranger::routes::participant::{get_participant_exercise, get_participant_exercises};
 use ranger::routes::scenario::get_exercise_deployment_scenario;
 use ranger::routes::{
@@ -95,12 +98,19 @@ async fn main() -> Result<(), Error> {
                                         scope("/{exercise_uuid}")
                                             .service(get_participant_exercise)
                                             .service(
-                                                scope("/deployment").service(
-                                                    scope("/{deployment_uuid}")
-                                                        .service(get_exercise_deployment_scenario)
-                                                        .service(get_exercise_deployment_users)
-                                                        .service(get_exercise_deployment_scores),
-                                                ),
+                                                scope("/deployment")
+                                                    .service(get_participant_deployments)
+                                                    .service(
+                                                        scope("/{deployment_uuid}")
+                                                            .service(get_participant_deployment)
+                                                            .service(
+                                                                get_exercise_deployment_scenario,
+                                                            )
+                                                            .service(get_exercise_deployment_users)
+                                                            .service(
+                                                                get_exercise_deployment_scores,
+                                                            ),
+                                                    ),
                                             ),
                                     ),
                             )
