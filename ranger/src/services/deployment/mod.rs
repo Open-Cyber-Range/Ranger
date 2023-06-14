@@ -1,4 +1,5 @@
 pub(crate) mod condition;
+pub(crate) mod event;
 mod feature;
 mod inject;
 mod node;
@@ -8,10 +9,10 @@ use self::node::RemoveableNodes;
 use super::database::{deployment::GetDeploymentElementByDeploymentId, Database};
 use crate::{
     models::{helpers::uuid::Uuid, Deployment, Exercise},
-    services::deployment::template::DeployableTemplates,
     services::deployment::{
         condition::DeployableConditions, feature::DeployableFeatures, node::DeployableNodes,
     },
+    services::deployment::{event::DeployableEvents, template::DeployableTemplates},
     Addressor,
 };
 use actix::{Actor, ActorFutureExt, Context, Handler, Message, ResponseActFuture, WrapFuture};
@@ -58,8 +59,16 @@ impl DeploymentManager {
             .deploy_scenario_features(addressor, exercise, deployers, &node_deployment_results)
             .await?;
 
+        let node_event_condition_tuple = scenario
+            .create_events(addressor, &node_deployment_results)
+            .await?;
+
         scenario
-            .deploy_scenario_conditions(addressor, exercise, deployers, &node_deployment_results)
+            .deploy_scenario_conditions(addressor, exercise, deployers, &node_event_condition_tuple)
+            .await?;
+
+        scenario
+            .deploy_event_pollers(addressor, exercise, deployers, &node_event_condition_tuple)
             .await?;
 
         info!("Deployment {} successful", deployment.name);

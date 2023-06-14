@@ -122,6 +122,7 @@ impl DeployableNodes for Scenario {
                                     deployment.id,
                                     Box::new(unique_name.to_string()),
                                     deployer_type,
+                                    None,
                                 ),
                                 true,
                             ))
@@ -199,7 +200,13 @@ impl DeployableNodes for Scenario {
 
             deployment_results.push(tranche_results);
         }
-        Ok(deployment_results.concat())
+        let vm_nodes: Vec<(Node, DeploymentElement, Uuid)> = deployment_results
+            .concat()
+            .into_iter()
+            .filter(|node| matches!(node.0.type_field, NodeType::VM))
+            .collect();
+
+        Ok(vm_nodes)
     }
 }
 
