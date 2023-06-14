@@ -15,7 +15,7 @@ use ranger::routes::exercise::{
     get_exercise_deployment_users, get_exercise_deployments, get_exercises, get_participants,
     subscribe_to_exercise, update_exercise,
 };
-use ranger::routes::participant::get_participant_exercises;
+use ranger::routes::participant::{get_participant_exercise, get_participant_exercises};
 use ranger::routes::scenario::get_exercise_deployment_scenario;
 use ranger::routes::{
     admin::groups::get_participant_groups,
@@ -94,7 +94,7 @@ async fn main() -> Result<(), Error> {
                             .service(
                                 scope("/exercise")
                                     .service(get_participant_exercises)
-                                    .service(get_exercise),
+                                    .service(get_participant_exercise),
                             )
                             .wrap(participant_auth_middleware),
                     ),
