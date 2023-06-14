@@ -6,19 +6,21 @@ use ranger::middleware::deployment::DeploymentMiddlewareFactory;
 use ranger::middleware::exercise::ExerciseMiddlewareFactory;
 use ranger::middleware::keycloak::KeycloakAccessMiddlewareFactory;
 use ranger::roles::RangerRole;
+use ranger::routes::admin::groups::get_participant_groups_users;
+use ranger::routes::deployers::get_deployers;
+use ranger::routes::email::send_email;
+use ranger::routes::exercise::{
+    add_participant, delete_exercise_deployment, delete_participant, get_exercise,
+    get_exercise_deployment, get_exercise_deployment_elements, get_exercise_deployment_scores,
+    get_exercise_deployment_users, get_exercise_deployments, get_exercises, get_participants,
+    subscribe_to_exercise, update_exercise,
+};
+use ranger::routes::participant::get_participant_exercises;
+use ranger::routes::scenario::get_exercise_deployment_scenario;
 use ranger::routes::{
-    admin::groups::{get_participant_groups, get_participant_groups_users},
+    admin::groups::get_participant_groups,
     basic::{status, version},
-    deployers::get_deployers,
-    email::send_email,
-    exercise::{
-        add_exercise, add_exercise_deployment, add_participant, delete_exercise,
-        delete_exercise_deployment, delete_participant, get_exercise, get_exercise_deployment,
-        get_exercise_deployment_users, get_exercise_deployment_elements,
-        get_exercise_deployment_scores, get_exercise_deployments,
-        get_exercises, get_participants, subscribe_to_exercise, update_exercise,
-    },
-    scenario::get_exercise_deployment_scenario,
+    exercise::{add_exercise, add_exercise_deployment, delete_exercise},
 };
 
 #[actix_web::main]
@@ -88,6 +90,8 @@ async fn main() -> Result<(), Error> {
                         scope("/participant")
                             .service(get_exercise_deployment_scenario)
                             .service(get_exercise_deployment_users)
+                            .service(get_exercise_deployment_scores)
+                            .service(scope("/exercise").service(get_participant_exercises))
                             .wrap(participant_auth_middleware),
                     ),
             )
