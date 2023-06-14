@@ -1,6 +1,6 @@
 use crate::{
     errors::RangerError,
-    middleware::{authentication::UserInfo, keycloak::KeycloakInfo},
+    middleware::{authentication::UserInfo, exercise::ExerciseInfo, keycloak::KeycloakInfo},
     models::{Exercise, ParticipantExercise},
     services::database::exercise::GetExercises,
     utilities::{create_database_error_handler, create_mailbox_error_handler},
@@ -54,4 +54,13 @@ pub async fn get_participant_exercises(
         .collect();
 
     Ok(Json(participant_exercises))
+}
+
+#[get("")]
+pub async fn get_participant_exercise(
+    exercise: ExerciseInfo,
+) -> Result<Json<ParticipantExercise>, RangerError> {
+    let exercise = exercise.into_inner().into();
+
+    Ok(Json(exercise))
 }
