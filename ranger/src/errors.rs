@@ -19,6 +19,8 @@ pub enum RangerError {
     ExerciseNameTooLong,
     #[error("Exercise not found")]
     ExericseNotFound,
+    #[error("Deployment not found")]
+    DeploymentNotFound,
     #[error("Deployment name too long")]
     DeploymentNameTooLong,
     #[error("Failed to parse uuid")]
@@ -62,6 +64,7 @@ impl ResponseError for RangerError {
             RangerError::DeployerGroupNotfound => StatusCode::NOT_FOUND,
             RangerError::ExerciseNameTooLong => StatusCode::UNPROCESSABLE_ENTITY,
             RangerError::ExericseNotFound => StatusCode::NOT_FOUND,
+            RangerError::DeploymentNotFound => StatusCode::NOT_FOUND,
             RangerError::DeploymentNameTooLong => StatusCode::UNPROCESSABLE_ENTITY,
             RangerError::UuidParsingFailed => StatusCode::UNPROCESSABLE_ENTITY,
             RangerError::ScenarioParsingFailed => StatusCode::UNPROCESSABLE_ENTITY,

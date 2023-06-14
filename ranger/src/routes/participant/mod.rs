@@ -1,3 +1,5 @@
+pub mod deployment;
+
 use crate::{
     errors::RangerError,
     middleware::{authentication::UserInfo, exercise::ExerciseInfo, keycloak::KeycloakInfo},
