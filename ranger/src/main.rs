@@ -91,7 +91,11 @@ async fn main() -> Result<(), Error> {
                             .service(get_exercise_deployment_scenario)
                             .service(get_exercise_deployment_users)
                             .service(get_exercise_deployment_scores)
-                            .service(scope("/exercise").service(get_participant_exercises))
+                            .service(
+                                scope("/exercise")
+                                    .service(get_participant_exercises)
+                                    .service(get_exercise),
+                            )
                             .wrap(participant_auth_middleware),
                     ),
             )
