@@ -79,7 +79,7 @@ impl Exercise {
 
     pub async fn is_member(
         &self,
-        user_id: Uuid,
+        user_id: String,
         keycloak_info: KeycloakInfo,
         realm_name: String,
     ) -> Result<bool> {
@@ -99,12 +99,28 @@ impl Exercise {
             .await?;
         for user in users {
             if let Some(loop_user_id) = user.id {
-                if loop_user_id == user_id.to_string() {
+                if loop_user_id == user_id {
                     return Ok(true);
                 }
             }
         }
         Ok(false)
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ParticipantExercise {
+    pub id: Uuid,
+    pub name: String,
+}
+
+impl From<Exercise> for ParticipantExercise {
+    fn from(exercise: Exercise) -> Self {
+        Self {
+            id: exercise.id,
+            name: exercise.name,
+        }
     }
 }
 
