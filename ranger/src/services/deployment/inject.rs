@@ -2,85 +2,66 @@ use crate::models::helpers::uuid::Uuid;
 use crate::models::{DeploymentElement, ElementStatus};
 use crate::services::database::account::GetAccount;
 use crate::services::database::deployment::{CreateDeploymentElement, UpdateDeploymentElement};
-use crate::services::database::Database;
-use crate::services::deployer::{Deploy, DeployerDistribution};
-use actix::Addr;
-use anyhow::{anyhow, Ok, Result};
+use crate::services::deployer::Deploy;
+use crate::utilities::try_some;
+use crate::Addressor;
+use anyhow::{Ok, Result};
 use async_trait::async_trait;
 use log::info;
 use ranger_grpc::capabilities::DeployerTypes;
-use ranger_grpc::{Account as GrpcAccount, Identifier, Inject as GrpcInject, Source as GrpcSource};
-use sdl_parser::{inject::Inject, node::Node};
+use ranger_grpc::{
+    Account as GrpcAccount, ExecutorResponse, Inject as GrpcInject, Source as GrpcSource,
+};
+use sdl_parser::inject::Inject;
 
 #[async_trait]
 pub trait DeployableInject {
     async fn deploy_inject(&self) -> Result<()>;
 }
-
 #[async_trait]
 impl DeployableInject
     for (
-        Addr<DeployerDistribution>,
-        Addr<Database>,
+        &Addressor,
         Vec<String>,
-        Node,
         DeploymentElement,
         Uuid,
         String,
-        Option<String>,
+        Uuid,
         (String, Inject),
     )
 {
     async fn deploy_inject(&self) -> Result<()> {
         let (
-            distributor_address,
-            database_address,
+            addressor,
             deployers,
-            node,
             deployment_element,
             exercise_id,
-            role_name,
+            username,
             template_id,
             (inject_name, inject),
         ) = self;
 
-        let virtual_machine_id = deployment_element
-            .handler_reference
-            .clone()
-            .ok_or_else(|| anyhow!("Deployment element handler reference not found"))?;
+        let virtual_machine_id = try_some(
+            deployment_element.handler_reference.clone(),
+            "Deployment element handler reference not found",
+        )?;
 
-        let roles = node
-            .roles
-            .clone()
-            .ok_or_else(|| anyhow!("Node roles not found"))?;
+        let inject_source = try_some(inject.source.clone(), "Injects source not found")?;
 
-        let (_, role) = roles
-            .get_key_value(&role_name.clone())
-            .ok_or_else(|| anyhow!("Username in roles list not found"))?;
-
-        let inject_source = inject
-            .source
-            .clone()
-            .ok_or_else(|| anyhow!("Injects source not found"))?;
-
-        let template_id = template_id
-            .clone()
-            .ok_or_else(|| anyhow!("Template id not found"))?;
-
-        let template_account = database_address
-            .send(GetAccount(
-                template_id.as_str().try_into()?,
-                role.username.to_owned(),
-            ))
+        let template_account = addressor
+            .database
+            .send(GetAccount(*template_id, username.to_owned()))
             .await??;
 
-        let mut inject_deployment_element = database_address
+        let mut inject_deployment_element = addressor
+            .database
             .send(CreateDeploymentElement(
                 *exercise_id,
                 DeploymentElement::new_ongoing(
                     deployment_element.deployment_id,
                     Box::new(inject_name.to_owned()),
                     DeployerTypes::Inject,
+                    None,
                 ),
                 false,
             ))
@@ -88,13 +69,13 @@ impl DeployableInject
 
         let inject_deployment = Box::new(GrpcInject {
             name: inject_name.to_owned(),
-            virtual_machine_id: virtual_machine_id.clone(),
+            virtual_machine_id,
             source: Some(GrpcSource {
                 name: inject_source.name.to_owned(),
                 version: inject_source.version.to_owned(),
             }),
             account: Some(GrpcAccount {
-                username: role.username.to_owned(),
+                username: username.to_owned(),
                 password: template_account.password.unwrap_or_default(),
                 private_key: template_account.private_key.unwrap_or_default(),
             }),
@@ -102,7 +83,8 @@ impl DeployableInject
         });
 
         {
-            match distributor_address
+            match addressor
+                .distributor
                 .send(Deploy(
                     DeployerTypes::Inject,
                     inject_deployment,
@@ -111,11 +93,21 @@ impl DeployableInject
                 .await?
             {
                 anyhow::Result::Ok(result) => {
-                    let id = Identifier::try_from(result)?.value;
+                    let response = ExecutorResponse::try_from(result)?;
+                    let identifier = try_some(
+                        response.identifier,
+                        "Successful Inject response did not supply Identifier",
+                    )?;
 
                     inject_deployment_element.status = ElementStatus::Success;
-                    inject_deployment_element.handler_reference = Some(id);
-                    database_address
+                    inject_deployment_element.handler_reference = Some(identifier.value);
+                    inject_deployment_element.executor_log = match response.vm_log.is_empty() {
+                        true => None,
+                        false => Some(response.vm_log),
+                    };
+
+                    addressor
+                        .database
                         .send(UpdateDeploymentElement(
                             *exercise_id,
                             inject_deployment_element,
@@ -124,15 +116,16 @@ impl DeployableInject
                         .await??;
 
                     info!(
-                        "Finished deploying {inject_name} on {}",
-                        deployment_element.scenario_reference
+                        "Deployed {inject_name} on {node_name}",
+                        node_name = deployment_element.scenario_reference
                     );
                     return Ok(());
                 }
 
                 Err(error) => {
                     inject_deployment_element.status = ElementStatus::Failed;
-                    database_address
+                    addressor
+                        .database
                         .send(UpdateDeploymentElement(
                             *exercise_id,
                             inject_deployment_element,
