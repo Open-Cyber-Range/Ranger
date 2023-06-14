@@ -37,6 +37,7 @@ diesel::table! {
         deployer_type -> Tinytext,
         status -> Tinytext,
         executor_log -> Nullable<Mediumtext>,
+        event_id -> Nullable<Binary>,
         created_at -> Timestamp,
         deleted_at -> Timestamp,
     }
@@ -52,6 +53,21 @@ diesel::table! {
         start_time -> Timestamp,
         end_time -> Timestamp,
         exercise_id -> Binary,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
+        deleted_at -> Timestamp,
+    }
+}
+
+diesel::table! {
+    events (id) {
+        id -> Binary,
+        name -> Tinytext,
+        start -> Timestamp,
+        end -> Timestamp,
+        is_scheduled -> Bool,
+        has_triggered -> Bool,
+        triggered_at -> Timestamp,
         created_at -> Timestamp,
         updated_at -> Timestamp,
         deleted_at -> Timestamp,
@@ -99,6 +115,7 @@ diesel::table! {
 diesel::joinable!(accounts -> exercises (exercise_id));
 diesel::joinable!(condition_messages -> deployments (deployment_id));
 diesel::joinable!(deployment_elements -> deployments (deployment_id));
+diesel::joinable!(deployment_elements -> events (event_id));
 diesel::joinable!(deployments -> exercises (exercise_id));
 diesel::joinable!(participants -> deployments (deployment_id));
 diesel::joinable!(scores -> deployments (deployment_id));
@@ -109,6 +126,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     condition_messages,
     deployment_elements,
     deployments,
+    events,
     exercises,
     participants,
     scores,

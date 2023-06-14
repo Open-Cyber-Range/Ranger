@@ -1,15 +1,16 @@
-use super::{helpers::uuid::Uuid};
+use super::helpers::uuid::Uuid;
 use crate::{
+    constants::NAIVEDATETIME_DEFAULT_VALUE,
     schema::participants::{self},
-    services::database::{All, FilterExisting, SelectById, SoftDeleteById, Create, SelectByDeploymentId}, constants::DELETED_AT_DEFAULT_VALUE,
+    services::database::{
+        All, Create, FilterExisting, SelectByDeploymentId, SelectById, SoftDeleteById,
+    },
 };
-
 use chrono::NaiveDateTime;
-use diesel::{ExpressionMethods, QueryDsl, Queryable, Selectable, SelectableHelper, Insertable, insert_into,
+use diesel::{
+    insert_into, ExpressionMethods, Insertable, QueryDsl, Queryable, Selectable, SelectableHelper,
 };
-
 use serde::{Deserialize, Serialize};
-
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -55,7 +56,7 @@ impl Participant {
     }
 
     pub fn all() -> FilterExisting<All<participants::table, Self>, participants::deleted_at> {
-        Self::all_with_deleted().filter(participants::deleted_at.eq(*DELETED_AT_DEFAULT_VALUE))
+        Self::all_with_deleted().filter(participants::deleted_at.eq(*NAIVEDATETIME_DEFAULT_VALUE))
     }
 
     pub fn by_id(
@@ -66,8 +67,12 @@ impl Participant {
 
     pub fn by_deployment_id(
         deployment_uuid: Uuid,
-    ) -> SelectByDeploymentId<participants::table, participants::deployment_id, participants::deleted_at, Self>
-    {
+    ) -> SelectByDeploymentId<
+        participants::table,
+        participants::deployment_id,
+        participants::deleted_at,
+        Self,
+    > {
         Self::all().filter(participants::deployment_id.eq(deployment_uuid))
     }
 

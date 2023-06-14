@@ -57,7 +57,8 @@ impl Handler<GetAccount> for Database {
 
                     Ok(account)
                 })
-                .await??;
+                .await?
+                .map_err(|err| anyhow!("GetAccount: {err}"))?;
 
                 Ok(account)
             }
