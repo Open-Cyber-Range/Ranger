@@ -2,7 +2,7 @@ use super::helpers::uuid::Uuid;
 use crate::models::ConditionMessage;
 use bigdecimal::BigDecimal;
 use chrono::NaiveDateTime;
-use sdl_parser::metric::Metrics;
+use sdl_parser::metric::Metric;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
@@ -41,24 +41,20 @@ impl Score {
         }
     }
 
-    pub fn from_conditionmessage_and_metrics(
+    pub fn from_conditionmessage_and_metric(
         condition_message: ConditionMessage,
-        metrics: Option<Metrics>,
+        metric: Option<(String, Metric)>,
         vm_name: String,
     ) -> Self {
         let mut metric_name = Default::default();
         let mut max_score: BigDecimal = Default::default();
 
-        if let Some(metrics) = metrics {
-            if let Some((metric_key, metric)) = metrics.iter().find(|(_, metric)| {
-                metric.condition.eq(&Some(condition_message.clone().condition_name))
-            }) {
-                metric_name = match &metric.name {
-                    Some(metric_name) => metric_name.to_owned(),
-                    None => metric_key.to_owned(),
-                };
-                max_score = BigDecimal::from(metric.max_score);
-            }
+        if let Some((metric_key, metric)) = metric {
+            metric_name = match &metric.name {
+                Some(metric_name) => metric_name.to_owned(),
+                None => metric_key.to_owned(),
+            };
+            max_score = BigDecimal::from(metric.max_score);
         }
 
         Self {
