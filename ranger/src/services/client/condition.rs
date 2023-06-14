@@ -1,5 +1,5 @@
 use crate::{
-    models::{DeploymentElement, NewConditionMessage},
+    models::{DeploymentElement, ElementStatus, NewConditionMessage},
     services::{
         database::{condition::CreateConditionMessage, Database},
         deployer::DeployerDistribution,
@@ -20,7 +20,7 @@ use ranger_grpc::{
     condition_service_client::ConditionServiceClient, Condition as GrpcCondition,
     ConditionStreamResponse, Identifier,
 };
-use sdl_parser::metric::Metrics;
+use sdl_parser::metric::Metric;
 use std::any::Any;
 use tonic::{transport::Channel, Streaming};
 
@@ -153,20 +153,18 @@ pub struct ConditionStream(
     pub DeploymentElement,
     pub Addr<Database>,
     pub Streaming<ConditionStreamResponse>,
-    pub Option<Metrics>,
-    pub String,
+    pub Option<(String, Metric)>,
 );
 impl Handler<ConditionStream> for DeployerDistribution {
     type Result = ResponseActFuture<Self, Result<()>>;
 
     fn handle(&mut self, msg: ConditionStream, _ctx: &mut Self::Context) -> Self::Result {
         let exercise_id = msg.0;
-        let condition_deployment_element = msg.1;
+        let mut condition_deployment_element = msg.1;
         let node_deployment_element = msg.2;
         let database_address = msg.3;
         let mut stream = msg.4;
-        let metrics = msg.5;
-        let vm_name = msg.6;
+        let metric = msg.5;
 
         Box::pin(
             async move {
@@ -180,6 +178,10 @@ impl Handler<ConditionStream> for DeployerDistribution {
                     condition_name = condition_deployment_element.scenario_reference,
                     node_name = node_deployment_element.scenario_reference,
                 );
+
+                let is_event_condition = condition_deployment_element.event_id.is_some();
+                let big_decimal_one =
+                    try_some(BigDecimal::from_i8(1), "BigDecimal conversion error")?;
 
                 while let Some(stream_item) = stream.message().await? {
                     let condition_id: Uuid = condition_deployment_element
@@ -208,10 +210,38 @@ impl Handler<ConditionStream> for DeployerDistribution {
                                 condition_id,
                                 value,
                             ),
-                            metrics.clone(),
-                            vm_name.clone(),
+                            metric.clone(),
+                            node_deployment_element.scenario_reference.clone(),
                         ))
                         .await??;
+
+                    if is_event_condition {
+                        if value == big_decimal_one
+                            && condition_deployment_element.status == ElementStatus::Ongoing
+                        {
+                            condition_deployment_element.status = ElementStatus::Success;
+                            condition_deployment_element
+                                .update(
+                                    &database_address,
+                                    exercise_id,
+                                    ElementStatus::Success,
+                                    condition_deployment_element.handler_reference.clone(),
+                                )
+                                .await?;
+                        } else if value != big_decimal_one
+                            && condition_deployment_element.status == ElementStatus::Success
+                        {
+                            condition_deployment_element.status = ElementStatus::Ongoing;
+                            condition_deployment_element
+                                .update(
+                                    &database_address,
+                                    exercise_id,
+                                    ElementStatus::Ongoing,
+                                    condition_deployment_element.handler_reference.clone(),
+                                )
+                                .await?;
+                        }
+                    }
                 }
                 Ok(())
             }

@@ -8,7 +8,7 @@ use sdl_parser::{
     goal::Goals,
     infrastructure::Infrastructure,
     inject::Injects,
-    metric::Metrics,
+    metric::{Metric, Metrics},
     node::{Nodes, Role},
     script::Scripts,
     story::Stories,
@@ -575,4 +575,20 @@ pub fn filter_node_roles_by_entity(
             role_accumulator
         },
     )
+}
+
+pub fn get_metric_by_condition(
+    metrics: &Option<Metrics>,
+    condition_name: &str,
+) -> Option<(String, Metric)> {
+    if let Some(metrics) = metrics {
+        match metrics
+            .iter()
+            .find(|(_, metric)| metric.condition.eq(&Some(condition_name.to_string())))
+        {
+            Some((metric_key, metric)) => return Some((metric_key.to_string(), metric.clone())),
+            None => return None,
+        }
+    }
+    None
 }
