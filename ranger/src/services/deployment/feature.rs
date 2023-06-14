@@ -15,7 +15,6 @@ use ranger_grpc::{
     FeatureType as GrpcFeatureType, Source as GrpcSource,
 };
 use sdl_parser::feature::FeatureType;
-use sdl_parser::node::NodeType;
 use sdl_parser::{node::Node, Scenario};
 
 #[async_trait]
@@ -40,19 +39,17 @@ impl DeployableFeatures for Scenario {
         if self.features.is_some() {
             try_join_all(deployed_nodes.iter().map(
                 |(node, deployment_element, template_id)| async move {
-                    if matches!(node.type_field, NodeType::VM) {
-                        (
-                            addressor.clone(),
-                            deployers.to_owned(),
-                            self.clone(),
-                            node.clone(),
-                            deployment_element.clone(),
-                            exercise.id,
-                            *template_id,
-                        )
-                            .deploy_node_features()
-                            .await?;
-                    }
+                    (
+                        addressor.clone(),
+                        deployers.to_owned(),
+                        self.clone(),
+                        node.clone(),
+                        deployment_element.clone(),
+                        exercise.id,
+                        *template_id,
+                    )
+                        .deploy_node_features()
+                        .await?;
                     Ok(())
                 },
             ))
@@ -121,6 +118,7 @@ impl DeployableNodeFeatures
                                     deployment_element.deployment_id,
                                     Box::new(feature_name.to_string()),
                                     DeployerTypes::Feature,
+                                    None,
                                 ),
                                 true,
                             ))
