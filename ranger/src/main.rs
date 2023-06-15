@@ -107,11 +107,11 @@ async fn main() -> Result<(), Error> {
                                                                 get_exercise_deployment_scenario,
                                                             )
                                                             .service(get_exercise_deployment_users)
-                                                            .service(
-                                                                get_exercise_deployment_scores,
-                                                            ),
+                                                            .service(get_exercise_deployment_scores)
+                                                            .wrap(DeploymentMiddlewareFactory),
                                                     ),
-                                            ),
+                                            )
+                                            .wrap(ExerciseMiddlewareFactory),
                                     ),
                             )
                             .wrap(participant_auth_middleware),
