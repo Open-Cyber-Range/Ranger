@@ -10,7 +10,7 @@ import ScoresPanel from 'src/components/Scoring/ExerciseScores';
 import DashboardPanel from 'src/components/Exercise/Dashboard';
 import SendEmail from 'src/components/Email/SendEmail';
 import SideBar from 'src/components/Exercise/SideBar';
-import useExerciseStreaming from "../hooks/useExerciseStreaming";
+import useExerciseStreaming from 'src/hooks/useExerciseStreaming';
 
 const ExerciseDetail = () => {
   const {exerciseId} = useParams<ExerciseDetailRouteParameters>();
