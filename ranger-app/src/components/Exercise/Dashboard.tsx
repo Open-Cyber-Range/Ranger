@@ -24,6 +24,7 @@ const DashboardPanel = ({exercise, deployments}:
 
   const createNewDeployment = (
     name: string,
+    groupName: string,
     deploymentGroup?: string,
   ): [NewDeployment, string] | undefined => {
     if (exercise?.sdlSchema && exercise?.id) {
@@ -31,6 +32,7 @@ const DashboardPanel = ({exercise, deployments}:
         name,
         sdlSchema: exercise.sdlSchema,
         deploymentGroup,
+        groupName,
       }, exercise.id];
     }
 
@@ -74,9 +76,9 @@ const DashboardPanel = ({exercise, deployments}:
   };
 
   const addNewDeployment = async (
-    {count, deploymentGroup, name}: DeploymentForm,
+    {count, deploymentGroup, name, groupName}: DeploymentForm,
   ) => {
-    const deploymentInfo = createNewDeployment(name, deploymentGroup);
+    const deploymentInfo = createNewDeployment(name, groupName, deploymentGroup);
     if (deploymentInfo) {
       const [deployment, exerciseId] = deploymentInfo;
 

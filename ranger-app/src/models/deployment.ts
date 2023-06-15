@@ -2,14 +2,14 @@
 type DeploymentForm = {
   name: string;
   deploymentGroup?: string;
-  groupName?: string;
+  groupName: string;
   count: number;
 };
 
 type NewDeployment = {
   name: string;
   deploymentGroup?: string;
-  groupName?: string;
+  groupName: string;
   sdlSchema: string;
 };
 
