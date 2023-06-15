@@ -130,6 +130,7 @@ impl From<Exercise> for ParticipantExercise {
 pub struct UpdateExercise {
     pub name: String,
     pub sdl_schema: Option<String>,
+    pub group_name: Option<String>,
 }
 
 impl UpdateExercise {
