@@ -8,13 +8,13 @@ import {useNavigate} from 'react-router-dom';
 const ExerciseDeployments = ({exercise}: {exercise: ParticipantExercise}) => {
   const navigate = useNavigate();
   const {data: deployments} = useParticipantGetDeploymentsQuery(exercise.id ?? skipToken);
-  console.log(deployments);
 
   const handleCardClick = (deploymentId: string) => {
     navigate(`${exercise.id}/deployment/${deploymentId}`);
   };
 
   return (
+    // eslint-disable-next-line react/jsx-no-useless-fragment
     <>
       {deployments?.map(deployment => (
         <Card
@@ -26,7 +26,7 @@ const ExerciseDeployments = ({exercise}: {exercise: ParticipantExercise}) => {
           }}
         >
           <div className='flex flex-row justify-between'>
-            <H2>{exercise.name}</H2>
+            <H2>{exercise.name}: {deployment.name}</H2>
           </div>
         </Card>
       ))}
