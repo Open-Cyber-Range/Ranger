@@ -1,4 +1,9 @@
 
+type ParticipantExercise = {
+  id: string;
+  name: string;
+};
+
 type NewExercise = {
   name: string;
   sdlSchema?: string;
@@ -44,6 +49,7 @@ type Email = {
 };
 
 export type {
+  ParticipantExercise,
   NewExercise,
   Exercise,
   UpdateExercise,

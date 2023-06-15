@@ -5,8 +5,10 @@ import type {
   Deployment,
   DeploymentElement,
   NewDeployment,
+  ParticipantDeployment,
 } from 'src/models/deployment';
 import {
+  type ParticipantExercise,
   type EmailForm,
   type Exercise,
   type NewExercise,
@@ -147,7 +149,7 @@ export const apiSlice = createApi({
       query: ({exerciseId, deploymentId}) =>
         `/admin/exercise/${exerciseId}/deployment/${deploymentId}/scenario`,
     }),
-    participantGetExercises: builder.query<Exercise[], void>({
+    participantGetExercises: builder.query<ParticipantExercise[], void>({
       query: () => '/participant/exercise',
       providesTags: (result = []) =>
         [
@@ -155,7 +157,11 @@ export const apiSlice = createApi({
           {type: 'Exercise', id: 'LIST'},
         ],
     }),
-    participantGetDeployment: builder.query<Deployment,
+    participantGetDeployments: builder.query<ParticipantDeployment[], string>({
+      query: exerciseId =>
+        `/participant/exercise/${exerciseId}/deployment`,
+    }),
+    participantGetDeployment: builder.query<ParticipantDeployment,
     {
       exerciseId: string;
       deploymentId: string;
@@ -201,6 +207,7 @@ export const {
   useAdminGetEmailFormQuery,
   useAdminGetDeploymentScenarioQuery,
   useParticipantGetExercisesQuery,
+  useParticipantGetDeploymentsQuery,
   useParticipantGetDeploymentQuery,
   useParticipantGetDeploymentScoresQuery,
   useParticipantGetDeploymentScenarioQuery,

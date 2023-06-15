@@ -1,4 +1,9 @@
 
+type ParticipantDeployment = {
+  name: string;
+  id: string;
+};
+
 type DeploymentForm = {
   name: string;
   deploymentGroup?: string;
@@ -25,13 +30,13 @@ type Deployment = {
 
 type Deployers = Record<string, string[]>;
 
-export enum DeployerType {
+enum DeployerType {
   Switch = 'switch',
   Template = 'template',
   VirtualMachine = 'virtual_machine',
 }
 
-export enum ElementStatus {
+enum ElementStatus {
   Success = 'Success',
   Ongoing = 'Ongoing',
   Failed = 'Failed',
@@ -49,6 +54,9 @@ type DeploymentElement = {
 };
 
 export type {
+  DeployerType,
+  ElementStatus,
+  ParticipantDeployment,
   NewDeployment,
   Deployment,
   DeploymentElement,
