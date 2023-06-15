@@ -44,6 +44,7 @@ impl Score {
     pub fn from_conditionmessage_and_metrics(
         condition_message: ConditionMessage,
         metrics: Option<Metrics>,
+        vm_name: String,
     ) -> Self {
         let metric_name = if let Some(metrics) = metrics {
             if let Some((metric_key, metric)) = metrics.iter().find(|(_, metric)| {
@@ -67,7 +68,7 @@ impl Score {
             exercise_id: condition_message.exercise_id,
             deployment_id: condition_message.deployment_id,
             metric_name,
-            vm_name: condition_message.virtual_machine_id.to_string(),
+            vm_name,
             vm_uuid: condition_message.virtual_machine_id,
             value: condition_message.value.clone(),
             timestamp: condition_message.created_at,

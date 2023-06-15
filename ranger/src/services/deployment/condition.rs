@@ -228,6 +228,7 @@ async fn start_condition_stream(
             database_address.clone(),
             condition_stream,
             scenario.clone(),
+            node_deployment_element.clone().scenario_reference,
         ))
         .await??;
     Ok(())

@@ -152,6 +152,7 @@ pub struct ConditionStream(
     pub Addr<Database>,
     pub Streaming<ConditionStreamResponse>,
     pub Scenario,
+    pub String,
 );
 impl Handler<ConditionStream> for DeployerDistribution {
     type Result = ResponseActFuture<Self, Result<()>>;
@@ -163,6 +164,7 @@ impl Handler<ConditionStream> for DeployerDistribution {
         let database_address = msg.3;
         let mut stream = msg.4;
         let scenario = msg.5;
+        let vm_name = msg.6;
 
         Box::pin(
             async move {
@@ -193,7 +195,8 @@ impl Handler<ConditionStream> for DeployerDistribution {
                             condition_id,
                             value,
                             ),
-                            scenario.clone()
+                            scenario.clone().metrics,
+                            vm_name.clone()
                         ))
                         .await??;
                 }
