@@ -32,6 +32,7 @@ const AddDialog = (
       count,
       name,
       deploymentGroup,
+      groupName,
     }: DeploymentForm) => void;
     onCancel: () => void;
   },
