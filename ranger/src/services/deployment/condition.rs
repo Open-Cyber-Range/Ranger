@@ -127,6 +127,7 @@ impl DeployableConditions
                                         &mut condition_deployment_element,
                                         node_deployment_element,
                                         exercise_id,
+                                        scenario,
                                     )
                                     .await?
                                 }
@@ -205,6 +206,7 @@ async fn start_condition_stream(
     condition_deployment_element: &mut DeploymentElement,
     node_deployment_element: &DeploymentElement,
     exercise_id: &Uuid,
+    scenario: &Scenario,
 ) -> Result<()> {
     let virtual_machine_id = try_some(
         node_deployment_element.clone().handler_reference,
@@ -225,6 +227,7 @@ async fn start_condition_stream(
             virtual_machine_id.clone(),
             database_address.clone(),
             condition_stream,
+            scenario.clone(),
         ))
         .await??;
     Ok(())
