@@ -1,5 +1,5 @@
 import type React from 'react';
-import {useEffect} from 'react';
+import {useEffect, useState} from 'react';
 import type {SubmitHandler} from 'react-hook-form';
 import {useForm, Controller} from 'react-hook-form';
 import {
@@ -22,6 +22,7 @@ import {useTranslation} from 'react-i18next';
 import init, {parse_and_verify_sdl as parseAndVerifySDL} from 'wasm-sdl-parser';
 import {Suggest2} from '@blueprintjs/select';
 import {MenuItem2} from '@blueprintjs/popover2';
+import {type InfraNode, type Node, type Scenario} from 'src/models/scenario';
 
 const ExerciseForm = ({exercise, onContentChange, children}:
 {
@@ -30,6 +31,7 @@ const ExerciseForm = ({exercise, onContentChange, children}:
   children?: React.ReactNode;
 }) => {
   const {t} = useTranslation();
+  const [resourceEstimation, setResourceEstimation] = useState<string>();
   const {handleSubmit, control, watch} = useForm<UpdateExercise>({
     defaultValues: {
       name: exercise.name,
@@ -64,6 +66,32 @@ const ExerciseForm = ({exercise, onContentChange, children}:
 
         return;
       }
+
+      const parsedSdl = parseAndVerifySDL(exerciseUpdate.sdlSchema);
+      const scenario: Scenario = JSON.parse(parsedSdl) as Scenario;
+      const resourceEstimation = estimateResources(scenario);
+      setResourceEstimation(resourceEstimation);
+    }
+
+    function estimateResources(scenario: any) {
+      let totalCpu = 0;
+      let totalRam = 0;
+
+      if (scenario?.infrastructure && scenario?.nodes) {
+        for (const nodeName of Object.keys(scenario.infrastructure as InfraNode)) {
+          const infraNode = scenario.infrastructure[nodeName] as InfraNode;
+          const nodeCount = infraNode.count;
+          const node = scenario.nodes?.[nodeName] as Node;
+
+          if (node?.resources) {
+            totalRam += node.resources.ram * nodeCount;
+            totalCpu += node.resources.cpu * nodeCount;
+          }
+        }
+      }
+
+      totalRam /= (1024 ** 3);
+      return `Total RAM: ${totalRam} GiB, Total CPUs: ${totalCpu}`;
     }
 
     await updateExercise({exerciseUpdate, exerciseId: exercise.id});
@@ -219,6 +247,19 @@ const ExerciseForm = ({exercise, onContentChange, children}:
                   defaultLanguage='yaml'
                   onChange={onChange}
                 />
+              </div>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                marginTop: '20px',
+                backgroundColor: '#fafafa',
+                padding: '10px',
+                boxShadow: '0px 2px 5px rgba(0,0,0,0.1)',
+              }}
+              >
+                <h3 style={{fontWeight: 'bold', color: '#333'}}>Estimated Resources:</h3>
+                <p style={{fontSize: '16px', color: '#666'}}>{resourceEstimation}</p>
               </div>
             </FormGroup>
           );
