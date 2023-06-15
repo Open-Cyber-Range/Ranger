@@ -14,7 +14,7 @@ import TloTable from 'src/components/Scoring/TloTable';
 import Editor from '@monaco-editor/react';
 import {AnchorButton, H2} from '@blueprintjs/core';
 import SideBar from 'src/components/Exercise/SideBar';
-import useExerciseStreaming from '../hooks/useExerciseStreaming';
+import useExerciseStreaming from 'src/hooks/useExerciseStreaming';
 import {toastSuccess, toastWarning} from 'src/components/Toaster';
 
 const DeploymentDetail = () => {
