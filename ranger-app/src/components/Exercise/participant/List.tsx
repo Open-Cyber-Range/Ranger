@@ -2,7 +2,7 @@ import React from 'react';
 import {useParticipantGetExercisesQuery} from 'src/slices/apiSlice';
 import humanInterval from 'human-interval';
 import {sortByProperty} from 'sort-by-property';
-import ParticipantExerciseCard from './Card';
+import ExerciseDeployments from './ExerciseDeployments';
 
 const ExerciseList = () => {
   const {
@@ -12,12 +12,12 @@ const ExerciseList = () => {
     {pollingInterval: humanInterval('5 seconds')},
   );
   let exercises = potentialExercises ?? [];
-  exercises = exercises.slice().sort(sortByProperty('updatedAt', 'desc'));
+  exercises = exercises.slice().sort(sortByProperty('name', 'desc'));
 
   return (
     <div className='flex flex-col gap-8'>
       {exercises.map(exercise => (
-        <ParticipantExerciseCard key={exercise.id} exercise={exercise}/>
+        <ExerciseDeployments key={exercise.id} exercise={exercise}/>
       ))}
     </div>
 
