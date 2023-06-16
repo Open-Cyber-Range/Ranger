@@ -46,22 +46,20 @@ impl Score {
         metrics: Option<Metrics>,
         vm_name: String,
     ) -> Self {
-        let metric_name = if let Some(metrics) = metrics {
+        let mut metric_name = Default::default();
+        let mut max_score: BigDecimal = Default::default();
+
+        if let Some(metrics) = metrics {
             if let Some((metric_key, metric)) = metrics.iter().find(|(_, metric)| {
-                metric
-                    .condition
-                    .eq(&Some(condition_message.clone().condition_name))
+                metric.condition.eq(&Some(condition_message.clone().condition_name))
             }) {
-                match &metric.name {
+                metric_name = match &metric.name {
                     Some(metric_name) => metric_name.to_owned(),
                     None => metric_key.to_owned(),
-                }
-            } else {
-                condition_message.condition_name
+                };
+                max_score = BigDecimal::from(metric.max_score);
             }
-        } else {
-            condition_message.condition_name
-        };
+        }
 
         Self {
             id: condition_message.id,
@@ -70,7 +68,7 @@ impl Score {
             metric_name,
             vm_name,
             vm_uuid: condition_message.virtual_machine_id,
-            value: condition_message.value.clone(),
+            value: condition_message.value * max_score,
             timestamp: condition_message.created_at,
         }
     }
