@@ -207,7 +207,7 @@ impl Handler<ConditionStream> for DeployerDistribution {
                                 Uuid::try_from(virtual_machine_id.as_str())?,
                                 condition_deployment_element.scenario_reference.to_owned(),
                                 condition_id,
-                                value,
+                                value.clone(),
                             ),
                             metric.clone(),
                             node_deployment_element.scenario_reference.clone(),
