@@ -1,3 +1,4 @@
+use bigdecimal::{BigDecimal, FromPrimitive};
 use chrono::NaiveDateTime;
 use lazy_static::lazy_static;
 
@@ -20,4 +21,5 @@ pub const DATETIME_FORMAT: &str = "%Y-%m-%d %H:%M:%S";
 lazy_static! {
     pub static ref NAIVEDATETIME_DEFAULT_VALUE: NaiveDateTime =
         NaiveDateTime::parse_from_str(NAIVEDATETIME_DEFAULT_STRING, DATETIME_FORMAT).unwrap();
+    pub static ref BIG_DECIMAL_ONE: BigDecimal = BigDecimal::from_i8(1).unwrap();
 }
