@@ -112,7 +112,7 @@ pub fn get_tlos_by_entities(
         })
 }
 
-pub fn get_entity_vulnerabilitites(scenario: &Scenario, entities: &Entities) -> Vulnerabilities {
+pub fn get_entity_vulnerabilities(scenario: &Scenario, entities: &Entities) -> Vulnerabilities {
     let vulnerability_names = entities.values().fold(vec![], |mut accumulator, entity| {
         if let Some(vulnerability_names) = entity.vulnerabilities.clone() {
             accumulator.extend(vulnerability_names);
@@ -146,8 +146,8 @@ pub fn get_vulnerability_connections(
     let mut nodes = HashMap::new();
 
     vulnerabilities.keys().for_each(|vulnerability_name| {
-        if let Some(scenario_capabilitites) = scenario.capabilities.clone() {
-            scenario_capabilitites
+        if let Some(scenario_capabilities) = scenario.capabilities.clone() {
+            scenario_capabilities
                 .into_iter()
                 .for_each(|(key, capability)| {
                     if let Some(vulnerabilities) = capability.vulnerabilities.clone() {
@@ -272,12 +272,12 @@ pub fn get_conditions_by_metrics(scenario: &Scenario, metrics: &Metrics) -> Cond
     let conditions = metrics
         .iter()
         .fold(HashMap::new(), |mut accumulator, metric| {
-            if let Some(metric_condtion_name) = &metric.1.condition {
+            if let Some(metric_condition_name) = &metric.1.condition {
                 if let Some(scenario_conditions) = scenario.conditions.clone() {
-                    if scenario_conditions.contains_key(metric_condtion_name) {
+                    if scenario_conditions.contains_key(metric_condition_name) {
                         accumulator.insert(
-                            metric_condtion_name.to_owned(),
-                            scenario_conditions[metric_condtion_name].clone(),
+                            metric_condition_name.to_owned(),
+                            scenario_conditions[metric_condition_name].clone(),
                         );
                     }
                 }
@@ -577,7 +577,7 @@ pub fn get_conditions_by_event(scenario: &Scenario, event: &Event) -> Conditions
                 }
                 conditions
             });
-    let event_inject_capabilitites =
+    let event_inject_capabilities =
         event
             .injects
             .iter()
@@ -593,7 +593,7 @@ pub fn get_conditions_by_event(scenario: &Scenario, event: &Event) -> Conditions
                 capabilities
             });
     let capability_conditions =
-        event_inject_capabilitites
+        event_inject_capabilities
             .values()
             .fold(HashMap::new(), |mut conditions, capability| {
                 if let Some(scenario_conditions) = scenario.conditions.clone() {
@@ -621,7 +621,7 @@ pub fn filter_scenario_by_role(scenario: &Scenario, role: ExerciseRole) -> Scena
         return participant_scenario;
     }
 
-    let mut vulnerabilities = get_entity_vulnerabilitites(scenario, &flattened_entities);
+    let mut vulnerabilities = get_entity_vulnerabilities(scenario, &flattened_entities);
     let (mut capabilities, mut features, mut nodes) =
         get_vulnerability_connections(scenario, &vulnerabilities);
     let mut conditions = get_conditions_by_capabilities(scenario, &capabilities);
