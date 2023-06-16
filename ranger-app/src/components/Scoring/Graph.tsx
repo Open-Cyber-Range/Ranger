@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useMemo} from 'react';
 import {
   type ChartData,
   Decimation,
@@ -90,13 +90,15 @@ const DeploymentDetailsGraph = ({exerciseId, deploymentId}:
 
   if (deployment && scenario && scores && scores.length > 0) {
     const groupedScores = groupByMetricNameAndVmName(scores);
-    const options = getLineChartOptions({
-      minLimit: Date.parse(scenario?.start),
-      maxLimit: Date.parse(scenario?.end),
+    const minLimit = Date.parse(scenario?.start);
+    const maxLimit = Date.parse(scenario?.end);
+    const options = useMemo(() => getLineChartOptions({
+      minLimit,
+      maxLimit,
       chartTitle,
       xAxisTitle,
       yAxisTitle},
-    );
+    ), [chartTitle, xAxisTitle, yAxisTitle, minLimit, maxLimit]);
 
     return (
       <Line
