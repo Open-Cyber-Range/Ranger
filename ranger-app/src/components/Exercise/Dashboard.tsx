@@ -8,7 +8,6 @@ import type {
   NewDeployment,
 } from 'src/models/deployment';
 import {toastSuccess, toastWarning} from 'src/components/Toaster';
-import useExerciseStreaming from 'src/hooks/useExerciseStreaming';
 import AddDialog from 'src/components/Deployment/AddDialog';
 import {type Exercise} from 'src/models/exercise';
 import {useState} from 'react';
@@ -19,7 +18,6 @@ const DashboardPanel = ({exercise, deployments}:
   deployments: Deployment[] | undefined;
 }) => {
   const {t} = useTranslation();
-  useExerciseStreaming(exercise?.id);
   const [addDeployment, _newDeployment] = useAdminAddDeploymentMutation();
   const [isModified, setIsModified] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);

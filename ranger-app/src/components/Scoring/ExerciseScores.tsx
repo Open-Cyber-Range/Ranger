@@ -8,7 +8,8 @@ import {sortByProperty} from 'sort-by-property';
 import ScoreTagGroup from 'src/components/Scoring/ScoreTagGroup';
 
 const ScoresPanel = ({deployments}:
-{deployments: Deployment[] | undefined;
+{
+  deployments: Deployment[] | undefined;
 }) => {
   const {t} = useTranslation();
   const navigate = useNavigate();

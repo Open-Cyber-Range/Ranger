@@ -3,6 +3,7 @@ use actix_http::HttpMessage;
 use actix_web::{
     dev::{forward_ready, Service, ServiceRequest, ServiceResponse, Transform},
     error::ErrorUnauthorized,
+    http::header::HeaderValue,
     web::Data,
     Error, FromRequest,
 };
@@ -136,7 +137,8 @@ where
         let service = self.service.clone();
         let expected_role = self.expected_role;
         let app_state = req.app_data::<Data<AppState>>().cloned();
-        let auht_header = req.headers().get("Authorization").cloned();
+        let auth_header = req.headers().get("Authorization").cloned();
+        let auth_header_ws = req.headers().get("Sec-WebSocket-Protocol").cloned();
 
         Box::pin(async move {
             let keycloak_configuration = app_state
@@ -147,24 +149,24 @@ where
                 .configuration
                 .keycloak
                 .clone();
-            let token_string = auht_header.ok_or_else(|| {
-                error!("Authorization header not found");
-                RangerError::TokenMissing
-            })?;
+            let token_string: HeaderValue = match auth_header {
+                Some(value) => Ok(value),
+                _ => match auth_header_ws.clone() {
+                    Some(value) => {
+                        Ok(value)
+                    }
+                    _ => Err(RangerError::TokenMissing),
+                },
+            }?;
             let token_string = token_string
                 .to_str()
                 .map_err(|e| {
                     error!("Failed to convert authorization header to string: {}", e);
                     RangerError::TokenMissing
                 })?
-                .split(' ')
-                .collect::<Vec<&str>>();
-            let token_string = token_string.get(1).ok_or_else(|| {
-                error!("Failed to get token from authorization header");
-                RangerError::TokenMissing
-            })?;
+                .replace("Bearer ", "");
             let token = Token::try_new(
-                token_string,
+                token_string.as_str(),
                 &keycloak_configuration.authentication_pem_content,
             )
             .await?;

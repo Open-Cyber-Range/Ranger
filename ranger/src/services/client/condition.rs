@@ -19,6 +19,7 @@ use ranger_grpc::{
     ConditionStreamResponse, Identifier,
 };
 use std::any::Any;
+use sdl_parser::Scenario;
 use tonic::{transport::Channel, Streaming};
 
 impl DeploymentInfo for GrpcCondition {
@@ -150,6 +151,8 @@ pub struct ConditionStream(
     pub String,
     pub Addr<Database>,
     pub Streaming<ConditionStreamResponse>,
+    pub Scenario,
+    pub String,
 );
 impl Handler<ConditionStream> for DeployerDistribution {
     type Result = ResponseActFuture<Self, Result<()>>;
@@ -160,6 +163,8 @@ impl Handler<ConditionStream> for DeployerDistribution {
         let virtual_machine_id = msg.2;
         let database_address = msg.3;
         let mut stream = msg.4;
+        let scenario = msg.5;
+        let vm_name = msg.6;
 
         Box::pin(
             async move {
@@ -181,14 +186,18 @@ impl Handler<ConditionStream> for DeployerDistribution {
                     );
                     database_address
                         .clone()
-                        .send(CreateConditionMessage(NewConditionMessage::new(
+                        .send(CreateConditionMessage(
+                            NewConditionMessage::new(
                             exercise_id,
                             deployment_element.deployment_id,
                             Uuid::try_from(virtual_machine_id.as_str())?,
                             deployment_element.scenario_reference.to_owned(),
                             condition_id,
                             value,
-                        )))
+                            ),
+                            scenario.clone().metrics,
+                            vm_name.clone()
+                        ))
                         .await??;
                 }
                 Ok(())

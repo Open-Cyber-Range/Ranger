@@ -4,9 +4,10 @@ import {BASE_URL} from 'src/constants';
 import type {WebsocketWrapper} from 'src/models/websocket';
 import {WebsocketMessageType} from 'src/models/websocket';
 import {apiSlice} from 'src/slices/apiSlice';
-import type {AppDispatch} from 'src/store';
+import type {AppDispatch, RootState} from 'src/store';
 import {useAppDispatch} from 'src/store';
 import {getWebsocketBase} from 'src/utils';
+import {useSelector} from 'react-redux';
 
 const websocketHandler = (
   dispatch: AppDispatch,
@@ -68,6 +69,20 @@ const websocketHandler = (
       break;
     }
 
+    case WebsocketMessageType.Score: {
+      const score = data.content;
+      dispatch(
+        apiSlice.util
+          .updateQueryData('adminGetDeploymentScores', {
+            exerciseId: score.exerciseId,
+            deploymentId: score.deploymentId,
+          },
+          scores => {
+            scores?.push(score);
+          }));
+      break;
+    }
+
     default: {
       break;
     }
@@ -78,16 +93,18 @@ const useExerciseStreaming = (exerciseId?: string) => {
   const dispatch = useAppDispatch();
   const websocket = useRef<WebSocket | undefined>();
   const [trigger, setTrigger] = useState<boolean>(true);
+  const token = useSelector((state: RootState) => state.user.token);
   useEffect(() => {
-    if (
-      exerciseId
-      && (
-        websocket.current === undefined
+    if (!token || !exerciseId) {
+      return;
+    }
+
+    if (websocket.current === undefined
         || websocket.current.readyState !== WebSocket.OPEN
-      )
     ) {
       websocket.current = new WebSocket(
-        `${getWebsocketBase()}${BASE_URL}/exercise/${exerciseId}/websocket`,
+        `${getWebsocketBase()}${BASE_URL}/admin/exercise/${exerciseId}/websocket`,
+        `${token}`,
       );
       const thisInstance = websocket.current;
       thisInstance.addEventListener('message', websocketHandler(dispatch));
@@ -108,7 +125,7 @@ const useExerciseStreaming = (exerciseId?: string) => {
         thisInstance.close();
       };
     }
-  }, [dispatch, exerciseId, trigger, setTrigger]);
+  }, [dispatch, exerciseId, trigger, token, setTrigger]);
 };
 
 export default useExerciseStreaming;
