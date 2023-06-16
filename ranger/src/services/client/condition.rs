@@ -1,4 +1,5 @@
 use crate::{
+    constants::BIG_DECIMAL_ONE,
     models::{DeploymentElement, ElementStatus, NewConditionMessage},
     services::{
         database::{condition::CreateConditionMessage, Database},
@@ -180,8 +181,6 @@ impl Handler<ConditionStream> for DeployerDistribution {
                 );
 
                 let is_event_condition = condition_deployment_element.event_id.is_some();
-                let big_decimal_one =
-                    try_some(BigDecimal::from_i8(1), "BigDecimal conversion error")?;
 
                 while let Some(stream_item) = stream.message().await? {
                     let condition_id: Uuid = condition_deployment_element
@@ -216,7 +215,7 @@ impl Handler<ConditionStream> for DeployerDistribution {
                         .await??;
 
                     if is_event_condition {
-                        if value == big_decimal_one
+                        if value == *BIG_DECIMAL_ONE
                             && condition_deployment_element.status == ElementStatus::Ongoing
                         {
                             condition_deployment_element.status = ElementStatus::Success;
@@ -228,7 +227,7 @@ impl Handler<ConditionStream> for DeployerDistribution {
                                     condition_deployment_element.handler_reference.clone(),
                                 )
                                 .await?;
-                        } else if value != big_decimal_one
+                        } else if value != *BIG_DECIMAL_ONE
                             && condition_deployment_element.status == ElementStatus::Success
                         {
                             condition_deployment_element.status = ElementStatus::Ongoing;
