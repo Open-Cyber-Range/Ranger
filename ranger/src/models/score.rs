@@ -52,7 +52,7 @@ impl Score {
         if let Some((metric_key, metric)) = metric {
             metric_name = match &metric.name {
                 Some(metric_name) => metric_name.to_owned(),
-                None => metric_key.to_owned(),
+                None => metric_key,
             };
             max_score = BigDecimal::from(metric.max_score);
         }

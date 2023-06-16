@@ -147,7 +147,7 @@ impl Handler<DeployConditions> for ConditionAggregator {
 
                             if condition_name.eq_ignore_ascii_case(condition_name) {
                                 info!(
-                                    "Deploying condition '{condition_name}' for VM {node_name}",
+                                    "Deploying condition '{condition_name}' for VM '{node_name}'",
                                     node_name = deployment_element.scenario_reference
                                 );
 
@@ -201,7 +201,7 @@ impl Handler<DeployConditions> for ConditionAggregator {
                                             .await?;
 
                                         let condition_metric = get_metric_by_condition(
-                                            &metrics,
+                                            metrics,
                                             &condition_deployment_element.scenario_reference,
                                         );
 
@@ -257,7 +257,7 @@ pub async fn create_condition_request(
     role: &Role,
 ) -> Result<Box<GrpcCondition>> {
     let template_account = database_address
-        .send(GetAccount(*template_id, condition_role.username.to_owned()))
+        .send(GetAccount(*template_id, role.username.to_owned()))
         .await?
         .map_err(|err| anyhow!("ConditionRequest GetAccount: {err}"))?;
     let source: Option<GrpcSource> = match condition.clone().source {
