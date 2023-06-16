@@ -35,16 +35,20 @@ impl Handler<CreateConditionMessage> for Database {
                         .execute(&mut connection)?;
                     let condition_message =
                         ConditionMessage::by_id(new_condition_message.id).first(&mut connection)?;
-                    let score: Score = Score::from_conditionmessage_and_metric(
-                        condition_message.clone(),
-                        metric,
-                        vm_name,
-                    );
-                    let scoring_msg = SocketScoring(
-                        score.exercise_id,
-                        (score.id, score.exercise_id, score).into(),
-                    );
-                    websocket_manager.do_send(scoring_msg);
+
+                    if metric.is_some() {
+                        let score: Score = Score::from_conditionmessage_and_metric(
+                            condition_message.clone(),
+                            metric,
+                            vm_name,
+                        );
+                        let scoring_msg = SocketScoring(
+                            score.exercise_id,
+                            (score.id, score.exercise_id, score).into(),
+                        );
+                        websocket_manager.do_send(scoring_msg);
+                    }
+
                     Ok(condition_message)
                 })
                 .await??;
