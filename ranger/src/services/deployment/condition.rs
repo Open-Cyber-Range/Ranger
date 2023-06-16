@@ -257,9 +257,9 @@ pub async fn create_condition_request(
     role: &Role,
 ) -> Result<Box<GrpcCondition>> {
     let template_account = database_address
-        .send(GetAccount(*template_id, role.username.to_owned()))
-        .await??;
-
+        .send(GetAccount(*template_id, condition_role.username.to_owned()))
+        .await?
+        .map_err(|err| anyhow!("ConditionRequest GetAccount: {err}"))?;
     let source: Option<GrpcSource> = match condition.clone().source {
         Some(condition_source) => Some(GrpcSource {
             name: condition_source.name,
