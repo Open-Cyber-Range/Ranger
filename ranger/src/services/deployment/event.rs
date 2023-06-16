@@ -4,8 +4,9 @@ use crate::constants::NAIVEDATETIME_DEFAULT_VALUE;
 use crate::models::helpers::uuid::Uuid;
 use crate::models::{DeploymentElement, ElementStatus, Exercise};
 use crate::services::database::deployment::GetDeploymentElementByEventId;
-use crate::services::database::event::{CreateEvent, GetEvent, UpdateEvent};
+use crate::services::database::event::{CreateEvent, UpdateEvent};
 use crate::services::deployment::inject::DeployableInject;
+use crate::utilities::event::{await_conditions_to_be_deployed, await_event_start};
 use crate::utilities::scenario::get_injects_and_roles_by_node_event;
 use crate::utilities::{scenario::get_conditions_by_event, try_some};
 use crate::Addressor;
@@ -225,15 +226,6 @@ impl DeployableEvents for Scenario {
                                 ))
                                 .await??;
 
-                            info!(
-                                "Event {:?} ended. Result: {:?}",
-                                event_id,
-                                match event_succeeded {
-                                    true => "Success",
-                                    false => "Failure",
-                                }
-                            );
-
                             if event_succeeded {
                                 for (inject_name, inject, inject_role) in injects {
                                     (
@@ -307,41 +299,17 @@ impl Handler<StartPolling> for EventPoller {
                     triggered_at: *NAIVEDATETIME_DEFAULT_VALUE,
                 };
                 let has_succeeded: bool;
+                let event = await_event_start(&database_address, event_id).await?;
 
+                await_conditions_to_be_deployed(&database_address, event_id, &event_conditions)
+                    .await?;
+
+                info!("Starting Polling for Event {:?}", event.name);
                 loop {
-                    let mut deployment_elements = database_address
+                    let current_time = Utc::now().naive_utc();
+                    let deployment_elements = database_address
                         .send(GetDeploymentElementByEventId(event_id, true))
                         .await??;
-
-                    let event = database_address.send(GetEvent(event_id)).await??;
-                    let mut current_time = Utc::now().naive_utc();
-
-                    while current_time < event.start {
-                        let relative_event_start_time = {
-                            let timeout = (event.start - current_time).num_seconds();
-                            if timeout <= 0 {
-                                std::time::Duration::from_secs(0)
-                            } else {
-                                std::time::Duration::from_secs(timeout as u64)
-                            }
-                        };
-                        if relative_event_start_time > std::time::Duration::from_secs(0) {
-                            info!(
-                                "Starting Polling for Event {:?} in {:?}",
-                                event.name, relative_event_start_time
-                            );
-                            sleep(relative_event_start_time).await;
-                            current_time = Utc::now().naive_utc();
-                        } else {
-                            break;
-                        }
-                    }
-
-                    while !deployment_elements.len().eq(&event_conditions.len()) {
-                        deployment_elements = database_address
-                            .send(GetDeploymentElementByEventId(event_id, true))
-                            .await??;
-                    }
 
                     let successful_conditions = deployment_elements
                         .iter()
@@ -349,18 +317,14 @@ impl Handler<StartPolling> for EventPoller {
                         .count();
 
                     if deployment_elements.len().eq(&successful_conditions) {
-                        info!(
-                            "Event {:?} has been triggered - deploying injects",
-                            event.name
-                        );
+                        info!("Event {:?} has been triggered successfully", event.name);
                         updated_event.has_triggered = true;
                         updated_event.triggered_at = Utc::now().naive_utc();
                         has_succeeded = true;
                         break;
                     } else if current_time > event.end {
-                        debug!("Event: {:?} deployment window has ended", event.name);
+                        info!("Event {:?} deployment window has ended", event.name);
                         has_succeeded = false;
-
                         break;
                     }
 

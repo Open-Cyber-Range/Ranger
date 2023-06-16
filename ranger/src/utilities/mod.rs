@@ -1,3 +1,4 @@
+pub mod event;
 pub mod scenario;
 mod validation;
 
