@@ -88,17 +88,24 @@ const DeploymentDetailsGraph = ({exerciseId, deploymentId}:
     return graphData;
   }
 
+  let minLimit: number | undefined;
+  let maxLimit: number | undefined;
+
+  if (scenario) {
+    minLimit = Date.parse(scenario.start);
+    maxLimit = Date.parse(scenario.end);
+  }
+
+  const options = useMemo(() => getLineChartOptions({
+    minLimit,
+    maxLimit,
+    chartTitle,
+    xAxisTitle,
+    yAxisTitle},
+  ), [chartTitle, xAxisTitle, yAxisTitle, minLimit, maxLimit]);
+
   if (deployment && scenario && scores && scores.length > 0) {
     const groupedScores = groupByMetricNameAndVmName(scores);
-    const minLimit = Date.parse(scenario?.start);
-    const maxLimit = Date.parse(scenario?.end);
-    const options = useMemo(() => getLineChartOptions({
-      minLimit,
-      maxLimit,
-      chartTitle,
-      xAxisTitle,
-      yAxisTitle},
-    ), [chartTitle, xAxisTitle, yAxisTitle, minLimit, maxLimit]);
 
     return (
       <Line
