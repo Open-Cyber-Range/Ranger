@@ -1,6 +1,6 @@
 use super::condition::ConditionProperties;
 use super::Database;
-use crate::constants::NAIVEDATETIME_DEFAULT_VALUE;
+use crate::constants::{EVENT_POLLER_RETRY_DURATION, NAIVEDATETIME_DEFAULT_VALUE};
 use crate::models::helpers::uuid::Uuid;
 use crate::models::{DeploymentElement, ElementStatus, Exercise};
 use crate::services::database::deployment::GetDeploymentElementByEventId;
@@ -328,7 +328,7 @@ impl Handler<StartPolling> for EventPoller {
                         break;
                     }
 
-                    sleep(core::time::Duration::from_secs(3)).await;
+                    sleep(EVENT_POLLER_RETRY_DURATION).await;
                 }
 
                 database_address
