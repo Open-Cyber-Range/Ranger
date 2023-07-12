@@ -593,6 +593,11 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
+"@open-cyber-range/wasm-sdl-parser@^0.1.5":
+  version "0.1.5"
+  resolved "https://registry.yarnpkg.com/@open-cyber-range/wasm-sdl-parser/-/wasm-sdl-parser-0.1.5.tgz#6ec79927a9f09ad21056cabcf6cdec3e297f35dd"
+  integrity sha512-rv1YXvsghs7H4w8ft2mY2vvLI9w+84/J5dq4aW0wahqOFFRwjP3SiazrWVNANgNpQR2jW4VWrOizLtJM+ekQNg==
+
 "@popperjs/core@^2.11.6", "@popperjs/core@^2.11.7":
   version "2.11.8"
   resolved "https://registry.yarnpkg.com/@popperjs/core/-/core-2.11.8.tgz#6b79032e760a0899cd4204710beede972a3a185f"
@@ -4786,11 +4791,6 @@ warning@^4.0.2, warning@^4.0.3:
   integrity sha512-rpJyN222KWIvHJ/F53XSZv0Zl/accqHR8et1kpaMTD/fLCRxtV8iX8czMzY7sVZupTI3zcUTg8eycS2kNF9l6w==
   dependencies:
     loose-envify "^1.0.0"
-
-wasm-sdl-parser@^0.1.0:
-  version "0.1.4"
-  resolved "https://registry.yarnpkg.com/wasm-sdl-parser/-/wasm-sdl-parser-0.1.4.tgz#c933b235f5503039ba6bd67d1a1859d53fe8f0b4"
-  integrity sha512-tXLMTDEVFeaCjeSCL8m4Pf9GoviGsS/9ZThDZ5e2PGMsX6citlTgj9LwoRuNBYLtAFp4+p4WY36eyfEq6c3tfg==
 
 web-vitals@^2.1.0:
   version "2.1.4"
