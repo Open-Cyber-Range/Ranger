@@ -72,7 +72,7 @@ const SideBar = ({renderMainContent}: {
                 text={t('participant.exercise.tabs.dash')}
                 icon='control'
                 onClick={() => {
-                  navigate(`/exercises/${exercise.id}/deployments/${deployment.id}#accounts`);
+                  navigate(`/exercises/${exercise.id}/deployments/${deployment.id}#dash`);
 
                   setActiveTab('Dash');
                 }}
@@ -83,7 +83,7 @@ const SideBar = ({renderMainContent}: {
                 text={t('participant.exercise.tabs.score')}
                 icon='chart'
                 onClick={() => {
-                  navigate(`/exercises/${exercise.id}/deployments/${deployment.id}#accounts`);
+                  navigate(`/exercises/${exercise.id}/deployments/${deployment.id}#score`);
 
                   setActiveTab('Score');
                 }}
@@ -94,7 +94,7 @@ const SideBar = ({renderMainContent}: {
                 text={t('participant.exercise.tabs.events')}
                 icon='timeline-events'
                 onClick={() => {
-                  navigate(`/exercises/${exercise.id}/deployments/${deployment.id}#accounts`);
+                  navigate(`/exercises/${exercise.id}/deployments/${deployment.id}#events`);
 
                   setActiveTab('Events');
                 }}
