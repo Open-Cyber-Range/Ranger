@@ -142,6 +142,16 @@ const language = {
       noScoreData: 'No score data to display graph',
     },
   },
+  participant: {
+    exercise: {
+      tabs: {
+        dash: 'Dashboard',
+        score: 'Score',
+        events: 'Events',
+        accounts: 'Accounts',
+      },
+    },
+  },
 };
 
 export default language;
