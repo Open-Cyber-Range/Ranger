@@ -265,11 +265,11 @@ impl Actor for EventPoller {
     type Context = Context<Self>;
 
     fn started(&mut self, _ctx: &mut Context<Self>) {
-        println!("EventPoller is alive");
+        info!("EventPoller Actor started");
     }
 
     fn stopped(&mut self, _ctx: &mut Context<Self>) {
-        println!("EventPoller is stopped");
+        info!("EventPoller Actor stopped");
     }
 }
 
