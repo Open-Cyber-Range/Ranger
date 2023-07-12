@@ -10,7 +10,7 @@ const ExerciseDeployments = ({exercise}: {exercise: ParticipantExercise}) => {
   const {data: deployments} = useParticipantGetDeploymentsQuery(exercise.id ?? skipToken);
 
   const handleCardClick = (deploymentId: string) => {
-    navigate(`${exercise.id}/deployments/${deploymentId}`);
+    navigate(`/exercises/${exercise.id}/deployments/${deploymentId}`);
   };
 
   return (

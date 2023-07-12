@@ -14,7 +14,7 @@ import {
   MenuDivider,
   MenuItem,
 } from '@blueprintjs/core';
-import {type ReactNode, useState} from 'react';
+import {useState} from 'react';
 
 type ActiveTab = 'Dash' | 'Score' | 'Events' | 'Accounts' | undefined;
 
@@ -30,8 +30,7 @@ const hashToTab = (hash: string): ActiveTab => {
   }
 };
 
-const SideBar = ({renderMainContent}: {
-  renderMainContent?: (activeTab: ActiveTab) => ReactNode | undefined;}) => {
+const SideBar = () => {
   const {t} = useTranslation();
   const navigate = useNavigate();
   const {exerciseId, deploymentId}
@@ -60,64 +59,46 @@ const SideBar = ({renderMainContent}: {
                 text={t('participant.exercise.tabs.dash')}
                 icon='control'
                 onClick={() => {
-                  if (exerciseId && deploymentId) {
-                    navigate(`/exercises/${exerciseId}/deployments/${deploymentId}#dash`);
-                  }
+                  navigate(`/exercises/${exercise.id}/deployments/${deployment.id}#dash`);
 
                   setActiveTab('Dash');
                 }}
               />
 
               <MenuItem
-                active={!deploymentId && activeTab === 'Score'}
+                active={activeTab === 'Score'}
                 text={t('participant.exercise.tabs.score')}
                 icon='chart'
                 onClick={() => {
-                  if (exerciseId && deploymentId) {
-                    navigate(`/exercises/${exerciseId}/deployments/${deploymentId}#score`);
-                  }
+                  navigate(`/exercises/${exercise.id}/deployments/${deployment.id}#dash`);
 
                   setActiveTab('Score');
                 }}
               />
 
               <MenuItem
-                active={!deploymentId && activeTab === 'Events'}
+                active={activeTab === 'Events'}
                 text={t('participant.exercise.tabs.events')}
                 icon='timeline-events'
                 onClick={() => {
-                  if (exerciseId && deploymentId) {
-                    navigate(`/exercises/${exerciseId}/deployments/${deploymentId}#events`);
-                  }
+                  navigate(`/exercises/${exercise.id}/deployments/${deployment.id}#dash`);
 
                   setActiveTab('Events');
                 }}
               />
 
               <MenuItem
-                active={!deploymentId && activeTab === 'Accounts'}
+                active={activeTab === 'Accounts'}
                 text={t('participant.exercise.tabs.accounts')}
                 icon='mugshot'
                 onClick={() => {
-                  if (exerciseId && deploymentId) {
-                    navigate(`/exercises/${exerciseId}/deployments/${deploymentId}#accounts`);
-                  }
+                  navigate(`/exercises/${exercise.id}/deployments/${deployment.id}#dash`);
 
                   setActiveTab('Accounts');
                 }}
               />
-
-              {/* <li className={MENU_HEADER}>
-                <H6>Exercises</H6>
-              </li> */}
-
             </div>
           </Menu>
-        </div>
-        <div className='grow m-[2rem] flex justify-center'>
-          <div className='max-w-[80rem] w-[60rem]'>
-            {renderMainContent?.(activeTab)}
-          </div>
         </div>
       </div>
     );
