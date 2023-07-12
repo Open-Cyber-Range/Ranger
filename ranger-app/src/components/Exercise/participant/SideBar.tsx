@@ -2,23 +2,21 @@ import type React from 'react';
 import {useLocation, useNavigate, useParams} from 'react-router-dom';
 import type {DeploymentDetailRouteParameters} from 'src/models/routes';
 import {
-  useParticipantGetDeploymentsQuery,
-  useParticipantGetExercisesQuery,
+  useParticipantGetDeploymentQuery,
+  useParticipantGetExerciseQuery,
 } from 'src/slices/apiSlice';
 import {skipToken} from '@reduxjs/toolkit/dist/query';
 import {useTranslation} from 'react-i18next';
 import {
   H2,
-  H6,
+  H4,
   Menu,
   MenuDivider,
   MenuItem,
 } from '@blueprintjs/core';
 import {type ReactNode, useState} from 'react';
-import {MENU_HEADER} from '@blueprintjs/core/lib/esm/common/classes';
-import DeploymentList from './DeploymentList';
 
-type ActiveTab = 'Dash' | undefined;
+type ActiveTab = 'Dash' | 'Score' | 'Events' | 'Accounts' | undefined;
 
 const hashToTab = (hash: string): ActiveTab => {
   switch (hash) {
@@ -39,11 +37,13 @@ const SideBar = ({renderMainContent}: {
   const {exerciseId, deploymentId}
     = useParams<DeploymentDetailRouteParameters>();
   const {hash} = useLocation();
-  const {data: deployments} = useParticipantGetDeploymentsQuery(exerciseId ?? skipToken);
-  const {data: exercises} = useParticipantGetExercisesQuery();
+  const {data: exercise} = useParticipantGetExerciseQuery(exerciseId ?? skipToken);
+  const deploymentQueryArguments = exerciseId && deploymentId
+    ? {exerciseId, deploymentId} : skipToken;
+  const {data: deployment} = useParticipantGetDeploymentQuery(deploymentQueryArguments);
   const [activeTab, setActiveTab] = useState<ActiveTab>(hashToTab(hash));
 
-  if (exercises && deployments) {
+  if (exercise && deployment) {
     return (
 
       <div className='flex h-[100%]'>
@@ -51,12 +51,13 @@ const SideBar = ({renderMainContent}: {
           <Menu large className='max-w-[10rem] bp4-elevation-3 h-[100%]'>
             <div className='flex flex-col max-h-[100%] overflow-y-auto'>
               <div className='mt-[2rem] px-[7px]'>
-                <H2>Main menu</H2>
+                <H2>{exercise.name}</H2>
+                <H4>{deployment.name}</H4>
               </div>
               <MenuDivider/>
               <MenuItem
                 active={!deploymentId && activeTab === 'Dash'}
-                text={t('exercises.tabs.dashboard')}
+                text={t('participant.exercise.tabs.dash')}
                 icon='control'
                 onClick={() => {
                   if (exerciseId && deploymentId) {
@@ -67,12 +68,48 @@ const SideBar = ({renderMainContent}: {
                 }}
               />
 
-              <li className={MENU_HEADER}>
+              <MenuItem
+                active={!deploymentId && activeTab === 'Score'}
+                text={t('participant.exercise.tabs.score')}
+                icon='chart'
+                onClick={() => {
+                  if (exerciseId && deploymentId) {
+                    navigate(`/exercises/${exerciseId}/deployments/${deploymentId}#score`);
+                  }
+
+                  setActiveTab('Score');
+                }}
+              />
+
+              <MenuItem
+                active={!deploymentId && activeTab === 'Events'}
+                text={t('participant.exercise.tabs.events')}
+                icon='timeline-events'
+                onClick={() => {
+                  if (exerciseId && deploymentId) {
+                    navigate(`/exercises/${exerciseId}/deployments/${deploymentId}#events`);
+                  }
+
+                  setActiveTab('Events');
+                }}
+              />
+
+              <MenuItem
+                active={!deploymentId && activeTab === 'Accounts'}
+                text={t('participant.exercise.tabs.accounts')}
+                icon='mugshot'
+                onClick={() => {
+                  if (exerciseId && deploymentId) {
+                    navigate(`/exercises/${exerciseId}/deployments/${deploymentId}#accounts`);
+                  }
+
+                  setActiveTab('Accounts');
+                }}
+              />
+
+              {/* <li className={MENU_HEADER}>
                 <H6>Exercises</H6>
-              </li>
-              {exercises.map(exercise => (
-                <DeploymentList key={exercise.id} exercise={exercise}/>
-              ))}
+              </li> */}
 
             </div>
           </Menu>

@@ -157,6 +157,10 @@ export const apiSlice = createApi({
           {type: 'Exercise', id: 'LIST'},
         ],
     }),
+    participantGetExercise: builder.query<ParticipantExercise, string>({
+      query: exerciseId => `/participant/exercise/${exerciseId}`,
+      providesTags: (result, error, id) => [{type: 'Exercise', id}],
+    }),
     participantGetDeployments: builder.query<ParticipantDeployment[], string>({
       query: exerciseId =>
         `/participant/exercise/${exerciseId}/deployment`,
@@ -207,6 +211,7 @@ export const {
   useAdminGetEmailFormQuery,
   useAdminGetDeploymentScenarioQuery,
   useParticipantGetExercisesQuery,
+  useParticipantGetExerciseQuery,
   useParticipantGetDeploymentsQuery,
   useParticipantGetDeploymentQuery,
   useParticipantGetDeploymentScoresQuery,
