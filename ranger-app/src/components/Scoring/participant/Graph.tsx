@@ -44,7 +44,7 @@ ChartJS.register(
   zoomPlugin,
 );
 
-const ParticipantDeploymnentGraph = ({exerciseId, deploymentId}:
+const ParticipantDeploymentGraph = ({exerciseId, deploymentId}:
 {exerciseId: string | undefined;
   deploymentId: string | undefined;
 }) => {
@@ -114,4 +114,4 @@ const ParticipantDeploymnentGraph = ({exerciseId, deploymentId}:
   );
 };
 
-export default ParticipantDeploymnentGraph;
+export default ParticipantDeploymentGraph;
