@@ -93,11 +93,11 @@ impl Actor for ConditionAggregator {
     type Context = Context<Self>;
 
     fn started(&mut self, _ctx: &mut Context<Self>) {
-        println!("ConditionAggregator is alive");
+        info!("ConditionAggregator Actor started");
     }
 
     fn stopped(&mut self, _ctx: &mut Context<Self>) {
-        println!("ConditionAggregator is stopped");
+        info!("ConditionAggregator Actor stopped");
     }
 }
 
