@@ -19,7 +19,9 @@ import {
 } from 'src/slices/apiSlice';
 import Editor from '@monaco-editor/react';
 import {useTranslation} from 'react-i18next';
-import init, {parse_and_verify_sdl as parseAndVerifySDL} from 'wasm-sdl-parser';
+import init, {
+  parse_and_verify_sdl as parseAndVerifySDL,
+} from '@open-cyber-range/wasm-sdl-parser';
 import {Suggest2} from '@blueprintjs/select';
 import {MenuItem2} from '@blueprintjs/popover2';
 import {type InfraNode, type Node, type Scenario} from 'src/models/scenario';

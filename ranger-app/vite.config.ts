@@ -11,7 +11,7 @@ export default defineConfig({
     viteTsconfigPaths(),
     svgrPlugin(),
     envCompatible(),
-    wasmPack([], ['wasm-sdl-parser'])],
+    wasmPack([], ['@open-cyber-range/wasm-sdl-parser'])],
   server: {
     proxy: {
       '/api': {
