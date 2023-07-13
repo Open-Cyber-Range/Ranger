@@ -6,6 +6,7 @@ const initialState: {
   token?: string;
   roles: UserRole[];
   selectedRole?: UserRole;
+  selectedEntity?: string;
 } = {
   roles: [],
   selectedRole: undefined,
@@ -24,11 +25,15 @@ export const userSlice = createSlice({
     selectRole(state, action: PayloadAction<UserRole | undefined>) {
       state.selectedRole = action.payload;
     },
+    setSelectedEntity(state, action: PayloadAction<string | undefined>) {
+      state.selectedEntity = action.payload;
+    },
   },
 });
 
-export const {setToken, setRoles, selectRole} = userSlice.actions;
+export const {setToken, setRoles, selectRole, setSelectedEntity} = userSlice.actions;
 
 export const selectedRoleSelector = (state: RootState) =>
   state.user.selectedRole;
 export const rolesSelector = (state: RootState) => state.user.roles;
+export const selectedEntity = (state: RootState) => state.user.selectedEntity;
