@@ -1,22 +1,25 @@
+import React from 'react';
 import {skipToken} from '@reduxjs/toolkit/dist/query';
-import React, {useState} from 'react';
 import EntitySelect from 'src/components/EntitySelect';
 import {useParticipantGetDeploymentScenarioQuery} from 'src/slices/apiSlice';
+import {useDispatch, useSelector} from 'react-redux';
+import {selectedEntity, setSelectedEntity} from 'src/slices/userSlice';
 
 const ParticipantDashBoard = ({
   exerciseId, deploymentId}: {exerciseId: string; deploymentId: string;
 }) => {
   const {data: scenario} = useParticipantGetDeploymentScenarioQuery(exerciseId && deploymentId
     ? {exerciseId, deploymentId} : skipToken);
-  const [selectedEntityKey, setSelectedEntityKey] = useState<string | undefined>(undefined);
+  const currentEntity = useSelector(selectedEntity);
+  const dispatch = useDispatch();
 
   return (
     <div>
       <EntitySelect
         entities={scenario?.entities}
-        selectedEntityKey={selectedEntityKey}
+        selectedEntityKey={currentEntity}
         onChange={(selectedKey: string | undefined) => {
-          setSelectedEntityKey(selectedKey);
+          dispatch(setSelectedEntity(selectedKey));
         }}
       />
     </div>
