@@ -55,7 +55,7 @@ const TloTableRow = ({exerciseId, deploymentId, tloKey, tlo}:
                       <tr key={metricKey} className='text-left'>
                         {latestScoresByVm.map(element => (
                           <td key={element.id} className='pl-4'>
-                            {metricReference} - {element.vmName}:
+                            {metricReference} - {element.vmName}:{' '}
                             {roundToDecimalPlaces(
                               element.value)} {t('tloTable.points')}
                           </td>
