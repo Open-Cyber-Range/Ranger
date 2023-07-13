@@ -87,22 +87,24 @@ impl DeployableEvents for Scenario {
                                 && event_conditions.contains_key(condition_name)
                             {
                                 let scripts = self.scripts.clone().unwrap_or_default();
-                                let potential_event_script = scripts
+                                let event_script = match scripts
                                     .iter()
-                                    .find(|(_, script)| script.events.contains(event_name));
-                                let (_script_name, script) = try_some(
-                                    potential_event_script,
-                                    "Event not found among Scripts",
-                                )?;
+                                    .find(|(_, script)| script.events.contains(event_name))
+                                {
+                                    Some((_, script)) => script,
+                                    None => continue,
+                                };
 
-                                let mut event_start_seconds = script.start_time;
+                                let mut event_start_seconds = event_script.start_time;
 
-                                let event_end_in = Duration::seconds(script.end_time.try_into()?);
+                                let event_end_in =
+                                    Duration::seconds(event_script.end_time.try_into()?);
                                 let scenario_start = self.start;
                                 let scenario_end = self.end;
 
                                 if let Some(relative_time_multiplier) = event.time {
-                                    let script_duration = script.end_time - script.start_time;
+                                    let script_duration =
+                                        event_script.end_time - event_script.start_time;
                                     event_start_seconds =
                                         (script_duration as f64 * relative_time_multiplier as f64)
                                             .round() as u64;
