@@ -150,6 +150,10 @@ const language = {
         events: 'Events',
         accounts: 'Accounts',
       },
+      events: {
+        noEvents: 'Participant is not connected to any Events in this deployment',
+        noDescription: 'Event has no description',
+      },
     },
   },
 };
