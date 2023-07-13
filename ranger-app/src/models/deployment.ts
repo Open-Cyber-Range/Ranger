@@ -30,13 +30,13 @@ type Deployment = {
 
 type Deployers = Record<string, string[]>;
 
-enum DeployerType {
+export enum DeployerType {
   Switch = 'switch',
   Template = 'template',
   VirtualMachine = 'virtual_machine',
 }
 
-enum ElementStatus {
+export enum ElementStatus {
   Success = 'Success',
   Ongoing = 'Ongoing',
   Failed = 'Failed',
@@ -54,8 +54,6 @@ type DeploymentElement = {
 };
 
 export type {
-  DeployerType,
-  ElementStatus,
   ParticipantDeployment,
   NewDeployment,
   Deployment,
