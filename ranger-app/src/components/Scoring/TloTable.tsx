@@ -47,6 +47,7 @@ const TloTable = ({exerciseId, deploymentId, tloMap}:
 
                 <table className='
                   bp4-html-table
+                  bp4-compact
                   bp4-html-table-striped
                   bp4-html-table-bordered'
                 >
