@@ -40,6 +40,11 @@ export const apiSlice = createApi({
     adminGetGroupUsers: builder.query<AdUser[], string>({
       query: groupName => `/admin/group/${groupName}/users`,
     }),
+    adminGetDeploymentUsers: builder.query<AdUser[], {deploymentId: string; exerciseId: string}>({
+      query: ({deploymentId, exerciseId}) => ({
+        url: `/admin/exercise/${exerciseId}/deployment/${deploymentId}/users`,
+      }),
+    }),
     adminGetExercises: builder.query<Exercise[], void>({
       query: () => '/admin/exercise',
       providesTags: (result = []) =>
@@ -107,7 +112,7 @@ export const apiSlice = createApi({
     adminDeleteDeployment: builder
       .mutation<string, {exerciseId: string; deploymentId: string}>({
       query: ({exerciseId, deploymentId}) => ({
-        url: `/admin/exercise/${exerciseId}/deployment/${deploymentId}`,
+        url: `/admin/exercise/${exerciseId}/deployment/${deploymentId}/users`,
         method: 'DELETE',
         responseHandler: 'text',
       }),
@@ -195,6 +200,7 @@ export const apiSlice = createApi({
 export const {
   useAdminGetGroupsQuery,
   useAdminGetGroupUsersQuery,
+  useAdminGetDeploymentUsersQuery,
   useAdminGetExerciseQuery,
   useAdminGetExercisesQuery,
   useAdminAddExerciseMutation,
