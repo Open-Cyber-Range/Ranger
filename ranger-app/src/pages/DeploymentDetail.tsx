@@ -16,6 +16,7 @@ import {AnchorButton, H2} from '@blueprintjs/core';
 import SideBar from 'src/components/Exercise/SideBar';
 import useExerciseStreaming from 'src/hooks/useExerciseStreaming';
 import {toastSuccess, toastWarning} from 'src/components/Toaster';
+import AccountList from 'src/components/Deployment/AccountList';
 
 const DeploymentDetail = () => {
   const {t} = useTranslation();
@@ -80,6 +81,11 @@ const DeploymentDetail = () => {
             exerciseId={exerciseId}
             deploymentId={deploymentId}
             tloMap={scenario?.tlos}
+          />
+
+          <AccountList
+            exerciseId={exerciseId}
+            deploymentId={deploymentId}
           />
           <div className='flex justify-between items-center pb-4'>
             <BackButton/>

@@ -6,10 +6,12 @@ export type AdGroup = {
 };
 
 export type AdUser = {
-  id: string;
-  username: string;
-  email?: string;
-  firstName?: string;
-  lastName?: string;
+  vmId: string;
+  accounts: Account[];
 };
 
+export type Account = {
+  username: string;
+  password?: string;
+  privateKey?: string;
+};

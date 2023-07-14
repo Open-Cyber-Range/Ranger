@@ -35,6 +35,7 @@ const language = {
     deleteSuccess: 'Deployment {{deploymentName}} deleted',
     deleteFail: 'Failed to delete the deployment',
     noDeployments: 'No deployments',
+    noAccounts: 'No accounts',
     form: {
       group: {
         placeholder: 'Select group...',
