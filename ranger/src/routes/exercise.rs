@@ -239,7 +239,7 @@ pub async fn subscribe_to_exercise(
     log::debug!("Subscribing websocket to exercise {}", exercise.id);
     let manager_address = app_state.websocket_manager_address.clone();
     let exercise_socket = ExerciseWebsocket::new(exercise.id, manager_address);
-
+    log::debug!("Created websocket for exercise {}", exercise.id);
     ws::start(exercise_socket, &req, stream)
 }
 

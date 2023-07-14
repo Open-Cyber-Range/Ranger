@@ -17,11 +17,11 @@ import SideBar from 'src/components/Exercise/SideBar';
 import useExerciseStreaming from 'src/hooks/useExerciseStreaming';
 import {toastSuccess, toastWarning} from 'src/components/Toaster';
 import AccountList from 'src/components/Deployment/AccountList';
+import EntityConnector from 'src/components/Deployment/EntityConnector';
 
 const DeploymentDetail = () => {
   const {t} = useTranslation();
-  const {exerciseId, deploymentId}
-  = useParams<DeploymentDetailRouteParameters>();
+  const {exerciseId, deploymentId} = useParams<DeploymentDetailRouteParameters>();
   useExerciseStreaming(exerciseId);
   const {data: scenario} = useAdminGetDeploymentScenarioQuery(
     exerciseId && deploymentId ? {exerciseId, deploymentId} : skipToken,
@@ -88,7 +88,11 @@ const DeploymentDetail = () => {
             deploymentId={deploymentId}
           />
           <div className='flex justify-between items-center pb-4'>
-            <BackButton/>
+            <EntityConnector exerciseId={exerciseId} deploymentId={deploymentId}/>
+            <div className='mt-[1rem]'/>
+            <div className='flex justify-between items-center'>
+              <BackButton/>
+            </div>
           </div>
         </>
       )}
