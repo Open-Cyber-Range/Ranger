@@ -178,6 +178,14 @@ export const apiSlice = createApi({
       query: ({exerciseId, deploymentId}) =>
         `/participant/exercise/${exerciseId}/deployment/${deploymentId}`,
     }),
+    participantGetDeploymentUsers: builder.query<AdUser[],
+      {
+        deploymentId: string;
+        exerciseId: string
+      }>({
+      query: ({deploymentId, exerciseId}) =>
+        `/participant/exercise/${exerciseId}/deployment/${deploymentId}/users`,
+    }),
     participantGetDeploymentScores: builder.query<Score[],
     {
       exerciseId: string;
@@ -220,6 +228,7 @@ export const {
   useParticipantGetExerciseQuery,
   useParticipantGetDeploymentsQuery,
   useParticipantGetDeploymentQuery,
+  useParticipantGetDeploymentUsersQuery,
   useParticipantGetDeploymentScoresQuery,
   useParticipantGetDeploymentScenarioQuery,
 } = apiSlice;
