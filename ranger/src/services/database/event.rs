@@ -21,6 +21,8 @@ pub struct CreateEvent {
     pub event_id: Uuid,
     pub event_name: String,
     pub event: SdlEvent,
+    pub deployment_id: Uuid,
+    pub parent_node_id: Uuid,
     pub start: NaiveDateTime,
     pub end: NaiveDateTime,
     pub use_shared_connection: bool,
@@ -38,6 +40,8 @@ impl Handler<CreateEvent> for Database {
                     event_id,
                     event_name,
                     event,
+                    deployment_id,
+                    parent_node_id,
                     start,
                     end,
                     use_shared_connection: _,
@@ -45,7 +49,15 @@ impl Handler<CreateEvent> for Database {
 
                 let mutex_connection = &connection_result?;
                 let is_scheduled = event.time.is_some();
-                let new_event = NewEvent::new(event_id, event_name, is_scheduled, start, end);
+                let new_event = NewEvent::new(
+                    event_id,
+                    event_name,
+                    is_scheduled,
+                    deployment_id,
+                    parent_node_id,
+                    start,
+                    end,
+                );
                 let mut connection = mutex_connection
                     .lock()
                     .map_err(|error| anyhow!("Error locking Mutex connection: {:?}", error))?;

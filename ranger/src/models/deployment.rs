@@ -2,7 +2,10 @@ use crate::{
     constants::{MAX_DEPLOYMENT_NAME_LENGTH, NAIVEDATETIME_DEFAULT_VALUE},
     errors::RangerError,
     middleware::keycloak::KeycloakInfo,
-    schema::{deployment_elements, deployments},
+    schema::{
+        deployment_elements::{self},
+        deployments,
+    },
     services::database::{
         deployment::UpdateDeploymentElement, All, Create, CreateOrIgnore, Database, FilterExisting,
         SelectById, SoftDelete, SoftDeleteById, UpdateById,
@@ -158,6 +161,7 @@ pub struct DeploymentElement {
     pub status: ElementStatus,
     pub executor_log: Option<String>,
     pub event_id: Option<Uuid>,
+    pub parent_node_id: Option<Uuid>,
 }
 
 type ByDeploymentId<T> = Filter<
@@ -180,22 +184,29 @@ type ByEventId<T> = Filter<
     Eq<deployment_elements::event_id, Uuid>,
 >;
 
+type ByEventIdByParentNodeId<T> = Filter<
+    ByEventId<All<deployment_elements::table, T>>,
+    Eq<deployment_elements::parent_node_id, Uuid>,
+>;
+
 impl DeploymentElement {
     pub fn new_ongoing(
         deployment_id: Uuid,
         source_box: Box<dyn ScenarioReference>,
         deployer_type: DeployerTypes,
         event_id: Option<Uuid>,
+        parent_node_id: Option<Uuid>,
     ) -> Self {
         Self {
             id: Uuid::random(),
             deployment_id,
             scenario_reference: source_box.reference(),
-            handler_reference: None,
             deployer_type: DeployerType(deployer_type),
             status: ElementStatus::Ongoing,
             executor_log: None,
             event_id,
+            handler_reference: None,
+            parent_node_id,
         }
     }
 
@@ -215,6 +226,7 @@ impl DeploymentElement {
             status,
             executor_log: None,
             event_id: None,
+            parent_node_id: None,
         }
     }
 
@@ -282,6 +294,15 @@ impl DeploymentElement {
 
     pub fn by_event_id(event_id: Uuid) -> ByEventId<All<deployment_elements::table, Self>> {
         Self::all().filter(deployment_elements::event_id.eq(event_id))
+    }
+
+    pub fn by_event_id_by_parent_node_id(
+        event_id: Uuid,
+        parent_node_id: Uuid,
+    ) -> ByEventIdByParentNodeId<Self> {
+        Self::all()
+            .filter(deployment_elements::event_id.eq(event_id))
+            .filter(deployment_elements::parent_node_id.eq(parent_node_id))
     }
 
     pub fn create_insert(&self) -> Create<&Self, deployment_elements::table> {

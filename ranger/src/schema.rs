@@ -38,6 +38,7 @@ diesel::table! {
         status -> Tinytext,
         executor_log -> Nullable<Mediumtext>,
         event_id -> Nullable<Binary>,
+        parent_node_id -> Nullable<Binary>,
         created_at -> Timestamp,
         deleted_at -> Timestamp,
     }
@@ -50,8 +51,6 @@ diesel::table! {
         group_name -> Nullable<Tinytext>,
         deployment_group -> Nullable<Tinytext>,
         sdl_schema -> Longtext,
-        start_time -> Timestamp,
-        end_time -> Timestamp,
         exercise_id -> Binary,
         created_at -> Timestamp,
         updated_at -> Timestamp,
@@ -67,6 +66,8 @@ diesel::table! {
         end -> Timestamp,
         is_scheduled -> Bool,
         has_triggered -> Bool,
+        deployment_id -> Binary,
+        parent_node_id -> Binary,
         triggered_at -> Timestamp,
         created_at -> Timestamp,
         updated_at -> Timestamp,
@@ -90,22 +91,8 @@ diesel::table! {
     participants (id) {
         id -> Binary,
         deployment_id -> Binary,
-        user_id -> Tinytext,
+        user_id -> Text,
         selector -> Text,
-        created_at -> Timestamp,
-        updated_at -> Timestamp,
-        deleted_at -> Timestamp,
-    }
-}
-
-diesel::table! {
-    scores (id) {
-        id -> Binary,
-        exercise_id -> Binary,
-        deployment_id -> Binary,
-        tlo_name -> Tinytext,
-        metric_name -> Tinytext,
-        value -> Decimal,
         created_at -> Timestamp,
         updated_at -> Timestamp,
         deleted_at -> Timestamp,
@@ -118,8 +105,6 @@ diesel::joinable!(deployment_elements -> deployments (deployment_id));
 diesel::joinable!(deployment_elements -> events (event_id));
 diesel::joinable!(deployments -> exercises (exercise_id));
 diesel::joinable!(participants -> deployments (deployment_id));
-diesel::joinable!(scores -> deployments (deployment_id));
-diesel::joinable!(scores -> exercises (exercise_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     accounts,
@@ -129,5 +114,4 @@ diesel::allow_tables_to_appear_in_same_query!(
     events,
     exercises,
     participants,
-    scores,
 );

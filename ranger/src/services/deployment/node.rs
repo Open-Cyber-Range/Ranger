@@ -123,6 +123,7 @@ impl DeployableNodes for Scenario {
                                     Box::new(unique_name.to_string()),
                                     deployer_type,
                                     None,
+                                    None,
                                 ),
                                 true,
                             ))

@@ -7,7 +7,7 @@ use crate::utilities::try_some;
 use crate::Addressor;
 use anyhow::{Ok, Result};
 use async_trait::async_trait;
-use log::info;
+use log::{debug, info};
 use ranger_grpc::capabilities::DeployerTypes;
 use ranger_grpc::{
     Account as GrpcAccount, ExecutorResponse, Inject as GrpcInject, Source as GrpcSource,
@@ -41,11 +41,16 @@ impl DeployableInject
             (inject_name, inject),
         ) = self;
 
-        let virtual_machine_id = try_some(
+        debug!(
+            "Deploying '{inject_name}' for '{node_name}",
+            node_name = deployment_element.scenario_reference
+        );
+        let parent_node_id_string = try_some(
             deployment_element.handler_reference.clone(),
             "Deployment element handler reference not found",
         )?;
 
+        let virtual_machine_id = Uuid::try_from(parent_node_id_string.as_str())?;
         let inject_source = try_some(inject.source.clone(), "Injects source not found")?;
 
         let template_account = addressor
@@ -62,6 +67,7 @@ impl DeployableInject
                     Box::new(inject_name.to_owned()),
                     DeployerTypes::Inject,
                     None,
+                    Some(virtual_machine_id),
                 ),
                 false,
             ))
@@ -69,7 +75,7 @@ impl DeployableInject
 
         let inject_deployment = Box::new(GrpcInject {
             name: inject_name.to_owned(),
-            virtual_machine_id,
+            virtual_machine_id: parent_node_id_string,
             source: Some(GrpcSource {
                 name: inject_source.name.to_owned(),
                 version: inject_source.version.to_owned(),
@@ -116,7 +122,7 @@ impl DeployableInject
                         .await??;
 
                     info!(
-                        "Deployed {inject_name} on {node_name}",
+                        "Deployed '{inject_name}' on '{node_name}'",
                         node_name = deployment_element.scenario_reference
                     );
                     return Ok(());

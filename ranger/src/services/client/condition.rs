@@ -2,7 +2,7 @@ use crate::{
     constants::BIG_DECIMAL_ONE,
     models::{DeploymentElement, ElementStatus, NewConditionMessage},
     services::{
-        database::{condition::CreateConditionMessage, Database},
+        database::{condition::CreateConditionMessage, event::GetEvent, Database},
         deployer::DeployerDistribution,
     },
     utilities::try_some,
@@ -16,7 +16,7 @@ use actix::{
 use anyhow::{anyhow, Ok, Result};
 use async_trait::async_trait;
 use bigdecimal::{BigDecimal, FromPrimitive};
-use log::info;
+use log::{debug, info};
 use ranger_grpc::{
     condition_service_client::ConditionServiceClient, Condition as GrpcCondition,
     ConditionStreamResponse, Identifier,
@@ -175,12 +175,10 @@ impl Handler<ConditionStream> for DeployerDistribution {
                 )?;
 
                 info!(
-                    "Finished deploying {condition_name} on {node_name}, starting stream",
+                    "Finished deploying '{condition_name}' on '{node_name}', starting stream",
                     condition_name = condition_deployment_element.scenario_reference,
                     node_name = node_deployment_element.scenario_reference,
                 );
-
-                let is_event_condition = condition_deployment_element.event_id.is_some();
 
                 while let Some(stream_item) = stream.message().await? {
                     let condition_id: Uuid = condition_deployment_element
@@ -214,19 +212,30 @@ impl Handler<ConditionStream> for DeployerDistribution {
                         ))
                         .await??;
 
-                    if is_event_condition {
-                        if value == *BIG_DECIMAL_ONE
-                            && condition_deployment_element.status == ElementStatus::Ongoing
-                        {
-                            condition_deployment_element.status = ElementStatus::Success;
-                            condition_deployment_element
-                                .update(
-                                    &database_address,
-                                    exercise_id,
-                                    ElementStatus::Success,
-                                    condition_deployment_element.handler_reference.clone(),
-                                )
-                                .await?;
+                    if let Some(event_id) = condition_deployment_element.event_id {
+                        if condition_deployment_element.status == ElementStatus::Success {
+                            let event = database_address.send(GetEvent(event_id)).await??;
+                            if event.has_triggered {
+                                debug!(
+                                    "Event '{}' has triggered, closing '{condition_name}' stream for '{node_name}'",
+                                    event.name,
+                                    condition_name =
+                                    condition_deployment_element.scenario_reference,
+                                    node_name = node_deployment_element.scenario_reference
+                                );
+                                break;
+                            }
+                        }
+                        if value == *BIG_DECIMAL_ONE && condition_deployment_element.status == ElementStatus::Ongoing {
+                                condition_deployment_element
+                                    .update(
+                                        &database_address,
+                                        exercise_id,
+                                        ElementStatus::Success,
+                                        condition_deployment_element.handler_reference.clone(),
+                                    )
+                                    .await?;
+                                condition_deployment_element.status = ElementStatus::Success;
                         } else if value != *BIG_DECIMAL_ONE
                             && condition_deployment_element.status == ElementStatus::Success
                         {
