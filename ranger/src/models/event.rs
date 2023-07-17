@@ -21,6 +21,8 @@ pub struct NewEvent {
     pub id: Uuid,
     pub name: String,
     pub is_scheduled: bool,
+    pub deployment_id: Uuid,
+    pub parent_node_id: Uuid,
     pub start: NaiveDateTime,
     pub end: NaiveDateTime,
 }
@@ -30,6 +32,8 @@ impl NewEvent {
         id: Uuid,
         name: String,
         is_scheduled: bool,
+        deployment_id: Uuid,
+        parent_node_id: Uuid,
         start: NaiveDateTime,
         end: NaiveDateTime,
     ) -> Self {
@@ -37,6 +41,8 @@ impl NewEvent {
             id,
             name,
             is_scheduled,
+            deployment_id,
+            parent_node_id,
             start,
             end,
         }
@@ -59,6 +65,8 @@ pub struct Event {
     pub id: Uuid,
     pub name: String,
     pub is_scheduled: bool,
+    pub deployment_id: Uuid,
+    pub parent_node_id: Uuid,
     pub start: NaiveDateTime,
     pub end: NaiveDateTime,
     pub has_triggered: bool,

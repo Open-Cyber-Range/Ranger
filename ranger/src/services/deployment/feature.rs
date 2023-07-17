@@ -98,12 +98,15 @@ impl DeployableNodeFeatures
                             node_name = deployment_element.scenario_reference
                         );
 
-                        let virtual_machine_id = deployment_element
+                        let virtual_machine_id_string = deployment_element
                             .handler_reference
                             .clone()
                             .ok_or_else(|| {
                                 anyhow!("Deployment element handler reference not found")
                             })?;
+
+                        let virtual_machine_id =
+                            Uuid::try_from(virtual_machine_id_string.as_str())?;
 
                         let feature_source = feature
                             .source
@@ -119,6 +122,7 @@ impl DeployableNodeFeatures
                                     Box::new(feature_name.to_string()),
                                     DeployerTypes::Feature,
                                     None,
+                                    Some(virtual_machine_id),
                                 ),
                                 true,
                             ))
@@ -137,7 +141,7 @@ impl DeployableNodeFeatures
 
                         let feature_deployment = Box::new(GrpcFeature {
                             name: feature_name.to_owned(),
-                            virtual_machine_id,
+                            virtual_machine_id: virtual_machine_id_string,
                             feature_type: feature_type.into(),
                             account: Some(GrpcAccount {
                                 username: account.username,

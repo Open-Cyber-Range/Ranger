@@ -37,6 +37,7 @@ pub struct ConditionProperties {
     pub condition: Condition,
     pub role: Role,
     pub event_id: Option<Uuid>,
+    pub event_name: Option<String>,
     pub injects: Option<Vec<(String, Inject, Role)>>,
 }
 
@@ -130,12 +131,15 @@ impl Handler<DeployConditions> for ConditionAggregator {
                                 condition,
                                 role: condition_role,
                                 event_id,
+                                event_name: _,
                                 injects: _,
                             } = condition_properties;
-                            let virtual_machine_id = try_some(
+                            let virtual_machine_id_string = try_some(
                                 deployment_element.clone().handler_reference,
                                 "Deployment element handler reference not found",
                             )?;
+                            let virtual_machine_id =
+                                Uuid::try_from(virtual_machine_id_string.as_str())?;
 
                             if condition_name.eq_ignore_ascii_case(condition_name) {
                                 info!(
@@ -152,13 +156,14 @@ impl Handler<DeployConditions> for ConditionAggregator {
                                             Box::new(condition_name.to_owned()),
                                             DeployerTypes::Condition,
                                             *event_id,
+                                            Some(virtual_machine_id),
                                         ),
                                         true,
                                     ))
                                     .await??;
                                 let condition_request = create_condition_request(
                                     &addressor.database,
-                                    &virtual_machine_id,
+                                    &virtual_machine_id_string,
                                     template_id,
                                     condition,
                                     condition_name,

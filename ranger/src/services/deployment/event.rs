@@ -3,7 +3,7 @@ use super::Database;
 use crate::constants::{EVENT_POLLER_RETRY_DURATION, NAIVEDATETIME_DEFAULT_VALUE};
 use crate::models::helpers::uuid::Uuid;
 use crate::models::{DeploymentElement, ElementStatus, Exercise};
-use crate::services::database::deployment::GetDeploymentElementByEventId;
+use crate::services::database::deployment::GetDeploymentElementByEventIdByParentNodeId;
 use crate::services::database::event::{CreateEvent, UpdateEvent};
 use crate::services::deployment::inject::DeployableInject;
 use crate::utilities::event::{await_conditions_to_be_deployed, await_event_start};
@@ -51,7 +51,7 @@ impl DeployableEvents for Scenario {
             .into_iter()
             .map(|(event_name, sdl_event)| {
                 let conditions = get_conditions_by_event(self, &sdl_event);
-                (Uuid::random(), event_name, sdl_event, conditions)
+                (event_name, sdl_event, conditions)
             })
             .collect::<Vec<_>>();
 
@@ -82,7 +82,7 @@ impl DeployableEvents for Scenario {
                     )?;
 
                     if !event_tranche.is_empty() {
-                        for (event_id, event_name, event, event_conditions) in event_tranche {
+                        for (event_name, event, event_conditions) in event_tranche {
                             if node_condition_roles.contains_key(condition_name)
                                 && event_conditions.contains_key(condition_name)
                             {
@@ -129,13 +129,29 @@ impl DeployableEvents for Scenario {
                                     event,
                                     &deployment_element.scenario_reference,
                                 );
+                                let parent_node_id_string = try_some(
+                                    deployment_element.handler_reference.clone(),
+                                    "DeploymentElement missing HandlerReference",
+                                )?;
+                                let event_id = match node_event_conditions.iter().find(
+                                    |condition_properties| {
+                                        condition_properties.event_name == Some(event_name.clone())
+                                    },
+                                ) {
+                                    Some(event) => try_some(event.event_id, "Event missing Id")?,
+                                    None => Uuid::random(),
+                                };
 
                                 let new_event = addressor
                                     .database
                                     .send(CreateEvent {
-                                        event_id: *event_id,
+                                        event_id,
                                         event_name: event_name.to_owned(),
                                         event: event.clone(),
+                                        deployment_id: deployment_element.deployment_id,
+                                        parent_node_id: Uuid::try_from(
+                                            parent_node_id_string.as_str(),
+                                        )?,
                                         start: event_start,
                                         end: event_end,
                                         use_shared_connection: true,
@@ -147,6 +163,7 @@ impl DeployableEvents for Scenario {
                                     condition: condition.clone(),
                                     role: condition_role.clone(),
                                     event_id: Some(new_event.id),
+                                    event_name: Some(event_name.to_owned()),
                                     injects: Some(injects),
                                 });
                             }
@@ -157,6 +174,7 @@ impl DeployableEvents for Scenario {
                             condition: condition.clone(),
                             role: condition_role.clone(),
                             event_id: None,
+                            event_name: None,
                             injects: None,
                         });
                     }
@@ -225,6 +243,7 @@ impl DeployableEvents for Scenario {
                                     addressor.database.clone(),
                                     *event_id,
                                     conditions.to_vec(),
+                                    deployment_element.clone(),
                                 ))
                                 .await??;
 
@@ -259,7 +278,7 @@ impl DeployableEvents for Scenario {
 
 #[derive(Message, Clone)]
 #[rtype(result = "Result<bool>")]
-pub struct StartPolling(Addr<Database>, Uuid, Vec<(String, Role)>);
+pub struct StartPolling(Addr<Database>, Uuid, Vec<(String, Role)>, DeploymentElement);
 
 pub struct EventPoller();
 
@@ -284,7 +303,8 @@ impl Handler<StartPolling> for EventPoller {
 
     fn handle(&mut self, msg: StartPolling, ctx: &mut Context<Self>) -> Self::Result {
         let _address = ctx.address();
-        let StartPolling(database_address, event_id, event_conditions) = msg;
+        let StartPolling(database_address, event_id, event_conditions, node_deployment_element) =
+            msg;
 
         Box::pin(
             async move {
@@ -293,31 +313,58 @@ impl Handler<StartPolling> for EventPoller {
                     triggered_at: *NAIVEDATETIME_DEFAULT_VALUE,
                 };
                 let has_succeeded: bool;
-                let event = await_event_start(&database_address, event_id).await?;
+                let node_name = node_deployment_element.scenario_reference.clone();
+                let vm_handler_reference = try_some(
+                    node_deployment_element.handler_reference,
+                    "VM Node missing handler reference",
+                )?;
+                let event = await_event_start(&database_address, event_id, &node_name).await?;
 
-                await_conditions_to_be_deployed(&database_address, event_id, &event_conditions)
-                    .await?;
+                await_conditions_to_be_deployed(
+                    &database_address,
+                    event_id,
+                    &event_conditions,
+                    &vm_handler_reference,
+                )
+                .await?;
 
-                info!("Starting Polling for Event {:?}", event.name);
+                info!(
+                    "Starting Polling for Event '{}' for node '{}'",
+                    event.name, &node_deployment_element.scenario_reference
+                );
+                let parent_node_id = Uuid::try_from(vm_handler_reference.as_str())?;
                 loop {
                     let current_time = Utc::now().naive_utc();
-                    let deployment_elements = database_address
-                        .send(GetDeploymentElementByEventId(event_id, true))
+                    let condition_deployment_elements = database_address
+                        .send(GetDeploymentElementByEventIdByParentNodeId(
+                            event_id,
+                            parent_node_id,
+                            true,
+                        ))
                         .await??;
 
-                    let successful_conditions = deployment_elements
+                    let successful_condition_count = condition_deployment_elements
                         .iter()
                         .filter(|condition| matches!(condition.status, ElementStatus::Success))
                         .count();
 
-                    if deployment_elements.len().eq(&successful_conditions) {
-                        info!("Event {:?} has been triggered successfully", event.name);
+                    if condition_deployment_elements
+                        .len()
+                        .eq(&successful_condition_count)
+                    {
+                        info!(
+                            "Event '{}' has been triggered successfully for node '{}'",
+                            event.name, node_name
+                        );
                         updated_event.has_triggered = true;
                         updated_event.triggered_at = Utc::now().naive_utc();
                         has_succeeded = true;
                         break;
                     } else if current_time > event.end {
-                        info!("Event {:?} deployment window has ended", event.name);
+                        info!(
+                            "Event '{}' deployment window has ended for node '{}'",
+                            event.name, node_name
+                        );
                         has_succeeded = false;
                         break;
                     }
