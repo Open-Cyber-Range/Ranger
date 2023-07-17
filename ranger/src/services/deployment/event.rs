@@ -265,14 +265,6 @@ pub struct EventPoller();
 
 impl Actor for EventPoller {
     type Context = Context<Self>;
-
-    fn started(&mut self, _ctx: &mut Context<Self>) {
-        info!("EventPoller Actor started");
-    }
-
-    fn stopped(&mut self, _ctx: &mut Context<Self>) {
-        info!("EventPoller Actor stopped");
-    }
 }
 
 impl EventPoller {

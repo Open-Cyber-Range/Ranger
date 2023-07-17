@@ -91,14 +91,6 @@ impl Default for ConditionAggregator {
 
 impl Actor for ConditionAggregator {
     type Context = Context<Self>;
-
-    fn started(&mut self, _ctx: &mut Context<Self>) {
-        info!("ConditionAggregator Actor started");
-    }
-
-    fn stopped(&mut self, _ctx: &mut Context<Self>) {
-        info!("ConditionAggregator Actor stopped");
-    }
 }
 
 #[derive(Message)]
