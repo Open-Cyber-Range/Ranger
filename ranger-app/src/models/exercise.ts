@@ -2,6 +2,7 @@
 type ParticipantExercise = {
   id: string;
   name: string;
+  updatedAt: string;
 };
 
 type NewExercise = {

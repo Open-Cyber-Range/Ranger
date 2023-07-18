@@ -4,10 +4,12 @@ import type {ParticipantExercise} from 'src/models/exercise';
 import {useParticipantGetDeploymentsQuery} from 'src/slices/apiSlice';
 import {skipToken} from '@reduxjs/toolkit/dist/query';
 import {useNavigate} from 'react-router-dom';
+import {sortByProperty} from 'sort-by-property';
 
 const ExerciseDeployments = ({exercise}: {exercise: ParticipantExercise}) => {
   const navigate = useNavigate();
   const {data: deployments} = useParticipantGetDeploymentsQuery(exercise.id ?? skipToken);
+  const sorted_deployments = deployments?.slice().sort(sortByProperty('updatedAt', 'desc'));
 
   const handleCardClick = (deploymentId: string) => {
     navigate(`/exercises/${exercise.id}/deployments/${deploymentId}`);
@@ -16,7 +18,7 @@ const ExerciseDeployments = ({exercise}: {exercise: ParticipantExercise}) => {
   return (
     // eslint-disable-next-line react/jsx-no-useless-fragment
     <>
-      {deployments?.map(deployment => (
+      {sorted_deployments?.map(deployment => (
         <Card
           key={deployment.id}
           interactive

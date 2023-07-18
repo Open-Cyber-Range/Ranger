@@ -113,6 +113,7 @@ impl Exercise {
 pub struct ParticipantExercise {
     pub id: Uuid,
     pub name: String,
+    pub updated_at: String,
 }
 
 impl From<Exercise> for ParticipantExercise {
@@ -120,6 +121,7 @@ impl From<Exercise> for ParticipantExercise {
         Self {
             id: exercise.id,
             name: exercise.name,
+            updated_at: exercise.updated_at.to_string(),
         }
     }
 }
