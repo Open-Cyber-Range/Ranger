@@ -1,7 +1,7 @@
 use sdl_parser::{
     capability::Capabilities,
     condition::Conditions,
-    entity::{Entities, Entity, ExerciseRole},
+    entity::{Entities, Entity, ExerciseRole, Flatten},
     evaluation::Evaluations,
     event::{Event, Events},
     feature::Features,
@@ -39,28 +39,12 @@ pub fn set_optionals_to_none(scenario: &Scenario) -> Scenario {
     participant_scenario
 }
 
-pub fn flatten_entities(entities: Entities) -> Entities {
-    let mut result = entities.clone();
-
-    entities.into_iter().for_each(|(key, entity)| {
-        if let Some(child_entities) = entity.entities {
-            flatten_entities(child_entities)
-                .into_iter()
-                .for_each(|(child_key, child_entity)| {
-                    result.insert(format!("{key}.{child_key}"), child_entity);
-                })
-        }
-    });
-
-    result
-}
-
 pub fn get_flattened_entities_by_role(
     scenario: &Scenario,
     role: ExerciseRole,
 ) -> HashMap<String, Entity> {
     if let Some(scenario_entities) = scenario.entities.clone() {
-        let flattened_entities = flatten_entities(scenario_entities);
+        let flattened_entities = scenario_entities.flatten();
         filter_entities_by_role(flattened_entities, role)
     } else {
         HashMap::new()
