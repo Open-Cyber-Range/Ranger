@@ -4,5 +4,6 @@ type ExerciseDetailRouteParameters = {
 type DeploymentDetailRouteParameters = {
   exerciseId: string;
   deploymentId: string;
+  entitySelector: string;
 };
 export type {ExerciseDetailRouteParameters, DeploymentDetailRouteParameters};

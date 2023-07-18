@@ -4,19 +4,19 @@ import {useTranslation} from 'react-i18next';
 import {useParticipantGetDeploymentScenarioQuery} from 'src/slices/apiSlice';
 
 const Events = ({
-  exerciseId, deploymentId}: {exerciseId: string; deploymentId: string;
+  exerciseId, deploymentId}:
+{exerciseId: string; deploymentId: string; entitySelector: string;
 }) => {
   const {t} = useTranslation();
-  const queryArguments = exerciseId && deploymentId
-    ? {exerciseId, deploymentId} : skipToken;
-  const {data: scenario} = useParticipantGetDeploymentScenarioQuery(queryArguments);
+  const scenarioQueryArguments = exerciseId && deploymentId && entitySelector
+    ? {exerciseId, deploymentId, entitySelector} : skipToken;
+  const {data: scenario} = useParticipantGetDeploymentScenarioQuery(scenarioQueryArguments);
 
   if (scenario?.events) {
     const events = Object.entries(scenario.events);
-
     return (
       events.map(([event_key, event]) => (
-        <div key={event.name} className='p-2'>
+        <div key={event_key} className='p-2'>
           <details className='p-2 border-2 border-slate-300 shadow-md '>
             <summary className='font-bold text-xl'>
               {event.name ?? event_key}
