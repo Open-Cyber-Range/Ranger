@@ -12,7 +12,7 @@ const ExerciseList = () => {
     {pollingInterval: humanInterval('5 seconds')},
   );
   let exercises = potentialExercises ?? [];
-  exercises = exercises.slice().sort(sortByProperty('name', 'desc'));
+  exercises = exercises.slice().sort(sortByProperty('updatedAt', 'desc'));
 
   return (
     <div className='flex flex-col gap-8'>

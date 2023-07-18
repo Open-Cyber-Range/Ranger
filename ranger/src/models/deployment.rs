@@ -96,6 +96,7 @@ pub struct ParticipantDeployment {
     pub id: Uuid,
     pub name: String,
     pub exercise_id: Uuid,
+    pub updated_at: String,
 }
 
 impl From<Deployment> for ParticipantDeployment {
@@ -104,6 +105,7 @@ impl From<Deployment> for ParticipantDeployment {
             id: deployment.id,
             name: deployment.name,
             exercise_id: deployment.exercise_id,
+            updated_at: deployment.updated_at.to_string(),
         }
     }
 }

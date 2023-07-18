@@ -2,6 +2,7 @@
 type ParticipantDeployment = {
   name: string;
   id: string;
+  updatedAt: string;
 };
 
 type DeploymentForm = {
