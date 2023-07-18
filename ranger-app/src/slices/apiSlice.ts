@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import {createApi, fetchBaseQuery} from '@reduxjs/toolkit/query/react';
 import {BASE_URL} from 'src/constants';
 import type {
@@ -179,10 +180,10 @@ export const apiSlice = createApi({
         `/participant/exercise/${exerciseId}/deployment/${deploymentId}`,
     }),
     participantGetDeploymentUsers: builder.query<AdUser[],
-      {
-        deploymentId: string;
-        exerciseId: string
-      }>({
+    {
+      deploymentId: string;
+      exerciseId: string;
+    }>({
       query: ({deploymentId, exerciseId}) =>
         `/participant/exercise/${exerciseId}/deployment/${deploymentId}/users`,
     }),
@@ -198,9 +199,11 @@ export const apiSlice = createApi({
     {
       exerciseId: string;
       deploymentId: string;
+      entitySelector: string;
     }>({
-      query: ({exerciseId, deploymentId}) =>
-        `/participant/exercise/${exerciseId}/deployment/${deploymentId}/scenario`,
+      query({exerciseId, deploymentId, entitySelector}) {
+        return `/participant/exercise/${exerciseId}/deployment/${deploymentId}/scenario/${entitySelector}`;
+      },
     }),
   }),
 });

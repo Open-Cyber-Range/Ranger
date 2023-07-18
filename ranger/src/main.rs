@@ -19,7 +19,9 @@ use ranger::routes::participant::deployment::{
     get_participant_deployment, get_participant_deployments,
 };
 use ranger::routes::participant::{get_participant_exercise, get_participant_exercises};
-use ranger::routes::scenario::get_exercise_deployment_scenario;
+use ranger::routes::scenario::{
+    get_admin_exercise_deployment_scenario, get_participant_exercise_deployment_scenario,
+};
 use ranger::routes::{
     admin::groups::get_participant_groups,
     basic::{status, version},
@@ -73,7 +75,7 @@ async fn main() -> Result<(), Error> {
                                                             .service(delete_participant)
                                                             .service(get_exercise_deployment_scores)
                                                             .service(
-                                                                get_exercise_deployment_scenario,
+                                                                get_admin_exercise_deployment_scenario,
                                                             )
                                                             .service(get_exercise_deployment_users)
                                                             .wrap(DeploymentMiddlewareFactory),
@@ -104,7 +106,7 @@ async fn main() -> Result<(), Error> {
                                                         scope("/{deployment_uuid}")
                                                             .service(get_participant_deployment)
                                                             .service(
-                                                                get_exercise_deployment_scenario,
+                                                                get_participant_exercise_deployment_scenario,
                                                             )
                                                             .service(get_exercise_deployment_users)
                                                             .service(get_exercise_deployment_scores)

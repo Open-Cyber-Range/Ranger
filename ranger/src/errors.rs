@@ -55,6 +55,8 @@ pub enum RangerError {
     TokenMissing,
     #[error("App state missing")]
     AppStateMissing,
+    #[error("Not authorized")]
+    NotAuthorized,
 }
 
 impl ResponseError for RangerError {
@@ -75,6 +77,7 @@ impl ResponseError for RangerError {
             RangerError::AccessForbidden => StatusCode::FORBIDDEN,
             RangerError::TokenExpired => StatusCode::UNAUTHORIZED,
             RangerError::TokenMissing => StatusCode::UNAUTHORIZED,
+            RangerError::NotAuthorized => StatusCode::UNAUTHORIZED,
             _ => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
