@@ -7,6 +7,7 @@ use ranger::middleware::exercise::ExerciseMiddlewareFactory;
 use ranger::middleware::keycloak::KeycloakAccessMiddlewareFactory;
 use ranger::roles::RangerRole;
 use ranger::routes::admin::groups::get_participant_groups_users;
+use ranger::routes::admin::scenario::get_admin_exercise_deployment_scenario;
 use ranger::routes::deployers::get_deployers;
 use ranger::routes::email::send_email;
 use ranger::routes::exercise::{
@@ -18,10 +19,9 @@ use ranger::routes::exercise::{
 use ranger::routes::participant::deployment::{
     get_participant_deployment, get_participant_deployments,
 };
+use ranger::routes::participant::scenario::get_participant_exercise_deployment_scenario;
 use ranger::routes::participant::{get_participant_exercise, get_participant_exercises};
-use ranger::routes::scenario::{
-    get_admin_exercise_deployment_scenario, get_participant_exercise_deployment_scenario,
-};
+
 use ranger::routes::{
     admin::groups::get_participant_groups,
     basic::{status, version},

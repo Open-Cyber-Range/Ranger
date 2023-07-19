@@ -17,18 +17,6 @@ use anyhow::Result;
 use log::error;
 use sdl_parser::{entity::Flatten, parse_sdl, Scenario};
 
-#[get("scenario")]
-pub async fn get_admin_exercise_deployment_scenario(
-    deployment: DeploymentInfo,
-) -> Result<Json<Scenario>, RangerError> {
-    let scenario = parse_sdl(&deployment.sdl_schema).map_err(|error| {
-        error!("Failed to parse sdl: {error}");
-        RangerError::ScenarioParsingFailed
-    })?;
-
-    Ok(Json(scenario))
-}
-
 #[get("scenario/{entity_selector}")]
 pub async fn get_participant_exercise_deployment_scenario(
     app_state: Data<AppState>,
