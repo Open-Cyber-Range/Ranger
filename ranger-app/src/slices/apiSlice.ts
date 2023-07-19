@@ -14,6 +14,7 @@ import {
   type Exercise,
   type NewExercise,
   type UpdateExercise,
+  type Participant,
 } from 'src/models/exercise';
 import {type AdGroup, type AdUser} from 'src/models/groups';
 import {type Scenario} from 'src/models/scenario';
@@ -205,6 +206,15 @@ export const apiSlice = createApi({
         return `/participant/exercise/${exerciseId}/deployment/${deploymentId}/scenario/${entitySelector}`;
       },
     }),
+    participantGetDeploymentParticipants: builder.query<Participant[] | undefined,
+    {
+      exerciseId: string;
+      deploymentId: string;
+    }>({
+      query({exerciseId, deploymentId}) {
+        return `/participant/exercise/${exerciseId}/deployment/${deploymentId}/participant`;
+      },
+    }),
   }),
 });
 
@@ -234,4 +244,5 @@ export const {
   useParticipantGetDeploymentUsersQuery,
   useParticipantGetDeploymentScoresQuery,
   useParticipantGetDeploymentScenarioQuery,
+  useParticipantGetDeploymentParticipantsQuery,
 } = apiSlice;

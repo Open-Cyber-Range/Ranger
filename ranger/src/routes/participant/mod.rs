@@ -1,4 +1,5 @@
 pub mod deployment;
+pub mod participants;
 pub mod scenario;
 
 use crate::{
