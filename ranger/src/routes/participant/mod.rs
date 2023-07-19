@@ -1,4 +1,5 @@
 pub mod deployment;
+pub mod scenario;
 
 use crate::{
     errors::RangerError,
