@@ -2,12 +2,15 @@ import React from 'react';
 import {skipToken} from '@reduxjs/toolkit/dist/query';
 import {useTranslation} from 'react-i18next';
 import {useParticipantGetDeploymentScenarioQuery} from 'src/slices/apiSlice';
+import {useSelector} from 'react-redux';
+import {selectedEntity} from 'src/slices/userSlice';
 
 const Events = ({
   exerciseId, deploymentId}:
-{exerciseId: string; deploymentId: string; entitySelector: string;
+{exerciseId: string; deploymentId: string;
 }) => {
   const {t} = useTranslation();
+  const entitySelector = useSelector(selectedEntity);
   const scenarioQueryArguments = exerciseId && deploymentId && entitySelector
     ? {exerciseId, deploymentId, entitySelector} : skipToken;
   const {data: scenario} = useParticipantGetDeploymentScenarioQuery(scenarioQueryArguments);

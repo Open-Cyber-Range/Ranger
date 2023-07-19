@@ -30,6 +30,8 @@ import {sortByProperty} from 'sort-by-property';
 import {LINE_DATASET_TEMPLATE} from 'src/constants';
 import cloneDeep from 'lodash.clonedeep';
 import {getLineChartOptions} from 'src/utils/graph';
+import {useSelector} from 'react-redux';
+import {selectedEntity} from 'src/slices/userSlice';
 
 ChartJS.register(
   CategoryScale,
@@ -54,9 +56,12 @@ const ParticipantDeploymentGraph = ({exerciseId, deploymentId}:
   const chartTitle = t('chart.scoring.title');
   const queryArguments = exerciseId && deploymentId
     ? {exerciseId, deploymentId} : skipToken;
+  const entitySelector = useSelector(selectedEntity);
   const {data: scores} = useParticipantGetDeploymentScoresQuery(queryArguments);
   const {data: deployment} = useParticipantGetDeploymentQuery(queryArguments);
-  const {data: scenario} = useParticipantGetDeploymentScenarioQuery(queryArguments);
+  const participantQueryArguments = exerciseId && deploymentId && entitySelector
+    ? {exerciseId, deploymentId, entitySelector} : skipToken;
+  const {data: scenario} = useParticipantGetDeploymentScenarioQuery(participantQueryArguments);
 
   const intoGraphPoint = (score: Score) => ({
     x: DateTime.fromISO(score.timestamp, {zone: 'utc'}).toMillis(),

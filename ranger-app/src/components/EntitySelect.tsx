@@ -1,19 +1,19 @@
 import type React from 'react';
 import type {ChangeEvent} from 'react';
-import {type Entity} from 'src/models/scenario';
+import {type Participant} from 'src/models/exercise';
 
 type EntitySelectProps = {
-  entities: Record<string, Entity> | undefined;
+  participants: Participant[] | undefined;
   selectedEntityKey: string | undefined;
   onChange: (selectedKey: string | undefined) => void;
 };
 
 const EntitySelect: React.FC<EntitySelectProps> = ({
-  entities,
+  participants,
   selectedEntityKey,
   onChange,
 }) => {
-  if (entities === undefined) {
+  if (participants === undefined) {
     return null;
   }
 
@@ -30,9 +30,9 @@ const EntitySelect: React.FC<EntitySelectProps> = ({
     >
       <select value={selectedEntityKey ?? ''} onChange={handleChange}>
         <option value=''>Select an entity</option>
-        {Object.keys(entities).map(key => (
-          <option key={key} value={key}>
-            {entities[key].name}
+        {participants.map(participant => (
+          <option key={participant.id} value={participant.selector}>
+            {participant.selector}
           </option>
         ))}
       </select>
