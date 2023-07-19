@@ -49,6 +49,13 @@ type Email = {
   status: EmailStatus;
 };
 
+type Participant = {
+  id: string;
+  deployment_id: string;
+  user_id: string;
+  selector: string;
+};
+
 export type {
   ParticipantExercise,
   NewExercise,
@@ -56,4 +63,5 @@ export type {
   UpdateExercise,
   EmailForm,
   Email,
+  Participant,
 };

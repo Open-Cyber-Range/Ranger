@@ -286,7 +286,7 @@ pub async fn add_participant(
 }
 
 #[get("participant")]
-pub async fn get_participants(
+pub async fn get_admin_participants(
     app_state: Data<AppState>,
     deployment: DeploymentInfo,
 ) -> Result<Json<Vec<Participant>>, RangerError> {
