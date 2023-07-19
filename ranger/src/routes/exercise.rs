@@ -255,19 +255,23 @@ pub async fn add_participant(
         error!("Failed to parse sdl: {error}");
         RangerError::ScenarioParsingFailed
     })?;
-    let selector = format!("entities.{}", participant_resource.selector);
-    let entity_option = parsed_sdl.read(&selector).map_err(|error| {
-        error!("Failed to read entities from sdl: {error}");
-        RangerError::ScenarioParsingFailed
-    })?;
-    if entity_option.is_none() {
-        return Err(RangerError::EntityNotFound);
-    }
+    let normalized_sdl_selector = match participant_resource.selector.contains(".entities.") {
+        true => participant_resource.selector.clone(),
+        false => participant_resource.selector.replace('.', ".entities."),
+    };
+
+    parsed_sdl
+        .read(&format!("entities.{}", &normalized_sdl_selector))
+        .map_err(|error| {
+            error!("Failed to read entities from sdl: {error}");
+            RangerError::ScenarioParsingFailed
+        })?
+        .ok_or(RangerError::EntityNotFound)?;
 
     let new_participant = NewParticipant {
         id: Uuid::random(),
         deployment_id: deployment.id,
-        selector: participant_resource.selector,
+        selector: normalized_sdl_selector.replace("entities.", ""),
         user_id: participant_resource.user_id,
     };
 
