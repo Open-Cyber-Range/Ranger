@@ -40,12 +40,11 @@ use futures::future::try_join_all;
 use log::{error, info};
 use ranger_grpc::capabilities::DeployerTypes as GrpcDeployerTypes;
 use sdl_parser::{
+    entity::Flatten,
     node::{Node, NodeType},
     parse_sdl, Scenario,
 };
 use std::collections::HashMap;
-use toml::value::Value;
-use toml_query::read::TomlValueReadExt;
 
 #[post("")]
 pub async fn add_exercise(
@@ -251,38 +250,33 @@ pub async fn add_participant(
 ) -> Result<Json<Participant>, RangerError> {
     let participant_resource = participant_resource.into_inner();
 
-    let parsed_sdl: Value = serde_yaml::from_str(&deployment.sdl_schema).map_err(|error| {
+    let scenario = parse_sdl(&deployment.sdl_schema).map_err(|error| {
         error!("Failed to parse sdl: {error}");
         RangerError::ScenarioParsingFailed
     })?;
-    let normalized_sdl_selector = match participant_resource.selector.contains(".entities.") {
-        true => participant_resource.selector.clone(),
-        false => participant_resource.selector.replace('.', ".entities."),
-    };
 
-    parsed_sdl
-        .read(&format!("entities.{}", &normalized_sdl_selector))
-        .map_err(|error| {
-            error!("Failed to read entities from sdl: {error}");
-            RangerError::ScenarioParsingFailed
-        })?
-        .ok_or(RangerError::EntityNotFound)?;
+    if let Some(entities) = scenario.entities {
+        match entities.flatten().get(&participant_resource.selector) {
+            Some(_) => {
+                let participant = app_state
+                    .database_address
+                    .send(CreateParticipant(NewParticipant {
+                        id: Uuid::random(),
+                        deployment_id: deployment.id,
+                        selector: participant_resource.selector,
+                        user_id: participant_resource.user_id,
+                    }))
+                    .await
+                    .map_err(create_mailbox_error_handler("Database"))?
+                    .map_err(create_database_error_handler("Create participant"))?;
 
-    let new_participant = NewParticipant {
-        id: Uuid::random(),
-        deployment_id: deployment.id,
-        selector: normalized_sdl_selector.replace("entities.", ""),
-        user_id: participant_resource.user_id,
-    };
-
-    let participant = app_state
-        .database_address
-        .send(CreateParticipant(new_participant))
-        .await
-        .map_err(create_mailbox_error_handler("Database"))?
-        .map_err(create_database_error_handler("Create participant"))?;
-
-    Ok(Json(participant))
+                Ok(Json(participant))
+            }
+            None => Err(RangerError::EntityNotFound),
+        }
+    } else {
+        Err(RangerError::EntityNotFound)
+    }
 }
 
 #[get("participant")]
