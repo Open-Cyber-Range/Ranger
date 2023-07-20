@@ -13,7 +13,7 @@ use actix_web::{
 use anyhow::Result;
 
 #[get("participant")]
-pub async fn get_participants_participants(
+pub async fn get_participant_participants(
     app_state: Data<AppState>,
     user_details: UserInfo,
     deployment: DeploymentInfo,

@@ -56,6 +56,14 @@ type Participant = {
   selector: string;
 };
 
+type DeploymentEvent = {
+  id: string;
+  name: string;
+  description?: string;
+  deploymentId: string;
+  triggeredAt: string;
+};
+
 export type {
   ParticipantExercise,
   NewExercise,
@@ -64,4 +72,5 @@ export type {
   EmailForm,
   Email,
   Participant,
+  DeploymentEvent,
 };

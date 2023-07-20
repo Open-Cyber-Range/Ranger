@@ -15,6 +15,7 @@ import {
   type NewExercise,
   type UpdateExercise,
   type Participant,
+  type DeploymentEvent,
 } from 'src/models/exercise';
 import {type AdGroup, type AdUser} from 'src/models/groups';
 import {type Scenario} from 'src/models/scenario';
@@ -114,7 +115,7 @@ export const apiSlice = createApi({
     adminDeleteDeployment: builder
       .mutation<string, {exerciseId: string; deploymentId: string}>({
       query: ({exerciseId, deploymentId}) => ({
-        url: `/admin/exercise/${exerciseId}/deployment/${deploymentId}/users`,
+        url: `/admin/exercise/${exerciseId}/deployment/${deploymentId}`,
         method: 'DELETE',
         responseHandler: 'text',
       }),
@@ -215,6 +216,16 @@ export const apiSlice = createApi({
         return `/participant/exercise/${exerciseId}/deployment/${deploymentId}/participant`;
       },
     }),
+    participantGetTriggeredEvents: builder.query<DeploymentEvent[] | undefined,
+    {
+      exerciseId: string;
+      deploymentId: string;
+      entitySelector: string;
+    }>({
+      query({exerciseId, deploymentId, entitySelector}) {
+        return `/participant/exercise/${exerciseId}/deployment/${deploymentId}/entity/${entitySelector}/events`;
+      },
+    }),
   }),
 });
 
@@ -245,4 +256,5 @@ export const {
   useParticipantGetDeploymentScoresQuery,
   useParticipantGetDeploymentScenarioQuery,
   useParticipantGetDeploymentParticipantsQuery,
+  useParticipantGetTriggeredEventsQuery,
 } = apiSlice;

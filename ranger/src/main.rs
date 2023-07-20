@@ -19,7 +19,8 @@ use ranger::routes::exercise::{
 use ranger::routes::participant::deployment::{
     get_participant_deployment, get_participant_deployments,
 };
-use ranger::routes::participant::participants::get_participants_participants;
+use ranger::routes::participant::events::get_participant_events;
+use ranger::routes::participant::participants::get_participant_participants;
 use ranger::routes::participant::scenario::get_participant_exercise_deployment_scenario;
 use ranger::routes::participant::{get_participant_exercise, get_participant_exercises};
 
@@ -111,7 +112,8 @@ async fn main() -> Result<(), Error> {
                                                             )
                                                             .service(get_exercise_deployment_users)
                                                             .service(get_exercise_deployment_scores)
-                                                            .service(get_participants_participants)
+                                                            .service(get_participant_participants)
+                                                            .service(get_participant_events)
                                                             .wrap(DeploymentMiddlewareFactory),
                                                     ),
                                             )

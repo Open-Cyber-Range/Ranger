@@ -1,4 +1,5 @@
 pub mod deployment;
+pub mod events;
 pub mod participants;
 pub mod scenario;
 
