@@ -1,4 +1,11 @@
-import {Classes, MenuItem, Tree, type TreeNodeInfo} from '@blueprintjs/core';
+import {
+  MenuItem,
+  type TreeNodeInfo,
+  Card,
+  Elevation,
+  H5,
+  Button,
+} from '@blueprintjs/core';
 import {Suggest2} from '@blueprintjs/select';
 import {skipToken} from '@reduxjs/toolkit/dist/query';
 import React from 'react';
@@ -25,7 +32,7 @@ const createEntityTree = (
       isExpanded: true,
     };
     if (entity.entities) {
-      const subtree = createEntityTree(entity.entities, selector);
+      const subtree = createEntityTree(entity.entities, id);
       entityNode.childNodes = subtree;
     }
 
@@ -33,6 +40,19 @@ const createEntityTree = (
   }
 
   return tree;
+};
+
+const flattenList = (
+  nonFlattenedList: TreeNodeInfo[], initialList: TreeNodeInfo[] = [],
+): TreeNodeInfo[] => {
+  for (const item of nonFlattenedList) {
+    initialList.push(item);
+    if (item.childNodes) {
+      flattenList(item.childNodes, initialList);
+    }
+  }
+
+  return initialList;
 };
 
 const EntityConnector = ({exerciseId, deploymentId}: {
@@ -44,52 +64,81 @@ const EntityConnector = ({exerciseId, deploymentId}: {
   const {data: deployment} = useAdminGetDeploymentQuery({exerciseId, deploymentId});
   const {data: users} = useAdminGetGroupUsersQuery(deployment?.groupName ?? skipToken);
   const [selectedUser, setSelectedUser] = React.useState<AdUser | undefined>(undefined);
+  const [selectedEntity, setSelectedEntity] = React.useState<TreeNodeInfo | undefined>(undefined);
 
   const tree: TreeNodeInfo[] = React.useMemo(() => {
     if (!scenario?.entities) {
       return [];
     }
 
-    return createEntityTree(scenario.entities);
+    return flattenList(createEntityTree(scenario.entities));
   }, [scenario]);
 
   return (
-    <div>
-      <h1>Entity Connector</h1>
+    <Card elevation={Elevation.TWO}>
+      <H5>Entity Connector</H5>
       <div className='grid grid-cols-2 gap-2'>
-        <Tree className={Classes.ELEVATION_0} contents={tree}/>
-        <div>
-          <Suggest2<AdUser>
-            inputProps={{
-              id: 'deployment-group',
-              placeholder: '',
-            }}
-            activeItem={selectedUser ?? null}
-            inputValueRenderer={item => item.username ?? ''}
-            itemPredicate={(query, item) =>
-              item.username?.toLowerCase().includes(query.toLowerCase()) ?? false}
-            itemRenderer={(item, {handleClick, handleFocus}) => (
-              <MenuItem2
-                key={item.id}
-                text={item.username}
-                onClick={handleClick}
-                onFocus={handleFocus}
-              />
-            )}
-            items={users ?? []}
-            noResults={
-              <MenuItem
-                disabled
-                text={t('common.noResults')}
-                roleStructure='listoption'/>
-            }
-            onItemSelect={item => {
-              setSelectedUser(item);
-            }}
-          />
-        </div>
+        <Suggest2<TreeNodeInfo>
+          inputProps={{
+            placeholder: t('deployments.entityConnector.selectEntity') ?? '',
+          }}
+          activeItem={selectedEntity ?? null}
+          inputValueRenderer={item => item.id.toString() ?? ''}
+          itemPredicate={(query, item) =>
+            item.id.toString().toLowerCase().includes(query.toLowerCase()) ?? false}
+          itemRenderer={(item, {handleClick, handleFocus}) => (
+            <MenuItem2
+              key={item.id}
+              style={{paddingLeft: `${Number(item.id.toString().split('.').length)}rem`}}
+              text={item.id.toString().split('.').pop() ?? ''}
+              onClick={handleClick}
+              onFocus={handleFocus}
+            />
+          )}
+          items={tree ?? []}
+          noResults={
+            <MenuItem
+              disabled
+              text={t('common.noResults')}
+              roleStructure='listoption'/>
+          }
+          onItemSelect={item => {
+            setSelectedEntity(item);
+          }}
+        />
+
+        <Suggest2<AdUser>
+          inputProps={{
+            placeholder: t('deployments.entityConnector.selectUser') ?? '',
+          }}
+          activeItem={selectedUser ?? null}
+          inputValueRenderer={item => item.username ?? ''}
+          itemPredicate={(query, item) =>
+            item.username?.toLowerCase().includes(query.toLowerCase()) ?? false}
+          itemRenderer={(item, {handleClick, handleFocus}) => (
+            <MenuItem2
+              key={item.id}
+              text={item.username}
+              onClick={handleClick}
+              onFocus={handleFocus}
+            />
+          )}
+          items={users ?? []}
+          noResults={
+            <MenuItem
+              disabled
+              text={t('common.noResults')}
+              roleStructure='listoption'/>
+          }
+          onItemSelect={item => {
+            setSelectedUser(item);
+          }}
+        />
       </div>
-    </div>
+      <div className='py-[1rem] flex justify-end'>
+        <Button icon='confirm' intent='primary'>{t('common.connect')}</Button>
+      </div>
+    </Card>
   );
 };
 

@@ -87,9 +87,10 @@ const DeploymentDetail = () => {
             exerciseId={exerciseId}
             deploymentId={deploymentId}
           />
-          <div className='flex justify-between items-center pb-4'>
+          <div className='mt-[2rem]'>
             <EntityConnector exerciseId={exerciseId} deploymentId={deploymentId}/>
-            <div className='mt-[1rem]'/>
+          </div>
+          <div className='flex justify-end items-center pb-4 mt-[2rem]'>
             <div className='flex justify-between items-center'>
               <BackButton/>
             </div>
