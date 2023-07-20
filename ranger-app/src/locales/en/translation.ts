@@ -153,7 +153,9 @@ const language = {
       },
       events: {
         noEvents: 'Participant is not connected to any Events in this deployment',
+        noTriggeredEvents: 'No Events have been triggered yet',
         noDescription: 'Event has no description',
+        triggeredAt: 'Event triggered at',
       },
     },
   },
