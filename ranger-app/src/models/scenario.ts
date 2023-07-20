@@ -46,7 +46,7 @@ export type PotentialMinScore = {
   percentage?: number;
 };
 
-type MinScore = RequireAtLeastOne<PotentialMinScore, 'absolute' | 'percentage'>;
+export type MinScore = RequireAtLeastOne<PotentialMinScore, 'absolute' | 'percentage'>;
 
 export type Evaluation = {
   name?: string;
@@ -55,7 +55,7 @@ export type Evaluation = {
   min_score?: MinScore;
 };
 
-type Event = {
+export type Event = {
   name?: string;
   description?: string;
   time?: number;

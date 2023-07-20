@@ -68,6 +68,7 @@ diesel::table! {
         has_triggered -> Bool,
         deployment_id -> Binary,
         parent_node_id -> Binary,
+        description -> Nullable<Mediumtext>,
         triggered_at -> Timestamp,
         created_at -> Timestamp,
         updated_at -> Timestamp,

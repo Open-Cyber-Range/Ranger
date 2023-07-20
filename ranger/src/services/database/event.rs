@@ -22,6 +22,7 @@ pub struct CreateEvent {
     pub event_name: String,
     pub event: SdlEvent,
     pub deployment_id: Uuid,
+    pub description: Option<String>,
     pub parent_node_id: Uuid,
     pub start: NaiveDateTime,
     pub end: NaiveDateTime,
@@ -42,6 +43,7 @@ impl Handler<CreateEvent> for Database {
                     event,
                     deployment_id,
                     parent_node_id,
+                    description,
                     start,
                     end,
                     use_shared_connection: _,
@@ -49,15 +51,16 @@ impl Handler<CreateEvent> for Database {
 
                 let mutex_connection = &connection_result?;
                 let is_scheduled = event.time.is_some();
-                let new_event = NewEvent::new(
-                    event_id,
-                    event_name,
+                let new_event = NewEvent {
+                    id: event_id,
+                    name: event_name,
                     is_scheduled,
                     deployment_id,
                     parent_node_id,
+                    description,
                     start,
                     end,
-                );
+                };
                 let mut connection = mutex_connection
                     .lock()
                     .map_err(|error| anyhow!("Error locking Mutex connection: {:?}", error))?;
@@ -97,6 +100,34 @@ impl Handler<GetEvent> for Database {
                 .await??;
 
                 Ok(event)
+            }
+            .into_actor(self),
+        )
+    }
+}
+
+#[derive(Message)]
+#[rtype(result = "Result<Vec<Event>>")]
+pub struct GetEventsByDeploymentId(pub Uuid);
+
+impl Handler<GetEventsByDeploymentId> for Database {
+    type Result = ResponseActFuture<Self, Result<Vec<Event>>>;
+
+    fn handle(&mut self, msg: GetEventsByDeploymentId, _ctx: &mut Self::Context) -> Self::Result {
+        let connection_result = self.get_connection();
+        let event_id = msg.0;
+
+        Box::pin(
+            async move {
+                let mut connection = connection_result?;
+                let events = block(move || {
+                    let events = Event::by_deployment_id(event_id).load(&mut connection)?;
+
+                    Ok(events)
+                })
+                .await??;
+
+                Ok(events)
             }
             .into_actor(self),
         )

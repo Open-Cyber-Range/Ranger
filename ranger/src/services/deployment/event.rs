@@ -149,6 +149,7 @@ impl DeployableEvents for Scenario {
                                         event_name: event_name.to_owned(),
                                         event: event.clone(),
                                         deployment_id: deployment_element.deployment_id,
+                                        description: event.description.clone(),
                                         parent_node_id: Uuid::try_from(
                                             parent_node_id_string.as_str(),
                                         )?,

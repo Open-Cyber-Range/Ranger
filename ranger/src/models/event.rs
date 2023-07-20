@@ -23,31 +23,12 @@ pub struct NewEvent {
     pub is_scheduled: bool,
     pub deployment_id: Uuid,
     pub parent_node_id: Uuid,
+    pub description: Option<String>,
     pub start: NaiveDateTime,
     pub end: NaiveDateTime,
 }
 
 impl NewEvent {
-    pub fn new(
-        id: Uuid,
-        name: String,
-        is_scheduled: bool,
-        deployment_id: Uuid,
-        parent_node_id: Uuid,
-        start: NaiveDateTime,
-        end: NaiveDateTime,
-    ) -> Self {
-        Self {
-            id,
-            name,
-            is_scheduled,
-            deployment_id,
-            parent_node_id,
-            start,
-            end,
-        }
-    }
-
     pub fn create_insert(&self) -> Create<&Self, events::table> {
         insert_into(events::table).values(self)
     }
@@ -69,6 +50,7 @@ pub struct Event {
     pub parent_node_id: Uuid,
     pub start: NaiveDateTime,
     pub end: NaiveDateTime,
+    pub description: Option<String>,
     pub has_triggered: bool,
     pub triggered_at: NaiveDateTime,
     pub created_at: NaiveDateTime,
@@ -89,6 +71,12 @@ impl Event {
 
     pub fn by_id(id: Uuid) -> SelectById<events::table, events::id, events::deleted_at, Self> {
         Self::all().filter(events::id.eq(id))
+    }
+
+    pub fn by_deployment_id(
+        deployment_id: Uuid,
+    ) -> SelectById<events::table, events::deployment_id, events::deleted_at, Self> {
+        Self::all().filter(events::deployment_id.eq(deployment_id))
     }
 
     pub fn soft_delete(&self) -> SoftDeleteById<events::id, events::deleted_at, events::table> {
