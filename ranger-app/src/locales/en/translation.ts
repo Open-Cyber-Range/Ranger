@@ -36,6 +36,10 @@ const language = {
     deleteFail: 'Failed to delete the deployment',
     noDeployments: 'No deployments',
     noAccounts: 'No accounts',
+    entityConnector: {
+      selectEntity: 'Select entity...',
+      selectUser: 'Select user...',
+    },
     form: {
       group: {
         placeholder: 'Select group...',
@@ -64,6 +68,7 @@ const language = {
     noRole: 'NO ROLE',
   },
   common: {
+    connect: 'Connect',
     required: '(required)',
     submit: 'Submit',
     delete: 'Delete',
