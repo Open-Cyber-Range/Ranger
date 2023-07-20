@@ -6,7 +6,9 @@ export type AdGroup = {
 };
 
 export type AdUser = {
+  id: string;
   vmId: string;
+  username?: string;
   accounts: Account[];
 };
 

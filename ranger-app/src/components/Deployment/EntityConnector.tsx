@@ -13,27 +13,26 @@ import {MenuItem2} from '@blueprintjs/popover2';
 import {useTranslation} from 'react-i18next';
 
 const createEntityTree = (
-  entities: Record<string, Entity>, counter = 0,
-): [TreeNodeInfo[], number] => {
+  entities: Record<string, Entity>, selector?: string,
+): TreeNodeInfo[] => {
   const tree: TreeNodeInfo[] = [];
   for (const [entityId, entity] of Object.entries(entities)) {
+    const id = selector ? `${selector}.${entityId}` : entityId;
     const entityNode: TreeNodeInfo = {
-      id: entityId,
+      id,
       label: entity.name ?? entityId,
       icon: 'new-person',
       isExpanded: true,
     };
     if (entity.entities) {
-      const [subTree, newCount] = createEntityTree(entity.entities, counter);
-      entityNode.childNodes = subTree;
-      counter = newCount;
+      const subtree = createEntityTree(entity.entities, selector);
+      entityNode.childNodes = subtree;
     }
 
-    counter += 1;
     tree.push(entityNode);
   }
 
-  return [tree, counter];
+  return tree;
 };
 
 const EntityConnector = ({exerciseId, deploymentId}: {
@@ -46,9 +45,9 @@ const EntityConnector = ({exerciseId, deploymentId}: {
   const {data: users} = useAdminGetGroupUsersQuery(deployment?.groupName ?? skipToken);
   const [selectedUser, setSelectedUser] = React.useState<AdUser | undefined>(undefined);
 
-  const [tree, _] = React.useMemo(() => {
+  const tree: TreeNodeInfo[] = React.useMemo(() => {
     if (!scenario?.entities) {
-      return [[], 0];
+      return [];
     }
 
     return createEntityTree(scenario.entities);
@@ -66,9 +65,9 @@ const EntityConnector = ({exerciseId, deploymentId}: {
               placeholder: '',
             }}
             activeItem={selectedUser ?? null}
-            inputValueRenderer={item => item.username}
+            inputValueRenderer={item => item.username ?? ''}
             itemPredicate={(query, item) =>
-              item.username.toLowerCase().includes(query.toLowerCase())}
+              item.username?.toLowerCase().includes(query.toLowerCase()) ?? false}
             itemRenderer={(item, {handleClick, handleFocus}) => (
               <MenuItem2
                 key={item.id}
