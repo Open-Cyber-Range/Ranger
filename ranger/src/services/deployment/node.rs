@@ -24,7 +24,7 @@ use sdl_parser::{
     Scenario,
 };
 
-impl Deployable for (String, Node, Deployment, String, Vec<String>, Uuid) {
+impl Deployable for (String, Node, Deployment, String, Vec<String>, Option<Uuid>) {
     fn try_to_deployment_command(&self) -> Result<Box<dyn DeploymentInfo>> {
         let (name, node, deployment, exercise_name, links, template_id) = self;
         let meta_info = Some(MetaInfo {
@@ -42,7 +42,8 @@ impl Deployable for (String, Node, Deployment, String, Vec<String>, Uuid) {
                         cpu: resource.cpu,
                         ram: resource.ram,
                     }),
-                    template_id: template_id.to_string(),
+                    template_id: try_some(template_id.to_owned(), "Template Id not found")?
+                        .to_string(),
                 }),
                 meta_info,
             }),
@@ -69,25 +70,24 @@ async fn get_template_id(
     deployment_id: Uuid,
     node_source: &Option<Source>,
     database_address: &Addr<Database>,
-) -> Result<Uuid> {
-    let source = try_some(
-        node_source.clone(),
-        "Error getting Template Id: Node missing Source",
-    )?;
-    let deployment_element = database_address
-        .send(GetDeploymentElementByDeploymentIdByScenarioReference(
-            deployment_id,
-            Box::new(source.to_owned()),
-            true,
-        ))
-        .await??;
-    let template_id_string = try_some(
-        deployment_element.handler_reference,
-        "Error getting Template Id: Node Deployment Element missing Handler Reference",
-    )?;
-    let template_id: Uuid = template_id_string.as_str().try_into()?;
+) -> Result<Option<Uuid>> {
+    if let Some(source) = node_source.clone() {
+        let deployment_element = database_address
+            .send(GetDeploymentElementByDeploymentIdByScenarioReference(
+                deployment_id,
+                Box::new(source.to_owned()),
+                true,
+            ))
+            .await??;
+        let template_id_string = try_some(
+            deployment_element.handler_reference,
+            "Error getting Template Id: Node Deployment Element missing Handler Reference",
+        )?;
+        let template_id: Uuid = template_id_string.as_str().try_into()?;
 
-    Ok(template_id)
+        return Ok(Some(template_id));
+    }
+    Ok(None)
 }
 
 #[async_trait]
@@ -201,13 +201,20 @@ impl DeployableNodes for Scenario {
 
             deployment_results.push(tranche_results);
         }
-        let vm_nodes: Vec<(Node, DeploymentElement, Uuid)> = deployment_results
+        let vm_nodes: Result<Vec<(Node, DeploymentElement, Uuid)>> = deployment_results
             .concat()
             .into_iter()
-            .filter(|node| matches!(node.0.type_field, NodeType::VM))
+            .filter_map(|(node, deployment_element, potential_template_id)| {
+                if node.type_field == NodeType::VM {
+                    potential_template_id
+                        .map(|template_id| Ok((node, deployment_element, template_id)))
+                } else {
+                    None
+                }
+            })
             .collect();
 
-        Ok(vm_nodes)
+        Ok(vm_nodes?)
     }
 }
 
