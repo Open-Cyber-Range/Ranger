@@ -201,20 +201,19 @@ impl DeployableNodes for Scenario {
 
             deployment_results.push(tranche_results);
         }
-        let vm_nodes: Result<Vec<(Node, DeploymentElement, Uuid)>> = deployment_results
+        let vm_nodes: Vec<(Node, DeploymentElement, Uuid)> = deployment_results
             .concat()
             .into_iter()
             .filter_map(|(node, deployment_element, potential_template_id)| {
                 if node.type_field == NodeType::VM {
-                    potential_template_id
-                        .map(|template_id| Ok((node, deployment_element, template_id)))
+                    potential_template_id.map(|template_id| (node, deployment_element, template_id))
                 } else {
                     None
                 }
             })
             .collect();
 
-        Ok(vm_nodes?)
+        Ok(vm_nodes)
     }
 }
 
