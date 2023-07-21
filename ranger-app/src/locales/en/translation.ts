@@ -39,6 +39,8 @@ const language = {
     entityConnector: {
       selectEntity: 'Select entity...',
       selectUser: 'Select user...',
+      success: 'Entity connected successfully',
+      fail: 'Failed to connect entity',
     },
     form: {
       group: {

@@ -8,9 +8,10 @@ import {
 } from '@blueprintjs/core';
 import {Suggest2} from '@blueprintjs/select';
 import {skipToken} from '@reduxjs/toolkit/dist/query';
-import React from 'react';
+import React, {useEffect} from 'react';
 import {type Entity} from 'src/models/scenario';
 import {
+  useAdminAddParticipantMutation,
   useAdminGetDeploymentQuery,
   useAdminGetDeploymentScenarioQuery,
   useAdminGetGroupUsersQuery,
@@ -18,6 +19,7 @@ import {
 import {type AdUser} from 'src/models/groups';
 import {MenuItem2} from '@blueprintjs/popover2';
 import {useTranslation} from 'react-i18next';
+import {toastSuccess, toastWarning} from 'src/components/Toaster';
 
 const createEntityTree = (
   entities: Record<string, Entity>, selector?: string,
@@ -60,6 +62,7 @@ const EntityConnector = ({exerciseId, deploymentId}: {
   deploymentId: string;
 }) => {
   const {t} = useTranslation();
+  const [addParticipant, {isSuccess, error}] = useAdminAddParticipantMutation();
   const {data: scenario} = useAdminGetDeploymentScenarioQuery({exerciseId, deploymentId});
   const {data: deployment} = useAdminGetDeploymentQuery({exerciseId, deploymentId});
   const {data: users} = useAdminGetGroupUsersQuery(deployment?.groupName ?? skipToken);
@@ -73,6 +76,20 @@ const EntityConnector = ({exerciseId, deploymentId}: {
 
     return flattenList(createEntityTree(scenario.entities));
   }, [scenario]);
+
+  useEffect(() => {
+    if (isSuccess) {
+      toastSuccess(t('deployments.entityConnector.success'));
+    }
+  }
+  , [isSuccess, t]);
+
+  useEffect(() => {
+    if (error) {
+      toastWarning(t('deployments.entityConnector.fail'));
+    }
+  }
+  , [error, t]);
 
   return (
     <Card elevation={Elevation.TWO}>
@@ -138,7 +155,25 @@ const EntityConnector = ({exerciseId, deploymentId}: {
         />
       </div>
       <div className='py-[1rem] flex justify-end'>
-        <Button icon='confirm' intent='primary'>{t('common.connect')}</Button>
+        <Button
+          icon='confirm'
+          intent='primary'
+          onClick={async () => {
+            if (selectedUser && selectedEntity) {
+              await addParticipant({
+                exerciseId,
+                deploymentId,
+                newParticipant: {
+                  userId: selectedUser.id,
+                  selector: selectedEntity.id.toString(),
+                },
+              });
+              setSelectedEntity(undefined);
+              setSelectedUser(undefined);
+            }
+          }}
+        >{t('common.connect')}
+        </Button>
       </div>
     </Card>
   );
