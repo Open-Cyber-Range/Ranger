@@ -1,6 +1,6 @@
 import type React from 'react';
 import type {ChangeEvent} from 'react';
-import {type Participant} from 'src/models/exercise';
+import {type Participant} from 'src/models/pariticpant';
 
 type EntitySelectProps = {
   participants: Participant[] | undefined;
