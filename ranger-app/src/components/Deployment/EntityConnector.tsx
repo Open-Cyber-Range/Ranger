@@ -9,7 +9,6 @@ import {
 import {Suggest2} from '@blueprintjs/select';
 import {skipToken} from '@reduxjs/toolkit/dist/query';
 import React, {useEffect} from 'react';
-import {type Entity} from 'src/models/scenario';
 import {
   useAdminAddParticipantMutation,
   useAdminGetDeploymentQuery,
@@ -20,29 +19,7 @@ import {type AdUser} from 'src/models/groups';
 import {MenuItem2} from '@blueprintjs/popover2';
 import {useTranslation} from 'react-i18next';
 import {toastSuccess, toastWarning} from 'src/components/Toaster';
-
-const createEntityTree = (
-  entities: Record<string, Entity>, selector?: string,
-): TreeNodeInfo[] => {
-  const tree: TreeNodeInfo[] = [];
-  for (const [entityId, entity] of Object.entries(entities)) {
-    const id = selector ? `${selector}.${entityId}` : entityId;
-    const entityNode: TreeNodeInfo = {
-      id,
-      label: entity.name ?? entityId,
-      icon: 'new-person',
-      isExpanded: true,
-    };
-    if (entity.entities) {
-      const subtree = createEntityTree(entity.entities, id);
-      entityNode.childNodes = subtree;
-    }
-
-    tree.push(entityNode);
-  }
-
-  return tree;
-};
+import {createEntityTree} from 'src/utils';
 
 const flattenList = (
   nonFlattenedList: TreeNodeInfo[], initialList: TreeNodeInfo[] = [],
@@ -93,7 +70,7 @@ const EntityConnector = ({exerciseId, deploymentId}: {
 
   return (
     <Card elevation={Elevation.TWO}>
-      <H5>Entity Connector</H5>
+      <H5>{t('deployments.entityConnector.entityConnector')}</H5>
       <div className='grid grid-cols-2 gap-2'>
         <Suggest2<TreeNodeInfo>
           inputProps={{

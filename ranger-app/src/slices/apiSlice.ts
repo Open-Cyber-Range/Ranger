@@ -34,7 +34,7 @@ export const apiSlice = createApi({
       return headers;
     },
   }),
-  tagTypes: ['Deployment', 'Exercise', 'Score', 'Scenario'],
+  tagTypes: ['Deployment', 'Exercise', 'Score', 'Scenario', 'Participant'],
   endpoints: builder => ({
     adminGetGroups: builder.query<AdGroup[], void>({
       query: () => '/admin/group',
@@ -167,6 +167,7 @@ export const apiSlice = createApi({
         method: 'POST',
         body: newParticipant,
       }),
+      invalidatesTags: [{type: 'Participant', id: 'LIST'}],
     }),
     adminGetDeploymentParticipants: builder.query<Participant[] | undefined,
     {
@@ -176,6 +177,11 @@ export const apiSlice = createApi({
       query({exerciseId, deploymentId}) {
         return `/admin/exercise/${exerciseId}/deployment/${deploymentId}/participant`;
       },
+      providesTags: (result = []) =>
+        [
+          ...result.map(({id}) => ({type: 'Exercise' as const, id})),
+          {type: 'Participant', id: 'LIST'},
+        ],
     }),
     participantGetExercises: builder.query<ParticipantExercise[], void>({
       query: () => '/participant/exercise',

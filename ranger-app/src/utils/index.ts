@@ -1,4 +1,6 @@
-import {Colors} from '@blueprintjs/core';
+import {Colors, type TreeNodeInfo} from '@blueprintjs/core';
+import {type AdUser} from 'src/models/groups';
+import {type Participant} from 'src/models/pariticpant';
 import {
   type Entity,
   ExerciseRole,
@@ -6,6 +8,34 @@ import {
   type TrainingLearningObjective,
 } from 'src/models/scenario';
 import {type Score} from 'src/models/score';
+
+export const createEntityTree = (
+  entities: Record<string, Entity>,
+  participants: Participant[] = [],
+  users: AdUser[] = [],
+  selector?: string,
+): TreeNodeInfo[] => {
+  const tree: TreeNodeInfo[] = [];
+  for (const [entityId, entity] of Object.entries(entities)) {
+    const id = selector ? `${selector}.${entityId}` : entityId;
+    const matchingParticipant = participants.find(participant => participant.selector === id);
+    const matchingUser = users.find(user => user.id === matchingParticipant?.userId);
+    const entityNode: TreeNodeInfo = {
+      id,
+      label: `${entity.name ?? entityId}${matchingUser ? ': ' : ''}${matchingUser?.username ?? ''}`,
+      icon: 'person',
+      isExpanded: true,
+    };
+    if (entity.entities) {
+      const subtree = createEntityTree(entity.entities, participants, users, id);
+      entityNode.childNodes = subtree;
+    }
+
+    tree.push(entityNode);
+  }
+
+  return tree;
+};
 
 export const getWebsocketBase = () => {
   const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
