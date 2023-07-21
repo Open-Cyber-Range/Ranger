@@ -35,6 +35,15 @@ const language = {
     deleteSuccess: 'Deployment {{deploymentName}} deleted',
     deleteFail: 'Failed to delete the deployment',
     noDeployments: 'No deployments',
+    noAccounts: 'No accounts',
+    entityConnector: {
+      entityConnector: 'Entity Connector',
+      selectEntity: 'Select entity...',
+      selectUser: 'Select user...',
+      success: 'Entity connected successfully',
+      fail: 'Failed to connect entity',
+    },
+    entityTree: 'Entity Tree',
     form: {
       group: {
         placeholder: 'Select group...',
@@ -63,6 +72,7 @@ const language = {
     noRole: 'NO ROLE',
   },
   common: {
+    connect: 'Connect',
     required: '(required)',
     submit: 'Submit',
     delete: 'Delete',
@@ -140,6 +150,22 @@ const language = {
       xAxisTitle: 'Time',
       yAxisTitle: 'Points',
       noScoreData: 'No score data to display graph',
+    },
+  },
+  participant: {
+    exercise: {
+      tabs: {
+        dash: 'Dashboard',
+        score: 'Score',
+        events: 'Events',
+        accounts: 'Accounts',
+      },
+      events: {
+        noEvents: 'Participant is not connected to any Events in this deployment',
+        noTriggeredEvents: 'No Events have been triggered yet',
+        noDescription: 'Event has no description',
+        triggeredAt: 'Event triggered at',
+      },
     },
   },
 };

@@ -1,14 +1,14 @@
 use sdl_parser::{
     capability::Capabilities,
     condition::Conditions,
-    entity::{Entities, Entity, ExerciseRole},
+    entity::{Entities, Entity, ExerciseRole, Flatten},
     evaluation::Evaluations,
-    event::Events,
+    event::{Event, Events},
     feature::Features,
     goal::Goals,
     infrastructure::Infrastructure,
-    inject::Injects,
-    metric::Metrics,
+    inject::{Inject, Injects},
+    metric::{Metric, Metrics},
     node::{Nodes, Role},
     script::Scripts,
     story::Stories,
@@ -39,28 +39,12 @@ pub fn set_optionals_to_none(scenario: &Scenario) -> Scenario {
     participant_scenario
 }
 
-pub fn flatten_entities(entities: Entities) -> Entities {
-    let mut result = entities.clone();
-
-    entities.into_iter().for_each(|(key, entity)| {
-        if let Some(child_entities) = entity.entities {
-            flatten_entities(child_entities)
-                .into_iter()
-                .for_each(|(child_key, child_entity)| {
-                    result.insert(format!("{key}.{child_key}"), child_entity);
-                })
-        }
-    });
-
-    result
-}
-
 pub fn get_flattened_entities_by_role(
     scenario: &Scenario,
     role: ExerciseRole,
 ) -> HashMap<String, Entity> {
     if let Some(scenario_entities) = scenario.entities.clone() {
-        let flattened_entities = flatten_entities(scenario_entities);
+        let flattened_entities = scenario_entities.flatten();
         filter_entities_by_role(flattened_entities, role)
     } else {
         HashMap::new()
@@ -112,7 +96,7 @@ pub fn get_tlos_by_entities(
         })
 }
 
-pub fn get_entity_vulnerabilitites(scenario: &Scenario, entities: &Entities) -> Vulnerabilities {
+pub fn get_entity_vulnerabilities(scenario: &Scenario, entities: &Entities) -> Vulnerabilities {
     let vulnerability_names = entities.values().fold(vec![], |mut accumulator, entity| {
         if let Some(vulnerability_names) = entity.vulnerabilities.clone() {
             accumulator.extend(vulnerability_names);
@@ -146,8 +130,8 @@ pub fn get_vulnerability_connections(
     let mut nodes = HashMap::new();
 
     vulnerabilities.keys().for_each(|vulnerability_name| {
-        if let Some(scenario_capabilitites) = scenario.capabilities.clone() {
-            scenario_capabilitites
+        if let Some(scenario_capabilities) = scenario.capabilities.clone() {
+            scenario_capabilities
                 .into_iter()
                 .for_each(|(key, capability)| {
                     if let Some(vulnerabilities) = capability.vulnerabilities.clone() {
@@ -272,12 +256,12 @@ pub fn get_conditions_by_metrics(scenario: &Scenario, metrics: &Metrics) -> Cond
     let conditions = metrics
         .iter()
         .fold(HashMap::new(), |mut accumulator, metric| {
-            if let Some(metric_condtion_name) = &metric.1.condition {
+            if let Some(metric_condition_name) = &metric.1.condition {
                 if let Some(scenario_conditions) = scenario.conditions.clone() {
-                    if scenario_conditions.contains_key(metric_condtion_name) {
+                    if scenario_conditions.contains_key(metric_condition_name) {
                         accumulator.insert(
-                            metric_condtion_name.to_owned(),
-                            scenario_conditions[metric_condtion_name].clone(),
+                            metric_condition_name.to_owned(),
+                            scenario_conditions[metric_condition_name].clone(),
                         );
                     }
                 }
@@ -287,6 +271,31 @@ pub fn get_conditions_by_metrics(scenario: &Scenario, metrics: &Metrics) -> Cond
         });
 
     conditions
+}
+
+pub fn get_inject_capabilities(
+    scenario_capabilities: &Capabilities,
+    inject: &Inject,
+) -> Capabilities {
+    let mut required_inject_capabilities = vec![];
+    required_inject_capabilities.push(inject.capabilities.executive.clone());
+    if let Some(secondary_capabilities) = inject.capabilities.secondary.clone() {
+        required_inject_capabilities.extend(secondary_capabilities);
+    }
+
+    let output = required_inject_capabilities.iter().fold(
+        HashMap::new(),
+        |mut capabilities, capability_name| {
+            if scenario_capabilities.contains_key(capability_name) {
+                capabilities.insert(
+                    capability_name.to_owned(),
+                    scenario_capabilities[capability_name].clone(),
+                );
+            }
+            capabilities
+        },
+    );
+    output
 }
 
 pub fn get_inject_connections(scenario: &Scenario, injects: &Injects) -> (Events, Capabilities) {
@@ -303,16 +312,8 @@ pub fn get_inject_connections(scenario: &Scenario, injects: &Injects) -> (Events
         }
 
         if let Some(scenario_capabilities) = scenario.capabilities.clone() {
-            if let Some(inject_capabilities) = &inject.capabilities {
-                inject_capabilities.iter().for_each(|capability_name| {
-                    if scenario_capabilities.contains_key(capability_name) {
-                        capabilities.insert(
-                            capability_name.to_owned(),
-                            scenario_capabilities[capability_name].clone(),
-                        );
-                    }
-                })
-            }
+            let inject_capabilities = get_inject_capabilities(&scenario_capabilities, inject);
+            capabilities.extend(inject_capabilities);
         }
     });
     (events, capabilities)
@@ -489,6 +490,113 @@ pub fn get_stories_by_scripts(scenario: &Scenario, scripts: &Scripts) -> Stories
         })
 }
 
+pub fn get_injects_and_roles_by_node_event(
+    scenario: &Scenario,
+    event: &Event,
+    node_name: &str,
+) -> Vec<(String, Inject, Role)> {
+    let event_injects = event
+        .injects
+        .iter()
+        .fold(HashMap::new(), |mut injects, inject_name| {
+            if let Some(scenario_injects) = scenario.injects.clone() {
+                if scenario_injects.contains_key(inject_name) {
+                    injects.insert(
+                        inject_name.to_owned(),
+                        scenario_injects[inject_name].clone(),
+                    );
+                }
+            }
+            injects
+        });
+
+    let injects_with_roles: Vec<(String, Inject, Role)> =
+        event_injects
+            .iter()
+            .fold(vec![], |mut accumulator, (inject_name, inject)| {
+                let inject_executive_capability = inject.capabilities.executive.clone();
+                let scenario_capabilities = scenario.capabilities.clone().unwrap_or_default();
+                if let Some(executive_capability) =
+                    scenario_capabilities.get(&inject_executive_capability)
+                {
+                    if let Some(node) = scenario.nodes.clone().unwrap_or_default().get(node_name) {
+                        if let Some(condition_role) = node
+                            .conditions
+                            .clone()
+                            .unwrap_or_default()
+                            .get(&executive_capability.condition)
+                        {
+                            if let Some(role) =
+                                node.roles.clone().unwrap_or_default().get(condition_role)
+                            {
+                                accumulator.push((
+                                    inject_name.to_owned(),
+                                    inject.clone(),
+                                    role.clone(),
+                                ));
+                            }
+                        };
+                    };
+                }
+                accumulator
+            });
+    injects_with_roles
+}
+
+pub fn get_conditions_by_event(scenario: &Scenario, event: &Event) -> Conditions {
+    let event_conditions =
+        event
+            .conditions
+            .iter()
+            .fold(HashMap::new(), |mut conditions, condition_names| {
+                if let Some(scenario_conditions) = scenario.conditions.clone() {
+                    condition_names.iter().for_each(|condition_name| {
+                        if scenario_conditions.contains_key(condition_name) {
+                            conditions.insert(
+                                condition_name.to_owned(),
+                                scenario_conditions[condition_name].clone(),
+                            );
+                        }
+                    })
+                }
+                conditions
+            });
+    let event_inject_capabilities =
+        event
+            .injects
+            .iter()
+            .fold(HashMap::new(), |mut capabilities, inject_name| {
+                if let (Some(scenario_injects), Some(scenario_capabilities)) =
+                    (scenario.injects.clone(), scenario.capabilities.clone())
+                {
+                    capabilities.extend(get_inject_capabilities(
+                        &scenario_capabilities,
+                        &scenario_injects[inject_name],
+                    ));
+                }
+                capabilities
+            });
+    let capability_conditions =
+        event_inject_capabilities
+            .values()
+            .fold(HashMap::new(), |mut conditions, capability| {
+                if let Some(scenario_conditions) = scenario.conditions.clone() {
+                    if scenario_conditions.contains_key(&capability.condition) {
+                        conditions.insert(
+                            capability.condition.to_owned(),
+                            scenario_conditions[&capability.condition].clone(),
+                        );
+                    }
+                }
+                conditions
+            });
+
+    event_conditions
+        .into_iter()
+        .chain(capability_conditions)
+        .collect()
+}
+
 pub fn filter_scenario_by_role(scenario: &Scenario, role: ExerciseRole) -> Scenario {
     let mut participant_scenario = set_optionals_to_none(scenario);
     let flattened_entities = get_flattened_entities_by_role(scenario, role.clone());
@@ -497,7 +605,7 @@ pub fn filter_scenario_by_role(scenario: &Scenario, role: ExerciseRole) -> Scena
         return participant_scenario;
     }
 
-    let mut vulnerabilities = get_entity_vulnerabilitites(scenario, &flattened_entities);
+    let mut vulnerabilities = get_entity_vulnerabilities(scenario, &flattened_entities);
     let (mut capabilities, mut features, mut nodes) =
         get_vulnerability_connections(scenario, &vulnerabilities);
     let mut conditions = get_conditions_by_capabilities(scenario, &capabilities);
@@ -575,4 +683,20 @@ pub fn filter_node_roles_by_entity(
             role_accumulator
         },
     )
+}
+
+pub fn get_metric_by_condition(
+    metrics: &Option<Metrics>,
+    condition_name: &str,
+) -> Option<(String, Metric)> {
+    if let Some(metrics) = metrics {
+        match metrics
+            .iter()
+            .find(|(_, metric)| metric.condition.eq(&Some(condition_name.to_string())))
+        {
+            Some((metric_key, metric)) => return Some((metric_key.to_string(), metric.clone())),
+            None => return None,
+        }
+    }
+    None
 }

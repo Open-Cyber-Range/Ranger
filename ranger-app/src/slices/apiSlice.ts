@@ -5,12 +5,16 @@ import type {
   Deployment,
   DeploymentElement,
   NewDeployment,
+  ParticipantDeployment,
 } from 'src/models/deployment';
+import type {Participant, NewParticipant} from 'src/models/pariticpant';
 import {
+  type ParticipantExercise,
   type EmailForm,
   type Exercise,
   type NewExercise,
   type UpdateExercise,
+  type DeploymentEvent,
 } from 'src/models/exercise';
 import {type AdGroup, type AdUser} from 'src/models/groups';
 import {type Scenario} from 'src/models/scenario';
@@ -30,13 +34,18 @@ export const apiSlice = createApi({
       return headers;
     },
   }),
-  tagTypes: ['Deployment', 'Exercise', 'Score', 'Scenario'],
+  tagTypes: ['Deployment', 'Exercise', 'Score', 'Scenario', 'Participant'],
   endpoints: builder => ({
     adminGetGroups: builder.query<AdGroup[], void>({
       query: () => '/admin/group',
     }),
     adminGetGroupUsers: builder.query<AdUser[], string>({
       query: groupName => `/admin/group/${groupName}/users`,
+    }),
+    adminGetDeploymentUsers: builder.query<AdUser[], {deploymentId: string; exerciseId: string}>({
+      query: ({deploymentId, exerciseId}) => ({
+        url: `/admin/exercise/${exerciseId}/deployment/${deploymentId}/users`,
+      }),
     }),
     adminGetExercises: builder.query<Exercise[], void>({
       query: () => '/admin/exercise',
@@ -147,12 +156,111 @@ export const apiSlice = createApi({
       query: ({exerciseId, deploymentId}) =>
         `/admin/exercise/${exerciseId}/deployment/${deploymentId}/scenario`,
     }),
+    adminAddParticipant: builder
+      .mutation <Participant, {
+      exerciseId: string;
+      deploymentId: string;
+      newParticipant: NewParticipant;
+    } >({
+      query: ({deploymentId, exerciseId, newParticipant}) => ({
+        url: `/admin/exercise/${exerciseId}/deployment/${deploymentId}/participant`,
+        method: 'POST',
+        body: newParticipant,
+      }),
+      invalidatesTags: [{type: 'Participant', id: 'LIST'}],
+    }),
+    adminGetDeploymentParticipants: builder.query<Participant[] | undefined,
+    {
+      exerciseId: string;
+      deploymentId: string;
+    }>({
+      query({exerciseId, deploymentId}) {
+        return `/admin/exercise/${exerciseId}/deployment/${deploymentId}/participant`;
+      },
+      providesTags: (result = []) =>
+        [
+          ...result.map(({id}) => ({type: 'Exercise' as const, id})),
+          {type: 'Participant', id: 'LIST'},
+        ],
+    }),
+    participantGetExercises: builder.query<ParticipantExercise[], void>({
+      query: () => '/participant/exercise',
+      providesTags: (result = []) =>
+        [
+          ...result.map(({id}) => ({type: 'Exercise' as const, id})),
+          {type: 'Exercise', id: 'LIST'},
+        ],
+    }),
+    participantGetExercise: builder.query<ParticipantExercise, string>({
+      query: exerciseId => `/participant/exercise/${exerciseId}`,
+      providesTags: (result, error, id) => [{type: 'Exercise', id}],
+    }),
+    participantGetDeployments: builder.query<ParticipantDeployment[], string>({
+      query: exerciseId =>
+        `/participant/exercise/${exerciseId}/deployment`,
+    }),
+    participantGetDeployment: builder.query<ParticipantDeployment,
+    {
+      exerciseId: string;
+      deploymentId: string;
+    }>({
+      query: ({exerciseId, deploymentId}) =>
+        `/participant/exercise/${exerciseId}/deployment/${deploymentId}`,
+    }),
+    participantGetDeploymentUsers: builder.query<AdUser[],
+    {
+      deploymentId: string;
+      exerciseId: string;
+    }>({
+      query: ({deploymentId, exerciseId}) =>
+        `/participant/exercise/${exerciseId}/deployment/${deploymentId}/users`,
+    }),
+    participantGetDeploymentScores: builder.query<Score[],
+    {
+      exerciseId: string;
+      deploymentId: string;
+    }>({
+      query: ({exerciseId, deploymentId}) =>
+        `/participant/exercise/${exerciseId}/deployment/${deploymentId}/score`,
+    }),
+    participantGetDeploymentScenario: builder.query<Scenario | undefined,
+    {
+      exerciseId: string;
+      deploymentId: string;
+      entitySelector: string;
+    }>({
+      query({exerciseId, deploymentId, entitySelector}) {
+        return `/participant/exercise/${
+          exerciseId}/deployment/${deploymentId}/scenario/${entitySelector}`;
+      },
+    }),
+    participantGetOwnParticipants: builder.query<Participant[] | undefined,
+    {
+      exerciseId: string;
+      deploymentId: string;
+    }>({
+      query({exerciseId, deploymentId}) {
+        return `/participant/exercise/${exerciseId}/deployment/${deploymentId}/participant`;
+      },
+    }),
+    participantGetTriggeredEvents: builder.query<DeploymentEvent[] | undefined,
+    {
+      exerciseId: string;
+      deploymentId: string;
+      entitySelector: string;
+    }>({
+      query({exerciseId, deploymentId, entitySelector}) {
+        return `/participant/exercise/${
+          exerciseId}/deployment/${deploymentId}/entity/${entitySelector}/events`;
+      },
+    }),
   }),
 });
 
 export const {
   useAdminGetGroupsQuery,
   useAdminGetGroupUsersQuery,
+  useAdminGetDeploymentUsersQuery,
   useAdminGetExerciseQuery,
   useAdminGetExercisesQuery,
   useAdminAddExerciseMutation,
@@ -168,4 +276,15 @@ export const {
   useAdminSendEmailMutation,
   useAdminGetEmailFormQuery,
   useAdminGetDeploymentScenarioQuery,
+  useAdminAddParticipantMutation,
+  useAdminGetDeploymentParticipantsQuery,
+  useParticipantGetExercisesQuery,
+  useParticipantGetExerciseQuery,
+  useParticipantGetDeploymentsQuery,
+  useParticipantGetDeploymentQuery,
+  useParticipantGetDeploymentUsersQuery,
+  useParticipantGetDeploymentScoresQuery,
+  useParticipantGetDeploymentScenarioQuery,
+  useParticipantGetOwnParticipantsQuery,
+  useParticipantGetTriggeredEventsQuery,
 } = apiSlice;

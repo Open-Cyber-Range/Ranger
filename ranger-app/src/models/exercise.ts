@@ -1,4 +1,10 @@
 
+type ParticipantExercise = {
+  id: string;
+  name: string;
+  updatedAt: string;
+};
+
 type NewExercise = {
   name: string;
   sdlSchema?: string;
@@ -43,10 +49,20 @@ type Email = {
   status: EmailStatus;
 };
 
+type DeploymentEvent = {
+  id: string;
+  name: string;
+  description?: string;
+  deploymentId: string;
+  triggeredAt: string;
+};
+
 export type {
+  ParticipantExercise,
   NewExercise,
   Exercise,
   UpdateExercise,
   EmailForm,
   Email,
+  DeploymentEvent,
 };

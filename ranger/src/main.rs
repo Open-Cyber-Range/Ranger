@@ -6,19 +6,28 @@ use ranger::middleware::deployment::DeploymentMiddlewareFactory;
 use ranger::middleware::exercise::ExerciseMiddlewareFactory;
 use ranger::middleware::keycloak::KeycloakAccessMiddlewareFactory;
 use ranger::roles::RangerRole;
+use ranger::routes::admin::groups::get_participant_groups_users;
+use ranger::routes::admin::scenario::get_admin_exercise_deployment_scenario;
+use ranger::routes::deployers::get_deployers;
+use ranger::routes::email::send_email;
+use ranger::routes::exercise::{
+    add_participant, delete_exercise_deployment, delete_participant, get_admin_participants,
+    get_exercise, get_exercise_deployment, get_exercise_deployment_elements,
+    get_exercise_deployment_scores, get_exercise_deployment_users, get_exercise_deployments,
+    get_exercises, subscribe_to_exercise, update_exercise,
+};
+use ranger::routes::participant::deployment::{
+    get_participant_deployment, get_participant_deployments,
+};
+use ranger::routes::participant::events::get_participant_events;
+use ranger::routes::participant::participants::get_own_participants;
+use ranger::routes::participant::scenario::get_participant_exercise_deployment_scenario;
+use ranger::routes::participant::{get_participant_exercise, get_participant_exercises};
+
 use ranger::routes::{
-    admin::groups::{get_participant_groups, get_participant_groups_users},
+    admin::groups::get_participant_groups,
     basic::{status, version},
-    deployers::get_deployers,
-    email::send_email,
-    exercise::{
-        add_exercise, add_exercise_deployment, add_participant, delete_exercise,
-        delete_exercise_deployment, delete_participant, get_exercise, get_exercise_deployment,
-        get_exercise_deployment_users, get_exercise_deployment_elements,
-        get_exercise_deployment_scores, get_exercise_deployments,
-        get_exercises, get_participants, subscribe_to_exercise, update_exercise,
-    },
-    scenario::get_exercise_deployment_scenario,
+    exercise::{add_exercise, add_exercise_deployment, delete_exercise},
 };
 
 #[actix_web::main]
@@ -37,6 +46,7 @@ async fn main() -> Result<(), Error> {
             .service(version)
             .service(
                 scope("/api/v1")
+                    .wrap(KeycloakAccessMiddlewareFactory)
                     .service(
                         scope("/admin")
                             .service(
@@ -62,12 +72,12 @@ async fn main() -> Result<(), Error> {
                                                                 get_exercise_deployment_elements,
                                                             )
                                                             .service(delete_exercise_deployment)
-                                                            .service(get_participants)
+                                                            .service(get_admin_participants)
                                                             .service(add_participant)
                                                             .service(delete_participant)
                                                             .service(get_exercise_deployment_scores)
                                                             .service(
-                                                                get_exercise_deployment_scenario,
+                                                                get_admin_exercise_deployment_scenario,
                                                             )
                                                             .service(get_exercise_deployment_users)
                                                             .wrap(DeploymentMiddlewareFactory),
@@ -78,7 +88,6 @@ async fn main() -> Result<(), Error> {
                             .service(get_deployers)
                             .service(
                                 scope("/group")
-                                    .wrap(KeycloakAccessMiddlewareFactory)
                                     .service(get_participant_groups)
                                     .service(get_participant_groups_users),
                             )
@@ -86,8 +95,31 @@ async fn main() -> Result<(), Error> {
                     )
                     .service(
                         scope("/participant")
-                            .service(get_exercise_deployment_scenario)
-                            .service(get_exercise_deployment_users)
+                            .service(
+                                scope("/exercise")
+                                    .service(get_participant_exercises)
+                                    .service(
+                                        scope("/{exercise_uuid}")
+                                            .service(get_participant_exercise)
+                                            .service(
+                                                scope("/deployment")
+                                                    .service(get_participant_deployments)
+                                                    .service(
+                                                        scope("/{deployment_uuid}")
+                                                            .service(get_participant_deployment)
+                                                            .service(
+                                                                get_participant_exercise_deployment_scenario,
+                                                            )
+                                                            .service(get_exercise_deployment_users)
+                                                            .service(get_exercise_deployment_scores)
+                                                            .service(get_own_participants)
+                                                            .service(get_participant_events)
+                                                            .wrap(DeploymentMiddlewareFactory),
+                                                    ),
+                                            )
+                                            .wrap(ExerciseMiddlewareFactory),
+                                    ),
+                            )
                             .wrap(participant_auth_middleware),
                     ),
             )

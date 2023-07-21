@@ -1,7 +1,11 @@
 use crate::{
-    constants::{DELETED_AT_DEFAULT_VALUE, MAX_DEPLOYMENT_NAME_LENGTH},
+    constants::{MAX_DEPLOYMENT_NAME_LENGTH, NAIVEDATETIME_DEFAULT_VALUE},
     errors::RangerError,
-    schema::{deployment_elements, deployments},
+    middleware::keycloak::KeycloakInfo,
+    schema::{
+        deployment_elements::{self},
+        deployments,
+    },
     services::database::{
         deployment::UpdateDeploymentElement, All, Create, CreateOrIgnore, Database, FilterExisting,
         SelectById, SoftDelete, SoftDeleteById, UpdateById,
@@ -9,7 +13,7 @@ use crate::{
     utilities::Validation,
 };
 use actix::Addr;
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use chrono::NaiveDateTime;
 use diesel::{
     helper_types::{Eq, Filter},
@@ -86,6 +90,26 @@ pub struct Deployment {
     pub deleted_at: NaiveDateTime,
 }
 
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ParticipantDeployment {
+    pub id: Uuid,
+    pub name: String,
+    pub exercise_id: Uuid,
+    pub updated_at: String,
+}
+
+impl From<Deployment> for ParticipantDeployment {
+    fn from(deployment: Deployment) -> Self {
+        Self {
+            id: deployment.id,
+            name: deployment.name,
+            exercise_id: deployment.exercise_id,
+            updated_at: deployment.updated_at.to_string(),
+        }
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, FromSqlRow, AsExpression, Eq, Deserialize, Serialize)]
 #[diesel(sql_type = Text)]
 pub enum ElementStatus {
@@ -138,6 +162,8 @@ pub struct DeploymentElement {
     pub deployer_type: DeployerType,
     pub status: ElementStatus,
     pub executor_log: Option<String>,
+    pub event_id: Option<Uuid>,
+    pub parent_node_id: Option<Uuid>,
 }
 
 type ByDeploymentId<T> = Filter<
@@ -155,20 +181,34 @@ type ByDeploymentIdByHandlerReference<T> = Filter<
     Eq<deployment_elements::handler_reference, String>,
 >;
 
+type ByEventId<T> = Filter<
+    FilterExisting<T, deployment_elements::deleted_at>,
+    Eq<deployment_elements::event_id, Uuid>,
+>;
+
+type ByEventIdByParentNodeId<T> = Filter<
+    ByEventId<All<deployment_elements::table, T>>,
+    Eq<deployment_elements::parent_node_id, Uuid>,
+>;
+
 impl DeploymentElement {
     pub fn new_ongoing(
         deployment_id: Uuid,
         source_box: Box<dyn ScenarioReference>,
         deployer_type: DeployerTypes,
+        event_id: Option<Uuid>,
+        parent_node_id: Option<Uuid>,
     ) -> Self {
         Self {
             id: Uuid::random(),
             deployment_id,
             scenario_reference: source_box.reference(),
-            handler_reference: None,
             deployer_type: DeployerType(deployer_type),
             status: ElementStatus::Ongoing,
             executor_log: None,
+            event_id,
+            handler_reference: None,
+            parent_node_id,
         }
     }
 
@@ -187,6 +227,8 @@ impl DeploymentElement {
             deployer_type: DeployerType(deployer_type),
             status,
             executor_log: None,
+            event_id: None,
+            parent_node_id: None,
         }
     }
 
@@ -214,7 +256,7 @@ impl DeploymentElement {
     ) -> FilterExisting<All<deployment_elements::table, Self>, deployment_elements::deleted_at>
     {
         Self::all_with_deleted()
-            .filter(deployment_elements::deleted_at.eq(*DELETED_AT_DEFAULT_VALUE))
+            .filter(deployment_elements::deleted_at.eq(*NAIVEDATETIME_DEFAULT_VALUE))
     }
 
     pub fn by_id(
@@ -252,6 +294,19 @@ impl DeploymentElement {
             .filter(deployment_elements::handler_reference.eq(handler_reference))
     }
 
+    pub fn by_event_id(event_id: Uuid) -> ByEventId<All<deployment_elements::table, Self>> {
+        Self::all().filter(deployment_elements::event_id.eq(event_id))
+    }
+
+    pub fn by_event_id_by_parent_node_id(
+        event_id: Uuid,
+        parent_node_id: Uuid,
+    ) -> ByEventIdByParentNodeId<Self> {
+        Self::all()
+            .filter(deployment_elements::event_id.eq(event_id))
+            .filter(deployment_elements::parent_node_id.eq(parent_node_id))
+    }
+
     pub fn create_insert(&self) -> Create<&Self, deployment_elements::table> {
         diesel::insert_into(deployment_elements::table).values(self)
     }
@@ -270,7 +325,7 @@ impl DeploymentElement {
     > {
         diesel::update(deployment_elements::table)
             .filter(deployment_elements::id.eq(self.id))
-            .filter(deployment_elements::deleted_at.eq(*DELETED_AT_DEFAULT_VALUE))
+            .filter(deployment_elements::deleted_at.eq(*NAIVEDATETIME_DEFAULT_VALUE))
             .set(self)
     }
 }
@@ -281,7 +336,7 @@ impl Deployment {
     }
 
     pub fn all() -> FilterExisting<All<deployments::table, Self>, deployments::deleted_at> {
-        Self::all_with_deleted().filter(deployments::deleted_at.eq(*DELETED_AT_DEFAULT_VALUE))
+        Self::all_with_deleted().filter(deployments::deleted_at.eq(*NAIVEDATETIME_DEFAULT_VALUE))
     }
 
     pub fn by_id(
@@ -302,7 +357,7 @@ impl Deployment {
     ) -> SoftDelete<ByDeploymentId<deployment_elements::table>, deployment_elements::deleted_at>
     {
         diesel::update(deployment_elements::table)
-            .filter(deployment_elements::deleted_at.eq(*DELETED_AT_DEFAULT_VALUE))
+            .filter(deployment_elements::deleted_at.eq(*NAIVEDATETIME_DEFAULT_VALUE))
             .filter(deployment_elements::deployment_id.eq(self.id))
             .set(deployment_elements::deleted_at.eq(diesel::dsl::now))
     }
@@ -312,5 +367,35 @@ impl Deployment {
     ) -> SoftDeleteById<deployments::id, deployments::deleted_at, deployments::table> {
         diesel::update(deployments::table.filter(deployments::id.eq(self.id)))
             .set(deployments::deleted_at.eq(diesel::dsl::now))
+    }
+
+    pub async fn is_member(
+        &self,
+        user_id: String,
+        keycloak_info: KeycloakInfo,
+        realm_name: String,
+    ) -> Result<bool> {
+        let role_name = self
+            .group_name
+            .clone()
+            .ok_or_else(|| anyhow!("Exercise group name is not set"))?;
+        let users = keycloak_info
+            .service_user
+            .realm_clients_with_id_roles_with_role_name_users_get(
+                &realm_name,
+                &keycloak_info.client_id,
+                &role_name,
+                None,
+                None,
+            )
+            .await?;
+        for user in users {
+            if let Some(loop_user_id) = user.id {
+                if loop_user_id == user_id {
+                    return Ok(true);
+                }
+            }
+        }
+        Ok(false)
     }
 }

@@ -1,5 +1,7 @@
+use bigdecimal::{BigDecimal, FromPrimitive};
 use chrono::NaiveDateTime;
 use lazy_static::lazy_static;
+use std::time::Duration;
 
 const DEFAULT_DEPLOYER_GROUP_NAME: &str = "default";
 
@@ -14,10 +16,14 @@ pub const RECORD_NOT_FOUND: &str = "Record not found";
 pub const DUPLICATE_ENTRY: &str = "Duplicate entry";
 pub const FOREIGN_KEY_CONSTRAINT_FAILS: &str = "a foreign key constraint fails";
 
-pub const DELETED_AT_DEFAULT_STRING: &str = "1970-01-01 00:00:01";
+pub const NAIVEDATETIME_DEFAULT_STRING: &str = "1970-01-01 00:00:01";
 pub const DATETIME_FORMAT: &str = "%Y-%m-%d %H:%M:%S";
 
+pub const EVENT_POLLER_TIMEOUT_TRIES: u8 = 20;
+pub const EVENT_POLLER_RETRY_DURATION: Duration = Duration::from_secs(3);
+
 lazy_static! {
-    pub static ref DELETED_AT_DEFAULT_VALUE: NaiveDateTime =
-        NaiveDateTime::parse_from_str(DELETED_AT_DEFAULT_STRING, DATETIME_FORMAT).unwrap();
+    pub static ref NAIVEDATETIME_DEFAULT_VALUE: NaiveDateTime =
+        NaiveDateTime::parse_from_str(NAIVEDATETIME_DEFAULT_STRING, DATETIME_FORMAT).unwrap();
+    pub static ref BIG_DECIMAL_ONE: BigDecimal = BigDecimal::from_i8(1).unwrap();
 }

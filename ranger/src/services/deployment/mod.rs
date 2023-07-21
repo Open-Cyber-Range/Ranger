@@ -1,23 +1,21 @@
-mod condition;
+pub(crate) mod condition;
+pub(crate) mod event;
 mod feature;
 mod inject;
 mod node;
 mod template;
 
 use self::node::RemoveableNodes;
-
-use super::{
-    database::{deployment::GetDeploymentElementByDeploymentId, Database},
-    deployer::DeployerDistribution,
-};
+use super::database::{deployment::GetDeploymentElementByDeploymentId, Database};
 use crate::{
     models::{helpers::uuid::Uuid, Deployment, Exercise},
-    services::deployment::node::DeployableNodes,
-    services::{deployment::template::DeployableTemplates, scheduler::Scheduler},
+    services::deployment::{
+        condition::DeployableConditions, feature::DeployableFeatures, node::DeployableNodes,
+    },
+    services::deployment::{event::DeployableEvents, template::DeployableTemplates},
+    Addressor,
 };
-use actix::{
-    Actor, ActorFutureExt, Addr, Context, Handler, Message, ResponseActFuture, WrapFuture,
-};
+use actix::{Actor, ActorFutureExt, Context, Handler, Message, ResponseActFuture, WrapFuture};
 use anyhow::{anyhow, Ok, Result};
 use log::{error, info};
 use sdl_parser::Scenario;
@@ -25,25 +23,19 @@ use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
 pub struct DeploymentManager {
-    scheduler: Addr<Scheduler>,
-    distributor: Addr<DeployerDistribution>,
-    database: Addr<Database>,
+    addressor: Addressor,
     deployment_group: HashMap<String, Vec<String>>,
     default_deployment_group: String,
 }
 
 impl DeploymentManager {
     pub fn new(
-        scheduler: Addr<Scheduler>,
-        distributor: Addr<DeployerDistribution>,
-        database: Addr<Database>,
+        addressor: Addressor,
         deployment_group: HashMap<String, Vec<String>>,
         default_deployment_group: String,
     ) -> Self {
         Self {
-            scheduler,
-            distributor,
-            database,
+            addressor,
             deployment_group,
             default_deployment_group,
         }
@@ -52,30 +44,31 @@ impl DeploymentManager {
     async fn deploy(
         deployers: &[String],
         scenario: &Scenario,
-        scheduler_address: &Addr<Scheduler>,
-        distributor_address: &Addr<DeployerDistribution>,
-        database_address: &Addr<Database>,
+        addressor: &Addressor,
         exercise: &Exercise,
         deployment: &Deployment,
     ) -> Result<()> {
         scenario
-            .deploy_templates(
-                distributor_address,
-                deployers,
-                database_address,
-                deployment,
-                exercise,
-            )
+            .deploy_templates(addressor, deployers, deployment, exercise)
             .await?;
+        let node_deployment_results = scenario
+            .deploy_nodes(addressor, exercise, deployment, deployers)
+            .await?;
+
         scenario
-            .deploy_nodes(
-                distributor_address,
-                scheduler_address,
-                database_address,
-                exercise,
-                deployment,
-                deployers,
-            )
+            .deploy_scenario_features(addressor, exercise, deployers, &node_deployment_results)
+            .await?;
+
+        let node_event_condition_tuple = scenario
+            .create_events(addressor, &node_deployment_results)
+            .await?;
+
+        scenario
+            .deploy_scenario_conditions(addressor, exercise, deployers, &node_event_condition_tuple)
+            .await?;
+
+        scenario
+            .deploy_event_pollers(addressor, exercise, deployers, &node_event_condition_tuple)
             .await?;
 
         info!("Deployment {} successful", deployment.name);
@@ -119,24 +112,14 @@ impl Handler<StartDeployment> for DeploymentManager {
         let StartDeployment(scenario, deployment, exercise) = msg;
 
         let deployers_result = self.get_deployers(&deployment);
-        let scheduler_address = self.scheduler.clone();
-        let distributor_address = self.distributor.clone();
-        let database_address = self.database.clone();
+        let addressor = self.addressor.clone();
 
         info!("Starting new Deployment {:?}", deployment.name);
         Box::pin(
             async move {
                 let deployers = deployers_result?;
-                DeploymentManager::deploy(
-                    &deployers,
-                    &scenario,
-                    &scheduler_address,
-                    &distributor_address,
-                    &database_address,
-                    &exercise,
-                    &deployment,
-                )
-                .await
+                DeploymentManager::deploy(&deployers, &scenario, &addressor, &exercise, &deployment)
+                    .await
             }
             .into_actor(self)
             .map(move |result, _act, _| {
@@ -159,22 +142,17 @@ impl Handler<RemoveDeployment> for DeploymentManager {
 
     fn handle(&mut self, msg: RemoveDeployment, _: &mut Context<Self>) -> Self::Result {
         let RemoveDeployment(exercise_id, deployment) = msg;
-        let database_address = self.database.clone();
-        let distributor_address = self.distributor.clone();
+        let addressor = self.addressor.clone();
         let deployers_result = self.get_deployers(&deployment);
         Box::pin(
             async move {
                 let deployers = deployers_result?;
-                let deployment_elements = database_address
+                let deployment_elements = addressor
+                    .database
                     .send(GetDeploymentElementByDeploymentId(deployment.id, false))
                     .await??;
                 deployment_elements
-                    .undeploy_nodes(
-                        &distributor_address,
-                        &database_address,
-                        &deployers,
-                        &exercise_id,
-                    )
+                    .undeploy_nodes(&addressor, &deployers, &exercise_id)
                     .await?;
                 Ok(())
             }

@@ -19,6 +19,8 @@ pub enum RangerError {
     ExerciseNameTooLong,
     #[error("Exercise not found")]
     ExericseNotFound,
+    #[error("Deployment not found")]
+    DeploymentNotFound,
     #[error("Deployment name too long")]
     DeploymentNameTooLong,
     #[error("Failed to parse uuid")]
@@ -53,6 +55,8 @@ pub enum RangerError {
     TokenMissing,
     #[error("App state missing")]
     AppStateMissing,
+    #[error("Not authorized")]
+    NotAuthorized,
 }
 
 impl ResponseError for RangerError {
@@ -62,6 +66,7 @@ impl ResponseError for RangerError {
             RangerError::DeployerGroupNotfound => StatusCode::NOT_FOUND,
             RangerError::ExerciseNameTooLong => StatusCode::UNPROCESSABLE_ENTITY,
             RangerError::ExericseNotFound => StatusCode::NOT_FOUND,
+            RangerError::DeploymentNotFound => StatusCode::NOT_FOUND,
             RangerError::DeploymentNameTooLong => StatusCode::UNPROCESSABLE_ENTITY,
             RangerError::UuidParsingFailed => StatusCode::UNPROCESSABLE_ENTITY,
             RangerError::ScenarioParsingFailed => StatusCode::UNPROCESSABLE_ENTITY,
@@ -72,6 +77,7 @@ impl ResponseError for RangerError {
             RangerError::AccessForbidden => StatusCode::FORBIDDEN,
             RangerError::TokenExpired => StatusCode::UNAUTHORIZED,
             RangerError::TokenMissing => StatusCode::UNAUTHORIZED,
+            RangerError::NotAuthorized => StatusCode::UNAUTHORIZED,
             _ => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
