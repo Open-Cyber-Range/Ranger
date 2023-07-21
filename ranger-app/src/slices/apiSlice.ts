@@ -207,7 +207,7 @@ export const apiSlice = createApi({
         return `/participant/exercise/${exerciseId}/deployment/${deploymentId}/scenario/${entitySelector}`;
       },
     }),
-    participantGetDeploymentParticipants: builder.query<Participant[] | undefined,
+    participantGetOwnParticipants: builder.query<Participant[] | undefined,
     {
       exerciseId: string;
       deploymentId: string;
@@ -255,6 +255,6 @@ export const {
   useParticipantGetDeploymentUsersQuery,
   useParticipantGetDeploymentScoresQuery,
   useParticipantGetDeploymentScenarioQuery,
-  useParticipantGetDeploymentParticipantsQuery,
+  useParticipantGetOwnParticipantsQuery,
   useParticipantGetTriggeredEventsQuery,
 } = apiSlice;
