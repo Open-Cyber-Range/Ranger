@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 import {createApi, fetchBaseQuery} from '@reduxjs/toolkit/query/react';
 import {BASE_URL} from 'src/constants';
 import type {
@@ -8,13 +7,13 @@ import type {
   NewDeployment,
   ParticipantDeployment,
 } from 'src/models/deployment';
+import type {Participant, NewParticipant} from 'src/models/pariticpant';
 import {
   type ParticipantExercise,
   type EmailForm,
   type Exercise,
   type NewExercise,
   type UpdateExercise,
-  type Participant,
   type DeploymentEvent,
 } from 'src/models/exercise';
 import {type AdGroup, type AdUser} from 'src/models/groups';
@@ -157,6 +156,27 @@ export const apiSlice = createApi({
       query: ({exerciseId, deploymentId}) =>
         `/admin/exercise/${exerciseId}/deployment/${deploymentId}/scenario`,
     }),
+    adminAddParticipant: builder
+      .mutation <Participant, {
+      exerciseId: string;
+      deploymentId: string;
+      newParticipant: NewParticipant;
+    } >({
+      query: ({deploymentId, exerciseId, newParticipant}) => ({
+        url: `/admin/exercise/${exerciseId}/deployment/${deploymentId}/participant`,
+        method: 'POST',
+        body: newParticipant,
+      }),
+    }),
+    adminGetDeploymentParticipants: builder.query<Participant[] | undefined,
+    {
+      exerciseId: string;
+      deploymentId: string;
+    }>({
+      query({exerciseId, deploymentId}) {
+        return `/admin/exercise/${exerciseId}/deployment/${deploymentId}/participant`;
+      },
+    }),
     participantGetExercises: builder.query<ParticipantExercise[], void>({
       query: () => '/participant/exercise',
       providesTags: (result = []) =>
@@ -204,7 +224,8 @@ export const apiSlice = createApi({
       entitySelector: string;
     }>({
       query({exerciseId, deploymentId, entitySelector}) {
-        return `/participant/exercise/${exerciseId}/deployment/${deploymentId}/scenario/${entitySelector}`;
+        return `/participant/exercise/${
+          exerciseId}/deployment/${deploymentId}/scenario/${entitySelector}`;
       },
     }),
     participantGetOwnParticipants: builder.query<Participant[] | undefined,
@@ -223,7 +244,8 @@ export const apiSlice = createApi({
       entitySelector: string;
     }>({
       query({exerciseId, deploymentId, entitySelector}) {
-        return `/participant/exercise/${exerciseId}/deployment/${deploymentId}/entity/${entitySelector}/events`;
+        return `/participant/exercise/${
+          exerciseId}/deployment/${deploymentId}/entity/${entitySelector}/events`;
       },
     }),
   }),
@@ -248,6 +270,8 @@ export const {
   useAdminSendEmailMutation,
   useAdminGetEmailFormQuery,
   useAdminGetDeploymentScenarioQuery,
+  useAdminAddParticipantMutation,
+  useAdminGetDeploymentParticipantsQuery,
   useParticipantGetExercisesQuery,
   useParticipantGetExerciseQuery,
   useParticipantGetDeploymentsQuery,
