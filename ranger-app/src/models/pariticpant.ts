@@ -5,8 +5,8 @@ type NewParticipant = {
 
 type Participant = {
   id: string;
-  deployment_id: string;
-  user_id: string;
+  deploymentId: string;
+  userId: string;
   selector: string;
 };
 

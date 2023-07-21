@@ -18,6 +18,7 @@ import useExerciseStreaming from 'src/hooks/useExerciseStreaming';
 import {toastSuccess, toastWarning} from 'src/components/Toaster';
 import AccountList from 'src/components/Deployment/AccountList';
 import EntityConnector from 'src/components/Deployment/EntityConnector';
+import EntityTree from 'src/components/Deployment/EntityTree';
 
 const DeploymentDetail = () => {
   const {t} = useTranslation();
@@ -89,6 +90,9 @@ const DeploymentDetail = () => {
           />
           <div className='mt-[2rem]'>
             <EntityConnector exerciseId={exerciseId} deploymentId={deploymentId}/>
+          </div>
+          <div className='mt-[2rem]'>
+            <EntityTree exerciseId={exerciseId} deploymentId={deploymentId}/>
           </div>
           <div className='flex justify-end items-center pb-4 mt-[2rem]'>
             <div className='flex justify-between items-center'>

@@ -37,11 +37,13 @@ const language = {
     noDeployments: 'No deployments',
     noAccounts: 'No accounts',
     entityConnector: {
+      entityConnector: 'Entity Connector',
       selectEntity: 'Select entity...',
       selectUser: 'Select user...',
       success: 'Entity connected successfully',
       fail: 'Failed to connect entity',
     },
+    entityTree: 'Entity Tree',
     form: {
       group: {
         placeholder: 'Select group...',
