@@ -89,7 +89,9 @@ const EntityConnector = ({exerciseId, deploymentId}: {
           itemRenderer={(item, {handleClick, handleFocus}) => (
             <MenuItem2
               key={item.id}
-              style={{paddingLeft: `${Number(item.id.toString().split('.').length)}rem`}}
+              style={{
+                paddingLeft: `${Number(item.id.toString().split('.').length) * 0.5}rem`,
+              }}
               text={item.id.toString().split('.').pop() ?? ''}
               onClick={handleClick}
               onFocus={handleFocus}
