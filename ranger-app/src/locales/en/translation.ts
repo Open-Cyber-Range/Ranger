@@ -168,6 +168,18 @@ const language = {
       },
     },
   },
+  metricScoring: {
+    noManualMetrics: 'No manual metrics submissions to score at the moment',
+    downloadButtonLoading: 'Downloading...',
+    downloadButton: 'Download File',
+    textSubmissionPlaceholder: 'No text submission yet...',
+    scorePlaceholder: 'Enter a score...',
+    errors: {
+      scoreValue: 'Score must be between 0 and {{maxScore}}',
+      downloadFailed: 'Download failed',
+      scoreNotSet: 'Score is not set',
+    },
+  },
 };
 
 export default language;
