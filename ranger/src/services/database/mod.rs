@@ -3,6 +3,7 @@ pub(crate) mod condition;
 pub(crate) mod deployment;
 pub(crate) mod event;
 pub(crate) mod exercise;
+pub(crate) mod metric;
 pub(crate) mod participant;
 pub(crate) mod upload;
 

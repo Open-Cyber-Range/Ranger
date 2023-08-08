@@ -1,5 +1,6 @@
 pub mod deployment;
 pub mod events;
+pub mod metric;
 pub mod participants;
 pub mod scenario;
 
