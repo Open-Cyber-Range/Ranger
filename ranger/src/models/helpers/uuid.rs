@@ -1,8 +1,7 @@
 use diesel::{
-    backend::Backend,
     deserialize,
     deserialize::FromSql,
-    mysql::Mysql,
+    mysql::{Mysql, MysqlValue},
     serialize,
     serialize::ToSql,
     serialize::{IsNull, Output},
@@ -71,7 +70,7 @@ impl Display for Uuid {
 }
 
 impl FromSql<Binary, Mysql> for Uuid {
-    fn from_sql(bytes: <Mysql as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
+    fn from_sql(bytes: MysqlValue) -> deserialize::Result<Self> {
         let value = <Vec<u8>>::from_sql(bytes)?;
         uuid::Uuid::from_slice(&value)
             .map(Uuid)
