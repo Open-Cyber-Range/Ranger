@@ -4,6 +4,7 @@ pub(crate) mod deployment;
 pub(crate) mod event;
 pub(crate) mod exercise;
 pub(crate) mod participant;
+pub(crate) mod upload;
 
 use crate::{models::helpers::uuid::Uuid, utilities::run_migrations};
 use actix::{Actor, Addr};
@@ -27,11 +28,14 @@ pub type All<Table, T> = Select<Table, AsSelect<T, Mysql>>;
 pub type FilterExisting<Target, DeletedAtColumn> =
     Filter<Target, Eq<DeletedAtColumn, NaiveDateTime>>;
 pub type ById<Id, R> = Filter<R, Eq<Id, Uuid>>;
+pub type ByName<Name, R> = Filter<R, Eq<Name, String>>;
 pub type ByTemplateId<TemplateId, R> = Filter<R, Eq<TemplateId, Uuid>>;
 pub type ByDeploymentId<DeploymentId, R> = Filter<R, Eq<DeploymentId, Uuid>>;
 pub type ByUsername<Username, R> = Filter<R, Eq<Username, String>>;
 pub type SelectById<Table, Id, DeletedAtColumn, T> =
     ById<Id, FilterExisting<All<Table, T>, DeletedAtColumn>>;
+pub type SelectByName<Table, Name, DeletedAtColumn, T> =
+    ByName<Name, FilterExisting<All<Table, T>, DeletedAtColumn>>;
 pub type SelectByTemplateId<Table, TemplateId, DeletedAtColumn, T> =
     ByTemplateId<TemplateId, FilterExisting<All<Table, T>, DeletedAtColumn>>;
 pub type SelectByDeploymentId<Table, DeploymentId, DeletedAtColumn, T> =

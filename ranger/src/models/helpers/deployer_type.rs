@@ -1,5 +1,5 @@
 use diesel::{
-    backend::RawValue,
+    backend::Backend,
     deserialize,
     deserialize::FromSql,
     mysql::Mysql,
@@ -59,7 +59,7 @@ impl<'de> Deserialize<'de> for DeployerType {
 }
 
 impl FromSql<Text, Mysql> for DeployerType {
-    fn from_sql(bytes: RawValue<Mysql>) -> deserialize::Result<Self> {
+    fn from_sql(bytes: <Mysql as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
         if let Ok(value) = <String>::from_sql(bytes) {
             return match value.as_str() {
                 "switch" => Ok(DeployerType(GrpcDeployerTypes::Switch)),
