@@ -6,6 +6,7 @@ import ParticipantDashboard from 'src/components/Deployment/participant/DashBoar
 import Accounts from 'src/components/Deployment/participant/Accounts';
 import ParticipantScore from 'src/components/Deployment/participant/Score';
 import Events from 'src/components/Deployment/participant/Events';
+import ManualMetrics from 'src/components/Deployment/participant/ManualMetrics';
 
 const ParticipantDeploymentDetail = () => {
   const {exerciseId, deploymentId} = useParams<DeploymentDetailRouteParameters>();
@@ -28,6 +29,10 @@ const ParticipantDeploymentDetail = () => {
               deploymentId={deploymentId}/>}
           {activeTab === 'Events'
             && <Events
+              exerciseId={exerciseId}
+              deploymentId={deploymentId}/>}
+          {activeTab === 'Manual Metrics'
+            && <ManualMetrics
               exerciseId={exerciseId}
               deploymentId={deploymentId}/>}
         </>
