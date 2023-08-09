@@ -64,9 +64,9 @@ export type Event = {
 };
 
 export enum FeatureType {
-  Service,
-  Configuration,
-  Artifact,
+  Service = 'Service',
+  Configuration = 'Configuration',
+  Artifact = 'Artifact',
 }
 
 export type Feature = {
@@ -105,22 +105,22 @@ export type Inject = {
 };
 
 export enum MetricType {
-  Manual,
-  Conditional,
+  Manual = 'Manual',
+  Conditional = 'Conditional',
 }
 
 export type Metric = {
   name?: string;
   description?: string;
-  metric_type: MetricType;
+  type: MetricType;
   artifact?: boolean;
   max_score: number;
   condition?: string;
 };
 
 export enum NodeType {
-  VM,
-  Switch,
+  VM = 'VM',
+  Switch = 'Switch',
 }
 
 export type Resources = {
