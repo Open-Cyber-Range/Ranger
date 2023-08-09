@@ -140,6 +140,13 @@ export const apiSlice = createApi({
     adminGetEmailForm: builder.query <string, string>({
       query: exerciseId => `/admin/exercise/${exerciseId}/email`,
     }),
+    adminUploadFile: builder.mutation<string, FormData>({
+      query: formData => ({
+        url: '/upload',
+        method: 'POST',
+        body: formData,
+      }),
+    }),
     adminGetDeploymentScores: builder.query<Score[],
     {
       exerciseId: string;
@@ -274,6 +281,7 @@ export const {
   useAdminGetDeploymentScoresQuery,
   useAdminGetDeploymentGroupsQuery,
   useAdminSendEmailMutation,
+  useAdminUploadFileMutation,
   useAdminGetEmailFormQuery,
   useAdminGetDeploymentScenarioQuery,
   useAdminAddParticipantMutation,

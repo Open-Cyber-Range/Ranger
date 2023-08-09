@@ -57,6 +57,8 @@ pub enum RangerError {
     AppStateMissing,
     #[error("Not authorized")]
     NotAuthorized,
+    #[error("Failed to upload file")]
+    FileUploadFailed,
 }
 
 impl ResponseError for RangerError {
