@@ -402,7 +402,8 @@ pub async fn get_exercise_deployment_users(
         RangerError::ScenarioParsingFailed
     })?;
 
-    if let Some(scenario_nodes) = scenario.nodes {
+    if let (Some(scenario_nodes), Some(_infrastructure)) = (scenario.nodes, scenario.infrastructure)
+    {
         let vm_nodes = scenario_nodes
             .into_iter()
             .filter(|node| matches!(node.1.type_field, NodeType::VM))
