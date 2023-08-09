@@ -28,6 +28,7 @@ use ranger::routes::{
     admin::groups::get_participant_groups,
     basic::{status, version},
     exercise::{add_exercise, add_exercise_deployment, delete_exercise},
+    upload::upload_participant_artifacts,
 };
 
 #[actix_web::main]
@@ -114,6 +115,7 @@ async fn main() -> Result<(), Error> {
                                                             .service(get_exercise_deployment_scores)
                                                             .service(get_own_participants)
                                                             .service(get_participant_events)
+                                                            .service (upload_participant_artifacts)
                                                             .wrap(DeploymentMiddlewareFactory),
                                                     ),
                                             )

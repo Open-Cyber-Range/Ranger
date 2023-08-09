@@ -8,6 +8,7 @@ pub(crate) mod helpers;
 mod participant;
 pub mod score;
 pub mod user;
+pub mod upload;
 
 pub use account::*;
 pub use condition::*;
