@@ -159,6 +159,7 @@ const language = {
         score: 'Score',
         events: 'Events',
         accounts: 'Accounts',
+        manualMetrics: 'Manual Metrics',
       },
       events: {
         noEvents: 'Participant is not connected to any Events in this deployment',

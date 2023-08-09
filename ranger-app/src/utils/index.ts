@@ -6,6 +6,8 @@ import {
   ExerciseRole,
   type TloMapsByRole,
   type TrainingLearningObjective,
+  type Scenario,
+  type Metric,
 } from 'src/models/scenario';
 import {type Score} from 'src/models/score';
 
@@ -248,3 +250,50 @@ export function getUniqueRoles(entities: Record<string, Entity>) {
 
   return Array.from(rolesSet);
 }
+
+export const getTloKeysForEntityOrClosestParent
+= (currentEntityKey: string, flattenedEntities: Record<string, Entity>): string[] => {
+  let currentEntity = flattenedEntities[currentEntityKey];
+
+  while (currentEntity && !currentEntity.tlos && currentEntityKey.includes('.')) {
+    const lastPeriodIndex = currentEntityKey.lastIndexOf('.');
+    currentEntityKey = currentEntityKey.slice(0, Math.max(0, lastPeriodIndex));
+    currentEntity = flattenedEntities[currentEntityKey];
+  }
+
+  return currentEntity?.tlos ?? [];
+};
+
+export const getMetricsByEntityKey
+= (entityKey: string, scenario: Scenario): Record<string, Metric> => {
+  const entities = scenario?.entities;
+  const tlos = scenario?.tlos;
+  const evaluations = scenario?.evaluations;
+  const metrics = scenario?.metrics;
+
+  if (entities && tlos && evaluations && metrics) {
+    const flattenedEntities = flattenEntities(entities);
+    const entity = flattenedEntities[entityKey];
+
+    if (entity) {
+      const entityTloKeys = getTloKeysForEntityOrClosestParent(entityKey, flattenedEntities);
+      const entityMetricKeys = entityTloKeys.map(tloKey => tlos[tloKey])
+        .map(tlo => tlo.evaluation)
+        .map(evaluationKey => evaluations[evaluationKey])
+        .flatMap(evaluation => evaluation.metrics);
+
+      const entityMetrics = entityMetricKeys
+        .reduce<Record<string, Metric>>((accumulator, metricKey) => {
+        if (metrics[metricKey]) {
+          accumulator[metricKey] = metrics[metricKey];
+        }
+
+        return accumulator;
+      }, {});
+
+      return entityMetrics;
+    }
+  }
+
+  return {};
+};
