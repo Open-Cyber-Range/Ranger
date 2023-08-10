@@ -61,6 +61,12 @@ pub enum RangerError {
     NotAuthorized,
     #[error("Failed to upload file")]
     FileUploadFailed,
+    #[error("Metric has already been scored")]
+    MetricAlreadyScored,
+    #[error("Payload too large")]
+    PayloadTooLarge,
+    #[error("Unsupported media type")]
+    UnsupportedMediaType,
 }
 
 impl ResponseError for RangerError {
@@ -83,6 +89,9 @@ impl ResponseError for RangerError {
             RangerError::TokenExpired => StatusCode::UNAUTHORIZED,
             RangerError::TokenMissing => StatusCode::UNAUTHORIZED,
             RangerError::NotAuthorized => StatusCode::UNAUTHORIZED,
+            RangerError::MetricAlreadyScored => StatusCode::FORBIDDEN,
+            RangerError::PayloadTooLarge => StatusCode::PAYLOAD_TOO_LARGE,
+            RangerError::UnsupportedMediaType => StatusCode::UNSUPPORTED_MEDIA_TYPE,
             _ => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }

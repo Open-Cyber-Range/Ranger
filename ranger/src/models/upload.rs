@@ -1,17 +1,12 @@
 use crate::constants::NAIVEDATETIME_DEFAULT_VALUE;
 use crate::schema::artifacts;
-use crate::services::database::All;
-use crate::services::database::Create;
-use crate::services::database::FilterExisting;
-use crate::services::database::SelectById;
-use crate::services::database::SelectByName;
-use crate::services::database::SoftDeleteById;
+use crate::services::database::{
+    All, Create, CreateOrReplace, FilterExisting, SelectById, SelectByName, SoftDeleteById,
+};
 use chrono::NaiveDateTime;
-use diesel::insert_into;
-use diesel::prelude::*;
+use diesel::{insert_into, prelude::*, replace_into, Insertable, Queryable};
+
 use serde::{Deserialize, Serialize};
-use diesel::Queryable;
-use diesel::Insertable;
 
 use super::helpers::uuid::Uuid;
 
@@ -31,6 +26,7 @@ pub struct Artifact {
 pub struct NewArtifact {
     pub id: Uuid,
     pub content: Vec<u8>,
+    pub metric_id: Uuid,
     pub name: String,
 }
 
@@ -39,10 +35,15 @@ impl NewArtifact {
         insert_into(artifacts::table).values(self)
     }
 
-    pub fn new(name: String, content: Vec<u8>) -> Self {
+    pub fn create_insert_or_replace(&self) -> CreateOrReplace<&Self, artifacts::table> {
+        replace_into(artifacts::table).values(self)
+    }
+
+    pub fn new(metric_id: Uuid, name: String, content: Vec<u8>) -> Self {
         Self {
             id: Uuid::random(),
             name,
+            metric_id,
             content,
         }
     }
@@ -63,6 +64,11 @@ impl Artifact {
         Self::all().filter(artifacts::id.eq(id))
     }
 
+    pub fn by_metric_id(
+        metric_id: Uuid,
+    ) -> SelectById<artifacts::table, artifacts::metric_id, artifacts::deleted_at, Self> {
+        Self::all().filter(artifacts::metric_id.eq(metric_id))
+    }
 
     pub fn soft_delete(
         &self,
@@ -76,5 +82,4 @@ impl Artifact {
     ) -> SelectByName<artifacts::table, artifacts::name, artifacts::deleted_at, Self> {
         Self::all().filter(artifacts::name.eq(name))
     }
-
 }

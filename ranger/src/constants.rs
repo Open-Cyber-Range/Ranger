@@ -1,7 +1,7 @@
 use bigdecimal::{BigDecimal, FromPrimitive};
 use chrono::NaiveDateTime;
 use lazy_static::lazy_static;
-use std::time::Duration;
+use std::{collections::HashMap, time::Duration};
 
 const DEFAULT_DEPLOYER_GROUP_NAME: &str = "default";
 
@@ -23,8 +23,12 @@ pub const DATETIME_FORMAT: &str = "%Y-%m-%d %H:%M:%S";
 pub const EVENT_POLLER_TIMEOUT_TRIES: u8 = 20;
 pub const EVENT_POLLER_RETRY_DURATION: Duration = Duration::from_secs(3);
 
+pub const OCTET_STREAM_MIME_TYPE: &str = "application/octet-stream";
+
 lazy_static! {
     pub static ref NAIVEDATETIME_DEFAULT_VALUE: NaiveDateTime =
         NaiveDateTime::parse_from_str(NAIVEDATETIME_DEFAULT_STRING, DATETIME_FORMAT).unwrap();
     pub static ref BIG_DECIMAL_ONE: BigDecimal = BigDecimal::from_i8(1).unwrap();
+    pub static ref ARTIFACT_EXTENSION_MIME_TYPE_WHITELIST: HashMap<&'static str, &'static str> =
+        vec![("zip", "application/zip")].into_iter().collect();
 }
