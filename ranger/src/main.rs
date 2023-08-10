@@ -132,7 +132,6 @@ async fn main() -> Result<(), Error> {
                                                             .service(get_exercise_deployment_scores)
                                                             .service(get_own_participants)
                                                             .service(get_participant_events)
-                                                            .service (upload_participant_artifacts)
                                                             .wrap(DeploymentMiddlewareFactory)
                                                             .service(
                                                                 scope("/metric")
@@ -143,6 +142,7 @@ async fn main() -> Result<(), Error> {
                                                                     .wrap(MetricMiddlewareFactory)
                                                                         .service(get_metric)
                                                                         .service(update_metric)
+                                                                        .service(upload_participant_artifacts)
                                                                     ),
                                                             ),
                                                     ),
