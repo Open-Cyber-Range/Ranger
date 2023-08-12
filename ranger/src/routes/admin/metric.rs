@@ -19,7 +19,7 @@ use actix_web::{
 };
 
 #[put("")]
-pub async fn update_metric(
+pub async fn update_admin_metric(
     app_state: Data<AppState>,
     metric_info: MetricInfo,
     update_metric: Json<UpdateMetric>,
@@ -40,7 +40,7 @@ pub async fn update_metric(
 }
 
 #[get("")]
-pub async fn get_metric(metric_info: MetricInfo) -> Result<Json<Metric>, RangerError> {
+pub async fn get_admin_metric(metric_info: MetricInfo) -> Result<Json<Metric>, RangerError> {
     Ok(Json(metric_info.into_inner()))
 }
 

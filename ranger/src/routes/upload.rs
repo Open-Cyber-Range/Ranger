@@ -13,7 +13,7 @@ use futures_util::{StreamExt, TryStreamExt};
 use log::error;
 
 #[post("/upload")]
-pub async fn upload_participant_artifacts(
+pub async fn upload_participant_artifact(
     app_state: Data<AppState>,
     metric_info: MetricInfo,
     mut payload: Multipart,
