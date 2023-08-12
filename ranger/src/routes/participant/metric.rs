@@ -1,21 +1,35 @@
 use crate::{
     errors::RangerError,
-    middleware::{authentication::UserInfo, deployment::DeploymentInfo},
+    middleware::{authentication::UserInfo, deployment::DeploymentInfo, metric::MetricInfo},
     models::{
         helpers::uuid::Uuid,
         metric::{NewMetric, NewMetricResource},
-        Metric,
+        Metric, UpdateMetric,
     },
     services::database::metric::{CreateMetric, GetMetrics},
     utilities::{create_database_error_handler, create_mailbox_error_handler},
     AppState,
 };
 use actix_web::{
-    get, post,
+    get, post, put,
     web::{Data, Json},
 };
 use log::error;
 use sdl_parser::Scenario;
+
+#[get("")]
+pub async fn get_participant_metric(
+    metric_info: MetricInfo,
+    user_details: UserInfo,
+) -> Result<Json<Metric>, RangerError> {
+    let metric = metric_info.into_inner();
+
+    if metric.user_id.eq(&user_details.id) {
+        Ok(Json(metric))
+    } else {
+        Err(RangerError::NotAuthorized)
+    }
+}
 
 #[get("")]
 pub async fn get_participant_metrics(
@@ -35,6 +49,32 @@ pub async fn get_participant_metrics(
         .collect();
 
     Ok(Json(users_metrics))
+}
+
+#[put("")]
+pub async fn update_participant_metric(
+    app_state: Data<AppState>,
+    metric_info: MetricInfo,
+    user_details: UserInfo,
+    update_metric: Json<UpdateMetric>,
+) -> Result<Json<Metric>, RangerError> {
+    let metric = metric_info.into_inner();
+    if metric.user_id.eq(&user_details.id) {
+        let update_metric = update_metric.into_inner();
+
+        let metric = app_state
+            .database_address
+            .send(crate::services::database::metric::UpdateMetric(
+                metric.id,
+                update_metric,
+            ))
+            .await
+            .map_err(create_mailbox_error_handler("Deployment"))?
+            .map_err(create_database_error_handler("Create deployment"))?;
+        Ok(Json(metric))
+    } else {
+        Err(RangerError::NotAuthorized)
+    }
 }
 
 #[post("")]
