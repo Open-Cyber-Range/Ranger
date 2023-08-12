@@ -9,40 +9,51 @@ import {
 import {useState} from 'react';
 import {Controller, useForm} from 'react-hook-form';
 import {
-  type UpdateDummyManualMetric,
-  type DummyManualMetric,
+  type UpdateManualMetric,
+  type ManualMetric,
 } from 'src/models/manualMetric';
 import {toastWarning} from 'src/components/Toaster';
 import {useTranslation} from 'react-i18next';
+import {useLazyAdminGetManualMetricArtifactQuery} from 'src/slices/apiSlice';
 
-const MetricScoringForm = ({metric, onSubmit}:
+const MetricScoringForm = ({exerciseId, deploymentId, metric, onSubmit}:
 {
-  metric: DummyManualMetric;
-  onSubmit: ({name, maxScore, score}: UpdateDummyManualMetric) => void;
+  exerciseId: string;
+  deploymentId: string;
+  metric: ManualMetric;
+  onSubmit: ({textSubmission, score}: UpdateManualMetric) => void;
 }) => {
   const {handleSubmit, control}
-  = useForm<UpdateDummyManualMetric>({
+  = useForm<UpdateManualMetric>({
     defaultValues: {
-      id: '0',
-      name: '',
-      score: 0,
+      textSubmission: metric.textSubmission ?? '',
+      score: metric.score ?? 0,
     },
   });
   const {t} = useTranslation();
   const [loading, setLoading] = useState(false);
-  const handleDownload = async (artifactObjectId: string) => {
-    setLoading(true);
+  const [getArtifactFetchUrl] = useLazyAdminGetManualMetricArtifactQuery();
 
+  const handleDownload = async () => {
+    setLoading(true);
     try {
-      console.log('Downloading file... artifactObjectId:', artifactObjectId);
-      // GET artifact file url
-      const response = await fetch('http://localhost:5000/hello.txt');
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'hello.txt';
-      link.click();
+      const artifactData = await getArtifactFetchUrl(
+        {deploymentId, exerciseId, metricId: metric.id});
+
+      if (artifactData.data?.url) {
+        const artifactResponse = await fetch(artifactData.data?.url);
+        const blob = await artifactResponse.blob();
+        const filename = artifactData.data?.filename;
+        if (blob && filename) {
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = filename;
+          link.click();
+        }
+      } else {
+        toastWarning(t('metricScoring.errors.downloadFailed'));
+      }
     } catch {
       toastWarning(t('metricScoring.errors.downloadFailed'));
     }
@@ -50,7 +61,7 @@ const MetricScoringForm = ({metric, onSubmit}:
     setLoading(false);
   };
 
-  const onHandleSubmit = (formContent: UpdateDummyManualMetric) => {
+  const onHandleSubmit = (formContent: UpdateManualMetric) => {
     if (onSubmit) {
       if (formContent.score === undefined) {
         toastWarning(t('metricScoring.errors.scoreNotSet'));
@@ -60,7 +71,7 @@ const MetricScoringForm = ({metric, onSubmit}:
     }
   };
 
-  const validateScore = (value: number) => {
+  const validateScore = (value: number | undefined) => {
     if (!value || value < 0 || value > metric.maxScore) {
       return `${t('metricScoring.errors.scoreValue', {maxScore: metric.maxScore})} `;
     }
@@ -79,7 +90,7 @@ const MetricScoringForm = ({metric, onSubmit}:
             large
             intent='primary'
             disabled={loading}
-            onClick={async () => handleDownload(metric.id)}
+            onClick={async () => handleDownload()}
           >
             {loading ? t('metricScoring.downloadButtonLoading') : t('metricScoring.downloadButton')}
           </Button>
@@ -88,7 +99,7 @@ const MetricScoringForm = ({metric, onSubmit}:
             readOnly
             placeholder={t('metricScoring.textSubmissionPlaceholder') ?? ''}
             className='text-gray-500 h-96 max-h-40 w-96'
-            value={metric.textSubmissionValue}
+            value={metric.textSubmission ?? ''}
           />
 
           <Controller
@@ -112,6 +123,7 @@ const MetricScoringForm = ({metric, onSubmit}:
                       large
                       placeholder={t('metricScoring.scorePlaceholder') ?? ''}
                       buttonPosition='none'
+                      min={0}
                       max={metric.maxScore}
                       intent={intent}
                       value={value}
