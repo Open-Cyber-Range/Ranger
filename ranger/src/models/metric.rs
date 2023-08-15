@@ -19,7 +19,7 @@ pub struct NewMetricResource {
     pub deployment_id: Uuid,
     pub entity_selector: String,
     pub metric_key: String,
-    pub exercise_role: String,
+    pub role: String,
     pub text_submission: Option<String>,
 }
 
@@ -56,7 +56,7 @@ impl NewMetric {
             entity_selector: new_metric_resource.entity_selector,
             name,
             description,
-            role: new_metric_resource.exercise_role,
+            role: new_metric_resource.role,
             text_submission: new_metric_resource.text_submission,
             max_score,
         }
@@ -82,6 +82,7 @@ pub struct Metric {
     pub text_submission: Option<String>,
     pub score: Option<u32>,
     pub max_score: u32,
+    pub has_artifact: bool,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
     pub deleted_at: NaiveDateTime,

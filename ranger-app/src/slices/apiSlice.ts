@@ -313,6 +313,7 @@ export const apiSlice = createApi({
         method: 'DELETE',
         responseHandler: 'text',
       }),
+      invalidatesTags: ['ManualMetric'],
     }),
     adminGetManualMetricArtifact: builder.query<FetchArtifact, {
       exerciseId: string;
@@ -349,6 +350,7 @@ export const apiSlice = createApi({
       query({exerciseId, deploymentId}) {
         return `/participant/exercise/${exerciseId}/deployment/${deploymentId}/metric`;
       },
+      providesTags: ['ManualMetric'],
     }),
     participantUpdateMetric: builder.mutation<ManualMetric, {
       exerciseId: string;
@@ -361,10 +363,9 @@ export const apiSlice = createApi({
         method: 'PUT',
         body: manualMetricUpdate,
       }),
-      invalidatesTags: (result, error, {metricId}) =>
-        [{type: 'ManualMetric', id: metricId}],
+      invalidatesTags: ['ManualMetric'],
     }),
-    participantAddMetric: builder.mutation<ManualMetric, {
+    participantAddMetric: builder.mutation<string, {
       exerciseId: string;
       deploymentId: string;
       newManualMetric: NewManualMetric;
@@ -374,21 +375,27 @@ export const apiSlice = createApi({
         method: 'POST',
         body: newManualMetric,
       }),
+      invalidatesTags: ['ManualMetric'],
     }),
     participantUploadMetricArtifact: builder.mutation<string, {
       exerciseId: string;
       deploymentId: string;
       metricId: string;
-      formData: FormData;
+      artifactFile: File;
     }>({
-      query: ({exerciseId, deploymentId, metricId, formData}) => ({
+      query({exerciseId, deploymentId, metricId, artifactFile}) {
+        const formData = new FormData();
+        formData.append('artifact', artifactFile, artifactFile.name);
+
+        return {
         // eslint-disable-next-line max-len
-        url: `/participant/exercise/${exerciseId}/deployment/${deploymentId}/metric/${metricId}/upload`,
-        method: 'POST',
-        body: formData,
-      }),
-      invalidatesTags: (result, error, {metricId}) =>
-        [{type: 'ManualMetric', id: metricId}],
+          url: `/participant/exercise/${exerciseId}/deployment/${deploymentId}/metric/${metricId}/upload`,
+          method: 'POST',
+          body: formData,
+          formData: true,
+        };
+      },
+      invalidatesTags: ['ManualMetric'],
     }),
   }),
 });

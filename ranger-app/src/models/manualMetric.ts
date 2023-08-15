@@ -11,12 +11,20 @@ export type NewManualMetric = {
 
 export type ManualMetric = {
   id: string;
+  exerciseId: string;
+  deploymentId: string;
   userId: string;
+  entitySelector: string;
   name: string;
   description: string;
+  role: ExerciseRole;
+  textSubmission?: string;
   score?: number;
   maxScore: number;
-} & NewManualMetric;
+  hasArtifact: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
 
 export type UpdateManualMetric = {
   textSubmission?: string;

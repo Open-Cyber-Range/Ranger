@@ -1,53 +1,94 @@
+import type React from 'react';
+import {Button, FileInput, TextArea} from '@blueprintjs/core';
+import {useState} from 'react';
+import {useTranslation} from 'react-i18next';
+import {toastSuccess, toastWarning} from 'src/components/Toaster';
+import {ARTIFACT_FILETYPE_WHITELIST} from 'src/constants';
+import {type NewManualMetric} from 'src/models/manualMetric';
+import {
+  useParticipantAddMetricMutation,
+  useParticipantUploadMetricArtifactMutation,
+} from 'src/slices/apiSlice';
 
-import React from 'react';
-import {skipToken} from '@reduxjs/toolkit/dist/query';
-import {useParticipantGetDeploymentScenarioQuery} from 'src/slices/apiSlice';
-import {getMetricsByEntityKey} from 'src/utils';
-import {type Metric, MetricType} from 'src/models/scenario';
-
-const AddMetricForm = ({exerciseId, deploymentId, selectedEntity}:
+const AddNewMetric = ({exerciseId, deploymentId, newManualMetric}:
 {exerciseId: string;
   deploymentId: string;
-  selectedEntity: string;
+  newManualMetric: NewManualMetric;
 }) => {
-//   Const {t} = useTranslation();
-  const entitySelector = selectedEntity;
-  const queryParameters
-= exerciseId && deploymentId && entitySelector
-  ? {exerciseId, deploymentId, entitySelector} : skipToken;
-  const {data: scenario} = useParticipantGetDeploymentScenarioQuery(queryParameters);
-  // Const manual_metrics: ManualMetric[] = []; // Get existing ManualMetrics from api
+  const {t} = useTranslation();
+  const [addMetric, {isError: isMetricError}] = useParticipantAddMetricMutation();
+  const [addArtifact, {isError: isArtifactError}]
+   = useParticipantUploadMetricArtifactMutation();
+  const [artifactFile, setArtifactFile] = useState<File | undefined>(undefined);
+  const [submissionText, setSubmissionText] = useState<string>('');
 
-  if (scenario?.metrics) {
-    const entityMetrics = getMetricsByEntityKey(selectedEntity, scenario);
-    const entityManualMetrics = Object.keys(entityMetrics)
-      .filter(key => entityMetrics[key].type === MetricType.Manual)
-      .reduce<Record<string, Metric>>((accumulator, key) => {
-      accumulator[key] = entityMetrics[key];
-      return accumulator;
-    }, {});
+  const handleAddMetric = async () => {
+    try {
+      newManualMetric.textSubmission = submissionText;
+      await addMetric({
+        exerciseId,
+        deploymentId,
+        newManualMetric,
+      }).unwrap().then(async metricId => {
+        if (artifactFile) {
+          await addArtifact({
+            exerciseId,
+            deploymentId,
+            metricId,
+            artifactFile,
+          });
+        }
+      });
 
-    // Compare manual_metrics to entityManualMetrics by entity_selector and metric_key
-    // remove duplicates from entityManualMetrics
-    // set manual_metrics into a PUT form, entityManualMetrics into a POST form
-    // both should be in the same AccordionGroup
-
-    if (entityManualMetrics) {
-      return (
-        <div>
-          ManualMetric forms here
-        </div>
-      );
+      if (!isMetricError && !isArtifactError) {
+        toastSuccess(t('metricScoring.newSuccess'));
+      } else {
+        toastWarning(t('metricScoring.errors.newManualMetricFailed'));
+      }
+    } catch {
+      toastWarning(t('metricScoring.errors.newManualMetricFailed'));
     }
+  };
 
-    return (
-      <div className='flex flex-col mt-2'>
-        herro {selectedEntity}
-      </div>
-    );
-  }
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files) {
+      setArtifactFile(event.target.files[0]);
+    }
+  };
 
-  return null;
+  return (
+    <div className='flex flex-col'>
+      <form
+        className='flex mt-4 justify-between items-center'
+        onSubmit={handleAddMetric}
+      >
+        <FileInput
+          className='ml-4'
+          id='artifact'
+          inputProps={{accept: ARTIFACT_FILETYPE_WHITELIST}}
+          text={artifactFile?.name ?? t('metricScoring.addArtifactPlaceholder') ?? ''}
+          buttonText={t('common.browse') ?? ''}
+          onInputChange={handleFileChange}
+
+        />
+        <TextArea
+          className='w-1/2'
+          id='submissionText'
+          name='submissionText'
+          value={submissionText}
+          placeholder={t('metricScoring.addSubmissionText') ?? ''}
+          onChange={event => {
+            setSubmissionText(event.target.value);
+          }}/>
+        <Button
+          className='mr-4'
+          intent='primary'
+          text={t('common.submit') ?? ''}
+          onClick={handleAddMetric}
+        />
+      </form>
+    </div>
+  );
 };
 
-export default AddMetricForm;
+export default AddNewMetric;
