@@ -145,9 +145,7 @@ const MetricScoringForm = ({exerciseId, deploymentId, metric, onSubmit}:
               );
             }}
           />
-
         </div>
-
       </form>
     </div>
   );

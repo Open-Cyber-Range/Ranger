@@ -1,37 +1,89 @@
 import React from 'react';
 import {skipToken} from '@reduxjs/toolkit/dist/query';
-import {useParticipantGetDeploymentScenarioQuery} from 'src/slices/apiSlice';
+import {
+  useParticipantGetDeploymentScenarioQuery,
+  useParticipantGetMetricsQuery,
+} from 'src/slices/apiSlice';
 import {useSelector} from 'react-redux';
-import AddMetricForm from 'src/components/Scoring/participant/AddMetric';
 import {selectedEntity} from 'src/slices/userSlice';
+import Accordion from 'src/components/Accordion';
+import AccordionGroup from 'src/components/AccordionGroup';
+import {type Metric as ScenarioMetric, MetricType} from 'src/models/scenario';
+import {flattenEntities, getMetricsByEntityKey} from 'src/utils';
+import AddNewMetric from 'src/components/Scoring/participant/AddMetric';
+import UpdateMetric from 'src/components/Scoring/participant/UpdateMetric';
+import {useTranslation} from 'react-i18next';
 
 const ManualMetrics = ({
   exerciseId, deploymentId}:
 {exerciseId: string; deploymentId: string;
 }) => {
-  // Const {t} = useTranslation();
+  const {t} = useTranslation();
   const entitySelector = useSelector(selectedEntity);
-  const scenarioQueryArguments = exerciseId && deploymentId && entitySelector
-    ? {exerciseId, deploymentId, entitySelector} : skipToken;
-  const {data: scenario} = useParticipantGetDeploymentScenarioQuery(scenarioQueryArguments);
-  const metrics = scenario?.metrics;
+  const {data: scenario} = useParticipantGetDeploymentScenarioQuery(
+    exerciseId && deploymentId && entitySelector
+      ? {exerciseId, deploymentId, entitySelector} : skipToken);
+  const {data: existingManualMetrics} = useParticipantGetMetricsQuery(exerciseId && deploymentId
+    ? {exerciseId, deploymentId} : skipToken);
+  const entities = scenario?.entities ?? {};
+  const entity = flattenEntities(entities)[entitySelector ?? ''];
+  const entityRole = entity?.role;
 
-  if (metrics && entitySelector) {
-    return (
-      <div>
-        <AddMetricForm
-          exerciseId={exerciseId}
-          deploymentId={deploymentId}
-          selectedEntity={entitySelector}/>
-      </div>
-    );
+  if (entitySelector && scenario?.metrics && existingManualMetrics && entityRole) {
+    const manualMetricNames = new Set(existingManualMetrics.map(metric => metric.name));
+    const entityScenarioMetrics = getMetricsByEntityKey(entitySelector, scenario);
+
+    const entityScenarioManualMetrics = Object.entries(entityScenarioMetrics)
+      .filter(([key, scenarioMetric]) =>
+        scenarioMetric.type === MetricType.Manual
+        && !(manualMetricNames.has(key) || manualMetricNames.has(scenarioMetric.name ?? '')))
+      .reduce<Record<string, ScenarioMetric>>((accumulator, [key, scenarioMetric]) => {
+      accumulator[key] = scenarioMetric;
+      return accumulator;
+    }, {});
+
+    if (Object.keys(entityScenarioManualMetrics).length > 0
+      || (existingManualMetrics && existingManualMetrics.length > 0)) {
+      return (
+        <div>
+          <AccordionGroup>
+            {Object.entries(entityScenarioManualMetrics).map(([key, metric]) => (
+              <Accordion
+                key={key}
+                title={metric.name ?? key}
+                className='mb-4 p-2 border-2 border-slate-300 shadow-md '
+              >
+                <AddNewMetric
+                  exerciseId={exerciseId}
+                  deploymentId={deploymentId}
+                  newManualMetric={{exerciseId,
+                    deploymentId, entitySelector, metricKey: key, role: entityRole}}/>
+              </Accordion>
+            ))}
+            {Object.entries(existingManualMetrics).map(([key, metric]) => (
+              <Accordion
+                key={key}
+                title={metric.name ?? key}
+                className='mb-4 p-2 border-2 border-slate-300 shadow-md '
+              >
+                <UpdateMetric
+                  exerciseId={exerciseId}
+                  deploymentId={deploymentId}
+                  manualMetric={metric}
+                />
+              </Accordion>
+            ))}
+          </AccordionGroup>
+        </div>
+      );
+    }
   }
 
   return (
     <div className='
-    flex justify-center align-center m-2 mt-auto mb-4 text-gray-400'
+  flex justify-center align-center m-2 mt-auto mb-4 text-gray-400'
     >
-      No metrics
+      {t('metricScoring.errors.noMetrics')}
     </div>
   );
 };

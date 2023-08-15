@@ -59,9 +59,12 @@ pub async fn update_participant_metric(
     update_metric: Json<UpdateMetric>,
 ) -> Result<Json<Metric>, RangerError> {
     let metric = metric_info.into_inner();
-    if metric.user_id.eq(&user_details.id) {
-        let update_metric = update_metric.into_inner();
+    let update_metric = update_metric.into_inner();
 
+    if metric.score.is_some() {
+        return Err(RangerError::MetricAlreadyScored);
+    };
+    if metric.user_id.eq(&user_details.id) || update_metric.score.is_some() {
         let metric = app_state
             .database_address
             .send(crate::services::database::metric::UpdateMetric(
