@@ -89,7 +89,7 @@ const MetricScoringForm = ({exerciseId, deploymentId, metric, onSubmit}:
           <Button
             large
             intent='primary'
-            disabled={loading}
+            disabled={!metric.hasArtifact || loading}
             onClick={async () => handleDownload()}
           >
             {loading ? t('metricScoring.downloadButtonLoading') : t('metricScoring.downloadButton')}

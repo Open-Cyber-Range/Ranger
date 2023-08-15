@@ -31,14 +31,8 @@ const MetricScorer = ({exerciseId, deploymentId}:
   const {data: manualMetrics} = useAdminGetManualMetricsQuery(exerciseId && deploymentId
     ? {exerciseId, deploymentId} : skipToken);
   const defaultRole: ExerciseRole = manualMetrics?.[0]?.role ?? ExerciseRole.Blue;
+  const [updateManualMetric, {isSuccess: isUpdateMetricSuccess}] = useAdminUpdateMetricMutation();
 
-  useEffect(() => {
-    if (!selectedRole && manualMetrics && manualMetrics.length > 0) {
-      setSelectedRole(defaultRole);
-    }
-  }, [selectedRole, manualMetrics, defaultRole]);
-
-  const [updateManualMetric, {isSuccess}] = useAdminUpdateMetricMutation();
   const handleManualMetricUpdate = async (
     metric: ManualMetric, updateMetricForm: UpdateManualMetric) => {
     try {
@@ -48,15 +42,22 @@ const MetricScorer = ({exerciseId, deploymentId}:
         metricId: metric.id,
         manualMetricUpdate: updateMetricForm,
       });
-      if (isSuccess) {
-        toastSuccess(t('metricScoring.updateSuccess'));
-      } else {
-        toastWarning(t('metricScoring.errors.updateFailed'));
-      }
     } catch {
       toastWarning(t('metricScoring.errors.updateFailed'));
     }
   };
+
+  useEffect(() => {
+    if (isUpdateMetricSuccess) {
+      toastSuccess(t('metricScoring.updateSuccess'));
+    }
+  }, [isUpdateMetricSuccess]);
+
+  useEffect(() => {
+    if (!selectedRole && manualMetrics && manualMetrics.length > 0) {
+      setSelectedRole(defaultRole);
+    }
+  }, [selectedRole, manualMetrics, defaultRole]);
 
   if (manualMetrics && manualMetrics.length > 0) {
     const filteredMetrics = manualMetrics?.filter(metric =>
