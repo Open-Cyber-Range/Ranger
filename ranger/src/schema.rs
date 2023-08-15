@@ -136,6 +136,7 @@ diesel::table! {
         text_submission -> Nullable<Text>,
         score -> Nullable<Unsigned<Integer>>,
         max_score -> Unsigned<Integer>,
+        has_artifact -> Bool,
         created_at -> Timestamp,
         updated_at -> Timestamp,
         deleted_at -> Timestamp,
