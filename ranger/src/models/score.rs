@@ -14,7 +14,6 @@ pub struct Score {
     pub deployment_id: Uuid,
     pub metric_name: String,
     pub vm_name: String,
-    pub vm_uuid: Uuid,
     pub value: BigDecimal,
     pub timestamp: NaiveDateTime,
 }
@@ -25,7 +24,6 @@ impl Score {
         deployment_id: Uuid,
         metric_name: String,
         vm_name: String,
-        vm_uuid: Uuid,
         value: BigDecimal,
         timestamp: NaiveDateTime,
     ) -> Self {
@@ -35,7 +33,6 @@ impl Score {
             deployment_id,
             metric_name,
             vm_name,
-            vm_uuid,
             value,
             timestamp,
         }
@@ -63,7 +60,6 @@ impl Score {
             deployment_id: condition_message.deployment_id,
             metric_name,
             vm_name,
-            vm_uuid: condition_message.virtual_machine_id,
             value: condition_message.value * max_score,
             timestamp: condition_message.created_at,
         }
