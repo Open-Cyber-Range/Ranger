@@ -23,11 +23,16 @@ const ManualMetrics = ({
   const {data: scenario} = useParticipantGetDeploymentScenarioQuery(
     exerciseId && deploymentId && entitySelector
       ? {exerciseId, deploymentId, entitySelector} : skipToken);
-  const {data: existingManualMetrics} = useParticipantGetMetricsQuery(exerciseId && deploymentId
+  let {data: existingManualMetrics} = useParticipantGetMetricsQuery(exerciseId && deploymentId
     ? {exerciseId, deploymentId} : skipToken);
   const entities = scenario?.entities ?? {};
   const entity = flattenEntities(entities)[entitySelector ?? ''];
   const entityRole = entity?.role;
+
+  if (existingManualMetrics) {
+    existingManualMetrics = existingManualMetrics
+      .filter(metric => metric.entitySelector === entitySelector);
+  }
 
   if (entitySelector && scenario?.metrics && existingManualMetrics && entityRole) {
     const manualMetricNames = new Set(existingManualMetrics.map(metric => metric.name));
