@@ -10,10 +10,11 @@ import {
   useParticipantUploadMetricArtifactMutation,
 } from 'src/slices/apiSlice';
 
-const AddNewMetric = ({exerciseId, deploymentId, newManualMetric}:
+const AddNewMetric = ({exerciseId, deploymentId, newManualMetric, metricHasArtifact}:
 {exerciseId: string;
   deploymentId: string;
   newManualMetric: NewManualMetric;
+  metricHasArtifact: boolean;
 }) => {
   const {t} = useTranslation();
   const [addMetric, {isError: isMetricError}] = useParticipantAddMetricMutation();
@@ -68,6 +69,7 @@ const AddNewMetric = ({exerciseId, deploymentId, newManualMetric}:
           inputProps={{accept: ARTIFACT_FILETYPE_WHITELIST}}
           text={artifactFile?.name ?? t('metricScoring.addArtifactPlaceholder') ?? ''}
           buttonText={t('common.browse') ?? ''}
+          disabled={!metricHasArtifact}
           onInputChange={handleFileChange}
 
         />

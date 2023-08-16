@@ -14,10 +14,11 @@ import {
 } from 'src/slices/apiSlice';
 import {ARTIFACT_FILETYPE_WHITELIST} from 'src/constants';
 
-const UpdateMetric = ({exerciseId, deploymentId, manualMetric}:
+const UpdateMetric = ({exerciseId, deploymentId, manualMetric, metricHasArtifact}:
 {exerciseId: string;
   deploymentId: string;
   manualMetric: ManualMetric;
+  metricHasArtifact: boolean;
 }) => {
   const {t} = useTranslation();
   const [updateMetric, {isSuccess: isUpdateMetricSuccess}] = useParticipantUpdateMetricMutation();
@@ -90,7 +91,7 @@ const UpdateMetric = ({exerciseId, deploymentId, manualMetric}:
           <FileInput
             className='ml-4'
             id='artifact'
-            disabled={metricHasBeenScored}
+            disabled={metricHasBeenScored || !metricHasArtifact}
             inputProps={{accept: ARTIFACT_FILETYPE_WHITELIST}}
             text={artifactFile?.name ?? t('metricScoring.replaceArtifactPlaceholder')}
             buttonText={t('common.browse') ?? ''}

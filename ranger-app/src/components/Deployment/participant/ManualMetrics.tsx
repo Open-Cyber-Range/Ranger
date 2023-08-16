@@ -62,22 +62,30 @@ const ManualMetrics = ({
                   exerciseId={exerciseId}
                   deploymentId={deploymentId}
                   newManualMetric={{exerciseId,
-                    deploymentId, entitySelector, metricKey: key, role: entityRole}}/>
-              </Accordion>
-            ))}
-            {Object.entries(existingManualMetrics).map(([key, metric]) => (
-              <Accordion
-                key={key}
-                title={metric.name ?? key}
-                className='mb-4 p-2 border-2 border-slate-300 shadow-md '
-              >
-                <UpdateMetric
-                  exerciseId={exerciseId}
-                  deploymentId={deploymentId}
-                  manualMetric={metric}
+                    deploymentId, entitySelector, metricKey: key, role: entityRole}}
+                  metricHasArtifact={metric.artifact ?? false}
                 />
               </Accordion>
             ))}
+            {Object.entries(existingManualMetrics).map(([key, metric]) => {
+              const scenarioMetric = scenario?.metrics?.[metric.name]
+              ?? Object.values(scenario?.metrics ?? {})
+                .find(scenarioMetric => scenarioMetric.name === metric.name);
+              return (
+                <Accordion
+                  key={key}
+                  title={metric.name}
+                  className='mb-4 p-2 border-2 border-slate-300 shadow-md '
+                >
+                  <UpdateMetric
+                    exerciseId={exerciseId}
+                    deploymentId={deploymentId}
+                    manualMetric={metric}
+                    metricHasArtifact={scenarioMetric?.artifact ?? false}
+                  />
+                </Accordion>
+              );
+            })}
           </AccordionGroup>
         </div>
       );
