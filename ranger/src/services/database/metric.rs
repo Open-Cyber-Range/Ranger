@@ -1,10 +1,13 @@
 use super::Database;
 use crate::constants::RECORD_NOT_FOUND;
 use crate::models::metric::Metric;
+use crate::models::Score;
 use crate::models::{helpers::uuid::Uuid, metric::NewMetric};
+use crate::services::websocket::SocketScoring;
 use actix::{Handler, Message, ResponseActFuture, WrapFuture};
 use actix_web::web::block;
 use anyhow::{anyhow, Ok, Result};
+use bigdecimal::BigDecimal;
 use diesel::RunQueryDsl;
 
 #[derive(Message)]
@@ -47,23 +50,41 @@ impl Handler<UpdateMetric> for Database {
     fn handle(&mut self, msg: UpdateMetric, _ctx: &mut Self::Context) -> Self::Result {
         let UpdateMetric(uuid, update_manual_metric) = msg;
         let connection_result = self.get_connection();
+        let websocket_manager = self.websocket_manager_address.clone();
 
         Box::pin(
             async move {
                 let mut connection = connection_result?;
-                let exercise = block(move || {
+                let metric = block(move || {
                     let updated_rows = update_manual_metric
                         .create_update(uuid)
                         .execute(&mut connection)?;
                     if updated_rows != 1 {
                         return Err(anyhow!(RECORD_NOT_FOUND));
                     }
-                    let exercise = Metric::by_id(uuid).first(&mut connection)?;
-                    Ok(exercise)
+                    let metric = Metric::by_id(uuid).first(&mut connection)?;
+
+                    if let Some(score) = metric.score {
+                        let score = Score::new(
+                            metric.exercise_id,
+                            metric.deployment_id,
+                            metric.name.clone(),
+                            metric.entity_selector.clone(),
+                            BigDecimal::from(score),
+                            metric.updated_at,
+                        );
+
+                        let scoring_msg = SocketScoring(
+                            score.exercise_id,
+                            (score.id, score.exercise_id, score).into(),
+                        );
+                        websocket_manager.do_send(scoring_msg);
+                    }
+                    Ok(metric)
                 })
                 .await??;
 
-                Ok(exercise)
+                Ok(metric)
             }
             .into_actor(self),
         )
