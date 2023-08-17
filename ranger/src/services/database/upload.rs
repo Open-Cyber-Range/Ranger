@@ -23,12 +23,40 @@ impl Handler<UploadArtifact> for Database {
             async move {
                 let mut connection = connection_result?;
                 let upload_file = block(move || {
-                    new_file.create_insert().execute(&mut connection)?;
-                    let _upload_file = Artifact::by_id(new_file.id).first(&mut connection)?;
+                    new_file
+                        .create_insert_or_replace()
+                        .execute(&mut connection)?;
+
                     Ok(new_file.id)
                 })
                 .await??;
                 Ok(upload_file)
+            }
+            .into_actor(self),
+        )
+    }
+}
+
+#[derive(Message)]
+#[rtype(result = "Result<Artifact>")]
+pub struct GetArtifactByMetricId(pub Uuid);
+
+impl Handler<GetArtifactByMetricId> for Database {
+    type Result = ResponseActFuture<Self, Result<Artifact>>;
+
+    fn handle(&mut self, msg: GetArtifactByMetricId, _ctx: &mut Self::Context) -> Self::Result {
+        let metric_id = msg.0;
+        let connection_result = self.get_connection();
+
+        Box::pin(
+            async move {
+                let mut connection = connection_result?;
+                let artifact = block(move || {
+                    let artifact = Artifact::by_metric_id(metric_id).first(&mut connection)?;
+                    Ok(artifact)
+                })
+                .await??;
+                Ok(artifact)
             }
             .into_actor(self),
         )

@@ -17,6 +17,7 @@ use crate::{
                 GetDeploymentElementByDeploymentIdByScenarioReference, GetDeployments,
             },
             exercise::{CreateExercise, DeleteExercise, GetExercises},
+            metric::GetMetrics,
             participant::{CreateParticipant, DeleteParticipant, GetParticipants},
         },
         deployment::{RemoveDeployment, StartDeployment},
@@ -354,6 +355,26 @@ pub async fn get_exercise_deployment_scores(
     if let Some(metrics) = scenario.metrics {
         let mut scores: Vec<Score> = vec![];
 
+        let manual_metrics = app_state
+            .database_address
+            .send(GetMetrics(deployment.id))
+            .await
+            .map_err(create_mailbox_error_handler("Database"))?
+            .map_err(create_database_error_handler("Get Manual Metrics"))?;
+
+        manual_metrics.into_iter().for_each(|manual_metric| {
+            if let Some(score) = manual_metric.score {
+                scores.push(Score::new(
+                    exercise_uuid,
+                    deployment_uuid,
+                    manual_metric.name,
+                    manual_metric.entity_selector,
+                    BigDecimal::from(score),
+                    manual_metric.updated_at,
+                ));
+            }
+        });
+
         condition_messages.retain(|condition| {
             condition.created_at > scenario.start.naive_utc()
                 && condition.created_at < scenario.end.naive_utc()
@@ -378,7 +399,6 @@ pub async fn get_exercise_deployment_scores(
                         deployment_uuid,
                         metric_reference,
                         vm_name.to_owned(),
-                        condition_message.virtual_machine_id,
                         condition_message.clone().value * BigDecimal::from(metric.max_score),
                         condition_message.created_at,
                     ))
@@ -402,7 +422,8 @@ pub async fn get_exercise_deployment_users(
         RangerError::ScenarioParsingFailed
     })?;
 
-    if let Some(scenario_nodes) = scenario.nodes {
+    if let (Some(scenario_nodes), Some(_infrastructure)) = (scenario.nodes, scenario.infrastructure)
+    {
         let vm_nodes = scenario_nodes
             .into_iter()
             .filter(|node| matches!(node.1.type_field, NodeType::VM))

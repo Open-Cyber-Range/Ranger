@@ -16,7 +16,8 @@ import {
 } from '@blueprintjs/core';
 import {type ReactNode, useState} from 'react';
 
-export type ParticipantActiveTab = 'Dash' | 'Score' | 'Events' | 'Accounts' | undefined;
+export type ParticipantActiveTab =
+'Dash' | 'Score' | 'Events' | 'Accounts' | 'Manual Metrics' | undefined;
 
 const hashToTab = (hash: string): ParticipantActiveTab => {
   switch (hash) {
@@ -34,6 +35,10 @@ const hashToTab = (hash: string): ParticipantActiveTab => {
 
     case '#accounts': {
       return 'Accounts';
+    }
+
+    case '#manualMetrics': {
+      return 'Manual Metrics';
     }
 
     default: {
@@ -110,6 +115,18 @@ const SideBar = ({renderMainContent}: {
                   setActiveTab('Accounts');
                 }}
               />
+
+              <MenuItem
+                active={!deploymentId && activeTab === 'Manual Metrics'}
+                text={t('participant.exercise.tabs.manualMetrics')}
+                icon='shapes'
+                onClick={() => {
+                  navigate(`/exercises/${exercise.id}/deployments/${deployment.id}#manualMetrics`);
+
+                  setActiveTab('Manual Metrics');
+                }}
+              />
+
             </div>
           </Menu>
         </div>

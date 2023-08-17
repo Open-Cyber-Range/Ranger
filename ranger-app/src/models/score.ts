@@ -6,5 +6,4 @@ export type Score = {
   value: number;
   timestamp: string;
   vmName: string;
-  vmUuid: string;
 };

@@ -16,3 +16,4 @@ export const LINE_DATASET_TEMPLATE: ChartDataset<'line'> = {
   pointRadius: 1.5,
   data: [],
 };
+export const ARTIFACT_FILETYPE_WHITELIST = 'application/zip, .zip';

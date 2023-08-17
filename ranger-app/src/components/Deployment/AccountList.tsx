@@ -12,7 +12,7 @@ const AccountList = ({exerciseId, deploymentId}:
   const {data: users} = useAdminGetDeploymentUsersQuery(
     exerciseId && deploymentId ? {exerciseId, deploymentId} : skipToken);
 
-  if (users) {
+  if (users && users.length > 0) {
     return (
       <div className='flex flex-col mt-8'>
         <H3>Accounts</H3>

@@ -19,6 +19,7 @@ import {toastSuccess, toastWarning} from 'src/components/Toaster';
 import AccountList from 'src/components/Deployment/AccountList';
 import EntityConnector from 'src/components/Deployment/EntityConnector';
 import EntityTree from 'src/components/Deployment/EntityTree';
+import MetricScorer from 'src/components/Scoring/MetricScorer';
 
 const DeploymentDetail = () => {
   const {t} = useTranslation();
@@ -99,6 +100,9 @@ const DeploymentDetail = () => {
               <BackButton/>
             </div>
           </div>
+          <MetricScorer
+            exerciseId={exerciseId}
+            deploymentId={deploymentId}/>
         </>
       )}
       />

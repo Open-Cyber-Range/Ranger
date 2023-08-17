@@ -20,6 +20,12 @@ import {type AdGroup, type AdUser} from 'src/models/groups';
 import {type Scenario} from 'src/models/scenario';
 import {type Score} from 'src/models/score';
 import {type RootState} from 'src/store';
+import {
+  type UpdateManualMetric,
+  type ManualMetric,
+  type FetchArtifact,
+  type NewManualMetric,
+} from 'src/models/manualMetric';
 
 export const apiSlice = createApi({
   reducerPath: 'api',
@@ -34,7 +40,7 @@ export const apiSlice = createApi({
       return headers;
     },
   }),
-  tagTypes: ['Deployment', 'Exercise', 'Score', 'Scenario', 'Participant'],
+  tagTypes: ['Deployment', 'Exercise', 'Score', 'Scenario', 'Participant', 'ManualMetric'],
   endpoints: builder => ({
     adminGetGroups: builder.query<AdGroup[], void>({
       query: () => '/admin/group',
@@ -261,6 +267,136 @@ export const apiSlice = createApi({
           exerciseId}/deployment/${deploymentId}/entity/${entitySelector}/events`;
       },
     }),
+    adminGetManualMetrics: builder.query<ManualMetric[] | undefined,
+    {
+      exerciseId: string;
+      deploymentId: string;
+    }>({
+      query({exerciseId, deploymentId}) {
+        return `/admin/exercise/${exerciseId}/deployment/${deploymentId}/metric`;
+      },
+      providesTags: (result = []) =>
+        [
+          ...result.map(({id}) => ({type: 'Exercise' as const, id})),
+          {type: 'ManualMetric', id: 'LIST'},
+        ],
+    }),
+    adminGetMetric: builder.query<ManualMetric | undefined,
+    {
+      exerciseId: string;
+      deploymentId: string;
+      metricId: string;
+    }>({
+      query: ({exerciseId, deploymentId, metricId}) =>
+        `/admin/exercise/${exerciseId}/deployment/${deploymentId}/metric/${metricId}`,
+    }),
+    adminUpdateMetric: builder.mutation<ManualMetric, {
+      exerciseId: string;
+      deploymentId: string;
+      metricId: string;
+      manualMetricUpdate: UpdateManualMetric;
+    }>({
+      query: ({manualMetricUpdate, exerciseId, deploymentId, metricId}) => ({
+        url: `/admin/exercise/${exerciseId}/deployment/${deploymentId}/metric/${metricId}`,
+        method: 'PUT',
+        body: manualMetricUpdate,
+      }),
+    }),
+    adminDeleteMetric: builder
+      .mutation<string, {
+      deploymentId: string;
+      exerciseId: string;
+      metricId: string;
+    }>({
+      query: ({exerciseId, deploymentId, metricId}) => ({
+        url: `/admin/exercise/${exerciseId}/deployment/${deploymentId}/metric/${metricId}`,
+        method: 'DELETE',
+        responseHandler: 'text',
+      }),
+      invalidatesTags: ['ManualMetric'],
+    }),
+    adminGetManualMetricArtifact: builder.query<FetchArtifact, {
+      exerciseId: string;
+      deploymentId: string;
+      metricId: string;
+    }>({
+      query: ({exerciseId, deploymentId, metricId}) => ({
+        url: `/admin/exercise/${exerciseId}/deployment/${deploymentId}/metric/${metricId}/download`,
+        method: 'GET',
+        async responseHandler(response) {
+          const filename = response.headers.get('Content-Disposition')?.split('filename=')[1];
+          const blob = await response.blob();
+          const url = URL.createObjectURL(blob);
+          return {filename, url};
+        },
+
+        cache: 'no-store',
+      }),
+    }),
+    participantGetMetric: builder.query<ManualMetric | undefined,
+    {
+      exerciseId: string;
+      deploymentId: string;
+      metricId: string;
+    }>({
+      query: ({exerciseId, deploymentId, metricId}) =>
+        `/participant/exercise/${exerciseId}/deployment/${deploymentId}/metric/${metricId}`,
+    }),
+    participantGetMetrics: builder.query<ManualMetric[],
+    {
+      exerciseId: string;
+      deploymentId: string;
+    }>({
+      query({exerciseId, deploymentId}) {
+        return `/participant/exercise/${exerciseId}/deployment/${deploymentId}/metric`;
+      },
+      providesTags: ['ManualMetric'],
+    }),
+    participantUpdateMetric: builder.mutation<ManualMetric, {
+      exerciseId: string;
+      deploymentId: string;
+      metricId: string;
+      manualMetricUpdate: UpdateManualMetric;
+    }>({
+      query: ({manualMetricUpdate, exerciseId, deploymentId, metricId}) => ({
+        url: `/participant/exercise/${exerciseId}/deployment/${deploymentId}/metric/${metricId}`,
+        method: 'PUT',
+        body: manualMetricUpdate,
+      }),
+      invalidatesTags: ['ManualMetric'],
+    }),
+    participantAddMetric: builder.mutation<string, {
+      exerciseId: string;
+      deploymentId: string;
+      newManualMetric: NewManualMetric;
+    }>({
+      query: ({newManualMetric, exerciseId, deploymentId}) => ({
+        url: `/participant/exercise/${exerciseId}/deployment/${deploymentId}/metric`,
+        method: 'POST',
+        body: newManualMetric,
+      }),
+      invalidatesTags: ['ManualMetric'],
+    }),
+    participantUploadMetricArtifact: builder.mutation<string, {
+      exerciseId: string;
+      deploymentId: string;
+      metricId: string;
+      artifactFile: File;
+    }>({
+      query({exerciseId, deploymentId, metricId, artifactFile}) {
+        const formData = new FormData();
+        formData.append('artifact', artifactFile, artifactFile.name);
+
+        return {
+        // eslint-disable-next-line max-len
+          url: `/participant/exercise/${exerciseId}/deployment/${deploymentId}/metric/${metricId}/upload`,
+          method: 'POST',
+          body: formData,
+          formData: true,
+        };
+      },
+      invalidatesTags: ['ManualMetric'],
+    }),
   }),
 });
 
@@ -286,6 +422,11 @@ export const {
   useAdminGetDeploymentScenarioQuery,
   useAdminAddParticipantMutation,
   useAdminGetDeploymentParticipantsQuery,
+  useAdminGetManualMetricsQuery,
+  useAdminGetMetricQuery,
+  useAdminUpdateMetricMutation,
+  useAdminDeleteMetricMutation,
+  useLazyAdminGetManualMetricArtifactQuery,
   useParticipantGetExercisesQuery,
   useParticipantGetExerciseQuery,
   useParticipantGetDeploymentsQuery,
@@ -295,4 +436,9 @@ export const {
   useParticipantGetDeploymentScenarioQuery,
   useParticipantGetOwnParticipantsQuery,
   useParticipantGetTriggeredEventsQuery,
+  useParticipantGetMetricQuery,
+  useParticipantGetMetricsQuery,
+  useParticipantUpdateMetricMutation,
+  useParticipantAddMetricMutation,
+  useParticipantUploadMetricArtifactMutation,
 } = apiSlice;

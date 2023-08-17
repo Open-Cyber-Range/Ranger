@@ -3,6 +3,7 @@ pub(crate) mod condition;
 pub(crate) mod deployment;
 pub(crate) mod event;
 pub(crate) mod exercise;
+pub(crate) mod metric;
 pub(crate) mod participant;
 pub(crate) mod upload;
 
@@ -14,7 +15,7 @@ use diesel::{
     dsl::now,
     helper_types::{AsSelect, Eq, Filter, Select, Update},
     mysql::{Mysql, MysqlConnection},
-    query_builder::{InsertOrIgnoreStatement, InsertStatement},
+    query_builder::{InsertOrIgnoreStatement, InsertStatement, ReplaceStatement},
     r2d2::{ConnectionManager, Pool, PooledConnection},
     sql_function, Insertable,
 };
@@ -48,6 +49,8 @@ pub type SoftDeleteById<Id, DeleteAtColumn, Table> = SoftDelete<ById<Id, Table>,
 pub type UpdateById<Id, DeletedAtColumn, Table, T> =
     Update<FilterExisting<ById<Id, Table>, DeletedAtColumn>, T>;
 pub type Create<Type, Table> = InsertStatement<Table, <Type as Insertable<Table>>::Values>;
+pub type CreateOrReplace<Type, Table> =
+    ReplaceStatement<Table, <Type as Insertable<Table>>::Values>;
 pub type CreateOrIgnore<Type, Table> =
     InsertOrIgnoreStatement<Table, <Type as Insertable<Table>>::Values>;
 

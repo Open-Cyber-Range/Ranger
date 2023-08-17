@@ -51,22 +51,6 @@ diesel::table! {
 }
 
 diesel::table! {
-    connections (id) {
-        #[max_length = 16]
-        id -> Binary,
-        #[max_length = 16]
-        deployment_id -> Binary,
-        #[max_length = 16]
-        user_id -> Binary,
-        #[max_length = 16]
-        entity_id -> Binary,
-        created_at -> Timestamp,
-        updated_at -> Timestamp,
-        deleted_at -> Nullable<Timestamp>,
-    }
-}
-
-diesel::table! {
     deployment_elements (id) {
         #[max_length = 16]
         id -> Binary,
@@ -137,6 +121,29 @@ diesel::table! {
 }
 
 diesel::table! {
+    metrics (id) {
+        #[max_length = 16]
+        id -> Binary,
+        #[max_length = 16]
+        exercise_id -> Binary,
+        #[max_length = 16]
+        deployment_id -> Binary,
+        user_id -> Text,
+        entity_selector -> Text,
+        name -> Text,
+        description -> Nullable<Text>,
+        role -> Tinytext,
+        text_submission -> Nullable<Text>,
+        score -> Nullable<Unsigned<Integer>>,
+        max_score -> Unsigned<Integer>,
+        has_artifact -> Bool,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
+        deleted_at -> Timestamp,
+    }
+}
+
+diesel::table! {
     participants (id) {
         #[max_length = 16]
         id -> Binary,
@@ -151,21 +158,22 @@ diesel::table! {
 }
 
 diesel::joinable!(accounts -> exercises (exercise_id));
+diesel::joinable!(artifacts -> metrics (metric_id));
 diesel::joinable!(condition_messages -> deployments (deployment_id));
-diesel::joinable!(connections -> deployments (deployment_id));
 diesel::joinable!(deployment_elements -> deployments (deployment_id));
 diesel::joinable!(deployment_elements -> events (event_id));
 diesel::joinable!(deployments -> exercises (exercise_id));
+diesel::joinable!(metrics -> deployments (deployment_id));
 diesel::joinable!(participants -> deployments (deployment_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     accounts,
     artifacts,
     condition_messages,
-    connections,
     deployment_elements,
     deployments,
     events,
     exercises,
+    metrics,
     participants,
 );
