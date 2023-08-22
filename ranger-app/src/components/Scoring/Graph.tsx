@@ -17,7 +17,6 @@ import {DateTime} from 'luxon';
 import {
   useAdminGetDeploymentQuery,
   useAdminGetDeploymentScenarioQuery,
-  useAdminGetDeploymentScoresQuery,
 } from 'src/slices/apiSlice';
 import zoomPlugin from 'chartjs-plugin-zoom';
 import {type Score} from 'src/models/score';
@@ -44,9 +43,10 @@ ChartJS.register(
   zoomPlugin,
 );
 
-const DeploymentDetailsGraph = ({exerciseId, deploymentId}:
+const DeploymentDetailsGraph = ({exerciseId, deploymentId, scores}:
 {exerciseId: string | undefined;
   deploymentId: string | undefined;
+  scores: Score[] | undefined;
 }) => {
   const {t} = useTranslation();
   const xAxisTitle = t('chart.scoring.xAxisTitle');
@@ -54,7 +54,6 @@ const DeploymentDetailsGraph = ({exerciseId, deploymentId}:
   const chartTitle = t('chart.scoring.title');
   const queryArguments = exerciseId && deploymentId
     ? {exerciseId, deploymentId} : skipToken;
-  const {data: scores} = useAdminGetDeploymentScoresQuery(queryArguments);
   const {data: deployment} = useAdminGetDeploymentQuery(queryArguments);
   const {data: scenario} = useAdminGetDeploymentScenarioQuery(queryArguments);
 

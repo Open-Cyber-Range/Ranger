@@ -7,10 +7,9 @@ import {skipToken} from '@reduxjs/toolkit/dist/query';
 import {
   useAdminDeleteDeploymentMutation,
   useAdminGetDeploymentQuery,
-  useAdminGetDeploymentScenarioQuery,
+  useAdminGetDeploymentScoresQuery,
 } from 'src/slices/apiSlice';
 import DeploymentDetailsGraph from 'src/components/Scoring/Graph';
-import TloTable from 'src/components/Scoring/TloTable';
 import Editor from '@monaco-editor/react';
 import {AnchorButton, H2} from '@blueprintjs/core';
 import SideBar from 'src/components/Exercise/SideBar';
@@ -20,17 +19,15 @@ import AccountList from 'src/components/Deployment/AccountList';
 import EntityConnector from 'src/components/Deployment/EntityConnector';
 import EntityTree from 'src/components/Deployment/EntityTree';
 import MetricScorer from 'src/components/Scoring/MetricScorer';
+import RoleScoresButtonGroup from 'src/components/Scoring/RoleScoresButtonGroup';
 
 const DeploymentDetail = () => {
   const {t} = useTranslation();
   const {exerciseId, deploymentId} = useParams<DeploymentDetailRouteParameters>();
   useExerciseStreaming(exerciseId);
-  const {data: scenario} = useAdminGetDeploymentScenarioQuery(
-    exerciseId && deploymentId ? {exerciseId, deploymentId} : skipToken,
-  );
-  const {data: deployment} = useAdminGetDeploymentQuery(
-    exerciseId && deploymentId ? {exerciseId, deploymentId} : skipToken,
-  );
+  const queryArguments = exerciseId && deploymentId ? {exerciseId, deploymentId} : skipToken;
+  const {data: deployment} = useAdminGetDeploymentQuery(queryArguments);
+  const {data: scores} = useAdminGetDeploymentScoresQuery(queryArguments);
 
   const [deleteDeployment] = useAdminDeleteDeploymentMutation();
 
@@ -78,13 +75,12 @@ const DeploymentDetail = () => {
           <DeploymentDetailsGraph
             exerciseId={exerciseId}
             deploymentId={deploymentId}
+            scores={scores}
           />
-          <TloTable
+          <RoleScoresButtonGroup
             exerciseId={exerciseId}
             deploymentId={deploymentId}
-            tloMap={scenario?.tlos}
           />
-
           <AccountList
             exerciseId={exerciseId}
             deploymentId={deploymentId}

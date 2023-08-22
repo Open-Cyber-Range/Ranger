@@ -24,72 +24,57 @@ const TloTableRow = ({exerciseId, deploymentId, tloKey, tlo}:
   const scenarioEvaluations = scenario?.evaluations;
   const scenarioMetrics = scenario?.metrics;
 
-  if (tlo && scenarioEvaluations && scenarioMetrics) {
+  if (tlo && scenarioEvaluations && scenarioMetrics && scores) {
     const tloEvaluation = scenarioEvaluations[tlo.evaluation];
-    if (tloEvaluation && scores) {
-      const scoresByMetric = groupBy(scores, score => score.metricName);
-
-      return (
-        <tr key={tloKey}>
-          <td>
-            <H5>{tlo.name ?? tloKey}</H5>
-            <p>{tlo.description}</p>
-          </td>
-          <td>
-            <H5>{tloEvaluation.name ?? tlo.evaluation}</H5>
-            <p>{tloEvaluation.description}</p>
-          </td>
-          <td className='flex flex-col items-stretch'>
-            <table>
-              <tbody>
-                {tloEvaluation.metrics.map(metricKey => {
-                  const metric = scenarioMetrics[metricKey];
-                  const metricReference = metric.name ?? metricKey;
-                  const scores = scoresByMetric[metricReference];
-
-                  if (scores && scores.length > 0) {
-                    const latestScoresByVm = findLatestScoresByVms(scores);
-                    latestScoresByVm.sort(sortByProperty('vmName', 'desc'));
-
-                    return (
-                      <tr key={metricKey} className='text-left'>
-                        {latestScoresByVm.map(element => (
-                          <td key={element.id} className='pl-4'>
-                            {metricReference} - {element.vmName}:{' '}
-                            {roundToDecimalPlaces(
-                              element.value)} {t('tloTable.points')}
-                          </td>
-                        ))}
-                      </tr>
-                    );
-                  }
-
-                  return (
-                    <tr key={metricKey}>
-                      <td key={metricKey} className='text-left pl-5'>
-                        {metricReference} - {t('tloTable.noMetricData')}
-                      </td>
-                    </tr>
-                  );
-                },
-                )}
-              </tbody>
-            </table>
-          </td>
-        </tr>
-      );
-    }
+    const scoresByMetric = groupBy(scores, score => score.metricName);
 
     return (
-      <tr>
+      <tr key={tloKey}>
         <td>
-          <h3>{tlo.name ?? tloKey}</h3>
+          <H5>{tlo.name ?? tloKey}</H5>
           <p>{tlo.description}</p>
         </td>
         <td>
-          {t('tloTable.noEvaluations')}
+          <H5>{tloEvaluation.name ?? tlo.evaluation}</H5>
+          <p>{tloEvaluation.description}</p>
         </td>
-        <td/>
+        <td className='flex flex-col items-stretch'>
+          <table>
+            <tbody>
+              {tloEvaluation.metrics.map(metricKey => {
+                const metric = scenarioMetrics[metricKey];
+                const metricReference = metric.name ?? metricKey;
+                const scores = scoresByMetric[metricReference];
+
+                if (scores && scores.length > 0) {
+                  const latestScoresByVm = findLatestScoresByVms(scores);
+                  latestScoresByVm.sort(sortByProperty('vmName', 'desc'));
+
+                  return (
+                    <tr key={metricKey} className='text-left'>
+                      {latestScoresByVm.map(element => (
+                        <td key={element.id} className='pl-4'>
+                          {metricReference} - {element.vmName}:{' '}
+                          {roundToDecimalPlaces(
+                            element.value)} {t('common.points')}
+                        </td>
+                      ))}
+                    </tr>
+                  );
+                }
+
+                return (
+                  <tr key={metricKey}>
+                    <td key={metricKey} className='text-left pl-5'>
+                      {metricReference} - {t('tloTable.noMetricData')}
+                    </td>
+                  </tr>
+                );
+              },
+              )}
+            </tbody>
+          </table>
+        </td>
       </tr>
     );
   }

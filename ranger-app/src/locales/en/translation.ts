@@ -87,6 +87,7 @@ const language = {
     noResults: 'No results',
     adGroup: 'AD Group',
     browse: 'Browse',
+    points: 'Points',
   },
   emails: {
     link: 'Emails',
@@ -141,7 +142,6 @@ const language = {
       evaluation: 'Evaluation',
       metric: 'Metric - VM Name: Current Score',
     },
-    points: 'points',
     noEvaluations: 'No Evaluations to display',
     noTlos: 'No Training Learning Objectives to display',
     noMetricData: 'No metric scores to display',
@@ -151,7 +151,7 @@ const language = {
       title: 'Score',
       xAxisTitle: 'Time',
       yAxisTitle: 'Points',
-      noScoreData: 'No score data to display graph',
+      noScoreData: 'No score data available',
     },
   },
   participant: {
