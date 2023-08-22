@@ -110,14 +110,7 @@ const MetricScorer = ({exerciseId, deploymentId}:
   }
 
   return (
-    <PageHolder>
-      <div className='
-    flex justify-center align-center m-2 mt-auto mb-4 text-gray-400'
-      >
-        {t('metricScoring.noManualMetrics')}
-      </div>
-
-    </PageHolder>
+    null
   );
 };
 
