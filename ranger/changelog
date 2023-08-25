@@ -1,3 +1,9 @@
+ranger-server (1.0.1) stretch; urgency=medium
+
+  * Fix front-end build issues
+
+ -- Kaarel Allemann <kaarel.allemann@cr14.ee>  Fri, 25 Aug 2023 16:34:52 +0200
+
 ranger-server (1.0.0) stretch; urgency=medium
 
   * Add Manual scoring support
