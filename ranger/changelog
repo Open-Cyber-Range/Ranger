@@ -2,7 +2,7 @@ ranger-server (0.7.0) stretch; urgency=medium
 
   * Improve error handling for SDL parsing on Frontend
   * Add Role selector to Frontend
-  * Add Participant and Mangager roles to Keycloak
+  * Add Participant and Manager roles to Keycloak
   * Add client verification for all API endpoints
   * Add AD group field to Exercise Deployment
   * Replace Deployment Cards with Sidebar
