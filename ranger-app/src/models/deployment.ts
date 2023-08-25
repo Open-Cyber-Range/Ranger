@@ -1,15 +1,21 @@
 
+type ParticipantDeployment = {
+  name: string;
+  id: string;
+  updatedAt: string;
+};
+
 type DeploymentForm = {
   name: string;
   deploymentGroup?: string;
-  groupName?: string;
+  groupName: string;
   count: number;
 };
 
 type NewDeployment = {
   name: string;
   deploymentGroup?: string;
-  groupName?: string;
+  groupName: string;
   sdlSchema: string;
 };
 
@@ -49,6 +55,7 @@ type DeploymentElement = {
 };
 
 export type {
+  ParticipantDeployment,
   NewDeployment,
   Deployment,
   DeploymentElement,

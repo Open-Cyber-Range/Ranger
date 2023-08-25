@@ -16,6 +16,7 @@ import {
 } from '@blueprintjs/core';
 import {type ReactNode, useState} from 'react';
 import {MENU_HEADER} from '@blueprintjs/core/lib/esm/common/classes';
+import {sortByProperty} from 'sort-by-property';
 
 type ActiveTab = 'Dash' | 'Scores' | 'Emails' | undefined;
 
@@ -50,8 +51,8 @@ const SideBar = ({renderMainContent}: {
   const {data: exercise} = useAdminGetExerciseQuery(exerciseId ?? skipToken);
   const hasDeployments = deployments && deployments.length > 0;
   const [activeTab, setActiveTab] = useState<ActiveTab>(hashToTab(hash));
-
   if (exercise && deployments) {
+    const orderedDeployments = deployments.slice().sort(sortByProperty('updatedAt', 'desc'));
     return (
 
       <div className='flex h-[100%]'>
@@ -105,7 +106,7 @@ const SideBar = ({renderMainContent}: {
               </li>
 
               {hasDeployments && (
-                deployments.map(deployment => (
+                orderedDeployments.map(deployment => (
                   <MenuItem
                     key={deployment.id}
                     active={deploymentId === deployment.id}

@@ -2,8 +2,8 @@ import {type ChartOptions} from 'chart.js';
 
 export const getLineChartOptions = (
   {minLimit, maxLimit, chartTitle, xAxisTitle, yAxisTitle}: {
-    minLimit: number;
-    maxLimit: number;
+    minLimit: number | undefined;
+    maxLimit: number | undefined;
     chartTitle: string;
     xAxisTitle: string;
     yAxisTitle: string;}) => {

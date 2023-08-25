@@ -403,3 +403,82 @@ impl Handler<GetDeploymentElementByDeploymentIdByHandlerReference> for Database 
         )
     }
 }
+
+#[derive(Message)]
+#[rtype(result = "Result<Vec<DeploymentElement>>")]
+pub struct GetDeploymentElementByEventId(pub Uuid, pub bool);
+
+impl Handler<GetDeploymentElementByEventId> for Database {
+    type Result = ResponseActFuture<Self, Result<Vec<DeploymentElement>>>;
+
+    fn handle(
+        &mut self,
+        msg: GetDeploymentElementByEventId,
+        _ctx: &mut Self::Context,
+    ) -> Self::Result {
+        let GetDeploymentElementByEventId(event_id, use_shared_connection) = msg;
+        let connection_result = self.pick_connection(use_shared_connection);
+
+        Box::pin(
+            async move {
+                let deployment_elements = block(move || {
+                    let mutex_connection = connection_result?;
+                    let mut connection = mutex_connection
+                        .lock()
+                        .map_err(|error| anyhow!("Error locking Mutex connection: {:?}", error))?;
+                    let deployment_elements =
+                        DeploymentElement::by_event_id(event_id).load(&mut *connection)?;
+
+                    Ok(deployment_elements)
+                })
+                .await??;
+
+                Ok(deployment_elements)
+            }
+            .into_actor(self),
+        )
+    }
+}
+
+#[derive(Message)]
+#[rtype(result = "Result<Vec<DeploymentElement>>")]
+pub struct GetDeploymentElementByEventIdByParentNodeId(pub Uuid, pub Uuid, pub bool);
+
+impl Handler<GetDeploymentElementByEventIdByParentNodeId> for Database {
+    type Result = ResponseActFuture<Self, Result<Vec<DeploymentElement>>>;
+
+    fn handle(
+        &mut self,
+        msg: GetDeploymentElementByEventIdByParentNodeId,
+        _ctx: &mut Self::Context,
+    ) -> Self::Result {
+        let GetDeploymentElementByEventIdByParentNodeId(
+            event_id,
+            handler_reference,
+            use_shared_connection,
+        ) = msg;
+        let connection_result = self.pick_connection(use_shared_connection);
+
+        Box::pin(
+            async move {
+                let deployment_elements = block(move || {
+                    let mutex_connection = connection_result?;
+                    let mut connection = mutex_connection
+                        .lock()
+                        .map_err(|error| anyhow!("Error locking Mutex connection: {:?}", error))?;
+                    let deployment_elements = DeploymentElement::by_event_id_by_parent_node_id(
+                        event_id,
+                        handler_reference,
+                    )
+                    .load(&mut *connection)?;
+
+                    Ok(deployment_elements)
+                })
+                .await??;
+
+                Ok(deployment_elements)
+            }
+            .into_actor(self),
+        )
+    }
+}

@@ -1,21 +1,30 @@
 use super::Database;
 use crate::models::helpers::uuid::Uuid;
-use crate::models::{ConditionMessage, NewConditionMessage};
+use crate::models::{ConditionMessage, NewConditionMessage, Score};
+use crate::services::websocket::SocketScoring;
 use actix::{Handler, Message, ResponseActFuture, WrapFuture};
 use actix_web::web::block;
 use anyhow::{Ok, Result};
 use diesel::RunQueryDsl;
+use sdl_parser::metric::Metric;
 
 #[derive(Message)]
 #[rtype(result = "Result<ConditionMessage>")]
-pub struct CreateConditionMessage(pub NewConditionMessage);
+pub struct CreateConditionMessage(
+    pub NewConditionMessage,
+    pub Option<(String, Metric)>,
+    pub String,
+);
 
 impl Handler<CreateConditionMessage> for Database {
     type Result = ResponseActFuture<Self, Result<ConditionMessage>>;
 
     fn handle(&mut self, msg: CreateConditionMessage, _ctx: &mut Self::Context) -> Self::Result {
         let new_condition_message = msg.0;
+        let metric = msg.1;
+        let vm_name = msg.2;
         let connection_result = self.get_connection();
+        let websocket_manager = self.websocket_manager_address.clone();
 
         Box::pin(
             async move {
@@ -26,6 +35,19 @@ impl Handler<CreateConditionMessage> for Database {
                         .execute(&mut connection)?;
                     let condition_message =
                         ConditionMessage::by_id(new_condition_message.id).first(&mut connection)?;
+
+                    if metric.is_some() {
+                        let score: Score = Score::from_conditionmessage_and_metric(
+                            condition_message.clone(),
+                            metric,
+                            vm_name,
+                        );
+                        let scoring_msg = SocketScoring(
+                            score.exercise_id,
+                            (score.id, score.exercise_id, score).into(),
+                        );
+                        websocket_manager.do_send(scoring_msg);
+                    }
 
                     Ok(condition_message)
                 })

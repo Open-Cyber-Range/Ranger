@@ -35,6 +35,15 @@ const language = {
     deleteSuccess: 'Deployment {{deploymentName}} deleted',
     deleteFail: 'Failed to delete the deployment',
     noDeployments: 'No deployments',
+    noAccounts: 'No accounts',
+    entityConnector: {
+      entityConnector: 'Entity Connector',
+      selectEntity: 'Select entity...',
+      selectUser: 'Select user...',
+      success: 'Entity connected successfully',
+      fail: 'Failed to connect entity',
+    },
+    entityTree: 'Entity Tree',
     form: {
       group: {
         placeholder: 'Select group...',
@@ -63,6 +72,7 @@ const language = {
     noRole: 'NO ROLE',
   },
   common: {
+    connect: 'Connect',
     required: '(required)',
     submit: 'Submit',
     delete: 'Delete',
@@ -75,6 +85,7 @@ const language = {
     team: 'Team',
     noResults: 'No results',
     adGroup: 'AD Group',
+    browse: 'Browse',
   },
   emails: {
     link: 'Emails',
@@ -142,6 +153,50 @@ const language = {
       noScoreData: 'No score data to display graph',
     },
   },
+  participant: {
+    exercise: {
+      tabs: {
+        dash: 'Dashboard',
+        score: 'Score',
+        events: 'Events',
+        accounts: 'Accounts',
+        manualMetrics: 'Manual Metrics',
+      },
+      events: {
+        noEvents: 'Participant is not connected to any Events in this deployment',
+        noTriggeredEvents: 'No Events have been triggered yet',
+        noDescription: 'Event has no description',
+        triggeredAt: 'Event triggered at',
+      },
+    },
+  },
+  metricScoring: {
+    score: 'Score',
+    noManualMetrics: 'No manual metric submissions to score at the moment',
+    downloadButtonLoading: 'Downloading...',
+    downloadButton: 'Download File',
+    textSubmissionPlaceholder: 'No text submission yet...',
+    scorePlaceholder: 'Enter a score...',
+    updateSuccess: 'Metric successfully updated',
+    newSuccess: 'Metric submission successfully created',
+    artifactAdded: 'Artifact successfully added',
+    notScored: 'Not yet been scored',
+    addArtifactPlaceholder: 'Add your artifact...',
+    replaceArtifactPlaceholder: 'Replace your artifact...',
+    addSubmissionText: 'Add submission text...',
+    updateSubmissionButton: 'Update Submission',
+    errors: {
+      noMetrics: 'Scenario has no manual metrics',
+      alreadyScored: 'Submission has already been scored and can no longer be updated',
+      notAltered: 'Submissions have not been altered',
+      scoreValue: 'Score must be between 0 and {{maxScore}}',
+      downloadFailed: 'Download failed',
+      updateFailed: 'Metric Score update failed',
+      newManualMetricFailed: 'An error occurred while creating a new submission',
+      scoreNotSet: 'Score is not set',
+    },
+  },
 };
 
 export default language;
+

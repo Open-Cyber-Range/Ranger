@@ -1,6 +1,6 @@
 [package]
 name = "ranger"
-version = "0.7.0"
+version = "1.0.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -39,6 +39,7 @@ systemd-units = { unit-name = "ranger", unit-scripts = "assets/unit-scripts" }
 
 [dependencies]
 actix = "0.13"
+actix-multipart = "0.6"
 actix-web = "4"
 actix-web-actors = "4"
 actix-web-grants = "3"
@@ -48,8 +49,8 @@ anyhow = "1"
 async-trait = "0.1"
 bigdecimal = { version = "0.3", features = ["serde"] }
 chrono = { version = "0.4", features = ["serde"] }
-diesel = { version = "2", features = ["mysql", "r2d2", "chrono", "numeric"] }
-diesel_migrations = "2"
+diesel = { version = "2.1", features = ["mysql", "r2d2", "chrono", "numeric"] }
+diesel_migrations = "2.1"
 env_logger = "0.9"
 futures = "0.3"
 futures-util = "0.3"
@@ -61,7 +62,7 @@ lettre = "0.10"
 rand = "0.8"
 ranger-grpc = { path = "../ranger-grpc" }
 reqwest = { version = "0.11", features = ["json", "default-tls"] }
-sdl-parser = "0.11"
+sdl-parser = "0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1"
 serde_yaml = "0.9"
@@ -79,9 +80,9 @@ tokio = { version = "1", features = [
   "rt",
 ] }
 tonic = "0.8"
-uuid = { version = "1.1", features = ["v4", "serde"] }
+uuid = { version = "1.1", features = ["v4", "serde", "fast-rng"] }
 
 [dev-dependencies]
 actix-rt = "2"
 insta = { version = "1", features = ["redactions", "yaml"] }
-sdl-parser = { version = "0.11", features = ["test"] }
+sdl-parser = { version = "0", features = ["test"] }

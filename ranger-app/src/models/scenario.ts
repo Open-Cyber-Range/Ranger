@@ -9,6 +9,7 @@ export type Capability = {
 
 export type Condition = {
   name?: string;
+  description?: string;
   command?: string;
   interval?: number;
   source?: Source;
@@ -45,7 +46,7 @@ export type PotentialMinScore = {
   percentage?: number;
 };
 
-type MinScore = RequireAtLeastOne<PotentialMinScore, 'absolute' | 'percentage'>;
+export type MinScore = RequireAtLeastOne<PotentialMinScore, 'absolute' | 'percentage'>;
 
 export type Evaluation = {
   name?: string;
@@ -54,21 +55,23 @@ export type Evaluation = {
   min_score?: MinScore;
 };
 
-type Event = {
+export type Event = {
   name?: string;
+  description?: string;
   time?: number;
   conditions?: string[];
   injects: string[];
 };
 
 export enum FeatureType {
-  Service,
-  Configuration,
-  Artifact,
+  Service = 'Service',
+  Configuration = 'Configuration',
+  Artifact = 'Artifact',
 }
 
 export type Feature = {
   name?: string;
+  description?: string;
   feature_type: FeatureType;
   source?: Source;
   dependencies?: string[];
@@ -85,6 +88,7 @@ export type Goal = {
 
 export type InfraNode = {
   name?: string;
+  description?: string;
   count: number;
   links?: string[];
   dependencies?: string[];
@@ -92,6 +96,7 @@ export type InfraNode = {
 
 export type Inject = {
   name?: string;
+  description?: string;
   source?: Source;
   from_entity?: string;
   to_entities?: string[];
@@ -100,21 +105,22 @@ export type Inject = {
 };
 
 export enum MetricType {
-  Manual,
-  Conditional,
+  Manual = 'Manual',
+  Conditional = 'Conditional',
 }
 
 export type Metric = {
   name?: string;
-  metric_type: MetricType;
+  description?: string;
+  type: MetricType;
   artifact?: boolean;
   max_score: number;
   condition?: string;
 };
 
 export enum NodeType {
-  VM,
-  Switch,
+  VM = 'VM',
+  Switch = 'Switch',
 }
 
 export type Resources = {
@@ -140,6 +146,7 @@ export type Node = {
 
 export type Script = {
   name?: string;
+  description?: string;
   start_time: bigint;
   end_time: bigint;
   speed: number;

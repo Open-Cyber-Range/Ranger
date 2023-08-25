@@ -17,6 +17,7 @@ use crate::{
                 GetDeploymentElementByDeploymentIdByScenarioReference, GetDeployments,
             },
             exercise::{CreateExercise, DeleteExercise, GetExercises},
+            metric::GetMetrics,
             participant::{CreateParticipant, DeleteParticipant, GetParticipants},
         },
         deployment::{RemoveDeployment, StartDeployment},
@@ -40,12 +41,11 @@ use futures::future::try_join_all;
 use log::{error, info};
 use ranger_grpc::capabilities::DeployerTypes as GrpcDeployerTypes;
 use sdl_parser::{
+    entity::Flatten,
     node::{Node, NodeType},
     parse_sdl, Scenario,
 };
 use std::collections::HashMap;
-use toml::value::Value;
-use toml_query::read::TomlValueReadExt;
 
 #[post("")]
 pub async fn add_exercise(
@@ -239,7 +239,7 @@ pub async fn subscribe_to_exercise(
     log::debug!("Subscribing websocket to exercise {}", exercise.id);
     let manager_address = app_state.websocket_manager_address.clone();
     let exercise_socket = ExerciseWebsocket::new(exercise.id, manager_address);
-
+    log::debug!("Created websocket for exercise {}", exercise.id);
     ws::start(exercise_socket, &req, stream)
 }
 
@@ -251,38 +251,37 @@ pub async fn add_participant(
 ) -> Result<Json<Participant>, RangerError> {
     let participant_resource = participant_resource.into_inner();
 
-    let parsed_sdl: Value = serde_yaml::from_str(&deployment.sdl_schema).map_err(|error| {
+    let scenario = parse_sdl(&deployment.sdl_schema).map_err(|error| {
         error!("Failed to parse sdl: {error}");
         RangerError::ScenarioParsingFailed
     })?;
-    let selector = format!("entities.{}", participant_resource.selector);
-    let entity_option = parsed_sdl.read(&selector).map_err(|error| {
-        error!("Failed to read entities from sdl: {error}");
-        RangerError::ScenarioParsingFailed
-    })?;
-    if entity_option.is_none() {
-        return Err(RangerError::EntityNotFound);
+
+    if let Some(entities) = scenario.entities {
+        match entities.flatten().get(&participant_resource.selector) {
+            Some(_) => {
+                let participant = app_state
+                    .database_address
+                    .send(CreateParticipant(NewParticipant {
+                        id: Uuid::random(),
+                        deployment_id: deployment.id,
+                        selector: participant_resource.selector,
+                        user_id: participant_resource.user_id,
+                    }))
+                    .await
+                    .map_err(create_mailbox_error_handler("Database"))?
+                    .map_err(create_database_error_handler("Create participant"))?;
+
+                Ok(Json(participant))
+            }
+            None => Err(RangerError::EntityNotFound),
+        }
+    } else {
+        Err(RangerError::EntityNotFound)
     }
-
-    let new_participant = NewParticipant {
-        id: Uuid::random(),
-        deployment_id: deployment.id,
-        selector: participant_resource.selector,
-        user_id: participant_resource.user_id,
-    };
-
-    let participant = app_state
-        .database_address
-        .send(CreateParticipant(new_participant))
-        .await
-        .map_err(create_mailbox_error_handler("Database"))?
-        .map_err(create_database_error_handler("Create participant"))?;
-
-    Ok(Json(participant))
 }
 
 #[get("participant")]
-pub async fn get_participants(
+pub async fn get_admin_participants(
     app_state: Data<AppState>,
     deployment: DeploymentInfo,
 ) -> Result<Json<Vec<Participant>>, RangerError> {
@@ -356,6 +355,26 @@ pub async fn get_exercise_deployment_scores(
     if let Some(metrics) = scenario.metrics {
         let mut scores: Vec<Score> = vec![];
 
+        let manual_metrics = app_state
+            .database_address
+            .send(GetMetrics(deployment.id))
+            .await
+            .map_err(create_mailbox_error_handler("Database"))?
+            .map_err(create_database_error_handler("Get Manual Metrics"))?;
+
+        manual_metrics.into_iter().for_each(|manual_metric| {
+            if let Some(score) = manual_metric.score {
+                scores.push(Score::new(
+                    exercise_uuid,
+                    deployment_uuid,
+                    manual_metric.name,
+                    manual_metric.entity_selector,
+                    BigDecimal::from(score),
+                    manual_metric.updated_at,
+                ));
+            }
+        });
+
         condition_messages.retain(|condition| {
             condition.created_at > scenario.start.naive_utc()
                 && condition.created_at < scenario.end.naive_utc()
@@ -380,7 +399,6 @@ pub async fn get_exercise_deployment_scores(
                         deployment_uuid,
                         metric_reference,
                         vm_name.to_owned(),
-                        condition_message.virtual_machine_id,
                         condition_message.clone().value * BigDecimal::from(metric.max_score),
                         condition_message.created_at,
                     ))
@@ -404,7 +422,8 @@ pub async fn get_exercise_deployment_users(
         RangerError::ScenarioParsingFailed
     })?;
 
-    if let Some(scenario_nodes) = scenario.nodes {
+    if let (Some(scenario_nodes), Some(_infrastructure)) = (scenario.nodes, scenario.infrastructure)
+    {
         let vm_nodes = scenario_nodes
             .into_iter()
             .filter(|node| matches!(node.1.type_field, NodeType::VM))

@@ -1,6 +1,6 @@
 use crate::{
     errors::RangerError,
-    middleware::authentication::User,
+    middleware::{authentication::User, keycloak::KeycloakInfo},
     models::{helpers::uuid::Uuid, Deployment},
     roles::RangerRole,
     services::database::deployment::GetDeployment,
@@ -19,6 +19,8 @@ use std::{
     future::{ready, Ready},
     rc::Rc,
 };
+
+use super::keycloak::KeycloakAccess;
 
 pub struct DeploymentInfo(pub Deployment);
 
@@ -94,6 +96,7 @@ where
         let service = self.service.clone();
         let user = req.extensions().get::<Rc<User>>().cloned();
         let app_state = req.app_data::<Data<AppState>>().cloned();
+        let keycloak_access = req.extensions().get::<Rc<KeycloakAccess>>().cloned();
 
         Box::pin(async move {
             let user = user.ok_or_else(|| {
@@ -104,26 +107,51 @@ where
                 error!("App state not found");
                 RangerError::AppStateMissing
             })?;
-            let deployment_uuid = req.match_info().get("deployment_uuid");
+            let keycloak_info = KeycloakInfo(keycloak_access.ok_or_else(|| {
+                error!("Keycloak access not found");
+                RangerError::KeycloakQueryFailed
+            })?);
+            let deployment_uuid =
+                Uuid::try_from(req.match_info().get("deployment_uuid").ok_or_else(|| {
+                    error!("Deployment uuid not found");
+                    RangerError::UuidParsingFailed
+                })?)
+                .map_err(|_| {
+                    error!("Invalid exercise uuid");
+                    RangerError::UuidParsingFailed
+                })?;
+            debug!("Getting deployment with uuid: {:?}", deployment_uuid);
+            let deployment = app_state
+                .database_address
+                .send(GetDeployment(deployment_uuid))
+                .await
+                .map_err(create_mailbox_error_handler("Database"))?
+                .map_err(create_database_error_handler("Get exercises"))?;
 
-            let deployment = match (user.role, deployment_uuid) {
-                (RangerRole::Admin, Some(deployment_uuid)) => {
-                    let deployment_uuid = Uuid::try_from(deployment_uuid).map_err(|_| {
-                        error!("Invalid deployment uuid");
-                        RangerError::UuidParsingFailed
-                    })?;
-                    debug!("Getting deployment with uuid: {:?}", deployment_uuid);
-
-                    let deployment = app_state
-                        .database_address
-                        .send(GetDeployment(deployment_uuid))
+            let deployment = match user.role {
+                RangerRole::Admin => std::result::Result::Ok(deployment),
+                RangerRole::Participant => {
+                    let is_member = deployment
+                        .is_member(
+                            user.id.clone(),
+                            keycloak_info,
+                            app_state.configuration.keycloak.realm.clone(),
+                        )
                         .await
-                        .map_err(create_mailbox_error_handler("Database"))?
-                        .map_err(create_database_error_handler("Get exercises"))?;
-
-                    std::result::Result::Ok(deployment)
+                        .map_err(|err| {
+                            error!(
+                                "Failed to check if user is a member of the deployment: {}",
+                                err
+                            );
+                            RangerError::DeploymentNotFound
+                        })?;
+                    if is_member {
+                        std::result::Result::Ok(deployment)
+                    } else {
+                        debug!("User is not a member of the deployment");
+                        Err(RangerError::DeploymentNotFound)
+                    }
                 }
-                _ => Err(RangerError::ExericseNotFound),
             }?;
             req.extensions_mut().insert(deployment);
 

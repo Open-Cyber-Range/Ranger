@@ -1,7 +1,7 @@
 use serde::Serialize;
 
 use super::uuid::Uuid;
-use crate::models::{Deployment, DeploymentElement, UpdateExercise};
+use crate::models::{Deployment, DeploymentElement, Score, UpdateExercise};
 
 #[derive(Debug, Serialize)]
 pub enum MessageType {
@@ -9,6 +9,7 @@ pub enum MessageType {
     Deployment,
     DeploymentElement,
     DeploymentElementUpdate,
+    Score,
 }
 
 #[derive(Serialize)]
@@ -56,6 +57,18 @@ impl From<(Uuid, Uuid, DeploymentElement, bool)> for WebsocketWrapper<Deployment
                 true => MessageType::DeploymentElementUpdate,
                 false => MessageType::DeploymentElement,
             },
+            exercise_id,
+            own_id,
+            content,
+        }
+    }
+}
+
+impl From<(Uuid, Uuid, Score)> for WebsocketWrapper<Score> {
+    fn from(score: (Uuid, Uuid, Score)) -> Self {
+        let (exercise_id, own_id, content) = score;
+        Self {
+            message_type: MessageType::Score,
             exercise_id,
             own_id,
             content,

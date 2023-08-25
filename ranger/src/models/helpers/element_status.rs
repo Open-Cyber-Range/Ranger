@@ -1,9 +1,8 @@
 use crate::models::ElementStatus;
 use diesel::{
-    backend::RawValue,
     deserialize,
     deserialize::FromSql,
-    mysql::Mysql,
+    mysql::{Mysql, MysqlValue},
     serialize::{self},
     serialize::{IsNull, Output, ToSql},
     sql_types::Text,
@@ -15,7 +14,7 @@ use std::{
 };
 
 impl FromSql<Text, Mysql> for ElementStatus {
-    fn from_sql(bytes: RawValue<Mysql>) -> deserialize::Result<Self> {
+    fn from_sql(bytes: MysqlValue) -> deserialize::Result<Self> {
         if let Ok(value) = <String>::from_sql(bytes) {
             return match value.as_str() {
                 "ongoing" => Ok(ElementStatus::Ongoing),

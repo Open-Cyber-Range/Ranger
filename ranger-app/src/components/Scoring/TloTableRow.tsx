@@ -8,6 +8,7 @@ import {
 import {findLatestScoresByVms, groupBy, roundToDecimalPlaces} from 'src/utils';
 import {type TrainingLearningObjective} from 'src/models/scenario';
 import {H5} from '@blueprintjs/core';
+import {sortByProperty} from 'sort-by-property';
 
 const TloTableRow = ({exerciseId, deploymentId, tloKey, tlo}:
 {exerciseId: string;
@@ -38,40 +39,43 @@ const TloTableRow = ({exerciseId, deploymentId, tloKey, tlo}:
             <H5>{tloEvaluation.name ?? tlo.evaluation}</H5>
             <p>{tloEvaluation.description}</p>
           </td>
-          {tloEvaluation.metrics.map(metricKey => {
-            const metric = scenarioMetrics[metricKey];
-            const metricReference = metric.name ?? metricKey;
-            const scores = scoresByMetric[metricReference];
+          <td className='flex flex-col items-stretch'>
+            <table>
+              <tbody>
+                {tloEvaluation.metrics.map(metricKey => {
+                  const metric = scenarioMetrics[metricKey];
+                  const metricReference = metric.name ?? metricKey;
+                  const scores = scoresByMetric[metricReference];
 
-            if (scores && scores.length > 0) {
-              const latestScoresByVm = findLatestScoresByVms(scores);
-              latestScoresByVm.sort((a, b) => a.vmName.localeCompare(b.vmName));
+                  if (scores && scores.length > 0) {
+                    const latestScoresByVm = findLatestScoresByVms(scores);
+                    latestScoresByVm.sort(sortByProperty('vmName', 'desc'));
 
-              return (
-                <td key={metricKey}>
-                  {latestScoresByVm.map(element => (
-                    <div key={element.id} className='pl-4'>
-                      <li key={element.id}>
-                        {metricReference} - {element.vmName}: {roundToDecimalPlaces(
-                          element.value)} {t('tloTable.points')}
-                      </li>
-                    </div>
-                  ))}
-                </td>
-              );
-            }
+                    return (
+                      <tr key={metricKey} className='text-left'>
+                        {latestScoresByVm.map(element => (
+                          <td key={element.id} className='pl-4'>
+                            {metricReference} - {element.vmName}:{' '}
+                            {roundToDecimalPlaces(
+                              element.value)} {t('tloTable.points')}
+                          </td>
+                        ))}
+                      </tr>
+                    );
+                  }
 
-            return (
-              <td key={metricKey}>
-                <div className='pl-4'>
-                  <li>
-                    {metricReference} - {t('tloTable.noMetricData')}
-                  </li>
-                </div>
-              </td>
-            );
-          },
-          )}
+                  return (
+                    <tr key={metricKey}>
+                      <td key={metricKey} className='text-left pl-5'>
+                        {metricReference} - {t('tloTable.noMetricData')}
+                      </td>
+                    </tr>
+                  );
+                },
+                )}
+              </tbody>
+            </table>
+          </td>
         </tr>
       );
     }

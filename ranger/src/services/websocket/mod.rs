@@ -2,7 +2,7 @@ mod exercise;
 
 use crate::models::{
     helpers::{uuid::Uuid, websocket_wrapper::WebsocketWrapper},
-    Deployment, DeploymentElement, UpdateExercise,
+    Deployment, DeploymentElement, Score, UpdateExercise,
 };
 use actix::{Actor, Context, Handler, Message, Recipient};
 use anyhow::{anyhow, Result};
@@ -135,6 +135,26 @@ impl Handler<SocketDeploymentElement> for WebSocketManager {
         for target in targets {
             target.do_send(WebsocketStringMessage(serde_json::to_string(
                 &deployment_element,
+            )?));
+        }
+
+        Ok(())
+    }
+}
+
+#[derive(Message)]
+#[rtype(result = "Result<()>")]
+pub struct SocketScoring(pub Uuid, pub WebsocketWrapper<Score>);
+
+impl Handler<SocketScoring> for WebSocketManager {
+    type Result = Result<()>;
+
+    fn handle(&mut self, msg: SocketScoring, _: &mut Context<Self>) -> Self::Result {
+        let SocketScoring(exercise_uuid, score) = msg;
+        let targets = self.get_exercise_targets(exercise_uuid);
+        for target in targets {
+            target.do_send(WebsocketStringMessage(serde_json::to_string(
+                &score,
             )?));
         }
 

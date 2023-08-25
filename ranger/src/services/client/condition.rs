@@ -1,9 +1,11 @@
 use crate::{
-    models::{DeploymentElement, NewConditionMessage},
+    constants::BIG_DECIMAL_ONE,
+    models::{DeploymentElement, ElementStatus, NewConditionMessage},
     services::{
-        database::{condition::CreateConditionMessage, Database},
+        database::{condition::CreateConditionMessage, event::GetEvent, Database},
         deployer::DeployerDistribution,
     },
+    utilities::try_some,
 };
 
 use super::{DeploymentClient, DeploymentClientResponse, DeploymentInfo};
@@ -14,10 +16,12 @@ use actix::{
 use anyhow::{anyhow, Ok, Result};
 use async_trait::async_trait;
 use bigdecimal::{BigDecimal, FromPrimitive};
+use log::{debug, info};
 use ranger_grpc::{
     condition_service_client::ConditionServiceClient, Condition as GrpcCondition,
     ConditionStreamResponse, Identifier,
 };
+use sdl_parser::metric::Metric;
 use std::any::Any;
 use tonic::{transport::Channel, Streaming};
 
@@ -147,24 +151,37 @@ impl Handler<DeleteCondition> for ConditionClient {
 pub struct ConditionStream(
     pub Uuid,
     pub DeploymentElement,
-    pub String,
+    pub DeploymentElement,
     pub Addr<Database>,
     pub Streaming<ConditionStreamResponse>,
+    pub Option<(String, Metric)>,
 );
 impl Handler<ConditionStream> for DeployerDistribution {
     type Result = ResponseActFuture<Self, Result<()>>;
 
     fn handle(&mut self, msg: ConditionStream, _ctx: &mut Self::Context) -> Self::Result {
         let exercise_id = msg.0;
-        let deployment_element = msg.1;
-        let virtual_machine_id = msg.2;
+        let mut condition_deployment_element = msg.1;
+        let node_deployment_element = msg.2;
         let database_address = msg.3;
         let mut stream = msg.4;
+        let metric = msg.5;
 
         Box::pin(
             async move {
+                let virtual_machine_id = try_some(
+                    node_deployment_element.clone().handler_reference,
+                    "Deployment element handler reference not found",
+                )?;
+
+                info!(
+                    "Finished deploying '{condition_name}' on '{node_name}', starting stream",
+                    condition_name = condition_deployment_element.scenario_reference,
+                    node_name = node_deployment_element.scenario_reference,
+                );
+
                 while let Some(stream_item) = stream.message().await? {
-                    let condition_id: Uuid = deployment_element
+                    let condition_id: Uuid = condition_deployment_element
                         .clone()
                         .handler_reference
                         .ok_or_else(|| anyhow!("Condition id not found"))?
@@ -181,15 +198,58 @@ impl Handler<ConditionStream> for DeployerDistribution {
                     );
                     database_address
                         .clone()
-                        .send(CreateConditionMessage(NewConditionMessage::new(
-                            exercise_id,
-                            deployment_element.deployment_id,
-                            Uuid::try_from(virtual_machine_id.as_str())?,
-                            deployment_element.scenario_reference.to_owned(),
-                            condition_id,
-                            value,
-                        )))
+                        .send(CreateConditionMessage(
+                            NewConditionMessage::new(
+                                exercise_id,
+                                condition_deployment_element.deployment_id,
+                                Uuid::try_from(virtual_machine_id.as_str())?,
+                                condition_deployment_element.scenario_reference.to_owned(),
+                                condition_id,
+                                value.clone(),
+                            ),
+                            metric.clone(),
+                            node_deployment_element.scenario_reference.clone(),
+                        ))
                         .await??;
+
+                    if let Some(event_id) = condition_deployment_element.event_id {
+                        if condition_deployment_element.status == ElementStatus::Success {
+                            let event = database_address.send(GetEvent(event_id)).await??;
+                            if event.has_triggered {
+                                debug!(
+                                    "Event '{}' has triggered, closing '{condition_name}' stream for '{node_name}'",
+                                    event.name,
+                                    condition_name =
+                                    condition_deployment_element.scenario_reference,
+                                    node_name = node_deployment_element.scenario_reference
+                                );
+                                break;
+                            }
+                        }
+                        if value == *BIG_DECIMAL_ONE && condition_deployment_element.status == ElementStatus::Ongoing {
+                                condition_deployment_element
+                                    .update(
+                                        &database_address,
+                                        exercise_id,
+                                        ElementStatus::Success,
+                                        condition_deployment_element.handler_reference.clone(),
+                                    )
+                                    .await?;
+                                condition_deployment_element.status = ElementStatus::Success;
+                        } else if value != *BIG_DECIMAL_ONE
+                            && condition_deployment_element.status == ElementStatus::Success
+                        {
+                            condition_deployment_element.status = ElementStatus::Ongoing;
+                            condition_deployment_element
+                                .update(
+                                    &database_address,
+                                    exercise_id,
+                                    ElementStatus::Ongoing,
+                                    condition_deployment_element.handler_reference.clone(),
+                                )
+                                .await?;
+                        }
+                    }
                 }
                 Ok(())
             }

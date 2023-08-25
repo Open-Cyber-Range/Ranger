@@ -94,7 +94,7 @@ impl TryFrom<DeploymentClientResponse> for ConditionResponse {
         match client_response {
             DeploymentClientResponse::ConditionResponse((id, stream)) => Ok((id, stream)),
             _ => Err(anyhow!(
-                "Unable to convert ClientResponse into TemplateResponse"
+                "Unable to convert ClientResponse into ConditionResponse"
             )),
         }
     }

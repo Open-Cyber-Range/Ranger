@@ -19,6 +19,8 @@ pub enum RangerError {
     ExerciseNameTooLong,
     #[error("Exercise not found")]
     ExericseNotFound,
+    #[error("Deployment not found")]
+    DeploymentNotFound,
     #[error("Deployment name too long")]
     DeploymentNameTooLong,
     #[error("Failed to parse uuid")]
@@ -29,6 +31,8 @@ pub enum RangerError {
     DatabaseUnexpected,
     #[error("Entity not found")]
     EntityNotFound,
+    #[error("Metric not found")]
+    MetricNotFound,
     #[error("Conflict")]
     DatabaseConflict,
     #[error("Not found")]
@@ -53,6 +57,16 @@ pub enum RangerError {
     TokenMissing,
     #[error("App state missing")]
     AppStateMissing,
+    #[error("Not authorized")]
+    NotAuthorized,
+    #[error("Failed to upload file")]
+    FileUploadFailed,
+    #[error("Metric has already been scored")]
+    MetricAlreadyScored,
+    #[error("Payload too large")]
+    PayloadTooLarge,
+    #[error("Unsupported media type")]
+    UnsupportedMediaType,
 }
 
 impl ResponseError for RangerError {
@@ -62,16 +76,22 @@ impl ResponseError for RangerError {
             RangerError::DeployerGroupNotfound => StatusCode::NOT_FOUND,
             RangerError::ExerciseNameTooLong => StatusCode::UNPROCESSABLE_ENTITY,
             RangerError::ExericseNotFound => StatusCode::NOT_FOUND,
+            RangerError::DeploymentNotFound => StatusCode::NOT_FOUND,
             RangerError::DeploymentNameTooLong => StatusCode::UNPROCESSABLE_ENTITY,
             RangerError::UuidParsingFailed => StatusCode::UNPROCESSABLE_ENTITY,
             RangerError::ScenarioParsingFailed => StatusCode::UNPROCESSABLE_ENTITY,
             RangerError::DatabaseConflict => StatusCode::CONFLICT,
             RangerError::EntityNotFound => StatusCode::NOT_FOUND,
+            RangerError::MetricNotFound => StatusCode::NOT_FOUND,
             RangerError::DatabaseRecordNotFound => StatusCode::NOT_FOUND,
             RangerError::MailerConfigurationNotFound => StatusCode::NOT_FOUND,
             RangerError::AccessForbidden => StatusCode::FORBIDDEN,
             RangerError::TokenExpired => StatusCode::UNAUTHORIZED,
             RangerError::TokenMissing => StatusCode::UNAUTHORIZED,
+            RangerError::NotAuthorized => StatusCode::UNAUTHORIZED,
+            RangerError::MetricAlreadyScored => StatusCode::FORBIDDEN,
+            RangerError::PayloadTooLarge => StatusCode::PAYLOAD_TOO_LARGE,
+            RangerError::UnsupportedMediaType => StatusCode::UNSUPPORTED_MEDIA_TYPE,
             _ => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }

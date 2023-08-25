@@ -8,7 +8,6 @@ import type {
   NewDeployment,
 } from 'src/models/deployment';
 import {toastSuccess, toastWarning} from 'src/components/Toaster';
-import useExerciseStreaming from 'src/hooks/useExerciseStreaming';
 import AddDialog from 'src/components/Deployment/AddDialog';
 import {type Exercise} from 'src/models/exercise';
 import {useState} from 'react';
@@ -19,13 +18,13 @@ const DashboardPanel = ({exercise, deployments}:
   deployments: Deployment[] | undefined;
 }) => {
   const {t} = useTranslation();
-  useExerciseStreaming(exercise?.id);
   const [addDeployment, _newDeployment] = useAdminAddDeploymentMutation();
   const [isModified, setIsModified] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
   const createNewDeployment = (
     name: string,
+    groupName: string,
     deploymentGroup?: string,
   ): [NewDeployment, string] | undefined => {
     if (exercise?.sdlSchema && exercise?.id) {
@@ -33,6 +32,7 @@ const DashboardPanel = ({exercise, deployments}:
         name,
         sdlSchema: exercise.sdlSchema,
         deploymentGroup,
+        groupName,
       }, exercise.id];
     }
 
@@ -76,9 +76,9 @@ const DashboardPanel = ({exercise, deployments}:
   };
 
   const addNewDeployment = async (
-    {count, deploymentGroup, name}: DeploymentForm,
+    {count, deploymentGroup, name, groupName}: DeploymentForm,
   ) => {
-    const deploymentInfo = createNewDeployment(name, deploymentGroup);
+    const deploymentInfo = createNewDeployment(name, groupName, deploymentGroup);
     if (deploymentInfo) {
       const [deployment, exerciseId] = deploymentInfo;
 

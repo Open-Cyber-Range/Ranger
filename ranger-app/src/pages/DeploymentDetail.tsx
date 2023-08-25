@@ -14,11 +14,17 @@ import TloTable from 'src/components/Scoring/TloTable';
 import Editor from '@monaco-editor/react';
 import {AnchorButton, H2} from '@blueprintjs/core';
 import SideBar from 'src/components/Exercise/SideBar';
+import useExerciseStreaming from 'src/hooks/useExerciseStreaming';
 import {toastSuccess, toastWarning} from 'src/components/Toaster';
+import AccountList from 'src/components/Deployment/AccountList';
+import EntityConnector from 'src/components/Deployment/EntityConnector';
+import EntityTree from 'src/components/Deployment/EntityTree';
+import MetricScorer from 'src/components/Scoring/MetricScorer';
 
 const DeploymentDetail = () => {
   const {t} = useTranslation();
   const {exerciseId, deploymentId} = useParams<DeploymentDetailRouteParameters>();
+  useExerciseStreaming(exerciseId);
   const {data: scenario} = useAdminGetDeploymentScenarioQuery(
     exerciseId && deploymentId ? {exerciseId, deploymentId} : skipToken,
   );
@@ -49,7 +55,18 @@ const DeploymentDetail = () => {
     return (
       <SideBar renderMainContent={() => (
         <>
-          <H2>{deployment?.name}</H2>
+          <div className='flex'>
+            <H2>{deployment?.name}</H2>
+            <span className='ml-auto'>
+              <AnchorButton
+                icon='trash'
+                intent='danger'
+                onClick={handleDeleteDeployment}
+              >
+                {t('common.delete')}
+              </AnchorButton>
+            </span>
+          </div>
           <br/>
           <div className='h-[40vh]'>
             <Editor
@@ -67,18 +84,25 @@ const DeploymentDetail = () => {
             deploymentId={deploymentId}
             tloMap={scenario?.tlos}
           />
-          <div className='flex justify-between items-center'>
-            <BackButton/>
-            <div>
-              <AnchorButton
-                icon='trash'
-                intent='danger'
-                onClick={handleDeleteDeployment}
-              >
-                {t('common.delete')}
-              </AnchorButton>
+
+          <AccountList
+            exerciseId={exerciseId}
+            deploymentId={deploymentId}
+          />
+          <div className='mt-[2rem]'>
+            <EntityConnector exerciseId={exerciseId} deploymentId={deploymentId}/>
+          </div>
+          <div className='mt-[2rem]'>
+            <EntityTree exerciseId={exerciseId} deploymentId={deploymentId}/>
+          </div>
+          <div className='flex justify-end items-center pb-4 mt-[2rem]'>
+            <div className='flex justify-between items-center'>
+              <BackButton/>
             </div>
           </div>
+          <MetricScorer
+            exerciseId={exerciseId}
+            deploymentId={deploymentId}/>
         </>
       )}
       />

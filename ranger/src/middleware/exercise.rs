@@ -20,6 +20,8 @@ use std::{
     rc::Rc,
 };
 
+use super::keycloak::{KeycloakAccess, KeycloakInfo};
+
 pub struct ExerciseInfo(pub Exercise);
 
 impl ExerciseInfo {
@@ -93,6 +95,7 @@ where
     fn call(&self, req: ServiceRequest) -> Self::Future {
         let service = self.service.clone();
         let user = req.extensions().get::<Rc<User>>().cloned();
+        let keycloak_access = req.extensions().get::<Rc<KeycloakAccess>>().cloned();
         let app_state = req.app_data::<Data<AppState>>().cloned();
 
         Box::pin(async move {
@@ -100,30 +103,55 @@ where
                 error!("User not found");
                 RangerError::UserInfoMissing
             })?;
+            let keycloak_info = KeycloakInfo(keycloak_access.ok_or_else(|| {
+                error!("Keycloak access not found");
+                RangerError::KeycloakQueryFailed
+            })?);
             let app_state = app_state.ok_or_else(|| {
                 error!("App state not found");
                 RangerError::AppStateMissing
             })?;
-            let exercise_uuid = req.match_info().get("exercise_uuid");
+            let exercise_uuid =
+                Uuid::try_from(req.match_info().get("exercise_uuid").ok_or_else(|| {
+                    error!("Exercise uuid not found");
+                    RangerError::UuidParsingFailed
+                })?)
+                .map_err(|_| {
+                    error!("Invalid exercise uuid");
+                    RangerError::UuidParsingFailed
+                })?;
 
-            let exercise = match (user.role, exercise_uuid) {
-                (RangerRole::Admin, Some(exercise_uuid)) => {
-                    let exercise_uuid = Uuid::try_from(exercise_uuid).map_err(|_| {
-                        error!("Invalid exercise uuid");
-                        RangerError::UuidParsingFailed
-                    })?;
-                    debug!("Getting exercise with uuid: {:?}", exercise_uuid);
+            let exercise = app_state
+                .database_address
+                .send(GetExercise(exercise_uuid))
+                .await
+                .map_err(create_mailbox_error_handler("Database"))?
+                .map_err(create_database_error_handler("Get exercises"))?;
 
-                    let exercise = app_state
-                        .database_address
-                        .send(GetExercise(exercise_uuid))
+            let exercise = match user.role {
+                RangerRole::Admin => std::result::Result::Ok(exercise),
+                RangerRole::Participant => {
+                    let is_member = exercise
+                        .is_member(
+                            user.id.clone(),
+                            keycloak_info,
+                            app_state.configuration.keycloak.realm.clone(),
+                        )
                         .await
-                        .map_err(create_mailbox_error_handler("Database"))?
-                        .map_err(create_database_error_handler("Get exercises"))?;
-
-                    std::result::Result::Ok(exercise)
+                        .map_err(|err| {
+                            error!(
+                                "Failed to check if user is a member of the exercise: {}",
+                                err
+                            );
+                            RangerError::ExericseNotFound
+                        })?;
+                    if is_member {
+                        std::result::Result::Ok(exercise)
+                    } else {
+                        debug!("User is not a member of the exercise");
+                        Err(RangerError::ExericseNotFound)
+                    }
                 }
-                _ => Err(RangerError::ExericseNotFound),
             }?;
             req.extensions_mut().insert(exercise);
 
