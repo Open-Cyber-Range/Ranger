@@ -1,3 +1,9 @@
+ranger-server (1.0.2) stretch; urgency=medium
+
+  * Remove openssl dependency
+
+ -- Kaarel Allemann <kaarel.allemann@cr14.ee>  Fri, 25 Aug 2023 15:34:52 +0200
+
 ranger-server (1.0.1) stretch; urgency=medium
 
   * Fix front-end build issues
