@@ -9,6 +9,8 @@ import {
   type Entity,
 } from 'src/models/scenario';
 import {flattenEntities, getUniqueRoles, groupTloMapsByRoles} from 'src/utils';
+import {useSelector} from 'react-redux';
+import {selectedEntity as sliceSelectedEntity} from 'src/slices/userSlice';
 import TloTableRow from './TloTableRow';
 
 const TloTable = ({exerciseId, deploymentId, tloMap, selectedEntity}:
@@ -18,8 +20,10 @@ const TloTable = ({exerciseId, deploymentId, tloMap, selectedEntity}:
   selectedEntity: Entity | undefined;
 }) => {
   const {t} = useTranslation();
-  const {data: scenario} = useParticipantGetDeploymentScenarioQuery(
-    exerciseId && deploymentId ? {exerciseId, deploymentId} : skipToken);
+  const entitySelector = useSelector(sliceSelectedEntity);
+  const queryArguments = exerciseId && deploymentId && entitySelector
+    ? {exerciseId, deploymentId, entitySelector} : skipToken;
+  const {data: scenario} = useParticipantGetDeploymentScenarioQuery(queryArguments);
   const entities = scenario?.entities;
 
   if (tloMap && entities) {
@@ -69,6 +73,7 @@ const TloTable = ({exerciseId, deploymentId, tloMap, selectedEntity}:
                     { tloKeys.map(tloKey => (
                       <TloTableRow
                         key={tloKey}
+                        scenario={scenario}
                         exerciseId={exerciseId}
                         deploymentId={deploymentId}
                         tloKey={tloKey}

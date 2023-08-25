@@ -23,24 +23,28 @@ const Events = ({
 
   if (scenarioEvents && triggeredDeploymentEvents && triggeredDeploymentEvents.length > 0) {
     return (
-      triggeredDeploymentEvents.map(event => (
-        <div key={event.id} className='p-2'>
-          <details className='p-2 border-2 border-slate-300 shadow-md '>
-            <summary className='font-bold text-xl'>
-              {scenarioEvents[event.name].name ?? event.name}
-            </summary>
-            <div className='mt-2 text-sm'>
-              {event.description
-             ?? t('participant.exercise.events.noDescription')}
-              <div className='text-slate-600 italic'>
-                <br/>
-                {t('participant.exercise.events.triggeredAt')}{': '}
-                {new Date(event.triggeredAt).toLocaleString()}
-              </div>
+      <>
+        {
+          triggeredDeploymentEvents.map(event => (
+            <div key={event.id} className='p-2'>
+              <details className='p-2 border-2 border-slate-300 shadow-md '>
+                <summary className='font-bold text-xl'>
+                  {scenarioEvents[event.name].name ?? event.name}
+                </summary>
+                <div className='mt-2 text-sm'>
+                  {event.description
+                 ?? t('participant.exercise.events.noDescription')}
+                  <div className='text-slate-600 italic'>
+                    <br/>
+                    {t('participant.exercise.events.triggeredAt')}{': '}
+                    {new Date(event.triggeredAt).toLocaleString()}
+                  </div>
+                </div>
+              </details>
             </div>
-          </details>
-        </div>
-      ))
+          ))
+        }
+      </>
     );
   }
 

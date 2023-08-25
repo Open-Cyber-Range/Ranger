@@ -1,24 +1,25 @@
 import React from 'react';
 import {skipToken} from '@reduxjs/toolkit/dist/query';
 import {useTranslation} from 'react-i18next';
-import {
-  useParticipantGetDeploymentScenarioQuery,
-  useParticipantGetDeploymentScoresQuery,
-} from 'src/slices/apiSlice';
+import {useParticipantGetDeploymentScoresQuery} from 'src/slices/apiSlice';
 import {findLatestScoresByVms, groupBy, roundToDecimalPlaces} from 'src/utils';
-import {type TrainingLearningObjective} from 'src/models/scenario';
+import {
+  type Scenario,
+  type TrainingLearningObjective,
+} from 'src/models/scenario';
 import {H5} from '@blueprintjs/core';
 
-const TloTableRow = ({exerciseId, deploymentId, tloKey, tlo}:
+const TloTableRow = ({exerciseId, deploymentId, tloKey, tlo, scenario}:
 {exerciseId: string;
   deploymentId: string;
   tloKey: string;
   tlo: TrainingLearningObjective | undefined;
+  scenario: Scenario | undefined;
 }) => {
   const {t} = useTranslation();
+
   const queryArguments = exerciseId && deploymentId
     ? {exerciseId, deploymentId} : skipToken;
-  const {data: scenario} = useParticipantGetDeploymentScenarioQuery(queryArguments);
   const {data: scores} = useParticipantGetDeploymentScoresQuery(queryArguments);
   const scenarioEvaluations = scenario?.evaluations;
   const scenarioMetrics = scenario?.metrics;

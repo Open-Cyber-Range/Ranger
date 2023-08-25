@@ -5,7 +5,7 @@ import PariticpantSidebar from 'src/components/Exercise/participant/SideBar';
 import ParticipantDashboard from 'src/components/Deployment/participant/DashBoard';
 import Accounts from 'src/components/Deployment/participant/Accounts';
 import ParticipantScore from 'src/components/Deployment/participant/Score';
-import Events from 'src/components/Deployment/participant/Events';
+import PariticpantEvents from 'src/components/Deployment/participant/Events';
 import ManualMetrics from 'src/components/Deployment/participant/ManualMetrics';
 
 const ParticipantDeploymentDetail = () => {
@@ -28,7 +28,7 @@ const ParticipantDeploymentDetail = () => {
               exerciseId={exerciseId}
               deploymentId={deploymentId}/>}
           {activeTab === 'Events'
-            && <Events
+            && <PariticpantEvents
               exerciseId={exerciseId}
               deploymentId={deploymentId}/>}
           {activeTab === 'Manual Metrics'
