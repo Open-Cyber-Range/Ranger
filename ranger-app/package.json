@@ -1,6 +1,6 @@
 {
   "name": "ranger-app",
-  "version": "0.7.0",
+  "version": "1.0.0",
   "private": true,
   "dependencies": {
     "@blueprintjs/core": "^4.17.7",
