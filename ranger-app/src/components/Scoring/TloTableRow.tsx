@@ -29,18 +29,23 @@ const TloTableRow = ({exerciseId, deploymentId, tloKey, tlo}:
     const scoresByMetric = groupBy(scores, score => score.metricName);
 
     return (
-      <tr key={tloKey}>
-        <td>
+      <tr key={tloKey} className='overflow-y-auto even:bg-slate-200'>
+        <td className='w-1/3 border-r px-6 py-4 dark:border-neutral-500'>
           <H5>{tlo.name ?? tloKey}</H5>
-          <p>{tlo.description}</p>
+          <p className='block max-h-32 overflow-auto break-words'>
+            {tlo.description}
+          </p>
         </td>
-        <td>
+        <td className='w-1/3 max-h-1 overflow-y-auto border-r px-6 py-4 dark:border-neutral-500'>
           <H5>{tloEvaluation.name ?? tlo.evaluation}</H5>
-          <p>{tloEvaluation.description}</p>
+          <p className='block max-h-32 overflow-auto break-words'>
+            {tloEvaluation.description}
+          </p>
         </td>
-        <td className='flex flex-col items-stretch'>
-          <table>
-            <tbody>
+        <td className='w-1/3 py-1 dark:border-neutral-500'>
+          <table className='w-full'>
+            <tbody className='flex flex-col'>
+
               {tloEvaluation.metrics.map(metricKey => {
                 const metric = scenarioMetrics[metricKey];
                 const metricReference = metric.name ?? metricKey;
@@ -51,21 +56,41 @@ const TloTableRow = ({exerciseId, deploymentId, tloKey, tlo}:
                   latestScoresByVm.sort(sortByProperty('vmName', 'desc'));
 
                   return (
-                    <tr key={metricKey} className='text-left'>
+                    <tr
+                      key={metricKey}
+                      className='w-full whitespace-nowrap dark:border-neutral-500 '
+                    >
                       {latestScoresByVm.map(element => (
-                        <td key={element.id} className='pl-4'>
-                          {metricReference} - {element.vmName}:{' '}
-                          {roundToDecimalPlaces(
-                            element.value)} {t('common.points')}
-                        </td>
+                        <tr
+                          key={element.id}
+                          className='flex'
+                        >
+                          <td
+                            key={element.id}
+                            className='pl-2 py-1 w-2/5 text-ellipsis overflow-auto'
+                          >
+                            {metricReference}
+                          </td>
+                          <td
+                            className='px-2 py-1 w-2/5 text-ellipsis overflow-auto'
+                          >
+                            {element.vmName}
+                          </td>
+                          <td
+                            className='pr-2 py-1 w-1/5 text-ellipsis overflow-auto'
+                          >
+                            {roundToDecimalPlaces(
+                              element.value)}
+                          </td>
+                        </tr>
                       ))}
                     </tr>
                   );
                 }
 
                 return (
-                  <tr key={metricKey}>
-                    <td key={metricKey} className='text-left pl-5'>
+                  <tr key={metricKey} className='whitespace-nowrap'>
+                    <td key={metricKey} className='text-left px-4 text-ellipsies overflow-auto'>
                       {metricReference} - {t('tloTable.noMetricData')}
                     </td>
                   </tr>

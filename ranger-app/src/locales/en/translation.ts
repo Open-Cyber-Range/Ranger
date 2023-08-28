@@ -140,7 +140,9 @@ const language = {
     headers: {
       tlo: 'Training Learning Objective',
       evaluation: 'Evaluation',
-      metric: 'Metric - VM Name: Current Score',
+      metric: 'Metric',
+      vm: 'VM',
+      points: 'Points',
     },
     noEvaluations: 'No Evaluations to display',
     noTlos: 'No Training Learning Objectives to display',
