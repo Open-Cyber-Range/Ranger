@@ -17,8 +17,9 @@ import {
 } from 'src/utils';
 import TloTable from 'src/components/Scoring/TloTable';
 import DeploymentDetailsGraph from 'src/components/Scoring/Graph';
-import BackButton from 'src/components/BackButton';
 import PageHolder from 'src/components/PageHolder';
+import SideBar from 'src/components/Exercise/SideBar';
+import ScoreTag from 'src/components/Scoring/ScoreTag';
 
 const ScoreDetail = () => {
   const {t} = useTranslation();
@@ -51,22 +52,32 @@ const ScoreDetail = () => {
     const filteredScores = scores.filter(score => metricReferences.has(score.metricName));
 
     return (
-      <PageHolder>
-        <div>
-          <BackButton/>
-          <DeploymentDetailsGraph
-            exerciseId={exerciseId}
-            deploymentId={deploymentId}
-            scores={filteredScores}
-          />
-          <TloTable
-            exerciseId={exerciseId}
-            deploymentId={deploymentId}
-            tloMap={tlosByRole[role] ?? {}}
-          />
-        </div>
-      </PageHolder>
-
+      <SideBar renderMainContent={() => (
+        <PageHolder>
+          <div>
+            <div className='flex flex-col mt-6 text-center font-bold'>
+              <ScoreTag
+                key={role}
+                large
+                exerciseId={exerciseId}
+                deploymentId={deploymentId}
+                role={role}
+              />
+            </div>
+            <DeploymentDetailsGraph
+              exerciseId={exerciseId}
+              deploymentId={deploymentId}
+              scores={filteredScores}
+            />
+            <TloTable
+              exerciseId={exerciseId}
+              deploymentId={deploymentId}
+              tloMap={tlosByRole[role] ?? {}}
+            />
+          </div>
+        </PageHolder>
+      )}
+      />
     );
   }
 
