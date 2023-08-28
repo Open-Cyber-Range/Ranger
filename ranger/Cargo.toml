@@ -64,6 +64,7 @@ lettre = { version = "0.10", default-features = false, features = [
   "hostname",
   "builder",
   "rustls",
+  "rustls-tls",  
 ] }
 rand = "0.8"
 ranger-grpc = { path = "../ranger-grpc" }
