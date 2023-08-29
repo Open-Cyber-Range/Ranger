@@ -30,73 +30,79 @@ const TloTableRow = ({exerciseId, deploymentId, tloKey, tlo}:
 
     return (
       <tr key={tloKey} className='overflow-y-auto even:bg-slate-200'>
-        <td className='w-1/3 border-r px-6 py-4 dark:border-neutral-500'>
+        <td className='w-1/3 border-r px-6 py-4 border-neutral-500'>
           <H5>{tlo.name ?? tloKey}</H5>
           <p className='block max-h-32 overflow-auto break-words'>
             {tlo.description}
           </p>
         </td>
-        <td className='w-1/3 max-h-1 overflow-y-auto border-r px-6 py-4 dark:border-neutral-500'>
+        <td className='w-1/3 max-h-1 overflow-y-auto border-r px-6 py-4 border-neutral-500'>
           <H5>{tloEvaluation.name ?? tlo.evaluation}</H5>
           <p className='block max-h-32 overflow-auto break-words'>
             {tloEvaluation.description}
           </p>
         </td>
-        <td className='w-1/3 py-1 dark:border-neutral-500'>
+        <td className='w-1/3 py-1 border-neutral-500' colSpan={3}>
           <table className='w-full'>
-            <tbody className='flex flex-col'>
+            <tbody>
+              <tr className='flex flex-col'>
+                {tloEvaluation.metrics.map(metricKey => {
+                  const metric = scenarioMetrics[metricKey];
+                  const metricReference = metric.name ?? metricKey;
+                  const scores = scoresByMetric[metricReference];
 
-              {tloEvaluation.metrics.map(metricKey => {
-                const metric = scenarioMetrics[metricKey];
-                const metricReference = metric.name ?? metricKey;
-                const scores = scoresByMetric[metricReference];
+                  if (scores && scores.length > 0) {
+                    const latestScoresByVm = findLatestScoresByVms(scores);
+                    latestScoresByVm.sort(sortByProperty('vmName', 'desc'));
 
-                if (scores && scores.length > 0) {
-                  const latestScoresByVm = findLatestScoresByVms(scores);
-                  latestScoresByVm.sort(sortByProperty('vmName', 'desc'));
+                    return (
+                      <td
+                        key={metricKey}
+                        className='w-full whitespace-nowrap border-neutral-500 '
+                      >
+                        {latestScoresByVm.map(element => (
+                          <table
+                            key={element.id}
+                            className='w-full'
+
+                          >
+                            <tbody>
+                              <tr
+                                className='flex w-full whitespace-nowrap border-neutral-500'
+                              >
+                                <td
+                                  key={element.id}
+                                  className='pl-1 py-1 w-2/5 text-ellipsis overflow-auto'
+                                >
+                                  {metricReference}
+                                </td>
+                                <td
+                                  className='px-1 py-1 w-2/5 text-ellipsis overflow-auto'
+                                >
+                                  {element.vmName}
+                                </td>
+                                <td
+                                  className='pr-1 py-1 w-1/5 text-ellipsis overflow-auto'
+                                >
+                                  {roundToDecimalPlaces(
+                                    element.value)}
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        ))}
+                      </td>
+                    );
+                  }
 
                   return (
-                    <tr
-                      key={metricKey}
-                      className='w-full whitespace-nowrap dark:border-neutral-500 '
-                    >
-                      {latestScoresByVm.map(element => (
-                        <tr
-                          key={element.id}
-                          className='flex'
-                        >
-                          <td
-                            key={element.id}
-                            className='pl-2 py-1 w-2/5 text-ellipsis overflow-auto'
-                          >
-                            {metricReference}
-                          </td>
-                          <td
-                            className='px-2 py-1 w-2/5 text-ellipsis overflow-auto'
-                          >
-                            {element.vmName}
-                          </td>
-                          <td
-                            className='pr-2 py-1 w-1/5 text-ellipsis overflow-auto'
-                          >
-                            {roundToDecimalPlaces(
-                              element.value)}
-                          </td>
-                        </tr>
-                      ))}
-                    </tr>
-                  );
-                }
-
-                return (
-                  <tr key={metricKey} className='whitespace-nowrap'>
                     <td key={metricKey} className='text-left px-4 text-ellipsies overflow-auto'>
                       {metricReference} - {t('tloTable.noMetricData')}
                     </td>
-                  </tr>
-                );
-              },
-              )}
+                  );
+                },
+                )}
+              </tr>
             </tbody>
           </table>
         </td>

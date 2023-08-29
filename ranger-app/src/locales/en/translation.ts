@@ -140,7 +140,8 @@ const language = {
     headers: {
       tlo: 'Training Learning Objective',
       evaluation: 'Evaluation',
-      metric: 'Metric',
+      metrics: 'Metrics',
+      name: 'Name',
       vm: 'VM',
       points: 'Points',
     },

@@ -34,34 +34,46 @@ const TloTable = ({exerciseId, deploymentId, tloMap}:
             const tloKeys = Object.keys(tloMap);
             return (
               <div key={role} className='flex flex-col text-center'>
-                <table className='my-8 min-w-full border dark:border-neutral-500'>
-                  <thead className='
-                  border-b bg-slate-300 text-base font-medium dark:border-neutral-500'
+                <table
+                  className='my-8 min-w-full border border-separate border-spacing-0
+                  border-neutral-500 rounded-xl overflow-hidden'
+                >
+                  <colgroup/>
+                  <colgroup/>
+                  <colgroup
+                    span={3}/>
+                  <thead
+                    className='bg-slate-300 font-medium'
                   >
                     <tr>
                       <th
-                        className='border-r px-6 py-2 dark:border-neutral-500'
+                        className='px-6 py-2 border-r border-b border-neutral-500 text-lg'
+                        rowSpan={2}
                       >
                         {t('tloTable.headers.tlo')}
                       </th>
                       <th
-                        className='border-r px-6 py-2 dark:border-neutral-500'
+                        className='px-6 py-2 border-r border-b border-neutral-500 text-lg'
+                        rowSpan={2}
                       >
                         {t('tloTable.headers.evaluation')}
                       </th>
                       <th
-                        className='flex py-2 font-bold justify-center'
+                        className='px-6 py-2 border-b border-neutral-500 text-lg'
                         colSpan={3}
                       >
-                        <tr className='w-full'>
-                          <th className='pl-2 w-2/5'>{t('tloTable.headers.metric')}</th>
-                          <th className='px-2 w-2/5'>{t('tloTable.headers.vm')}</th>
-                          <th className='pr-2 w-1/5'>{t('tloTable.headers.points')}</th>
-                        </tr>
+                        {t('tloTable.headers.metrics')}
                       </th>
                     </tr>
+                    <tr className='w-full flex text-sm border-b border-neutral-500 '>
+                      <th className='pl-1 w-2/5'>{t('tloTable.headers.name')}</th>
+                      <th className='px-1 w-2/5'>
+                        {t('tloTable.headers.vm')}
+                      </th>
+                      <th className='pr-1 w-1/5'>{t('tloTable.headers.points')}</th>
+                    </tr>
                   </thead>
-                  <tbody className='border-b dark:border-neutral-500 bg-neutral-50'>
+                  <tbody className='bg-neutral-100'>
                     { tloKeys.map(tloKey => (
                       <TloTableRow
                         key={tloKey}
