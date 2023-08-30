@@ -27,15 +27,15 @@ const TloTable = ({exerciseId, deploymentId, tloMap}:
       flattenedEntities, tloMap, roles);
 
     return (
-      <div className='flex flex-col mt-2'>
+      <div className='flex mt-2'>
         {roles.map(role => {
           const tloMap = tloMapsByRole[role];
           if (tloMap && Object.keys(tloMap).length > 0) {
             const tloKeys = Object.keys(tloMap);
             return (
-              <div key={role} className='text-center'>
+              <div key={role} className='w-full text-center'>
                 <table
-                  className='my-8 border border-separate border-spacing-0
+                  className='w-full my-8 border border-separate border-spacing-0
                   border-neutral-500 rounded-xl overflow-hidden'
                 >
                   <colgroup/>
