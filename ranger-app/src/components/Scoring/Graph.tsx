@@ -20,7 +20,13 @@ import {
 } from 'src/slices/apiSlice';
 import zoomPlugin from 'chartjs-plugin-zoom';
 import {type Score} from 'src/models/score';
-import {groupByMetricNameAndVmName, roundToDecimalPlaces} from 'src/utils';
+import {
+  defaultColors,
+  lineColorsByRole,
+  flattenEntities,
+  groupByMetricNameAndVmName,
+  roundToDecimalPlaces,
+} from 'src/utils';
 // eslint-disable-next-line import/no-unassigned-import
 import 'chartjs-adapter-luxon';
 import {useTranslation} from 'react-i18next';
@@ -29,6 +35,7 @@ import {sortByProperty} from 'sort-by-property';
 import {LINE_DATASET_TEMPLATE} from 'src/constants';
 import cloneDeep from 'lodash.clonedeep';
 import {getLineChartOptions} from 'src/utils/graph';
+import {type ExerciseRole} from 'src/models/scenario';
 
 ChartJS.register(
   CategoryScale,
@@ -43,10 +50,11 @@ ChartJS.register(
   zoomPlugin,
 );
 
-const DeploymentDetailsGraph = ({exerciseId, deploymentId, scores}:
+const DeploymentDetailsGraph = ({exerciseId, deploymentId, scores, colorsByRole}:
 {exerciseId: string | undefined;
   deploymentId: string | undefined;
   scores: Score[] | undefined;
+  colorsByRole?: boolean;
 }) => {
   const {t} = useTranslation();
   const xAxisTitle = t('chart.scoring.xAxisTitle');
@@ -56,6 +64,42 @@ const DeploymentDetailsGraph = ({exerciseId, deploymentId, scores}:
     ? {exerciseId, deploymentId} : skipToken;
   const {data: deployment} = useAdminGetDeploymentQuery(queryArguments);
   const {data: scenario} = useAdminGetDeploymentScenarioQuery(queryArguments);
+  const flattenedEntities = flattenEntities(scenario?.entities ?? {});
+
+  const tlos = scenario?.tlos ?? {};
+  const evaluations = scenario?.evaluations ?? {};
+  const metrics = scenario?.metrics ?? {};
+
+  const metricReferencesByRole = Object.values(flattenedEntities)
+    .reduce<Record<ExerciseRole, Set<string>>>((acc, entity) => {
+    const role = entity.role;
+    const entityTlos = entity.tlos;
+    if (role && entityTlos) {
+      const metricReferences = entityTlos.map(tloKey => tlos[tloKey])
+        .map(tlo => tlo.evaluation)
+        .map(evaluationKey => evaluations[evaluationKey])
+        .flatMap(evaluation => evaluation.metrics)
+        .map(metricKey => metrics[metricKey].name ?? metricKey);
+
+      for (const metricReference of metricReferences) {
+        acc[role].add(metricReference);
+      }
+    }
+
+    return acc;
+  }, {
+    Blue: new Set(),
+    Green: new Set(),
+    Red: new Set(),
+    White: new Set(),
+  });
+
+  const getLineColorByMetricReference = (metricReference: string) => {
+    const roles = Object.keys(metricReferencesByRole) as ExerciseRole[];
+    const metricRole = roles.find(role => metricReferencesByRole[role].has(metricReference));
+
+    return metricRole ? lineColorsByRole[metricRole] ?? defaultColors : defaultColors;
+  };
 
   const intoGraphPoint = (score: Score) => ({
     x: DateTime.fromISO(score.timestamp, {zone: 'utc'}).toMillis(),
@@ -63,17 +107,22 @@ const DeploymentDetailsGraph = ({exerciseId, deploymentId, scores}:
   });
 
   function intoGraphData(
-    scoresByMetric: Record<string, Score[]>) {
+    scoresByMetrics: Record<string, Score[]>) {
     const graphData: ChartData<'line'> = {
       datasets: [],
     };
 
-    for (const metricName in scoresByMetric) {
-      if (scoresByMetric[metricName]) {
+    for (const metricLineLabel in scoresByMetrics) {
+      if (scoresByMetrics[metricLineLabel]) {
         const baseDataset = cloneDeep(LINE_DATASET_TEMPLATE);
-        baseDataset.label = metricName;
+        baseDataset.label = metricLineLabel;
+        if (colorsByRole) {
+          const metricName = scoresByMetrics[metricLineLabel][0].metricName;
+          baseDataset.borderColor = getLineColorByMetricReference(metricName);
+          baseDataset.backgroundColor = getLineColorByMetricReference(metricName);
+        }
 
-        for (const score of scoresByMetric[metricName]
+        for (const score of scoresByMetrics[metricLineLabel]
           .sort(sortByProperty('timestamp', 'asc'))
         ) {
           const graphPoint = intoGraphPoint(score);

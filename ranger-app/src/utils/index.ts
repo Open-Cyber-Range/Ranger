@@ -82,6 +82,37 @@ export const defaultColors = [
   '#7961DB',
 ];
 
+export const lineColorsByRole: Record<ExerciseRole, string[]> = {
+  Blue: [
+    Colors.BLUE1,
+    Colors.BLUE2,
+    Colors.BLUE3,
+    Colors.BLUE4,
+    Colors.BLUE5,
+  ],
+  Green: [
+    Colors.GREEN1,
+    Colors.GREEN2,
+    Colors.GREEN3,
+    Colors.GREEN4,
+    Colors.GREEN5,
+  ],
+  Red: [
+    Colors.RED1,
+    Colors.RED2,
+    Colors.RED3,
+    Colors.RED4,
+    Colors.RED5,
+  ],
+  White: [
+    Colors.GRAY1,
+    Colors.GRAY2,
+    Colors.GRAY3,
+    Colors.GRAY4,
+    Colors.GRAY5,
+  ],
+};
+
 export const getRoleColor = (role: ExerciseRole) => {
   switch (role) {
     case (ExerciseRole.Red): {

@@ -73,6 +73,7 @@ const DeploymentDetail = () => {
             />
           </div>
           <DeploymentDetailsGraph
+            colorsByRole
             exerciseId={exerciseId}
             deploymentId={deploymentId}
             scores={scores}
