@@ -25,6 +25,13 @@ const MainNavbar = () => {
         >
           {t('menu.exercises')}
         </Link>
+        <Link
+          role='button'
+          className='bp4-button bp4-minimal bp4-icon-label'
+          to='/logs'
+        >
+          {t('menu.logs')}
+        </Link>
       </Navbar.Group>
       <LoginInfo/>
     </Navbar>
