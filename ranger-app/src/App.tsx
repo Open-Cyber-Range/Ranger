@@ -4,8 +4,10 @@ import ExerciseDetail from 'src/pages/ExerciseDetail';
 import Exercises from 'src/pages/Exercises';
 import MainNavbar from 'src/components/MainNavBar';
 import Home from 'src/pages/Home';
+import Logs from 'src/pages/Logs';
 import HomeParticipant from 'src/pages/participant/Home';
 import {useKeycloak} from '@react-keycloak/web';
+import {LogProvider} from 'src/contexts/LogContext';
 import ParticipantExercises from './pages/participant/Exercises';
 import ParticipantNavBar from './components/ParticipantNavBar';
 import DeploymentDetail from './pages/DeploymentDetail';
@@ -21,19 +23,22 @@ const App = () => {
 
   if (authenticated && (currentRole === UserRole.MANAGER)) {
     return (
-      <Router>
-        <MainNavbar/>
-        <Routes>
-          <Route path='/' element={<Home/>}/>
-          <Route path='/exercises' element={<Exercises/>}/>
-          <Route path='/exercises/:exerciseId' element={<ExerciseDetail/>}/>
-          <Route path='/exercises/:exerciseId/email' element={<SendEmail/>}/>
-          <Route
-            path='/exercises/:exerciseId/deployments/:deploymentId'
-            element={<DeploymentDetail/>}/>
-          <Route path='/exercises/:exerciseId/emails' element={<EmailLog/>}/>
-        </Routes>
-      </Router>
+      <LogProvider>
+        <Router>
+          <MainNavbar/>
+          <Routes>
+            <Route path='/' element={<Home/>}/>
+            <Route path='/exercises' element={<Exercises/>}/>
+            <Route path='/logs' element={<Logs/>}/>
+            <Route path='/exercises/:exerciseId' element={<ExerciseDetail/>}/>
+            <Route path='/exercises/:exerciseId/email' element={<SendEmail/>}/>
+            <Route
+              path='/exercises/:exerciseId/deployments/:deploymentId'
+              element={<DeploymentDetail/>}/>
+            <Route path='/exercises/:exerciseId/emails' element={<EmailLog/>}/>
+          </Routes>
+        </Router>
+      </LogProvider>
     );
   }
 

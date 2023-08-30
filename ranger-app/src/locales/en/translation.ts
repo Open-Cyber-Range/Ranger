@@ -70,6 +70,7 @@ const language = {
       'ranger-participant': 'Participant',
     },
     noRole: 'NO ROLE',
+    logs: 'Logs',
   },
   common: {
     connect: 'Connect',
@@ -195,6 +196,12 @@ const language = {
       newManualMetricFailed: 'An error occurred while creating a new submission',
       scoreNotSet: 'Score is not set',
     },
+  },
+  log: {
+    date: 'Timestamp',
+    level: 'Level',
+    message: 'Message',
+    empty: 'No logs availale.',
   },
 };
 

@@ -10,3 +10,6 @@ config.yml
 
 # ignores for devcontainer database
 /.devcontainer/mariadb/*
+
+# ignores all log files
+*.log
