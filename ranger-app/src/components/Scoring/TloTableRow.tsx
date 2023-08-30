@@ -30,19 +30,19 @@ const TloTableRow = ({exerciseId, deploymentId, tloKey, tlo}:
 
     return (
       <tr key={tloKey} className='overflow-y-auto even:bg-slate-200'>
-        <td className='w-1/3 border-r px-6 py-4 border-neutral-500'>
+        <td className='w-1/3 px-6 py-4 border-r border-neutral-500'>
           <H5>{tlo.name ?? tloKey}</H5>
-          <p className='block max-h-32 overflow-auto break-words'>
+          <p className='max-h-32 overflow-auto break-words'>
             {tlo.description}
           </p>
         </td>
-        <td className='w-1/3 max-h-1 overflow-y-auto border-r px-6 py-4 border-neutral-500'>
+        <td className='w-1/3 px-6 py-4 overflow-y-auto border-r border-neutral-500'>
           <H5>{tloEvaluation.name ?? tlo.evaluation}</H5>
-          <p className='block max-h-32 overflow-auto break-words'>
+          <p className='max-h-32 overflow-auto break-words'>
             {tloEvaluation.description}
           </p>
         </td>
-        <td className='w-1/3 py-1 border-neutral-500' colSpan={3}>
+        <td className='w-1/3 py-1' colSpan={3}>
           <table className='w-full'>
             <tbody>
               <tr className='flex flex-col'>
@@ -56,20 +56,11 @@ const TloTableRow = ({exerciseId, deploymentId, tloKey, tlo}:
                     latestScoresByVm.sort(sortByProperty('vmName', 'desc'));
 
                     return (
-                      <td
-                        key={metricKey}
-                        className='w-full whitespace-nowrap border-neutral-500 '
-                      >
+                      <td key={metricKey}>
                         {latestScoresByVm.map(element => (
-                          <table
-                            key={element.id}
-                            className='w-full'
-
-                          >
+                          <table key={element.id} className='w-full'>
                             <tbody>
-                              <tr
-                                className='flex w-full whitespace-nowrap border-neutral-500'
-                              >
+                              <tr>
                                 <td
                                   key={element.id}
                                   className='pl-1 py-1 w-2/5 text-ellipsis overflow-auto'

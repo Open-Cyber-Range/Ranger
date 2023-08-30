@@ -33,9 +33,9 @@ const TloTable = ({exerciseId, deploymentId, tloMap}:
           if (tloMap && Object.keys(tloMap).length > 0) {
             const tloKeys = Object.keys(tloMap);
             return (
-              <div key={role} className='flex flex-col text-center'>
+              <div key={role} className='text-center'>
                 <table
-                  className='my-8 min-w-full border border-separate border-spacing-0
+                  className='my-8 border border-separate border-spacing-0
                   border-neutral-500 rounded-xl overflow-hidden'
                 >
                   <colgroup/>
@@ -65,11 +65,9 @@ const TloTable = ({exerciseId, deploymentId, tloMap}:
                         {t('tloTable.headers.metrics')}
                       </th>
                     </tr>
-                    <tr className='w-full flex text-sm border-b border-neutral-500 '>
+                    <tr className='flex border-b border-neutral-500 text-sm'>
                       <th className='pl-1 w-2/5'>{t('tloTable.headers.name')}</th>
-                      <th className='px-1 w-2/5'>
-                        {t('tloTable.headers.vm')}
-                      </th>
+                      <th className='px-1 w-2/5'>{t('tloTable.headers.vm')}</th>
                       <th className='pr-1 w-1/5'>{t('tloTable.headers.points')}</th>
                     </tr>
                   </thead>
