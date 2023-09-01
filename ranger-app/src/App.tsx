@@ -16,6 +16,7 @@ import EmailLog from './pages/EmailLog';
 import SendEmail from './pages/Email';
 import {UserRole} from './models/userRoles';
 import useDefaultRoleSelect from './hooks/useDefaultRoleSelect';
+import ScoreDetail from './pages/ScoreDetail';
 
 const App = () => {
   const {keycloak: {authenticated}} = useKeycloak();
@@ -35,6 +36,9 @@ const App = () => {
             <Route
               path='/exercises/:exerciseId/deployments/:deploymentId'
               element={<DeploymentDetail/>}/>
+            <Route
+              path='/exercises/:exerciseId/deployments/:deploymentId/scores/:role'
+              element={<ScoreDetail/>}/>
             <Route path='/exercises/:exerciseId/emails' element={<EmailLog/>}/>
           </Routes>
         </Router>

@@ -8,6 +8,7 @@ import {
   type TrainingLearningObjective,
   type Scenario,
   type Metric,
+  type Evaluation,
 } from 'src/models/scenario';
 import {type Score} from 'src/models/score';
 
@@ -179,22 +180,22 @@ export function sumScoresByRole(uniqueVmNames: string[], roleScores: Score[]) {
   }, 0);
 }
 
-export function getTloNamesByRole(
+export function getTloKeysByRole(
   entities: Record<string, Entity>,
   role: ExerciseRole) {
   const entityValues = Object.values(entities);
   const roleEntities = entityValues.slice().filter(entity =>
     entity.role?.valueOf() === role,
   );
-  const tloNames = roleEntities.slice().reduce<string []>(
-    (tloNames, entity) => {
+  const tloKeys = roleEntities.slice().reduce<string []>(
+    (tloKeys, entity) => {
       if (entity.tlos) {
-        tloNames = tloNames.concat(entity?.tlos);
+        tloKeys = tloKeys.concat(entity?.tlos);
       }
 
-      return tloNames;
+      return tloKeys;
     }, []);
-  return tloNames;
+  return tloKeys;
 }
 
 export function groupTloMapsByRoles(
@@ -203,7 +204,7 @@ export function groupTloMapsByRoles(
   roles: ExerciseRole[],
 ) {
   const tloMapsByRole = roles.reduce<TloMapsByRole>((tloMapsByRole, role) => {
-    const roleTloNames = getTloNamesByRole(entities, role);
+    const roleTloNames = getTloKeysByRole(entities, role);
     const roleTloMap
       = roleTloNames.reduce<Record<string, TrainingLearningObjective>>(
         (roleTloMap, tloName) => {
@@ -296,4 +297,63 @@ export const getMetricsByEntityKey
   }
 
   return {};
+};
+
+export const calculateTotalScoreForRole = ({scenario, scores, role}: {
+  scenario: Scenario;
+  scores: Score[];
+  role: ExerciseRole;
+}) => {
+  const {entities = {}, tlos = {}, evaluations = {}, metrics = {}} = scenario ?? {};
+  const flattenedEntities = flattenEntities(entities);
+  const roleTloNames = getTloKeysByRole(flattenedEntities, role);
+  const roleEvaluationNames = roleTloNames.flatMap(tloName =>
+    tlos[tloName]?.evaluation ?? []);
+  const roleMetricKeys = Array.from(new Set(roleEvaluationNames
+    .flatMap(evaluationName =>
+      evaluations[evaluationName]?.metrics ?? [])));
+  const roleMetrics = new Set(roleMetricKeys
+    .map(metricKey => metrics[metricKey]?.name ?? metricKey)
+    .filter(Boolean));
+
+  const roleScores = scores.filter(score =>
+    roleMetrics.has(score.metricName));
+
+  const uniqueVmNames = [...new Set(roleScores.map(score => score.vmName))];
+  const totalRoleScore = sumScoresByRole(uniqueVmNames, roleScores);
+  return totalRoleScore;
+};
+
+export const getMetricReferencesByRole = (
+  entities: Record<string, Entity>,
+  tlos: Record<string, TrainingLearningObjective>,
+  evaluations: Record<string, Evaluation>,
+  metrics: Record<string, Metric>,
+) => {
+  const flattenedEntities = flattenEntities(entities);
+  const result = Object.values(flattenedEntities)
+    .reduce<Record<ExerciseRole, Set<string>>>((acc, entity) => {
+    const role = entity.role;
+    const entityTlos = entity.tlos;
+    if (role && entityTlos) {
+      const metricReferences = entityTlos.map(tloKey => tlos[tloKey])
+        .map(tlo => tlo.evaluation)
+        .map(evaluationKey => evaluations[evaluationKey])
+        .flatMap(evaluation => evaluation.metrics)
+        .map(metricKey => metrics[metricKey].name ?? metricKey);
+
+      for (const metricReference of metricReferences) {
+        acc[role].add(metricReference);
+      }
+    }
+
+    return acc;
+  }, {
+    [ExerciseRole.Blue]: new Set(),
+    [ExerciseRole.Green]: new Set(),
+    [ExerciseRole.Red]: new Set(),
+    [ExerciseRole.White]: new Set(),
+  });
+
+  return result;
 };
