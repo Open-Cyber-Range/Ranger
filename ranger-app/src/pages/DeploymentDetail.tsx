@@ -7,6 +7,7 @@ import {skipToken} from '@reduxjs/toolkit/dist/query';
 import {
   useAdminDeleteDeploymentMutation,
   useAdminGetDeploymentQuery,
+  useAdminGetDeploymentScenarioQuery,
   useAdminGetDeploymentScoresQuery,
 } from 'src/slices/apiSlice';
 import DeploymentDetailsGraph from 'src/components/Scoring/Graph';
@@ -27,6 +28,7 @@ const DeploymentDetail = () => {
   useExerciseStreaming(exerciseId);
   const queryArguments = exerciseId && deploymentId ? {exerciseId, deploymentId} : skipToken;
   const {data: deployment} = useAdminGetDeploymentQuery(queryArguments);
+  const {data: scenario} = useAdminGetDeploymentScenarioQuery(queryArguments);
   const {data: scores} = useAdminGetDeploymentScoresQuery(queryArguments);
 
   const [deleteDeployment] = useAdminDeleteDeploymentMutation();
@@ -48,7 +50,7 @@ const DeploymentDetail = () => {
     }
   };
 
-  if (exerciseId && deploymentId) {
+  if (exerciseId && deploymentId && deployment && scenario) {
     return (
       <SideBar renderMainContent={() => (
         <>
@@ -74,13 +76,19 @@ const DeploymentDetail = () => {
           </div>
           <DeploymentDetailsGraph
             colorsByRole
-            exerciseId={exerciseId}
-            deploymentId={deploymentId}
-            scores={scores}
+            entities={scenario.entities ?? {}}
+            tlos={scenario.tlos ?? {}}
+            evaluations={scenario.evaluations ?? {}}
+            metrics={scenario.metrics ?? {}}
+            scenarioStart={scenario?.start ?? ''}
+            scenarioEnd={scenario?.end ?? ''}
+            scores={scores ?? []}
           />
           <RoleScoresButtonGroup
             exerciseId={exerciseId}
             deploymentId={deploymentId}
+            scenario={scenario}
+            scores={scores ?? []}
           />
           <AccountList
             exerciseId={exerciseId}

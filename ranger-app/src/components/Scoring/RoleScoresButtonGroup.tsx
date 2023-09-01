@@ -1,11 +1,6 @@
 import React from 'react';
-import {skipToken} from '@reduxjs/toolkit/dist/query';
 import {useTranslation} from 'react-i18next';
-import {
-  useAdminGetDeploymentScenarioQuery,
-  useAdminGetDeploymentScoresQuery,
-} from 'src/slices/apiSlice';
-import {ExerciseRoleOrder} from 'src/models/scenario';
+import {ExerciseRoleOrder, type Scenario} from 'src/models/scenario';
 import {
   calculateTotalScoreForRole,
   flattenEntities,
@@ -15,21 +10,21 @@ import {
 } from 'src/utils';
 import {ButtonGroup, Button, Icon} from '@blueprintjs/core';
 import {useNavigate} from 'react-router-dom';
+import {type Score} from 'src/models/score';
 
-const RoleScoresButtonGroup = ({exerciseId, deploymentId}:
-{exerciseId: string;
-  deploymentId: string;
-}) => {
+const RoleScoresButtonGroup = (
+  {exerciseId, deploymentId, scenario, scores}:
+  {
+    exerciseId: string;
+    deploymentId: string;
+    scenario: Scenario;
+    scores: Score[];
+  }) => {
   const {t} = useTranslation();
-  const queryArguments = exerciseId && deploymentId
-    ? {exerciseId, deploymentId} : skipToken;
-  const {data: scenario} = useAdminGetDeploymentScenarioQuery(queryArguments);
-  const {data: scores} = useAdminGetDeploymentScoresQuery(queryArguments);
-
   const entities = scenario?.entities;
   const navigate = useNavigate();
 
-  if (entities && scores) {
+  if (entities) {
     const flattenedEntities = flattenEntities(entities);
     const roles = getUniqueRoles(flattenedEntities);
     roles.sort((a, b) => ExerciseRoleOrder[a] - ExerciseRoleOrder[b]);

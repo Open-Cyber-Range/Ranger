@@ -29,13 +29,9 @@ const ScoreDetail = () => {
   const queryArguments = exerciseId && deploymentId ? {exerciseId, deploymentId} : skipToken;
   const {data: scenario} = useAdminGetDeploymentScenarioQuery(queryArguments);
   const {data: scores} = useAdminGetDeploymentScoresQuery(queryArguments);
+  const {entities = {}, tlos = {}, evaluations = {}, metrics = {}} = scenario ?? {};
 
-  const entities = scenario?.entities;
-  const tlos = scenario?.tlos;
-  const evaluations = scenario?.evaluations;
-  const metrics = scenario?.metrics;
-
-  if (deploymentId && exerciseId && tlos && entities && role && scores && evaluations && metrics) {
+  if (deploymentId && exerciseId && role) {
     const flattenedEntities = flattenEntities(entities);
     const tloKeysByRole = getTloKeysByRole(flattenedEntities, role);
     const roles = getUniqueRoles(flattenedEntities)
@@ -49,7 +45,7 @@ const ScoreDetail = () => {
       .flatMap(evaluation => evaluation.metrics);
     const metricReferences = new Set(metricKeysByTloKeys
       .map(metricKey => metrics[metricKey]?.name ?? metricKey));
-    const filteredScores = scores.filter(score => metricReferences.has(score.metricName));
+    const filteredScores = scores?.filter(score => metricReferences.has(score.metricName));
 
     return (
       <SideBar renderMainContent={() => (
@@ -65,9 +61,13 @@ const ScoreDetail = () => {
               />
             </div>
             <DeploymentDetailsGraph
-              exerciseId={exerciseId}
-              deploymentId={deploymentId}
-              scores={filteredScores}
+              entities={entities}
+              tlos={tlos}
+              evaluations={evaluations}
+              metrics={metrics}
+              scenarioStart={scenario?.start ?? ''}
+              scenarioEnd={scenario?.end ?? ''}
+              scores={filteredScores ?? []}
             />
             <TloTable
               exerciseId={exerciseId}

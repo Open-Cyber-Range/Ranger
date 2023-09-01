@@ -27,7 +27,7 @@ const ScoreTag = ({exerciseId, deploymentId, role, large = false}:
   const {t} = useTranslation();
   const backgroundColor = getRoleColor(role);
 
-  if (scenario && scores && role) {
+  if (scenario && scores) {
     const tagScore = calculateTotalScoreForRole({scenario, scores, role});
 
     return (
