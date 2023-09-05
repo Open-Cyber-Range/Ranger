@@ -54,6 +54,15 @@ const ExerciseForm = ({exercise, onContentChange, children}:
     };
   }, [watch, onContentChange]);
 
+  useEffect(() => {
+    const storedEstimation = localStorage.getItem(`resourceEstimation_${exercise.id}`);
+    if (storedEstimation) {
+      setResourceEstimation(storedEstimation);
+    } else {
+      setResourceEstimation(undefined);
+    }
+  }, [exercise.id]);
+
   const [updateExercise, {isSuccess, error}] = useAdminUpdateExerciseMutation();
 
   const onSubmit: SubmitHandler<UpdateExercise> = async exerciseUpdate => {
@@ -74,6 +83,7 @@ const ExerciseForm = ({exercise, onContentChange, children}:
       const scenario: Scenario = JSON.parse(parsedSdl) as Scenario;
       const resourceEstimation = estimateResources(scenario);
       setResourceEstimation(resourceEstimation);
+      localStorage.setItem(`resourceEstimation_${exercise.id}`, resourceEstimation);
     }
 
     function estimateResources(scenario: any) {
