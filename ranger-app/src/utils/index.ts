@@ -363,3 +363,51 @@ export const getMetricReferencesByRole = (
 
   return result;
 };
+
+export const get_table_bg_color_by_role = (role: ExerciseRole) => {
+  switch (role) {
+    case ExerciseRole.Blue: {
+      return 'bg-blue-300';
+    }
+
+    case ExerciseRole.White: {
+      return 'bg-gray-300';
+    }
+
+    case ExerciseRole.Red: {
+      return 'bg-red-300';
+    }
+
+    case ExerciseRole.Green: {
+      return 'bg-green-300';
+    }
+
+    default: {
+      return 'bg-white';
+    }
+  }
+};
+
+export const get_table_row_bg_color_by_role = (role: ExerciseRole) => {
+  switch (role) {
+    case ExerciseRole.Blue: {
+      return 'bg-blue-50';
+    }
+
+    case ExerciseRole.White: {
+      return 'bg-gray-50';
+    }
+
+    case ExerciseRole.Red: {
+      return 'bg-red-50';
+    }
+
+    case ExerciseRole.Green: {
+      return 'bg-green-50';
+    }
+
+    default: {
+      return 'bg-white';
+    }
+  }
+};

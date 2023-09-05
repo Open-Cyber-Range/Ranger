@@ -6,7 +6,13 @@ import {
   type TrainingLearningObjective,
   ExerciseRoleOrder,
 } from 'src/models/scenario';
-import {flattenEntities, getUniqueRoles, groupTloMapsByRoles} from 'src/utils';
+import {
+  flattenEntities,
+  getUniqueRoles,
+  get_table_bg_color_by_role,
+  get_table_row_bg_color_by_role,
+  groupTloMapsByRoles,
+} from 'src/utils';
 import TloTableRow from './TloTableRow';
 
 const TloTable = ({exerciseId, deploymentId, tloMap}:
@@ -27,7 +33,7 @@ const TloTable = ({exerciseId, deploymentId, tloMap}:
       flattenedEntities, tloMap, roles);
 
     return (
-      <div className='flex mt-2'>
+      <div className='flex flex-col'>
         {roles.map(role => {
           const tloMap = tloMapsByRole[role];
           if (tloMap && Object.keys(tloMap).length > 0) {
@@ -35,7 +41,7 @@ const TloTable = ({exerciseId, deploymentId, tloMap}:
             return (
               <div key={role} className='w-full text-center'>
                 <table
-                  className='w-full my-8 border border-separate border-spacing-0
+                  className='w-full mt-6 border border-separate border-spacing-0
                   border-neutral-500 rounded-xl overflow-hidden'
                 >
                   <colgroup/>
@@ -43,7 +49,7 @@ const TloTable = ({exerciseId, deploymentId, tloMap}:
                   <colgroup
                     span={3}/>
                   <thead
-                    className='bg-slate-300 font-medium'
+                    className={`${get_table_bg_color_by_role(role)} font-medium`}
                   >
                     <tr>
                       <th
@@ -71,7 +77,7 @@ const TloTable = ({exerciseId, deploymentId, tloMap}:
                       <th className='pr-1 w-1/5'>{t('tloTable.headers.points')}</th>
                     </tr>
                   </thead>
-                  <tbody className='bg-neutral-100'>
+                  <tbody className={`${get_table_row_bg_color_by_role(role)}`}>
                     { tloKeys.map(tloKey => (
                       <TloTableRow
                         key={tloKey}
