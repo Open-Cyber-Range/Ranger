@@ -18,27 +18,23 @@ import {type ReactNode, useState} from 'react';
 import {MENU_HEADER} from '@blueprintjs/core/lib/esm/common/classes';
 import {sortByProperty} from 'sort-by-property';
 
-type ActiveTab = 'Dash' | 'Scores' | 'Emails' | undefined;
+type ActiveTab = 'Dash' | 'Scores' | 'Emails' | 'Graph' | 'SDL'
+| 'Accounts' | 'Entity Selector' | 'Manual Metrics' | undefined;
 
-const hashToTab = (hash: string): ActiveTab => {
-  switch (hash) {
-    case '#dash': {
-      return 'Dash';
-    }
-
-    case '#scores': {
-      return 'Scores';
-    }
-
-    case '#emails': {
-      return 'Emails';
-    }
-
-    default: {
-      return 'Dash';
-    }
-  }
+const hashTabs: Record<string, ActiveTab> = {
+  '#dash': 'Dash',
+  '#scores': 'Scores',
+  '#emails': 'Emails',
+  '#graph': 'Graph',
+  '#sdl': 'SDL',
+  '#accounts': 'Accounts',
+  '#entities': 'Entity Selector',
+  '#metrics': 'Manual Metrics',
 };
+
+const hashToTab = (hash: string): ActiveTab => (
+  hashTabs[hash] ?? 'Dash'
+);
 
 const SideBar = ({renderMainContent}: {
   renderMainContent?: (activeTab: ActiveTab) => ReactNode | undefined;}) => {
@@ -54,11 +50,10 @@ const SideBar = ({renderMainContent}: {
   if (exercise && deployments) {
     const orderedDeployments = deployments.slice().sort(sortByProperty('updatedAt', 'desc'));
     return (
-
       <div className='flex h-[100%]'>
         <div className='pb-[2rem]'>
           <Menu large className='max-w-[10rem] bp4-elevation-3 h-[100%]'>
-            <div className='flex flex-col max-h-[100%] overflow-y-auto'>
+            <div className='flex flex-col max-h-[100%] overflow-y-scroll'>
               <div className='mt-[2rem] px-[7px]'>
                 <H2>{exercise.name}</H2>
               </div>
@@ -109,6 +104,7 @@ const SideBar = ({renderMainContent}: {
                 orderedDeployments.map(deployment => (
                   <MenuItem
                     key={deployment.id}
+                    popoverProps={{hoverCloseDelay: 200}}
                     active={deploymentId === deployment.id}
                     text={deployment.name}
                     icon='cloud-upload'
@@ -116,10 +112,55 @@ const SideBar = ({renderMainContent}: {
                       navigate(
                         `/exercises/${deployment.exerciseId}/deployments/${deployment.id}`);
                     }}
-                  />
+                  >
+                    <MenuItem
+                      icon='graph'
+                      text='Graph'
+                      onClick={() => {
+                        navigate(
+                          // eslint-disable-next-line max-len
+                          `/exercises/${deployment.exerciseId}/deployments/${deployment.id}/focus#graph`);
+                        setActiveTab('Graph');
+                      }}/>
+                    <MenuItem
+                      icon='text-highlight'
+                      text='SDL'
+                      onClick={() => {
+                        navigate(
+                          // eslint-disable-next-line max-len
+                          `/exercises/${deployment.exerciseId}/deployments/${deployment.id}/focus#sdl`);
+                        setActiveTab('SDL');
+                      }}/>
+                    <MenuItem
+                      icon='join-table'
+                      text='Accounts'
+                      onClick={() => {
+                        navigate(
+                          // eslint-disable-next-line max-len
+                          `/exercises/${deployment.exerciseId}/deployments/${deployment.id}/focus#accounts`);
+                        setActiveTab('Accounts');
+                      }}/>
+                    <MenuItem
+                      icon='data-connection'
+                      text='Entity Connector'
+                      onClick={() => {
+                        navigate(
+                          // eslint-disable-next-line max-len
+                          `/exercises/${deployment.exerciseId}/deployments/${deployment.id}/focus#entitites`);
+                        setActiveTab('Entity Selector');
+                      }}/>
+                    <MenuItem
+                      icon='manually-entered-data'
+                      text='Manual Metrics'
+                      onClick={() => {
+                        navigate(
+                          // eslint-disable-next-line max-len
+                          `/exercises/${deployment.exerciseId}/deployments/${deployment.id}/focus#metrics`);
+                        setActiveTab('Manual Metrics');
+                      }}/>
+                  </MenuItem>
                 ))
               )}
-
             </div>
           </Menu>
         </div>
