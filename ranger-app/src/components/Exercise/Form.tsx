@@ -38,6 +38,7 @@ const ExerciseForm = ({exercise, onContentChange, children}:
     defaultValues: {
       name: exercise.name,
       sdlSchema: exercise.sdlSchema ?? '',
+      groupName: exercise.groupName ?? '',
     },
   });
   const {data: groups} = useAdminGetGroupsQuery();
@@ -201,13 +202,9 @@ const ExerciseForm = ({exercise, onContentChange, children}:
                     text={t('common.noResults')}
                     roleStructure='listoption'/>
                 }
+                selectedItem={activeItem}
                 onItemSelect={item => {
-                  const event = {
-                    target: {
-                      value: item.name,
-                    },
-                  };
-                  onChange(event);
+                  onChange(item.name);
                 }}
               />
             </FormGroup>
