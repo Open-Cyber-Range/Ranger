@@ -3,12 +3,12 @@ import {type AdUser} from 'src/models/groups';
 import {type Participant} from 'src/models/pariticpant';
 import {
   type Entity,
+  type Evaluation,
   ExerciseRole,
+  type Metric,
+  type Scenario,
   type TloMapsByRole,
   type TrainingLearningObjective,
-  type Scenario,
-  type Metric,
-  type Evaluation,
 } from 'src/models/scenario';
 import {type Score} from 'src/models/score';
 
@@ -18,8 +18,15 @@ export const createEntityTree = (
   users: AdUser[] = [],
   selector?: string,
 ): TreeNodeInfo[] => {
+  const sortedEntityKeys = Object.keys(entities).sort((a, b) => {
+    const entityA = entities[a];
+    const entityB = entities[b];
+    return (entityA.name ?? a).localeCompare(entityB.name ?? b);
+  });
+
   const tree: TreeNodeInfo[] = [];
-  for (const [entityId, entity] of Object.entries(entities)) {
+  for (const entityId of sortedEntityKeys) {
+    const entity = entities[entityId];
     const id = selector ? `${selector}.${entityId}` : entityId;
     const matchingParticipant = participants.find(participant => participant.selector === id);
     const matchingUser = users.find(user => user.id === matchingParticipant?.userId);
@@ -30,8 +37,7 @@ export const createEntityTree = (
       isExpanded: true,
     };
     if (entity.entities) {
-      const subtree = createEntityTree(entity.entities, participants, users, id);
-      entityNode.childNodes = subtree;
+      entityNode.childNodes = createEntityTree(entity.entities, participants, users, id);
     }
 
     tree.push(entityNode);
