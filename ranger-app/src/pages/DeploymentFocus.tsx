@@ -16,6 +16,7 @@ import AccountList from 'src/components/Deployment/AccountList';
 import EntityConnector from 'src/components/Deployment/EntityConnector';
 import MetricScorer from 'src/components/Scoring/MetricScorer';
 import EntityTree from 'src/components/Deployment/EntityTree';
+import {ActiveTab} from 'src/models/exercise';
 
 const DeploymentFocus = () => {
   const {exerciseId, deploymentId} = useParams<DeploymentDetailRouteParameters>();
@@ -29,7 +30,7 @@ const DeploymentFocus = () => {
     return (
       <SideBar renderMainContent={activeTab => (
         <>
-          {activeTab === 'Graph' && (
+          {activeTab === ActiveTab.Scores && (
             <>
               <TloTable
                 exerciseId={exerciseId}
@@ -49,7 +50,7 @@ const DeploymentFocus = () => {
               </div>
             </>
           )}
-          {activeTab === 'SDL' && (
+          {activeTab === ActiveTab.SDL && (
             <div className='h-[80vh]'>
               <Editor
                 value={deployment?.sdlSchema ?? ''}
@@ -58,7 +59,7 @@ const DeploymentFocus = () => {
               />
             </div>
           )}
-          {activeTab === 'Accounts' && (
+          {activeTab === ActiveTab.Accounts && (
             <div className='text-center '>
               <AccountList
                 exerciseId={exerciseId}
@@ -66,7 +67,7 @@ const DeploymentFocus = () => {
               />
             </div>
           )}
-          {activeTab === 'Entity Selector' && (
+          {activeTab === ActiveTab.EntitySelector && (
             <>
               <EntityConnector exerciseId={exerciseId} deploymentId={deploymentId}/>
               <div className='mt-[2rem]'>
@@ -74,7 +75,7 @@ const DeploymentFocus = () => {
               </div>
             </>
           )}
-          {activeTab === 'Manual Metrics' && (
+          {activeTab === ActiveTab.ManualMetrics && (
             <MetricScorer
               exerciseId={exerciseId}
               deploymentId={deploymentId}/>

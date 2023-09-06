@@ -17,24 +17,17 @@ import {
 import {type ReactNode, useState} from 'react';
 import {MENU_HEADER} from '@blueprintjs/core/lib/esm/common/classes';
 import {sortByProperty} from 'sort-by-property';
-
-type ActiveTab = 'Dash' | 'Scores' | 'Emails' | 'Graph' | 'SDL'
-| 'Accounts' | 'Entity Selector' | 'Manual Metrics' | undefined;
+import {ActiveTab} from 'src/models/exercise';
 
 const hashTabs: Record<string, ActiveTab> = {
-  '#dash': 'Dash',
-  '#scores': 'Scores',
-  '#emails': 'Emails',
-  '#graph': 'Graph',
-  '#sdl': 'SDL',
-  '#accounts': 'Accounts',
-  '#entities': 'Entity Selector',
-  '#metrics': 'Manual Metrics',
+  '#dash': ActiveTab.Dash,
+  '#scores': ActiveTab.Scores,
+  '#emails': ActiveTab.Emails,
+  '#sdl': ActiveTab.SDL,
+  '#accounts': ActiveTab.Accounts,
+  '#entities': ActiveTab.EntitySelector,
+  '#metrics': ActiveTab.ManualMetrics,
 };
-
-const hashToTab = (hash: string): ActiveTab => (
-  hashTabs[hash] ?? 'Dash'
-);
 
 const SideBar = ({renderMainContent}: {
   renderMainContent?: (activeTab: ActiveTab) => ReactNode | undefined;}) => {
@@ -46,7 +39,7 @@ const SideBar = ({renderMainContent}: {
   const {data: deployments} = useAdminGetDeploymentsQuery(exerciseId ?? skipToken);
   const {data: exercise} = useAdminGetExerciseQuery(exerciseId ?? skipToken);
   const hasDeployments = deployments && deployments.length > 0;
-  const [activeTab, setActiveTab] = useState<ActiveTab>(hashToTab(hash));
+  const [activeTab, setActiveTab] = useState<ActiveTab>(hashTabs[hash] ?? ActiveTab.Dash);
   if (exercise && deployments) {
     const orderedDeployments = deployments.slice().sort(sortByProperty('updatedAt', 'desc'));
     return (
@@ -59,7 +52,7 @@ const SideBar = ({renderMainContent}: {
               </div>
               <MenuDivider/>
               <MenuItem
-                active={!deploymentId && activeTab === 'Dash'}
+                active={!deploymentId && activeTab === ActiveTab.Dash}
                 text={t('exercises.tabs.dashboard')}
                 icon='control'
                 onClick={() => {
@@ -67,12 +60,12 @@ const SideBar = ({renderMainContent}: {
                     navigate(`/exercises/${exerciseId}`);
                   }
 
-                  setActiveTab('Dash');
+                  setActiveTab(ActiveTab.Dash);
                 }}
               />
               <MenuItem
                 disabled={!hasDeployments}
-                active={!deploymentId && activeTab === 'Scores'}
+                active={!deploymentId && activeTab === ActiveTab.Scores}
                 text={t('exercises.tabs.scores')}
                 icon='chart'
                 onClick={() => {
@@ -80,11 +73,11 @@ const SideBar = ({renderMainContent}: {
                     navigate(`/exercises/${exerciseId}#scores`);
                   }
 
-                  setActiveTab('Scores');
+                  setActiveTab(ActiveTab.Scores);
                 }}
               />
               <MenuItem
-                active={!deploymentId && activeTab === 'Emails'}
+                active={!deploymentId && activeTab === ActiveTab.Emails}
                 text={t('emails.link')}
                 icon='envelope'
                 onClick={() => {
@@ -92,7 +85,7 @@ const SideBar = ({renderMainContent}: {
                     navigate(`/exercises/${exerciseId}#emails`);
                   }
 
-                  setActiveTab('Emails');
+                  setActiveTab(ActiveTab.Emails);
                 }}
               />
 
@@ -114,49 +107,49 @@ const SideBar = ({renderMainContent}: {
                     }}
                   >
                     <MenuItem
-                      icon='graph'
-                      text='Graph'
+                      icon='chart'
+                      text={t('exercises.tabs.scores')}
                       onClick={() => {
                         navigate(
                           // eslint-disable-next-line max-len
-                          `/exercises/${deployment.exerciseId}/deployments/${deployment.id}/focus#graph`);
-                        setActiveTab('Graph');
+                          `/exercises/${deployment.exerciseId}/deployments/${deployment.id}/focus#scores`);
+                        setActiveTab(ActiveTab.Scores);
                       }}/>
                     <MenuItem
                       icon='text-highlight'
-                      text='SDL'
+                      text={t('exercises.tabs.sdl')}
                       onClick={() => {
                         navigate(
                           // eslint-disable-next-line max-len
                           `/exercises/${deployment.exerciseId}/deployments/${deployment.id}/focus#sdl`);
-                        setActiveTab('SDL');
+                        setActiveTab(ActiveTab.SDL);
                       }}/>
                     <MenuItem
                       icon='join-table'
-                      text='Accounts'
+                      text={t('exercises.tabs.accounts')}
                       onClick={() => {
                         navigate(
                           // eslint-disable-next-line max-len
                           `/exercises/${deployment.exerciseId}/deployments/${deployment.id}/focus#accounts`);
-                        setActiveTab('Accounts');
+                        setActiveTab(ActiveTab.Accounts);
                       }}/>
                     <MenuItem
                       icon='data-connection'
-                      text='Entity Connector'
+                      text={t('exercises.tabs.entities')}
                       onClick={() => {
                         navigate(
                           // eslint-disable-next-line max-len
                           `/exercises/${deployment.exerciseId}/deployments/${deployment.id}/focus#entitites`);
-                        setActiveTab('Entity Selector');
+                        setActiveTab(ActiveTab.EntitySelector);
                       }}/>
                     <MenuItem
                       icon='manually-entered-data'
-                      text='Manual Metrics'
+                      text={t('exercises.tabs.metrics')}
                       onClick={() => {
                         navigate(
                           // eslint-disable-next-line max-len
                           `/exercises/${deployment.exerciseId}/deployments/${deployment.id}/focus#metrics`);
-                        setActiveTab('Manual Metrics');
+                        setActiveTab(ActiveTab.ManualMetrics);
                       }}/>
                   </MenuItem>
                 ))
