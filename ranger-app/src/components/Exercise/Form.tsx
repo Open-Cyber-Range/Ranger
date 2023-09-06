@@ -1,5 +1,5 @@
 import type React from 'react';
-import {useEffect, useState} from 'react';
+import {useEffect} from 'react';
 import type {SubmitHandler} from 'react-hook-form';
 import {useForm, Controller} from 'react-hook-form';
 import {
@@ -24,7 +24,7 @@ import init, {
 } from '@open-cyber-range/wasm-sdl-parser';
 import {Suggest2} from '@blueprintjs/select';
 import {MenuItem2} from '@blueprintjs/popover2';
-import {type InfraNode, type Node, type Scenario} from 'src/models/scenario';
+import useResourceEstimation from 'src/hooks/useResourceEstimation';
 
 const ExerciseForm = ({exercise, onContentChange, children}:
 {
@@ -33,7 +33,6 @@ const ExerciseForm = ({exercise, onContentChange, children}:
   children?: React.ReactNode;
 }) => {
   const {t} = useTranslation();
-  const [resourceEstimation, setResourceEstimation] = useState<string>();
   const {handleSubmit, control, watch} = useForm<UpdateExercise>({
     defaultValues: {
       name: exercise.name,
@@ -42,6 +41,8 @@ const ExerciseForm = ({exercise, onContentChange, children}:
     },
   });
   const {data: groups} = useAdminGetGroupsQuery();
+  const {sdlSchema} = watch();
+  const {totalRam, totalCpu} = useResourceEstimation(sdlSchema);
 
   useEffect(() => {
     const subscription = watch((value, {name, type}) => {
@@ -53,15 +54,6 @@ const ExerciseForm = ({exercise, onContentChange, children}:
       subscription.unsubscribe();
     };
   }, [watch, onContentChange]);
-
-  useEffect(() => {
-    const storedEstimation = localStorage.getItem(`resourceEstimation_${exercise.id}`);
-    if (storedEstimation) {
-      setResourceEstimation(storedEstimation);
-    } else {
-      setResourceEstimation(undefined);
-    }
-  }, [exercise.id]);
 
   const [updateExercise, {isSuccess, error}] = useAdminUpdateExerciseMutation();
 
@@ -78,33 +70,6 @@ const ExerciseForm = ({exercise, onContentChange, children}:
 
         return;
       }
-
-      const parsedSdl = parseAndVerifySDL(exerciseUpdate.sdlSchema);
-      const scenario: Scenario = JSON.parse(parsedSdl) as Scenario;
-      const resourceEstimation = estimateResources(scenario);
-      setResourceEstimation(resourceEstimation);
-      localStorage.setItem(`resourceEstimation_${exercise.id}`, resourceEstimation);
-    }
-
-    function estimateResources(scenario: any) {
-      let totalCpu = 0;
-      let totalRam = 0;
-
-      if (scenario?.infrastructure && scenario?.nodes) {
-        for (const nodeName of Object.keys(scenario.infrastructure as InfraNode)) {
-          const infraNode = scenario.infrastructure[nodeName] as InfraNode;
-          const nodeCount = infraNode.count;
-          const node = scenario.nodes?.[nodeName] as Node;
-
-          if (node?.resources) {
-            totalRam += node.resources.ram * nodeCount;
-            totalCpu += node.resources.cpu * nodeCount;
-          }
-        }
-      }
-
-      totalRam /= (1024 ** 3);
-      return `Total RAM: ${totalRam} GiB, Total CPUs: ${totalCpu}`;
     }
 
     await updateExercise({exerciseUpdate, exerciseId: exercise.id});
@@ -268,7 +233,9 @@ const ExerciseForm = ({exercise, onContentChange, children}:
               }}
               >
                 <h3 style={{fontWeight: 'bold', color: '#333'}}>Estimated Resources:</h3>
-                <p style={{fontSize: '16px', color: '#666'}}>{resourceEstimation}</p>
+                <p style={{fontSize: '16px', color: '#666'}}>
+                  Total RAM: {totalRam} GiB, Total CPUs: {totalCpu}
+                </p>
               </div>
             </FormGroup>
           );
