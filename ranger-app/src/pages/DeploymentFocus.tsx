@@ -17,6 +17,7 @@ import EntityConnector from 'src/components/Deployment/EntityConnector';
 import MetricScorer from 'src/components/Scoring/MetricScorer';
 import EntityTree from 'src/components/Deployment/EntityTree';
 import {ActiveTab} from 'src/models/exercise';
+import {tryIntoScoringMetadata} from 'src/utils';
 
 const DeploymentFocus = () => {
   const {exerciseId, deploymentId} = useParams<DeploymentDetailRouteParameters>();
@@ -33,19 +34,15 @@ const DeploymentFocus = () => {
           {activeTab === ActiveTab.Scores && (
             <>
               <TloTable
-                exerciseId={exerciseId}
-                deploymentId={deploymentId}
-                tloMap={scenario.tlos ?? {}}
+                scoringData={tryIntoScoringMetadata(scenario)}
+                scores={scores}
+                tloMap={scenario?.tlos}
               />
               <div className='mt-[2rem]'>
                 <DeploymentDetailsGraph
-                  entities={scenario.entities ?? {}}
-                  tlos={scenario.tlos ?? {}}
-                  evaluations={scenario.evaluations ?? {}}
-                  metrics={scenario.metrics ?? {}}
-                  scenarioStart={scenario?.start ?? ''}
-                  scenarioEnd={scenario?.end ?? ''}
-                  scores={scores ?? []}
+                  colorsByRole
+                  scoringData={tryIntoScoringMetadata(scenario)}
+                  scores={scores}
                 />
               </div>
             </>

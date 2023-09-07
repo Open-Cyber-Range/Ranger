@@ -14,6 +14,7 @@ import {
   getTloKeysByRole,
   getUniqueRoles,
   groupTloMapsByRoles,
+  tryIntoScoringMetadata,
 } from 'src/utils';
 import TloTable from 'src/components/Scoring/TloTable';
 import DeploymentDetailsGraph from 'src/components/Scoring/Graph';
@@ -25,26 +26,24 @@ const ScoreDetail = () => {
   const {t} = useTranslation();
   const {exerciseId, deploymentId, role} = useParams<DeploymentDetailScoresRouteParameters>();
   useExerciseStreaming(exerciseId);
-
   const queryArguments = exerciseId && deploymentId ? {exerciseId, deploymentId} : skipToken;
   const {data: scenario} = useAdminGetDeploymentScenarioQuery(queryArguments);
   const {data: scores} = useAdminGetDeploymentScoresQuery(queryArguments);
-  const {entities = {}, tlos = {}, evaluations = {}, metrics = {}} = scenario ?? {};
+  const scoringData = tryIntoScoringMetadata(scenario);
 
-  if (deploymentId && exerciseId && role) {
-    const flattenedEntities = flattenEntities(entities);
+  if (deploymentId && exerciseId && role && scoringData) {
+    const flattenedEntities = flattenEntities(scoringData.entities);
     const tloKeysByRole = getTloKeysByRole(flattenedEntities, role);
     const roles = getUniqueRoles(flattenedEntities)
       .sort((a, b) => ExerciseRoleOrder[a] - ExerciseRoleOrder[b]);
-    const tlosByRole = groupTloMapsByRoles(
-      flattenedEntities, tlos, roles);
+    const tlosByRole = groupTloMapsByRoles(flattenedEntities, scoringData.tlos, roles);
 
-    const metricKeysByTloKeys = tloKeysByRole.map(tloKey => tlos[tloKey])
+    const metricKeysByTloKeys = tloKeysByRole.map(tloKey => scoringData.tlos[tloKey])
       .map(tlo => tlo.evaluation)
-      .map(evaluationKey => evaluations[evaluationKey])
+      .map(evaluationKey => scoringData.evaluations[evaluationKey])
       .flatMap(evaluation => evaluation.metrics);
     const metricReferences = new Set(metricKeysByTloKeys
-      .map(metricKey => metrics[metricKey]?.name ?? metricKey));
+      .map(metricKey => scoringData.metrics[metricKey]?.name ?? metricKey));
     const filteredScores = scores?.filter(score => metricReferences.has(score.metricName));
 
     return (
@@ -61,18 +60,13 @@ const ScoreDetail = () => {
               />
             </div>
             <DeploymentDetailsGraph
-              entities={entities}
-              tlos={tlos}
-              evaluations={evaluations}
-              metrics={metrics}
-              scenarioStart={scenario?.start ?? ''}
-              scenarioEnd={scenario?.end ?? ''}
-              scores={filteredScores ?? []}
+              scoringData={scoringData}
+              scores={filteredScores}
             />
             <TloTable
-              exerciseId={exerciseId}
-              deploymentId={deploymentId}
-              tloMap={tlosByRole[role] ?? {}}
+              scoringData={scoringData}
+              scores={filteredScores}
+              tloMap={tlosByRole[role]}
             />
           </div>
         </PageHolder>

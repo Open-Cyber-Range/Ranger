@@ -1,32 +1,29 @@
 import React from 'react';
-import {skipToken} from '@reduxjs/toolkit/dist/query';
 import {useTranslation} from 'react-i18next';
-import {useAdminGetDeploymentScenarioQuery} from 'src/slices/apiSlice';
 import {
   type TrainingLearningObjective,
   ExerciseRoleOrder,
+  type ScoringMetadata,
 } from 'src/models/scenario';
 import {
   flattenEntities,
   getUniqueRoles,
-  get_table_bg_color_by_role,
-  get_table_row_bg_color_by_role,
   groupTloMapsByRoles,
+  tableHeaderBgColor,
+  tableRowBgColor,
 } from 'src/utils';
+import {type Score} from 'src/models/score';
 import TloTableRow from './TloTableRow';
 
-const TloTable = ({exerciseId, deploymentId, tloMap}:
-{exerciseId: string;
-  deploymentId: string;
+const TloTable = ({scoringData, scores, tloMap}:
+{scoringData: ScoringMetadata | undefined;
+  scores: Score[] | undefined;
   tloMap: Record<string, TrainingLearningObjective> | undefined;
 }) => {
   const {t} = useTranslation();
-  const {data: scenario} = useAdminGetDeploymentScenarioQuery(
-    exerciseId && deploymentId ? {exerciseId, deploymentId} : skipToken);
-  const entities = scenario?.entities;
 
-  if (tloMap && entities) {
-    const flattenedEntities = flattenEntities(entities);
+  if (tloMap && scoringData) {
+    const flattenedEntities = flattenEntities(scoringData.entities);
     const roles = getUniqueRoles(flattenedEntities);
     roles.sort((a, b) => ExerciseRoleOrder[a] - ExerciseRoleOrder[b]);
     const tloMapsByRole = groupTloMapsByRoles(
@@ -49,7 +46,7 @@ const TloTable = ({exerciseId, deploymentId, tloMap}:
                   <colgroup
                     span={3}/>
                   <thead
-                    className={`${get_table_bg_color_by_role(role)} font-medium`}
+                    className={tableHeaderBgColor[role]}
                   >
                     <tr>
                       <th
@@ -77,12 +74,12 @@ const TloTable = ({exerciseId, deploymentId, tloMap}:
                       <th className='pr-1 w-1/5'>{t('tloTable.headers.points')}</th>
                     </tr>
                   </thead>
-                  <tbody className={`${get_table_row_bg_color_by_role(role)}`}>
+                  <tbody className={tableRowBgColor[role]}>
                     { tloKeys.map(tloKey => (
                       <TloTableRow
                         key={tloKey}
-                        exerciseId={exerciseId}
-                        deploymentId={deploymentId}
+                        scoringData={scoringData}
+                        scores={scores}
                         tloKey={tloKey}
                         tlo={tloMap[tloKey]}/>
                     )) }
