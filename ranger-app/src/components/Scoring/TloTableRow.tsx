@@ -1,31 +1,24 @@
 import React from 'react';
-import {skipToken} from '@reduxjs/toolkit/dist/query';
 import {useTranslation} from 'react-i18next';
-import {
-  useAdminGetDeploymentScenarioQuery,
-  useAdminGetDeploymentScoresQuery,
-} from 'src/slices/apiSlice';
 import {findLatestScoresByVms, groupBy, roundToDecimalPlaces} from 'src/utils';
-import {type TrainingLearningObjective} from 'src/models/scenario';
+import {
+  type ScoringMetadata,
+  type TrainingLearningObjective,
+} from 'src/models/scenario';
 import {H5} from '@blueprintjs/core';
 import {sortByProperty} from 'sort-by-property';
+import {type Score} from 'src/models/score';
 
-const TloTableRow = ({exerciseId, deploymentId, tloKey, tlo}:
-{exerciseId: string;
-  deploymentId: string;
+const TloTableRow = ({scoringData, scores, tloKey, tlo}:
+{scoringData: ScoringMetadata;
+  scores: Score[] | undefined;
   tloKey: string;
   tlo: TrainingLearningObjective | undefined;
 }) => {
   const {t} = useTranslation();
-  const queryArguments = exerciseId && deploymentId
-    ? {exerciseId, deploymentId} : skipToken;
-  const {data: scenario} = useAdminGetDeploymentScenarioQuery(queryArguments);
-  const {data: scores} = useAdminGetDeploymentScoresQuery(queryArguments);
-  const scenarioEvaluations = scenario?.evaluations;
-  const scenarioMetrics = scenario?.metrics;
 
-  if (tlo && scenarioEvaluations && scenarioMetrics && scores) {
-    const tloEvaluation = scenarioEvaluations[tlo.evaluation];
+  if (tlo && scores) {
+    const tloEvaluation = scoringData.evaluations[tlo.evaluation];
     const scoresByMetric = groupBy(scores, score => score.metricName);
 
     return (
@@ -47,7 +40,7 @@ const TloTableRow = ({exerciseId, deploymentId, tloKey, tlo}:
             <tbody>
               <tr className='flex flex-col'>
                 {tloEvaluation.metrics.map(metricKey => {
-                  const metric = scenarioMetrics[metricKey];
+                  const metric = scoringData.metrics[metricKey];
                   const metricReference = metric.name ?? metricKey;
                   const scores = scoresByMetric[metricReference];
 

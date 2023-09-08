@@ -23,6 +23,10 @@ const language = {
     tabs: {
       dashboard: 'Dashboard',
       scores: 'Scores',
+      accounts: 'Accounts',
+      entities: 'Entity Selector',
+      metrics: 'Manual Metrics',
+      sdl: 'SDL',
     },
   },
   deployments: {

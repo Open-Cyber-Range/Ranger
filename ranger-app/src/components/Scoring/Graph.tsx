@@ -22,12 +22,7 @@ import {
 import 'chartjs-adapter-luxon';
 import {useTranslation} from 'react-i18next';
 import {getLineChartOptions, scoresIntoGraphData} from 'src/utils/graph';
-import {
-  type Entity,
-  type TrainingLearningObjective,
-  type Evaluation,
-  type Metric,
-} from 'src/models/scenario';
+import {type ScoringMetadata} from 'src/models/scenario';
 
 ChartJS.register(
   CategoryScale,
@@ -43,25 +38,18 @@ ChartJS.register(
 );
 
 const DeploymentDetailsGraph = (
-  {entities, tlos, evaluations, metrics, scenarioStart, scenarioEnd, scores, colorsByRole}:
+  {scoringData, scores, colorsByRole}:
   {
-    entities: Record<string, Entity>;
-    tlos: Record<string, TrainingLearningObjective>;
-    evaluations: Record<string, Evaluation>;
-    metrics: Record<string, Metric>;
-    scenarioStart: string;
-    scenarioEnd: string;
-    scores: Score[];
+    scoringData: ScoringMetadata | undefined;
+    scores: Score[] | undefined;
     colorsByRole?: boolean;
   }) => {
   const {t} = useTranslation();
   const xAxisTitle = t('chart.scoring.xAxisTitle');
   const yAxisTitle = t('chart.scoring.yAxisTitle');
   const chartTitle = t('chart.scoring.title');
-
-  const metricReferencesByRole = getMetricReferencesByRole(entities, tlos, evaluations, metrics);
-  const minLimit = Date.parse(scenarioStart);
-  const maxLimit = Date.parse(scenarioEnd);
+  const minLimit = Date.parse(scoringData?.startTime ?? '');
+  const maxLimit = Date.parse(scoringData?.endTime ?? '');
 
   const options = useMemo(() => getLineChartOptions({
     minLimit,
@@ -71,7 +59,8 @@ const DeploymentDetailsGraph = (
     yAxisTitle},
   ), [chartTitle, xAxisTitle, yAxisTitle, minLimit, maxLimit]);
 
-  if (scores.length > 0) {
+  if (scoringData && scores && scores.length > 0) {
+    const metricReferencesByRole = getMetricReferencesByRole(scoringData);
     const groupedScores = groupByMetricNameAndVmName(scores);
 
     return (

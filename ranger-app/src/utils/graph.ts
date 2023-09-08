@@ -3,8 +3,7 @@ import {Colors} from '@blueprintjs/core';
 import {ExerciseRole} from 'src/models/scenario';
 import {DateTime} from 'luxon';
 import {type Score} from 'src/models/score';
-// eslint-disable-next-line import/no-extraneous-dependencies
-import {cloneDeep} from 'lodash';
+import cloneDeep from 'lodash.clonedeep';
 import {sortByProperty} from 'sort-by-property';
 import {LINE_DATASET_TEMPLATE} from 'src/constants';
 import {defaultColors, roundToDecimalPlaces} from '.';

@@ -1,33 +1,36 @@
 import React from 'react';
-import {skipToken} from '@reduxjs/toolkit/dist/query';
 import {useTranslation} from 'react-i18next';
-import {useAdminGetDeploymentScenarioQuery} from 'src/slices/apiSlice';
 import {
   type TrainingLearningObjective,
   ExerciseRoleOrder,
+  type ScoringMetadata,
 } from 'src/models/scenario';
-import {flattenEntities, getUniqueRoles, groupTloMapsByRoles} from 'src/utils';
+import {
+  flattenEntities,
+  getUniqueRoles,
+  groupTloMapsByRoles,
+  tableHeaderBgColor,
+  tableRowBgColor,
+} from 'src/utils';
+import {type Score} from 'src/models/score';
 import TloTableRow from './TloTableRow';
 
-const TloTable = ({exerciseId, deploymentId, tloMap}:
-{exerciseId: string;
-  deploymentId: string;
+const TloTable = ({scoringData, scores, tloMap}:
+{scoringData: ScoringMetadata | undefined;
+  scores: Score[] | undefined;
   tloMap: Record<string, TrainingLearningObjective> | undefined;
 }) => {
   const {t} = useTranslation();
-  const {data: scenario} = useAdminGetDeploymentScenarioQuery(
-    exerciseId && deploymentId ? {exerciseId, deploymentId} : skipToken);
-  const entities = scenario?.entities;
 
-  if (tloMap && entities) {
-    const flattenedEntities = flattenEntities(entities);
+  if (tloMap && scoringData) {
+    const flattenedEntities = flattenEntities(scoringData.entities);
     const roles = getUniqueRoles(flattenedEntities);
     roles.sort((a, b) => ExerciseRoleOrder[a] - ExerciseRoleOrder[b]);
     const tloMapsByRole = groupTloMapsByRoles(
       flattenedEntities, tloMap, roles);
 
     return (
-      <div className='flex mt-2'>
+      <div className='flex flex-col'>
         {roles.map(role => {
           const tloMap = tloMapsByRole[role];
           if (tloMap && Object.keys(tloMap).length > 0) {
@@ -35,7 +38,7 @@ const TloTable = ({exerciseId, deploymentId, tloMap}:
             return (
               <div key={role} className='w-full text-center'>
                 <table
-                  className='w-full my-8 border border-separate border-spacing-0
+                  className='w-full mt-6 border border-separate border-spacing-0
                   border-neutral-500 rounded-xl overflow-hidden'
                 >
                   <colgroup/>
@@ -43,7 +46,7 @@ const TloTable = ({exerciseId, deploymentId, tloMap}:
                   <colgroup
                     span={3}/>
                   <thead
-                    className='bg-slate-300 font-medium'
+                    className={tableHeaderBgColor[role]}
                   >
                     <tr>
                       <th
@@ -71,12 +74,12 @@ const TloTable = ({exerciseId, deploymentId, tloMap}:
                       <th className='pr-1 w-1/5'>{t('tloTable.headers.points')}</th>
                     </tr>
                   </thead>
-                  <tbody className='bg-neutral-100'>
+                  <tbody className={tableRowBgColor[role]}>
                     { tloKeys.map(tloKey => (
                       <TloTableRow
                         key={tloKey}
-                        exerciseId={exerciseId}
-                        deploymentId={deploymentId}
+                        scoringData={scoringData}
+                        scores={scores}
                         tloKey={tloKey}
                         tlo={tloMap[tloKey]}/>
                     )) }

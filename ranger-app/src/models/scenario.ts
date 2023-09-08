@@ -202,3 +202,12 @@ export type Scenario = {
 
 export type TloMapsByRole = {
   [key in ExerciseRole]?: Record<string, TrainingLearningObjective>};
+
+export type ScoringMetadata = {
+  startTime: string;
+  endTime: string;
+  entities: Record<string, Entity>;
+  tlos: Record<string, TrainingLearningObjective>;
+  evaluations: Record<string, Evaluation>;
+  metrics: Record<string, Metric>;
+};

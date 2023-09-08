@@ -21,6 +21,7 @@ import EntityConnector from 'src/components/Deployment/EntityConnector';
 import EntityTree from 'src/components/Deployment/EntityTree';
 import MetricScorer from 'src/components/Scoring/MetricScorer';
 import RoleScoresButtonGroup from 'src/components/Scoring/RoleScoresButtonGroup';
+import {tryIntoScoringMetadata} from 'src/utils';
 
 const DeploymentDetail = () => {
   const {t} = useTranslation();
@@ -76,12 +77,7 @@ const DeploymentDetail = () => {
           </div>
           <DeploymentDetailsGraph
             colorsByRole
-            entities={scenario.entities ?? {}}
-            tlos={scenario.tlos ?? {}}
-            evaluations={scenario.evaluations ?? {}}
-            metrics={scenario.metrics ?? {}}
-            scenarioStart={scenario?.start ?? ''}
-            scenarioEnd={scenario?.end ?? ''}
+            scoringData={tryIntoScoringMetadata(scenario)}
             scores={scores ?? []}
           />
           <RoleScoresButtonGroup
