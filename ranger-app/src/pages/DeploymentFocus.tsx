@@ -5,6 +5,7 @@ import {
   useAdminGetDeploymentQuery,
   useAdminGetDeploymentScenarioQuery,
   useAdminGetDeploymentScoresQuery,
+  useAdminGetDeploymentUsersQuery,
 } from 'src/slices/apiSlice';
 import {skipToken} from '@reduxjs/toolkit/dist/query';
 import SideBar from 'src/components/Exercise/SideBar';
@@ -26,6 +27,7 @@ const DeploymentFocus = () => {
   const {data: scenario} = useAdminGetDeploymentScenarioQuery(queryArguments);
   const {data: deployment} = useAdminGetDeploymentQuery(queryArguments);
   const {data: scores} = useAdminGetDeploymentScoresQuery(queryArguments);
+  const {data: users} = useAdminGetDeploymentUsersQuery(queryArguments);
 
   if (scenario && exerciseId && deploymentId) {
     return (
@@ -59,8 +61,7 @@ const DeploymentFocus = () => {
           {activeTab === ActiveTab.Accounts && (
             <div className='text-center '>
               <AccountList
-                exerciseId={exerciseId}
-                deploymentId={deploymentId}
+                users={users}
               />
             </div>
           )}
