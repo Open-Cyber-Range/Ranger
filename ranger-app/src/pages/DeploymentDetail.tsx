@@ -2,7 +2,6 @@ import React from 'react';
 import {useParams} from 'react-router-dom';
 import type {DeploymentDetailRouteParameters} from 'src/models/routes';
 import {useTranslation} from 'react-i18next';
-import BackButton from 'src/components/BackButton';
 import {skipToken} from '@reduxjs/toolkit/dist/query';
 import {
   useAdminDeleteDeploymentMutation,
@@ -12,14 +11,10 @@ import {
 } from 'src/slices/apiSlice';
 import DeploymentDetailsGraph from 'src/components/Scoring/Graph';
 import Editor from '@monaco-editor/react';
-import {AnchorButton, H2} from '@blueprintjs/core';
+import {AnchorButton, Card, Elevation, H2} from '@blueprintjs/core';
 import SideBar from 'src/components/Exercise/SideBar';
 import useExerciseStreaming from 'src/hooks/useExerciseStreaming';
 import {toastSuccess, toastWarning} from 'src/components/Toaster';
-import AccountList from 'src/components/Deployment/AccountList';
-import EntityConnector from 'src/components/Deployment/EntityConnector';
-import EntityTree from 'src/components/Deployment/EntityTree';
-import MetricScorer from 'src/components/Scoring/MetricScorer';
 import RoleScoresButtonGroup from 'src/components/Scoring/RoleScoresButtonGroup';
 import {tryIntoScoringMetadata} from 'src/utils';
 
@@ -67,12 +62,12 @@ const DeploymentDetail = () => {
               </AnchorButton>
             </span>
           </div>
-          <br/>
-          <div className='h-[40vh]'>
-            <Editor
-              value={deployment?.sdlSchema}
-              defaultLanguage='yaml'
-              options={{readOnly: true}}
+          <div className='pt-8 pb-4'>
+            <RoleScoresButtonGroup
+              exerciseId={exerciseId}
+              deploymentId={deploymentId}
+              scenario={scenario}
+              scores={scores ?? []}
             />
           </div>
           <DeploymentDetailsGraph
@@ -80,30 +75,13 @@ const DeploymentDetail = () => {
             scoringData={tryIntoScoringMetadata(scenario)}
             scores={scores ?? []}
           />
-          <RoleScoresButtonGroup
-            exerciseId={exerciseId}
-            deploymentId={deploymentId}
-            scenario={scenario}
-            scores={scores ?? []}
-          />
-          <AccountList
-            exerciseId={exerciseId}
-            deploymentId={deploymentId}
-          />
-          <div className='mt-[2rem]'>
-            <EntityConnector exerciseId={exerciseId} deploymentId={deploymentId}/>
-          </div>
-          <div className='mt-[2rem]'>
-            <EntityTree exerciseId={exerciseId} deploymentId={deploymentId}/>
-          </div>
-          <div className='flex justify-end items-center pb-4 mt-[2rem]'>
-            <div className='flex justify-between items-center'>
-              <BackButton/>
-            </div>
-          </div>
-          <MetricScorer
-            exerciseId={exerciseId}
-            deploymentId={deploymentId}/>
+          <Card className='h-[40vh] p-0' elevation={Elevation.TWO}>
+            <Editor
+              value={deployment?.sdlSchema}
+              defaultLanguage='yaml'
+              options={{readOnly: true}}
+            />
+          </Card>
         </>
       )}
       />
