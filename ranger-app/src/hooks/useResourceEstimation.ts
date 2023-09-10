@@ -54,9 +54,9 @@ const useResourceEstimation = (sdlSchema: string | undefined): ResourceEstimatio
       setResourceEstimationError(undefined);
     } catch (error) {
       if (typeof error === 'string') {
-        setResourceEstimationError(`SDL Parsing failed: ${error}`);
+        setResourceEstimationError(`SDL Parsing error: ${error}`);
       } else {
-        setResourceEstimationError('SDL Parsing failed');
+        setResourceEstimationError('SDL Parsing error');
       }
     }
   }, [isInitialized]);

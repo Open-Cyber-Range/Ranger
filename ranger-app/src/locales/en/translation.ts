@@ -24,6 +24,9 @@ const language = {
       dashboard: 'Dashboard',
       scores: 'Scores',
     },
+    estimatedResourcesTitle: 'Estimated resources:',
+    estimatedResources: 'Total RAM: {{totalRam}}, total CPUs: {{totalCpu}}',
+    estimatedResourcesFail: 'Resource estimation failed',
   },
   deployments: {
     title: 'Deployments',
