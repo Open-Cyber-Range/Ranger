@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import {useState, useEffect, useCallback} from 'react';
 import type {Scenario} from 'src/models/scenario';
 import init, {
@@ -8,11 +7,14 @@ import init, {
 type ResourceEstimation = {
   totalRam: number;
   totalCpu: number;
+  resourceEstimationError: string | undefined;
 };
 
 const useResourceEstimation = (sdlSchema: string | undefined): ResourceEstimation => {
   const [totalRam, setTotalRam] = useState<number>(0);
   const [totalCpu, setTotalCpu] = useState<number>(0);
+  const [resourceEstimationError, setResourceEstimationError]
+  = useState<string | undefined>(undefined);
   const [isInitialized, setIsInitialized] = useState<boolean>(false);
 
   const estimateResources = useCallback(async (inputSdlSchema: string | undefined) => {
@@ -48,19 +50,28 @@ const useResourceEstimation = (sdlSchema: string | undefined): ResourceEstimatio
       ram /= (1024 ** 3);
       setTotalRam(ram);
       setTotalCpu(cpu);
+      setResourceEstimationError(undefined);
     } catch (error) {
-      console.error('SDL Parsing failed:', error);
+      if (typeof error === 'string') {
+        setResourceEstimationError(`SDL Parsing failed: ${error}`);
+      } else {
+        setResourceEstimationError('SDL Parsing failed');
+      }
     }
   }, [isInitialized]);
 
   useEffect(() => {
     estimateResources(sdlSchema)
       .catch(error => {
-        console.error('Error estimating resources:', error);
+        if (error instanceof Error) {
+          setResourceEstimationError(`Error estimating resources: ${error.message}`);
+        } else {
+          setResourceEstimationError('Error estimating resources');
+        }
       });
   }, [sdlSchema, estimateResources]);
 
-  return {totalRam, totalCpu};
+  return {totalRam, totalCpu, resourceEstimationError};
 };
 
 export default useResourceEstimation;

@@ -42,7 +42,7 @@ const ExerciseForm = ({exercise, onContentChange, children}:
   });
   const {data: groups} = useAdminGetGroupsQuery();
   const {sdlSchema} = watch();
-  const {totalRam, totalCpu} = useResourceEstimation(sdlSchema);
+  const {totalRam, totalCpu, resourceEstimationError} = useResourceEstimation(sdlSchema);
 
   useEffect(() => {
     const subscription = watch((value, {name, type}) => {
@@ -232,10 +232,19 @@ const ExerciseForm = ({exercise, onContentChange, children}:
                 boxShadow: '0px 2px 5px rgba(0,0,0,0.1)',
               }}
               >
-                <h3 style={{fontWeight: 'bold', color: '#333'}}>Estimated Resources:</h3>
-                <p style={{fontSize: '16px', color: '#666'}}>
-                  Total RAM: {totalRam} GiB, Total CPUs: {totalCpu}
-                </p>
+                {resourceEstimationError ? (
+                  <>
+                    <h3 style={{fontWeight: 'bold', color: 'red'}}>Error:</h3>
+                    <p style={{fontSize: '16px', color: 'red'}}>{resourceEstimationError}</p>
+                  </>
+                ) : (
+                  <>
+                    <h3 style={{fontWeight: 'bold', color: '#333'}}>Estimated Resources:</h3>
+                    <p style={{fontSize: '16px', color: '#666'}}>
+                      Total RAM: {totalRam} GiB, Total CPUs: {totalCpu}
+                    </p>
+                  </>
+                )}
               </div>
             </FormGroup>
           );
