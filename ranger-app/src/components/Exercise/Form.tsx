@@ -241,7 +241,7 @@ const ExerciseForm = ({exercise, onContentChange, children}:
                   <>
                     <h3 style={{fontWeight: 'bold', color: '#333'}}>Estimated Resources:</h3>
                     <p style={{fontSize: '16px', color: '#666'}}>
-                      Total RAM: {totalRam} GiB, Total CPUs: {totalCpu}
+                      Total RAM: {totalRam}, Total CPUs: {totalCpu}
                     </p>
                   </>
                 )}

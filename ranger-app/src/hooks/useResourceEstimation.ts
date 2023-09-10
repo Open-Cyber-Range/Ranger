@@ -3,15 +3,16 @@ import type {Scenario} from 'src/models/scenario';
 import init, {
   parse_and_verify_sdl as parseAndVerifySDL,
 } from '@open-cyber-range/wasm-sdl-parser';
+import byteSize from 'byte-size';
 
 type ResourceEstimation = {
-  totalRam: number;
+  totalRam: string;
   totalCpu: number;
   resourceEstimationError: string | undefined;
 };
 
 const useResourceEstimation = (sdlSchema: string | undefined): ResourceEstimation => {
-  const [totalRam, setTotalRam] = useState<number>(0);
+  const [totalRam, setTotalRam] = useState<string>('0');
   const [totalCpu, setTotalCpu] = useState<number>(0);
   const [resourceEstimationError, setResourceEstimationError]
   = useState<string | undefined>(undefined);
@@ -47,8 +48,8 @@ const useResourceEstimation = (sdlSchema: string | undefined): ResourceEstimatio
         }
       }
 
-      ram /= (1024 ** 3);
-      setTotalRam(ram);
+      const formattedRam = byteSize(ram, {units: 'iec', precision: 1});
+      setTotalRam(`${formattedRam.value} ${formattedRam.unit}`);
       setTotalCpu(cpu);
       setResourceEstimationError(undefined);
     } catch (error) {
