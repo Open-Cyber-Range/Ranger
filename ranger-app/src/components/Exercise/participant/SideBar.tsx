@@ -4,6 +4,7 @@ import type {DeploymentDetailRouteParameters} from 'src/models/routes';
 import {
   useParticipantGetDeploymentQuery,
   useParticipantGetExerciseQuery,
+  useParticipantGetOwnParticipantsQuery,
 } from 'src/slices/apiSlice';
 import {skipToken} from '@reduxjs/toolkit/dist/query';
 import {useTranslation} from 'react-i18next';
@@ -15,6 +16,9 @@ import {
   MenuItem,
 } from '@blueprintjs/core';
 import {type ReactNode, useState} from 'react';
+import {useDispatch, useSelector} from 'react-redux';
+import {selectedEntity, setSelectedEntity} from 'src/slices/userSlice';
+import EntitySelect from 'src/components/EntitySelect';
 
 export type ParticipantActiveTab =
 'Dash' | 'Score' | 'Events' | 'Accounts' | 'Manual Metrics' | undefined;
@@ -51,14 +55,21 @@ const SideBar = ({renderMainContent}: {
   renderMainContent?: (activeTab: ParticipantActiveTab) => ReactNode | undefined;}) => {
   const {t} = useTranslation();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const {hash} = useLocation();
+
+  const currentEntity = useSelector(selectedEntity);
+  const [activeTab, setActiveTab] = useState<ParticipantActiveTab>(hashToTab(hash));
   const {exerciseId, deploymentId}
     = useParams<DeploymentDetailRouteParameters>();
-  const {hash} = useLocation();
+
   const {data: exercise} = useParticipantGetExerciseQuery(exerciseId ?? skipToken);
   const deploymentQueryArguments = exerciseId && deploymentId
     ? {exerciseId, deploymentId} : skipToken;
   const {data: deployment} = useParticipantGetDeploymentQuery(deploymentQueryArguments);
-  const [activeTab, setActiveTab] = useState<ParticipantActiveTab>(hashToTab(hash));
+  const {data: participants}
+  = useParticipantGetOwnParticipantsQuery(exerciseId && deploymentId
+    ? {exerciseId, deploymentId} : skipToken);
 
   if (exercise && deployment) {
     return (
@@ -70,6 +81,13 @@ const SideBar = ({renderMainContent}: {
               <div className='mt-[2rem] px-[7px]'>
                 <H2>{exercise.name}</H2>
                 <H4>{deployment.name}</H4>
+                <EntitySelect
+                  participants={participants}
+                  selectedEntityKey={currentEntity}
+                  onChange={(selectedKey: string | undefined) => {
+                    dispatch(setSelectedEntity(selectedKey));
+                  }}
+                />
               </div>
               <MenuDivider/>
               <MenuItem
