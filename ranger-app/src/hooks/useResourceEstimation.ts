@@ -62,14 +62,15 @@ const useResourceEstimation = (sdlSchema: string | undefined): ResourceEstimatio
   }, [isInitialized]);
 
   useEffect(() => {
-    estimateResources(sdlSchema)
-      .catch(error => {
-        if (error instanceof Error) {
-          setResourceEstimationError(`Error estimating resources: ${error.message}`);
-        } else {
-          setResourceEstimationError('Error estimating resources');
-        }
-      });
+    try {
+      void estimateResources(sdlSchema);
+    } catch (error) {
+      if (error instanceof Error) {
+        setResourceEstimationError(`Error estimating resources: ${error.message}`);
+      } else {
+        setResourceEstimationError('Error estimating resources');
+      }
+    }
   }, [sdlSchema, estimateResources]);
 
   return {totalRam, totalCpu, resourceEstimationError};
