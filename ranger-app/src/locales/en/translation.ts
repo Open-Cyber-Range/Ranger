@@ -28,6 +28,9 @@ const language = {
       metrics: 'Manual Metrics',
       sdl: 'SDL',
     },
+    estimatedResourcesTitle: 'Estimated resources:',
+    estimatedResources: 'Total RAM: {{totalRam}}, total CPUs: {{totalCpu}}',
+    estimatedResourcesFail: 'Resource estimation failed',
   },
   deployments: {
     title: 'Deployments',

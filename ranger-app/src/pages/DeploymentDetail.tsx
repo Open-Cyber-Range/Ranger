@@ -1,5 +1,5 @@
 import React from 'react';
-import {useParams} from 'react-router-dom';
+import {useNavigate, useParams} from 'react-router-dom';
 import type {DeploymentDetailRouteParameters} from 'src/models/routes';
 import {useTranslation} from 'react-i18next';
 import BackButton from 'src/components/BackButton';
@@ -25,6 +25,7 @@ import {tryIntoScoringMetadata} from 'src/utils';
 
 const DeploymentDetail = () => {
   const {t} = useTranslation();
+  const navigate = useNavigate();
   const {exerciseId, deploymentId} = useParams<DeploymentDetailRouteParameters>();
   useExerciseStreaming(exerciseId);
   const queryArguments = exerciseId && deploymentId ? {exerciseId, deploymentId} : skipToken;
@@ -45,6 +46,7 @@ const DeploymentDetail = () => {
         toastSuccess(t('deployments.deleteSuccess', {
           deploymentName: deployment?.name,
         }));
+        navigate(`/exercises/${deployment.exerciseId}`);
       }
     } catch {
       toastWarning(t('deployments.deleteFail'));
