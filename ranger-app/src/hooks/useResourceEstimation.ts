@@ -6,14 +6,14 @@ import init, {
 import byteSize from 'byte-size';
 
 type ResourceEstimation = {
-  totalRam: string;
-  totalCpu: number;
+  totalRam: string | undefined;
+  totalCpu: number | undefined;
   resourceEstimationError: string | undefined;
 };
 
 const useResourceEstimation = (sdlSchema: string | undefined): ResourceEstimation => {
-  const [totalRam, setTotalRam] = useState<string>('0');
-  const [totalCpu, setTotalCpu] = useState<number>(0);
+  const [totalRam, setTotalRam] = useState<string | undefined>(undefined);
+  const [totalCpu, setTotalCpu] = useState<number | undefined>(undefined);
   const [resourceEstimationError, setResourceEstimationError]
   = useState<string | undefined>(undefined);
   const [isInitialized, setIsInitialized] = useState<boolean>(false);
@@ -58,6 +58,9 @@ const useResourceEstimation = (sdlSchema: string | undefined): ResourceEstimatio
       } else {
         setResourceEstimationError('SDL Parsing error');
       }
+
+      setTotalRam(undefined);
+      setTotalCpu(undefined);
     }
   }, [isInitialized]);
 
@@ -70,6 +73,9 @@ const useResourceEstimation = (sdlSchema: string | undefined): ResourceEstimatio
       } else {
         setResourceEstimationError('Error estimating resources');
       }
+
+      setTotalRam(undefined);
+      setTotalCpu(undefined);
     }
   }, [sdlSchema, estimateResources]);
 

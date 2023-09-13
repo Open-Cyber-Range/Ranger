@@ -222,27 +222,27 @@ const ExerciseForm = ({exercise, onContentChange, children}:
                   onChange={onChange}
                 />
               </div>
-              <div>
-                {resourceEstimationError ? (
-                  <Callout
-                    intent='danger'
-                    title={t('exercises.estimatedResourcesFail') ?? ''}
-                  >
-                    <span>{resourceEstimationError}</span>
-                  </Callout>
-                ) : (
-                  <Callout
-                    title={t('exercises.estimatedResourcesTitle') ?? ''}
-                  >
-                    <span>
-                      {t('exercises.estimatedResources', {
-                        totalRam,
-                        totalCpu,
-                      })}
-                    </span>
-                  </Callout>
-                )}
-              </div>
+              {resourceEstimationError && (
+                <Callout
+                  intent='danger'
+                  title={t('exercises.estimatedResourcesFail') ?? ''}
+                >
+                  <span>{resourceEstimationError}</span>
+                </Callout>
+              )}
+              {typeof totalRam === 'string' && typeof totalCpu === 'number'
+              && !resourceEstimationError && (
+                <Callout
+                  title={t('exercises.estimatedResourcesTitle') ?? ''}
+                >
+                  <span>
+                    {t('exercises.estimatedResources', {
+                      totalRam,
+                      totalCpu,
+                    })}
+                  </span>
+                </Callout>
+              )}
             </FormGroup>
           );
         }}
