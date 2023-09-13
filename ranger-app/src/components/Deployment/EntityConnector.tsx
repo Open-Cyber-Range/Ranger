@@ -11,6 +11,7 @@ import {skipToken} from '@reduxjs/toolkit/dist/query';
 import React, {useEffect} from 'react';
 import {
   useAdminAddParticipantMutation,
+  useAdminDeleteParticipantMutation,
   useAdminGetDeploymentParticipantsQuery,
   useAdminGetDeploymentQuery,
   useAdminGetDeploymentScenarioQuery,
@@ -63,6 +64,7 @@ const EntityConnector = ({exerciseId, deploymentId}: {
     data: participants,
   } = useAdminGetDeploymentParticipantsQuery({exerciseId, deploymentId});
   const {data: users} = useAdminGetGroupUsersQuery(deployment?.groupName ?? skipToken);
+  const [deleteParticipant] = useAdminDeleteParticipantMutation();
   const [selectedUser, setSelectedUser] = React.useState<AdUser | undefined>(undefined);
   const [selectedEntity, setSelectedEntity] = React.useState<TreeNodeInfo | undefined>(undefined);
 
@@ -71,9 +73,17 @@ const EntityConnector = ({exerciseId, deploymentId}: {
       return [];
     }
 
-    const flattenedList = flattenList(createEntityTree(scenario.entities));
+    const clickedDelete = async (participantId: string) => {
+      await deleteParticipant({
+        exerciseId,
+        deploymentId,
+        participantId,
+      });
+    };
+
+    const flattenedList = flattenList(createEntityTree(clickedDelete, scenario.entities));
     return filterList(flattenedList, participants);
-  }, [scenario, participants]);
+  }, [exerciseId, deploymentId, deleteParticipant, scenario]);
 
   useEffect(() => {
     if (isSuccess) {

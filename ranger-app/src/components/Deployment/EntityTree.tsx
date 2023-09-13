@@ -18,19 +18,11 @@ import {useTranslation} from 'react-i18next';
 import {createEntityTree} from 'src/utils';
 import {skipToken} from '@reduxjs/toolkit/dist/query';
 
-export type DeleteParticipantFunction = (parameters: {
-  exerciseId: string;
-  deploymentId: string;
-  participantId: string;
-}) => Promise<void>;
-
 export const deleteEntityConnectionButton = (
-  exerciseId?: string,
-  deploymentId?: string,
+  clickedDelete: (participantId: string) => void,
   participantId?: string,
-  deleteParticipant?: DeleteParticipantFunction,
 ) => {
-  if (!exerciseId || !deploymentId || !participantId || !deleteParticipant) {
+  if (!participantId) {
     return null;
   }
 
@@ -39,14 +31,10 @@ export const deleteEntityConnectionButton = (
       intent='danger'
       className='delete-button'
       onClick={async () => {
-        await deleteParticipant({
-          exerciseId,
-          deploymentId,
-          participantId,
-        });
+        clickedDelete(participantId);
       }}
     >
-      Delete
+      Disconnect
     </Button>
   );
 };
@@ -69,8 +57,16 @@ const EntityTree = ({exerciseId, deploymentId}: {
       return [];
     }
 
-    return createEntityTree(scenario.entities, participants, users, exerciseId, deleteParticipant);
-  }, [scenario, participants, users, deleteParticipant, exerciseId]);
+    const clickedDelete = async (participantId: string) => {
+      await deleteParticipant({
+        exerciseId,
+        deploymentId,
+        participantId,
+      });
+    };
+
+    return createEntityTree(clickedDelete, scenario.entities, participants, users);
+  }, [scenario, participants, users, exerciseId, deploymentId, deleteParticipant]);
 
   return (
     <Card elevation={Elevation.TWO}>

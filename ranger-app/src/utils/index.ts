@@ -13,15 +13,13 @@ import {
 import {type Score} from 'src/models/score';
 import {
   deleteEntityConnectionButton,
-  type DeleteParticipantFunction,
 } from 'src/components/Deployment/EntityTree';
 
 export const createEntityTree = (
+  clickedDelete: (participantId: string) => void,
   entities: Record<string, Entity>,
   participants: Participant[] = [],
   users: AdUser[] = [],
-  exerciseId?: string,
-  deleteParticipant?: DeleteParticipantFunction,
   selector?: string,
   // eslint-disable-next-line max-params
 ): TreeNodeInfo[] => {
@@ -43,14 +41,18 @@ export const createEntityTree = (
       icon: 'person',
       isExpanded: true,
       secondaryLabel: deleteEntityConnectionButton(
-        exerciseId,
-        matchingParticipant?.deploymentId,
+        clickedDelete,
         matchingParticipant?.id,
-        deleteParticipant,
       ),
     };
     if (entity.entities) {
-      entityNode.childNodes = createEntityTree(entity.entities, participants, users, id);
+      entityNode.childNodes = createEntityTree(
+        clickedDelete,
+        entity.entities,
+        participants,
+        users,
+        id,
+      );
     }
 
     tree.push(entityNode);
