@@ -28,8 +28,11 @@ const EntitySelect: React.FC<EntitySelectProps> = ({
     bp4-minimal
     bp4-large'
     >
-      <select value={selectedEntityKey ?? ''} onChange={handleChange}>
-        <option value=''>Select an entity</option>
+      <select
+        disabled={participants.length < 2}
+        value={selectedEntityKey ?? ''}
+        onChange={handleChange}
+      >
         {participants.map(participant => (
           <option key={participant.id} value={participant.selector}>
             {participant.selector}
