@@ -7,50 +7,12 @@ import {
 } from 'src/slices/apiSlice';
 import {useTranslation} from 'react-i18next';
 import {
-  flattenEntities,
+  calculateTotalScoreForRole,
   getRoleColor,
-  getTloNamesByRole,
   roundToDecimalPlaces,
-  sumScoresByRole,
 } from 'src/utils';
 import {skipToken} from '@reduxjs/toolkit/dist/query';
-import {type Score} from 'src/models/score';
-import {type Scenario, type ExerciseRole} from 'src/models/scenario';
-
-const calculateTotalScoreForRole = ({scenario, scores, role}: {
-  scenario: Scenario;
-  scores: Score[];
-  role: ExerciseRole;
-}) => {
-  const {entities, tlos, evaluations, metrics} = scenario;
-
-  if (entities && tlos && evaluations && metrics && scores.length > 0) {
-    const flattenedEntities = flattenEntities(entities);
-    const roleTloNames = getTloNamesByRole(flattenedEntities, role);
-    const roleEvaluationNames = roleTloNames.flatMap(tloName =>
-      tlos[tloName]?.evaluation);
-    const roleMetricKeys = Array.from(new Set(roleEvaluationNames
-      .flatMap(evaluationName =>
-        evaluations[evaluationName]?.metrics)));
-    const roleMetrics: string[] = roleMetricKeys
-      .reduce<string[]>((roleMetricsReferences, metricKey) => {
-      if (metrics[metricKey]) {
-        roleMetricsReferences.push(metrics[metricKey].name ?? metricKey);
-      }
-
-      return roleMetricsReferences;
-    }, []);
-
-    const roleScores = scores.filter(score =>
-      roleMetrics.includes(score.metricName));
-
-    const uniqueVmNames = [...new Set(roleScores.map(score => score.vmName))];
-    const totalRoleScore = sumScoresByRole(uniqueVmNames, roleScores);
-    return totalRoleScore;
-  }
-
-  return 0;
-};
+import {type ExerciseRole} from 'src/models/scenario';
 
 const ScoreTag = ({exerciseId, deploymentId, role, large = false}:
 {exerciseId: string;
@@ -65,7 +27,7 @@ const ScoreTag = ({exerciseId, deploymentId, role, large = false}:
   const {t} = useTranslation();
   const backgroundColor = getRoleColor(role);
 
-  if (scenario && scores && role) {
+  if (scenario && scores) {
     const tagScore = calculateTotalScoreForRole({scenario, scores, role});
 
     return (

@@ -2,7 +2,7 @@ import React from 'react';
 import '@blueprintjs/popover2/lib/css/blueprint-popover2.css';
 import {useAdminGetDeploymentScenarioQuery} from 'src/slices/apiSlice';
 import {ExerciseRoleOrder} from 'src/models/scenario';
-import {flattenEntities, getTloNamesByRole, getUniqueRoles} from 'src/utils';
+import {flattenEntities, getTloKeysByRole, getUniqueRoles} from 'src/utils';
 import ScoreTag from './ScoreTag';
 
 const ScoreTagGroup = ({exerciseId, deploymentId}:
@@ -22,7 +22,7 @@ const ScoreTagGroup = ({exerciseId, deploymentId}:
       <div className='flex m-1 mt-auto mb-auto'>
         {roles.map(role => {
           const roleTloNames
-          = getTloNamesByRole(flattenedEntities, role);
+          = getTloKeysByRole(flattenedEntities, role);
 
           const roleHasTlos = roleTloNames && roleTloNames.length > 0;
 

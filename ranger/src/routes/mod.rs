@@ -5,3 +5,4 @@ pub mod email;
 pub mod exercise;
 pub mod participant;
 pub mod upload;
+pub mod logger;

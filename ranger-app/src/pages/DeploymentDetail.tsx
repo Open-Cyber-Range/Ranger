@@ -1,5 +1,5 @@
 import React from 'react';
-import {useParams} from 'react-router-dom';
+import {useNavigate, useParams} from 'react-router-dom';
 import type {DeploymentDetailRouteParameters} from 'src/models/routes';
 import {useTranslation} from 'react-i18next';
 import BackButton from 'src/components/BackButton';
@@ -8,9 +8,9 @@ import {
   useAdminDeleteDeploymentMutation,
   useAdminGetDeploymentQuery,
   useAdminGetDeploymentScenarioQuery,
+  useAdminGetDeploymentScoresQuery,
 } from 'src/slices/apiSlice';
 import DeploymentDetailsGraph from 'src/components/Scoring/Graph';
-import TloTable from 'src/components/Scoring/TloTable';
 import Editor from '@monaco-editor/react';
 import {AnchorButton, H2} from '@blueprintjs/core';
 import SideBar from 'src/components/Exercise/SideBar';
@@ -20,17 +20,18 @@ import AccountList from 'src/components/Deployment/AccountList';
 import EntityConnector from 'src/components/Deployment/EntityConnector';
 import EntityTree from 'src/components/Deployment/EntityTree';
 import MetricScorer from 'src/components/Scoring/MetricScorer';
+import RoleScoresButtonGroup from 'src/components/Scoring/RoleScoresButtonGroup';
+import {tryIntoScoringMetadata} from 'src/utils';
 
 const DeploymentDetail = () => {
   const {t} = useTranslation();
+  const navigate = useNavigate();
   const {exerciseId, deploymentId} = useParams<DeploymentDetailRouteParameters>();
   useExerciseStreaming(exerciseId);
-  const {data: scenario} = useAdminGetDeploymentScenarioQuery(
-    exerciseId && deploymentId ? {exerciseId, deploymentId} : skipToken,
-  );
-  const {data: deployment} = useAdminGetDeploymentQuery(
-    exerciseId && deploymentId ? {exerciseId, deploymentId} : skipToken,
-  );
+  const queryArguments = exerciseId && deploymentId ? {exerciseId, deploymentId} : skipToken;
+  const {data: deployment} = useAdminGetDeploymentQuery(queryArguments);
+  const {data: scenario} = useAdminGetDeploymentScenarioQuery(queryArguments);
+  const {data: scores} = useAdminGetDeploymentScoresQuery(queryArguments);
 
   const [deleteDeployment] = useAdminDeleteDeploymentMutation();
 
@@ -45,13 +46,14 @@ const DeploymentDetail = () => {
         toastSuccess(t('deployments.deleteSuccess', {
           deploymentName: deployment?.name,
         }));
+        navigate(`/exercises/${deployment.exerciseId}`);
       }
     } catch {
       toastWarning(t('deployments.deleteFail'));
     }
   };
 
-  if (exerciseId && deploymentId) {
+  if (exerciseId && deploymentId && deployment && scenario) {
     return (
       <SideBar renderMainContent={() => (
         <>
@@ -76,15 +78,16 @@ const DeploymentDetail = () => {
             />
           </div>
           <DeploymentDetailsGraph
+            colorsByRole
+            scoringData={tryIntoScoringMetadata(scenario)}
+            scores={scores ?? []}
+          />
+          <RoleScoresButtonGroup
             exerciseId={exerciseId}
             deploymentId={deploymentId}
+            scenario={scenario}
+            scores={scores ?? []}
           />
-          <TloTable
-            exerciseId={exerciseId}
-            deploymentId={deploymentId}
-            tloMap={scenario?.tlos}
-          />
-
           <AccountList
             exerciseId={exerciseId}
             deploymentId={deploymentId}
