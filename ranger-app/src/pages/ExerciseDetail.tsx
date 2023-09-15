@@ -11,6 +11,7 @@ import DashboardPanel from 'src/components/Exercise/Dashboard';
 import SendEmail from 'src/components/Email/SendEmail';
 import SideBar from 'src/components/Exercise/SideBar';
 import useExerciseStreaming from 'src/hooks/useExerciseStreaming';
+import {ActiveTab} from 'src/models/exercise';
 
 const ExerciseDetail = () => {
   const {exerciseId} = useParams<ExerciseDetailRouteParameters>();
@@ -22,14 +23,14 @@ const ExerciseDetail = () => {
     return (
       <SideBar renderMainContent={activeTab => (
         <>
-          {activeTab === 'Dash' && (<DashboardPanel
+          {activeTab === ActiveTab.Dash && (<DashboardPanel
             exercise={exercise}
             deployments={deployments}
           />)}
-          {activeTab === 'Scores' && (<ScoresPanel
+          {activeTab === ActiveTab.Scores && (<ScoresPanel
             deployments={deployments}
           />)}
-          {activeTab === 'Emails' && (<SendEmail exercise={exercise}/>)}
+          {activeTab === ActiveTab.Emails && (<SendEmail exercise={exercise}/>)}
         </>
       )}/>
     );

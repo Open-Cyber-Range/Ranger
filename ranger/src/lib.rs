@@ -19,6 +19,8 @@ use services::{
     websocket::WebSocketManager,
 };
 
+mod logger;
+
 #[derive(Debug, Clone)]
 pub struct Addressor {
     pub scheduler: Addr<Scheduler>,
@@ -99,6 +101,8 @@ pub async fn app_setup(environment_arguments: Vec<String>) -> Result<(String, u1
                 &configuration.database_url
             )
         });
+    let logger_config = configuration.logger.as_deref().unwrap_or("ranger.log");
+    let _ = logger::init(logger_config, websocket_manager.clone());
     let addressor = Addressor::try_new(deployer_distributor, database).await?;
     let app_state = AppState::new(&configuration, &addressor, &websocket_manager);
     Ok((configuration.host, configuration.port, app_state))

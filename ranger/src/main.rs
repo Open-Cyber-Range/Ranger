@@ -21,6 +21,7 @@ use ranger::routes::exercise::{
     get_exercise_deployment_scores, get_exercise_deployment_users, get_exercise_deployments,
     get_exercises, subscribe_to_exercise, update_exercise,
 };
+use ranger::routes::logger::subscribe_to_logs_with_level;
 use ranger::routes::participant::deployment::{
     get_participant_deployment, get_participant_deployments,
 };
@@ -41,8 +42,6 @@ use ranger::routes::{
 
 #[actix_web::main]
 async fn main() -> Result<(), Error> {
-    env_logger::init();
-
     let (host, port, app_state) = app_setup(std::env::args().collect()).await?;
     let app_data = Data::new(app_state);
 
@@ -111,6 +110,10 @@ async fn main() -> Result<(), Error> {
                                 scope("/group")
                                     .service(get_participant_groups)
                                     .service(get_participant_groups_users),
+                            )
+                            .service(
+                                scope("/log")
+                                    .service(subscribe_to_logs_with_level)
                             )
                             .wrap(admin_auth_middleware),
                     )

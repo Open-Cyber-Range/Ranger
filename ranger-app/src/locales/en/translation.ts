@@ -23,7 +23,14 @@ const language = {
     tabs: {
       dashboard: 'Dashboard',
       scores: 'Scores',
+      accounts: 'Accounts',
+      entities: 'Entity Selector',
+      metrics: 'Manual Metrics',
+      sdl: 'SDL',
     },
+    estimatedResourcesTitle: 'Estimated resources:',
+    estimatedResources: 'Total RAM: {{totalRam}}, total CPUs: {{totalCpu}}',
+    estimatedResourcesFail: 'Resource estimation failed',
   },
   deployments: {
     title: 'Deployments',
@@ -70,6 +77,7 @@ const language = {
       'ranger-participant': 'Participant',
     },
     noRole: 'NO ROLE',
+    logs: 'Logs',
   },
   common: {
     connect: 'Connect',
@@ -86,6 +94,7 @@ const language = {
     noResults: 'No results',
     adGroup: 'AD Group',
     browse: 'Browse',
+    points: 'Points',
   },
   emails: {
     link: 'Emails',
@@ -138,9 +147,11 @@ const language = {
     headers: {
       tlo: 'Training Learning Objective',
       evaluation: 'Evaluation',
-      metric: 'Metric - VM Name: Current Score',
+      metrics: 'Metrics',
+      name: 'Name',
+      vm: 'VM',
+      points: 'Points',
     },
-    points: 'points',
     noEvaluations: 'No Evaluations to display',
     noTlos: 'No Training Learning Objectives to display',
     noMetricData: 'No metric scores to display',
@@ -150,7 +161,7 @@ const language = {
       title: 'Score',
       xAxisTitle: 'Time',
       yAxisTitle: 'Points',
-      noScoreData: 'No score data to display graph',
+      noScoreData: 'No score data available',
     },
   },
   participant: {
@@ -195,6 +206,12 @@ const language = {
       newManualMetricFailed: 'An error occurred while creating a new submission',
       scoreNotSet: 'Score is not set',
     },
+  },
+  log: {
+    date: 'Timestamp',
+    level: 'Level',
+    message: 'Message',
+    empty: 'No logs availale.',
   },
 };
 

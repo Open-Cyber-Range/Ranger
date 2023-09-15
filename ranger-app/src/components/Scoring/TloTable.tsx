@@ -1,67 +1,85 @@
 import React from 'react';
-import {skipToken} from '@reduxjs/toolkit/dist/query';
 import {useTranslation} from 'react-i18next';
-import ScoreTag from 'src/components/Scoring/ScoreTag';
-import {useAdminGetDeploymentScenarioQuery} from 'src/slices/apiSlice';
 import {
   type TrainingLearningObjective,
   ExerciseRoleOrder,
+  type ScoringMetadata,
 } from 'src/models/scenario';
-import {flattenEntities, getUniqueRoles, groupTloMapsByRoles} from 'src/utils';
+import {
+  flattenEntities,
+  getUniqueRoles,
+  groupTloMapsByRoles,
+  tableHeaderBgColor,
+  tableRowBgColor,
+} from 'src/utils';
+import {type Score} from 'src/models/score';
 import TloTableRow from './TloTableRow';
 
-const TloTable = ({exerciseId, deploymentId, tloMap}:
-{exerciseId: string;
-  deploymentId: string;
+const TloTable = ({scoringData, scores, tloMap}:
+{scoringData: ScoringMetadata | undefined;
+  scores: Score[] | undefined;
   tloMap: Record<string, TrainingLearningObjective> | undefined;
 }) => {
   const {t} = useTranslation();
-  const {data: scenario} = useAdminGetDeploymentScenarioQuery(
-    exerciseId && deploymentId ? {exerciseId, deploymentId} : skipToken);
-  const entities = scenario?.entities;
 
-  if (tloMap && entities) {
-    const flattenedEntities = flattenEntities(entities);
+  if (tloMap && scoringData) {
+    const flattenedEntities = flattenEntities(scoringData.entities);
     const roles = getUniqueRoles(flattenedEntities);
     roles.sort((a, b) => ExerciseRoleOrder[a] - ExerciseRoleOrder[b]);
     const tloMapsByRole = groupTloMapsByRoles(
       flattenedEntities, tloMap, roles);
 
     return (
-      <div className='flex flex-col mt-2'>
+      <div className='flex flex-col'>
         {roles.map(role => {
           const tloMap = tloMapsByRole[role];
           if (tloMap && Object.keys(tloMap).length > 0) {
             const tloKeys = Object.keys(tloMap);
             return (
-              <div key={role} className='flex flex-col mt-2 text-center'>
-                <div className='flex flex-col mt-6 font-bold'>
-                  <ScoreTag
-                    key={role}
-                    large
-                    exerciseId={exerciseId}
-                    deploymentId={deploymentId}
-                    role={role}
-                  />
-                </div>
-
-                <table className='
-                  bp4-html-table
-                  bp4-compact
-                  bp4-html-table-bordered'
+              <div key={role} className='w-full text-center'>
+                <table
+                  className='w-full mt-6 border border-separate border-spacing-0
+                  border-neutral-500 rounded-xl overflow-hidden'
                 >
-                  <tbody>
+                  <colgroup/>
+                  <colgroup/>
+                  <colgroup
+                    span={3}/>
+                  <thead
+                    className={tableHeaderBgColor[role]}
+                  >
                     <tr>
-                      <th>{t('tloTable.headers.tlo')}</th>
-                      <th>{t('tloTable.headers.evaluation')}</th>
-                      <th>{t('tloTable.headers.metric')}</th>
+                      <th
+                        className='px-6 py-2 border-r border-b border-neutral-500 text-lg'
+                        rowSpan={2}
+                      >
+                        {t('tloTable.headers.tlo')}
+                      </th>
+                      <th
+                        className='px-6 py-2 border-r border-b border-neutral-500 text-lg'
+                        rowSpan={2}
+                      >
+                        {t('tloTable.headers.evaluation')}
+                      </th>
+                      <th
+                        className='px-6 py-2 border-b border-neutral-500 text-lg'
+                        colSpan={3}
+                      >
+                        {t('tloTable.headers.metrics')}
+                      </th>
                     </tr>
-
+                    <tr className='flex border-b border-neutral-500 text-sm'>
+                      <th className='pl-1 w-2/5'>{t('tloTable.headers.name')}</th>
+                      <th className='px-1 w-2/5'>{t('tloTable.headers.vm')}</th>
+                      <th className='pr-1 w-1/5'>{t('tloTable.headers.points')}</th>
+                    </tr>
+                  </thead>
+                  <tbody className={tableRowBgColor[role]}>
                     { tloKeys.map(tloKey => (
                       <TloTableRow
                         key={tloKey}
-                        exerciseId={exerciseId}
-                        deploymentId={deploymentId}
+                        scoringData={scoringData}
+                        scores={scores}
                         tloKey={tloKey}
                         tlo={tloMap[tloKey]}/>
                     )) }

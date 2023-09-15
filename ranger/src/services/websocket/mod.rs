@@ -1,5 +1,7 @@
 mod exercise;
+mod logger;
 
+use log::Level as LogLevel;
 use crate::models::{
     helpers::{uuid::Uuid, websocket_wrapper::WebsocketWrapper},
     Deployment, DeploymentElement, Score, UpdateExercise,
@@ -7,16 +9,21 @@ use crate::models::{
 use actix::{Actor, Context, Handler, Message, Recipient};
 use anyhow::{anyhow, Result};
 pub use exercise::ExerciseWebsocket;
-use std::collections::HashMap;
+pub use logger::LogWebSocket;
+use std::collections::{HashMap, HashSet};
 
 #[derive(Default)]
 pub struct WebSocketManager {
     pub exercise_websockets: HashMap<Uuid, HashMap<Uuid, Recipient<WebsocketStringMessage>>>,
+    pub log_websockets: HashMap<LogLevel, HashSet<Recipient<WebsocketStringMessage>>>,
 }
 
 impl WebSocketManager {
     pub fn new() -> Self {
-        Self { ..Self::default() }
+        Self {
+            exercise_websockets: HashMap::new(),
+            log_websockets: HashMap::new(),
+        }
     }
 
     fn get_exercise_targets(&self, exercise_uuid: Uuid) -> Vec<Recipient<WebsocketStringMessage>> {
@@ -33,7 +40,7 @@ impl Actor for WebSocketManager {
     type Context = Context<Self>;
 }
 
-#[derive(Message)]
+#[derive(Message, Clone)]
 #[rtype(result = "()")]
 pub struct WebsocketStringMessage(pub String);
 
@@ -63,6 +70,24 @@ impl Handler<RegisterExerciseSocket> for WebSocketManager {
 
 #[derive(Message, Debug)]
 #[rtype(result = "Result<()>")]
+pub struct RegisterLogSocket {
+    pub recipient: Recipient<WebsocketStringMessage>,
+    pub log_level: LogLevel,
+}
+
+impl Handler<RegisterLogSocket> for WebSocketManager {
+    type Result = Result<(), anyhow::Error>;
+
+    fn handle(&mut self, msg: RegisterLogSocket, _: &mut Context<Self>) -> Self::Result {
+        self.log_websockets
+            .entry(msg.log_level)
+            .or_insert(HashSet::new())
+            .insert(msg.recipient);
+        Ok(())
+    }
+}
+#[derive(Message, Debug)]
+#[rtype(result = "Result<()>")]
 pub struct UnRegisterExercise(Uuid, Uuid);
 
 impl Handler<UnRegisterExercise> for WebSocketManager {
@@ -80,6 +105,21 @@ impl Handler<UnRegisterExercise> for WebSocketManager {
             .remove(&recipient_id)
             .ok_or_else(|| anyhow!("No recipient found for id: {}", recipient_id))?;
 
+        Ok(())
+    }
+}
+
+#[derive(Message, Debug)]
+#[rtype(result = "Result<()>")]
+pub struct UnRegisterLogSocket(Recipient<WebsocketStringMessage>);
+
+impl Handler<UnRegisterLogSocket> for WebSocketManager {
+    type Result = Result<(), anyhow::Error>;
+
+    fn handle(&mut self, msg: UnRegisterLogSocket, _: &mut Context<Self>) -> Self::Result {
+        self.log_websockets.values_mut().for_each(|recipients| {
+            recipients.remove(&msg.0);
+        });
         Ok(())
     }
 }
@@ -103,6 +143,29 @@ impl Handler<SocketExerciseUpdate> for WebSocketManager {
         Ok(())
     }
 }
+
+#[derive(Message)]
+#[rtype(result = "Result<()>")]
+pub struct SocketLogUpdate(pub WebsocketStringMessage, pub LogLevel);
+
+impl Handler<SocketLogUpdate> for WebSocketManager {
+    type Result = Result<(), anyhow::Error>;
+
+    fn handle(&mut self, msg: SocketLogUpdate, _: &mut Context<Self>) -> Self::Result {
+        for (level, targets) in &self.log_websockets {
+            if *level >= msg.1 {
+                for target in targets.iter() {
+                    target
+                        .try_send(msg.0.clone())
+                        .map_err(|e| anyhow!("Failed to send log update: {}", e))?;
+                }
+            }
+        }
+
+        Ok(())
+    }
+}
+
 
 #[derive(Message)]
 #[rtype(result = "Result<()>")]
@@ -153,9 +216,7 @@ impl Handler<SocketScoring> for WebSocketManager {
         let SocketScoring(exercise_uuid, score) = msg;
         let targets = self.get_exercise_targets(exercise_uuid);
         for target in targets {
-            target.do_send(WebsocketStringMessage(serde_json::to_string(
-                &score,
-            )?));
+            target.do_send(WebsocketStringMessage(serde_json::to_string(&score)?));
         }
 
         Ok(())

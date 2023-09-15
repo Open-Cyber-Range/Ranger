@@ -21,4 +21,5 @@ keycloak:
   client_id: exercise-client
   client_secret: oSeKTkRNcabbj6cc4PlwpEcRoshWYC8y
 mailer_configuration: ~
+logger: ranger.log
 

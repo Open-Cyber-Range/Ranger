@@ -25,7 +25,7 @@ const EntityTree = ({exerciseId, deploymentId}: {
   const {data: deployment} = useAdminGetDeploymentQuery({exerciseId, deploymentId});
   const {data: users} = useAdminGetGroupUsersQuery(deployment?.groupName ?? skipToken);
   const {
-    data: particpants,
+    data: participants,
   } = useAdminGetDeploymentParticipantsQuery({exerciseId, deploymentId});
 
   const tree: TreeNodeInfo[] = React.useMemo(() => {
@@ -33,8 +33,8 @@ const EntityTree = ({exerciseId, deploymentId}: {
       return [];
     }
 
-    return createEntityTree(scenario.entities, particpants, users);
-  }, [scenario, users, particpants]);
+    return createEntityTree(scenario.entities, participants, users);
+  }, [scenario, users, participants]);
 
   return (
     <Card elevation={Elevation.TWO}>

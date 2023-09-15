@@ -57,6 +57,16 @@ type DeploymentEvent = {
   triggeredAt: string;
 };
 
+export enum ActiveTab {
+  Dash,
+  Scores,
+  Emails,
+  SDL,
+  Accounts,
+  EntitySelector,
+  ManualMetrics,
+}
+
 export type {
   ParticipantExercise,
   NewExercise,

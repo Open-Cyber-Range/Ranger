@@ -1,49 +1,46 @@
 import React from 'react';
-import {skipToken} from '@reduxjs/toolkit/dist/query';
 import {useTranslation} from 'react-i18next';
-import {
-  useAdminGetDeploymentScenarioQuery,
-  useAdminGetDeploymentScoresQuery,
-} from 'src/slices/apiSlice';
 import {findLatestScoresByVms, groupBy, roundToDecimalPlaces} from 'src/utils';
-import {type TrainingLearningObjective} from 'src/models/scenario';
+import {
+  type ScoringMetadata,
+  type TrainingLearningObjective,
+} from 'src/models/scenario';
 import {H5} from '@blueprintjs/core';
 import {sortByProperty} from 'sort-by-property';
+import {type Score} from 'src/models/score';
 
-const TloTableRow = ({exerciseId, deploymentId, tloKey, tlo}:
-{exerciseId: string;
-  deploymentId: string;
+const TloTableRow = ({scoringData, scores, tloKey, tlo}:
+{scoringData: ScoringMetadata;
+  scores: Score[] | undefined;
   tloKey: string;
   tlo: TrainingLearningObjective | undefined;
 }) => {
   const {t} = useTranslation();
-  const queryArguments = exerciseId && deploymentId
-    ? {exerciseId, deploymentId} : skipToken;
-  const {data: scenario} = useAdminGetDeploymentScenarioQuery(queryArguments);
-  const {data: scores} = useAdminGetDeploymentScoresQuery(queryArguments);
-  const scenarioEvaluations = scenario?.evaluations;
-  const scenarioMetrics = scenario?.metrics;
 
-  if (tlo && scenarioEvaluations && scenarioMetrics) {
-    const tloEvaluation = scenarioEvaluations[tlo.evaluation];
-    if (tloEvaluation && scores) {
-      const scoresByMetric = groupBy(scores, score => score.metricName);
+  if (tlo && scores) {
+    const tloEvaluation = scoringData.evaluations[tlo.evaluation];
+    const scoresByMetric = groupBy(scores, score => score.metricName);
 
-      return (
-        <tr key={tloKey}>
-          <td>
-            <H5>{tlo.name ?? tloKey}</H5>
-            <p>{tlo.description}</p>
-          </td>
-          <td>
-            <H5>{tloEvaluation.name ?? tlo.evaluation}</H5>
-            <p>{tloEvaluation.description}</p>
-          </td>
-          <td className='flex flex-col items-stretch'>
-            <table>
-              <tbody>
+    return (
+      <tr key={tloKey} className='overflow-y-auto even:bg-slate-200'>
+        <td className='w-1/3 px-6 py-4 border-r border-neutral-500'>
+          <H5>{tlo.name ?? tloKey}</H5>
+          <p className='max-h-32 overflow-auto break-words'>
+            {tlo.description}
+          </p>
+        </td>
+        <td className='w-1/3 px-6 py-4 overflow-y-auto border-r border-neutral-500'>
+          <H5>{tloEvaluation.name ?? tlo.evaluation}</H5>
+          <p className='max-h-32 overflow-auto break-words'>
+            {tloEvaluation.description}
+          </p>
+        </td>
+        <td className='w-1/3 py-1' colSpan={3}>
+          <table className='w-full'>
+            <tbody>
+              <tr className='flex flex-col'>
                 {tloEvaluation.metrics.map(metricKey => {
-                  const metric = scenarioMetrics[metricKey];
+                  const metric = scoringData.metrics[metricKey];
                   const metricReference = metric.name ?? metricKey;
                   const scores = scoresByMetric[metricReference];
 
@@ -52,44 +49,47 @@ const TloTableRow = ({exerciseId, deploymentId, tloKey, tlo}:
                     latestScoresByVm.sort(sortByProperty('vmName', 'desc'));
 
                     return (
-                      <tr key={metricKey} className='text-left'>
+                      <td key={metricKey}>
                         {latestScoresByVm.map(element => (
-                          <td key={element.id} className='pl-4'>
-                            {metricReference} - {element.vmName}:{' '}
-                            {roundToDecimalPlaces(
-                              element.value)} {t('tloTable.points')}
-                          </td>
+                          <table key={element.id} className='w-full'>
+                            <tbody>
+                              <tr>
+                                <td
+                                  key={element.id}
+                                  className='pl-1 py-1 w-2/5 text-ellipsis overflow-auto'
+                                >
+                                  {metricReference}
+                                </td>
+                                <td
+                                  className='px-1 py-1 w-2/5 text-ellipsis overflow-auto'
+                                >
+                                  {element.vmName}
+                                </td>
+                                <td
+                                  className='pr-1 py-1 w-1/5 text-ellipsis overflow-auto'
+                                >
+                                  {roundToDecimalPlaces(
+                                    element.value)}
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
                         ))}
-                      </tr>
+                      </td>
                     );
                   }
 
                   return (
-                    <tr key={metricKey}>
-                      <td key={metricKey} className='text-left pl-5'>
-                        {metricReference} - {t('tloTable.noMetricData')}
-                      </td>
-                    </tr>
+                    <td key={metricKey} className='text-left px-4 text-ellipsies overflow-auto'>
+                      {metricReference} - {t('tloTable.noMetricData')}
+                    </td>
                   );
                 },
                 )}
-              </tbody>
-            </table>
-          </td>
-        </tr>
-      );
-    }
-
-    return (
-      <tr>
-        <td>
-          <h3>{tlo.name ?? tloKey}</h3>
-          <p>{tlo.description}</p>
+              </tr>
+            </tbody>
+          </table>
         </td>
-        <td>
-          {t('tloTable.noEvaluations')}
-        </td>
-        <td/>
       </tr>
     );
   }
