@@ -45,13 +45,13 @@ const SideBar = ({renderMainContent}: {
     const orderedDeployments = deployments.slice().sort(sortByProperty('updatedAt', 'desc'));
     return (
       <div className='flex h-[100%]'>
-        <div className='pb-[2rem]'>
+        <div className='pb-[2rem] '>
           <Resizable
             minWidth={200}
             maxWidth={500}
           >
-            <Menu large className='max-w-[10rem] bp4-elevation-3 h-screen'>
-              <div className='flex flex-col max-h-[100%] overflow-y-scroll'>
+            <Menu large className='max-w-[100%] bp4-elevation-3 h-screen'>
+              <div className='flex flex-col max-h-[100%] overflow-y-auto'>
                 <div className='mt-[2rem] px-[7px]'>
                   <H2>{exercise.name}</H2>
                 </div>
