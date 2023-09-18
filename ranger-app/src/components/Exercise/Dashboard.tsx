@@ -120,7 +120,11 @@ const DashboardPanel = ({exercise, deployments}:
           <p>{t('exercises.sdlNotSaved')}</p>
         </Alert>
         <div className='justify-end items-center pb-4 mt-[2rem]'>
-          <DeploymentList deployments={deployments ?? []}/>
+          {deployments === null ? (
+            <span className='text-lg text-gray-400'>{t('log.empty')}</span>
+          ) : (
+            <DeploymentList deployments={deployments}/>
+          )}
         </div>
         <AddDialog
           isOpen={!isModified && isAddDialogOpen}
