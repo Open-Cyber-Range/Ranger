@@ -3,13 +3,32 @@ import {useParams} from 'react-router-dom';
 import type {DeploymentDetailRouteParameters} from 'src/models/routes';
 import PariticpantSidebar from 'src/components/Exercise/participant/SideBar';
 import ParticipantDashboard from 'src/components/Deployment/participant/DashBoard';
-import Accounts from 'src/components/Deployment/participant/Accounts';
 import ParticipantScore from 'src/components/Deployment/participant/Score';
 import PariticpantEvents from 'src/components/Deployment/participant/Events';
 import ManualMetrics from 'src/components/Deployment/participant/ManualMetrics';
+import AccountList from 'src/components/Deployment/AccountList';
+import {
+  useParticipantGetDeploymentScenarioQuery,
+  useParticipantGetDeploymentScoresQuery,
+  useParticipantGetDeploymentUsersQuery,
+  useParticipantGetTriggeredEventsQuery,
+} from 'src/slices/apiSlice';
+import {skipToken} from '@reduxjs/toolkit/dist/query';
+import {useSelector} from 'react-redux';
+import {selectedEntity} from 'src/slices/userSlice';
+import {tryIntoScoringMetadata} from 'src/utils';
 
 const ParticipantDeploymentDetail = () => {
   const {exerciseId, deploymentId} = useParams<DeploymentDetailRouteParameters>();
+  const entitySelector = useSelector(selectedEntity);
+  const generalQueryArgs = exerciseId && deploymentId ? {exerciseId, deploymentId} : skipToken;
+  const participantQueryArgs = exerciseId && deploymentId && entitySelector
+    ? {exerciseId, deploymentId, entitySelector} : skipToken;
+
+  const {data: users} = useParticipantGetDeploymentUsersQuery(generalQueryArgs);
+  const {data: scores} = useParticipantGetDeploymentScoresQuery(generalQueryArgs);
+  const {data: scenario} = useParticipantGetDeploymentScenarioQuery(participantQueryArgs);
+  const {data: deplyomentEvents} = useParticipantGetTriggeredEventsQuery(participantQueryArgs);
 
   if (exerciseId && deploymentId) {
     return (
@@ -21,16 +40,15 @@ const ParticipantDeploymentDetail = () => {
               deploymentId={deploymentId}/>}
           {activeTab === 'Score'
             && <ParticipantScore
-              exerciseId={exerciseId}
-              deploymentId={deploymentId}/>}
+              scoringData={tryIntoScoringMetadata(scenario)}
+              scores={scores}/>}
           {activeTab === 'Accounts'
-            && <Accounts
-              exerciseId={exerciseId}
-              deploymentId={deploymentId}/>}
+            && <AccountList
+              users={users}/>}
           {activeTab === 'Events'
             && <PariticpantEvents
-              exerciseId={exerciseId}
-              deploymentId={deploymentId}/>}
+              scenarioEvents={scenario?.events}
+              deploymentEvents={deplyomentEvents}/>}
           {activeTab === 'Manual Metrics'
             && <ManualMetrics
               exerciseId={exerciseId}

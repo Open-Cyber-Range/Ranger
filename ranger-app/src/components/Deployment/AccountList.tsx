@@ -1,16 +1,12 @@
 import React from 'react';
 import {useTranslation} from 'react-i18next';
-import {skipToken} from '@reduxjs/toolkit/query';
 import {H3} from '@blueprintjs/core';
-import {useAdminGetDeploymentUsersQuery} from 'src/slices/apiSlice';
+import {type AdUser} from 'src/models/groups';
 
-const AccountList = ({exerciseId, deploymentId}:
-{exerciseId: string;
-  deploymentId: string;
+const AccountList = ({users}:
+{users: AdUser[] | undefined;
 }) => {
   const {t} = useTranslation();
-  const {data: users} = useAdminGetDeploymentUsersQuery(
-    exerciseId && deploymentId ? {exerciseId, deploymentId} : skipToken);
 
   if (users && users.length > 0) {
     return (
