@@ -1,5 +1,6 @@
 import type React from 'react';
 import {useEffect, type ChangeEvent} from 'react';
+import {useTranslation} from 'react-i18next';
 import {type Participant} from 'src/models/pariticpant';
 
 type EntitySelectProps = {
@@ -13,6 +14,8 @@ const EntitySelect: React.FC<EntitySelectProps> = ({
   selectedEntityKey,
   onChange,
 }) => {
+  const {t} = useTranslation();
+
   useEffect(() => {
     if (participants.length === 1 && !selectedEntityKey) {
       onChange(participants[0].selector);
@@ -34,7 +37,7 @@ const EntitySelect: React.FC<EntitySelectProps> = ({
         value={selectedEntityKey ?? ''}
         onChange={handleChange}
       >
-        <option value=''>Select an entity</option>
+        <option value=''>{t('deployments.entitySelect')}</option>
         {participants.map(participant => (
           <option key={participant.id} value={participant.selector}>
             {participant.selector}
