@@ -11,12 +11,17 @@ import {
   type ScoringMetadata,
 } from 'src/models/scenario';
 import {type Score} from 'src/models/score';
+import {
+  deleteEntityConnectionButton,
+} from 'src/components/Deployment/EntityTree';
 
 export const createEntityTree = (
+  clickedDelete: (participantId: string) => void,
   entities: Record<string, Entity>,
   participants: Participant[] = [],
   users: AdUser[] = [],
   selector?: string,
+  // eslint-disable-next-line max-params
 ): TreeNodeInfo[] => {
   const sortedEntityKeys = Object.keys(entities).sort((a, b) => {
     const entityA = entities[a];
@@ -35,9 +40,19 @@ export const createEntityTree = (
       label: `${entity.name ?? entityId}${matchingUser ? ': ' : ''}${matchingUser?.username ?? ''}`,
       icon: 'person',
       isExpanded: true,
+      secondaryLabel: deleteEntityConnectionButton(
+        clickedDelete,
+        matchingParticipant?.id,
+      ),
     };
     if (entity.entities) {
-      entityNode.childNodes = createEntityTree(entity.entities, participants, users, id);
+      entityNode.childNodes = createEntityTree(
+        clickedDelete,
+        entity.entities,
+        participants,
+        users,
+        id,
+      );
     }
 
     tree.push(entityNode);

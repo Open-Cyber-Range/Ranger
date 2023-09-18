@@ -182,6 +182,20 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: [{type: 'Participant', id: 'LIST'}],
     }),
+    adminDeleteParticipant: builder
+      .mutation<Participant, {
+      exerciseId: string;
+      deploymentId: string;
+      participantId: string;
+    }>({
+      query: ({exerciseId, deploymentId, participantId}) => ({
+        url: `/admin/exercise/${
+          exerciseId}/deployment/${deploymentId}/participant/${participantId}`,
+        method: 'DELETE',
+        responseHandler: 'text',
+      }),
+      invalidatesTags: [{type: 'Participant', id: 'LIST'}],
+    }),
     adminGetDeploymentParticipants: builder.query<Participant[] | undefined,
     {
       exerciseId: string;
@@ -421,6 +435,7 @@ export const {
   useAdminGetEmailFormQuery,
   useAdminGetDeploymentScenarioQuery,
   useAdminAddParticipantMutation,
+  useAdminDeleteParticipantMutation,
   useAdminGetDeploymentParticipantsQuery,
   useAdminGetManualMetricsQuery,
   useAdminGetMetricQuery,
