@@ -1,24 +1,26 @@
 import type React from 'react';
-import type {ChangeEvent} from 'react';
+import {useEffect, type ChangeEvent} from 'react';
 import {type Participant} from 'src/models/pariticpant';
 
 type EntitySelectProps = {
-  participants: Participant[] | undefined;
-  selectedEntityKey: string | undefined;
+  participants: Participant[];
+  selectedEntityKey?: string;
   onChange: (selectedKey: string | undefined) => void;
 };
 
 const EntitySelect: React.FC<EntitySelectProps> = ({
-  participants,
+  participants = [],
   selectedEntityKey,
   onChange,
 }) => {
-  if (participants === undefined) {
-    return null;
-  }
+  useEffect(() => {
+    if (participants.length === 1 && !selectedEntityKey) {
+      onChange(participants[0].selector);
+    }
+  }, [participants, selectedEntityKey, onChange]);
 
   const handleChange = (event: ChangeEvent<HTMLSelectElement>) => {
-    const selectedKey = event.target.value;
+    const selectedKey = event.target.value || undefined;
     onChange(selectedKey);
   };
 
@@ -29,10 +31,10 @@ const EntitySelect: React.FC<EntitySelectProps> = ({
     bp4-large'
     >
       <select
-        disabled={participants.length < 2}
         value={selectedEntityKey ?? ''}
         onChange={handleChange}
       >
+        <option value=''>Select an entity</option>
         {participants.map(participant => (
           <option key={participant.id} value={participant.selector}>
             {participant.selector}
