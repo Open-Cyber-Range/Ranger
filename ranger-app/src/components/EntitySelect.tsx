@@ -1,24 +1,29 @@
 import type React from 'react';
-import type {ChangeEvent} from 'react';
+import {useEffect, type ChangeEvent} from 'react';
+import {useTranslation} from 'react-i18next';
 import {type Participant} from 'src/models/pariticpant';
 
 type EntitySelectProps = {
-  participants: Participant[] | undefined;
-  selectedEntityKey: string | undefined;
+  participants: Participant[];
+  selectedEntityKey?: string;
   onChange: (selectedKey: string | undefined) => void;
 };
 
 const EntitySelect: React.FC<EntitySelectProps> = ({
-  participants,
+  participants = [],
   selectedEntityKey,
   onChange,
 }) => {
-  if (participants === undefined) {
-    return null;
-  }
+  const {t} = useTranslation();
+
+  useEffect(() => {
+    if (participants.length === 1 && !selectedEntityKey) {
+      onChange(participants[0].selector);
+    }
+  }, [participants, selectedEntityKey, onChange]);
 
   const handleChange = (event: ChangeEvent<HTMLSelectElement>) => {
-    const selectedKey = event.target.value;
+    const selectedKey = event.target.value || undefined;
     onChange(selectedKey);
   };
 
@@ -28,8 +33,11 @@ const EntitySelect: React.FC<EntitySelectProps> = ({
     bp4-minimal
     bp4-large'
     >
-      <select value={selectedEntityKey ?? ''} onChange={handleChange}>
-        <option value=''>Select an entity</option>
+      <select
+        value={selectedEntityKey ?? ''}
+        onChange={handleChange}
+      >
+        <option value=''>{t('deployments.entitySelect')}</option>
         {participants.map(participant => (
           <option key={participant.id} value={participant.selector}>
             {participant.selector}

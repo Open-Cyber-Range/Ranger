@@ -35,9 +35,7 @@ const ParticipantDeploymentDetail = () => {
       <PariticpantSidebar renderMainContent={activeTab => (
         <>
           {activeTab === 'Dash'
-            && <ParticipantDashboard
-              exerciseId={exerciseId}
-              deploymentId={deploymentId}/>}
+            && <ParticipantDashboard/>}
           {activeTab === 'Score'
             && <ParticipantScore
               scoringData={tryIntoScoringMetadata(scenario)}

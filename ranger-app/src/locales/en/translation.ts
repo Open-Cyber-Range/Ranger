@@ -43,6 +43,7 @@ const language = {
     deleteFail: 'Failed to delete the deployment',
     noDeployments: 'No deployments',
     noAccounts: 'No accounts',
+    entitySelect: 'Select an entity',
     entityConnector: {
       entityConnector: 'Entity Connector',
       selectEntity: 'Select entity...',
