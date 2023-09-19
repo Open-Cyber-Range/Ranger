@@ -121,7 +121,7 @@ const DashboardPanel = ({exercise, deployments}:
         </Alert>
         <div className='justify-end items-center pb-4 mt-[2rem]'>
           {deployments === null ? (
-            <span className='text-lg text-gray-400'>{t('log.empty')}</span>
+            <span className='text-lg text-gray-400'>{t('deployment.empty')}</span>
           ) : (
             <DeploymentList deployments={deployments}/>
           )}
