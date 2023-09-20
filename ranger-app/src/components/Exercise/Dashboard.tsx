@@ -26,11 +26,24 @@ const DashboardPanel = ({exercise, deployments}:
     name: string,
     groupName: string,
     deploymentGroup?: string,
+    start?: string,
+    end?: string,
   ): [NewDeployment, string] | undefined => {
-    if (exercise?.sdlSchema && exercise?.id) {
+    if (exercise?.sdlSchema && exercise?.id && start && end) {
+      let updatedSchema = exercise.sdlSchema.replace(
+        /start: \d{4}-\d{2}-\d{2}t\d{2}:\d{2}:\d{2}z/i, // Added 'i' flag for case-insensitive match
+        `start: ${start}`,
+      );
+
+      updatedSchema = updatedSchema.replace(
+        /end: \d{4}-\d{2}-\d{2}t\d{2}:\d{2}:\d{2}z/i, // Added 'i' flag for case-insensitive match
+        `end: ${end}`,
+      );
+      // eslint-disable-next-line no-console
+      console.log(updatedSchema);
       return [{
         name,
-        sdlSchema: exercise.sdlSchema,
+        sdlSchema: updatedSchema,
         deploymentGroup,
         groupName,
       }, exercise.id];
@@ -76,9 +89,9 @@ const DashboardPanel = ({exercise, deployments}:
   };
 
   const addNewDeployment = async (
-    {count, deploymentGroup, name, groupName}: DeploymentForm,
+    {count, deploymentGroup, name, groupName, start, end}: DeploymentForm,
   ) => {
-    const deploymentInfo = createNewDeployment(name, groupName, deploymentGroup);
+    const deploymentInfo = createNewDeployment(name, groupName, deploymentGroup, start, end);
     if (deploymentInfo) {
       const [deployment, exerciseId] = deploymentInfo;
 
