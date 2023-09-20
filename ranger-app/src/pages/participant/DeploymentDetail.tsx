@@ -11,6 +11,7 @@ import {
   useParticipantGetDeploymentScenarioQuery,
   useParticipantGetDeploymentScoresQuery,
   useParticipantGetDeploymentUsersQuery,
+  useParticipantGetNodeDeploymentElementsQuery,
   useParticipantGetTriggeredEventsQuery,
 } from 'src/slices/apiSlice';
 import {skipToken} from '@reduxjs/toolkit/dist/query';
@@ -29,6 +30,8 @@ const ParticipantDeploymentDetail = () => {
   const {data: scores} = useParticipantGetDeploymentScoresQuery(generalQueryArgs);
   const {data: scenario} = useParticipantGetDeploymentScenarioQuery(participantQueryArgs);
   const {data: deplyomentEvents} = useParticipantGetTriggeredEventsQuery(participantQueryArgs);
+  const {data: nodeDeploymentElements}
+  = useParticipantGetNodeDeploymentElementsQuery(participantQueryArgs);
 
   if (exerciseId && deploymentId) {
     return (
@@ -42,7 +45,8 @@ const ParticipantDeploymentDetail = () => {
               scores={scores}/>}
           {activeTab === 'Accounts'
             && <AccountList
-              users={users}/>}
+              users={users}
+              deploymentElements={nodeDeploymentElements}/>}
           {activeTab === 'Events'
             && <PariticpantEvents
               scenarioEvents={scenario?.events}
