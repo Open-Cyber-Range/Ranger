@@ -32,6 +32,18 @@ diesel::table! {
 }
 
 diesel::table! {
+    banners (id) {
+        #[max_length = 16]
+        id -> Binary,
+        name -> Tinytext,
+        content -> Text,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
+        deleted_at -> Timestamp,
+    }
+}
+
+diesel::table! {
     condition_messages (id) {
         #[max_length = 16]
         id -> Binary,
@@ -169,6 +181,7 @@ diesel::joinable!(participants -> deployments (deployment_id));
 diesel::allow_tables_to_appear_in_same_query!(
     accounts,
     artifacts,
+    banners,
     condition_messages,
     deployment_elements,
     deployments,

@@ -4,13 +4,15 @@ use crate::{
     models::{
         helpers::uuid::Uuid,
         user::{User, UserAccount},
-        Deployment, DeploymentElement, Exercise, NewDeployment, NewDeploymentResource, NewExercise,
-        NewParticipant, NewParticipantResource, Participant, Score, UpdateExercise,
+        Banner, Deployment, DeploymentElement, Exercise, NewBanner, NewDeployment,
+        NewDeploymentResource, NewExercise, NewParticipant, NewParticipantResource, Participant,
+        Score, UpdateBanner, UpdateExercise,
     },
     roles::RangerRole,
     services::{
         database::{
             account::GetAccount,
+            banner::{CreateBanner, DeleteBanner, GetBanners},
             condition::GetConditionMessagesByDeploymentId,
             deployment::{
                 CreateDeployment, DeleteDeployment, GetDeploymentElementByDeploymentId,
@@ -527,4 +529,66 @@ pub async fn get_exercise_deployment_users(
     } else {
         Ok(Json(vec![]))
     }
+}
+
+#[post("")]
+pub async fn add_banner(
+    app_state: Data<AppState>,
+    new_banner: Json<NewBanner>,
+) -> Result<Json<Banner>, RangerError> {
+    let banner = app_state
+        .database_address
+        .send(CreateBanner(new_banner.into_inner()))
+        .await
+        .map_err(create_mailbox_error_handler("Database"))?
+        .map_err(create_database_error_handler("Create banner"))?;
+    log::debug!("Created banner: {}", banner.id);
+    Ok(Json(banner))
+}
+
+#[get("")]
+pub async fn get_banners(app_state: Data<AppState>) -> Result<Json<Vec<Banner>>, RangerError> {
+    let banners = app_state
+        .database_address
+        .send(GetBanners)
+        .await
+        .map_err(create_mailbox_error_handler("Database"))?
+        .map_err(create_database_error_handler("Get banners"))?;
+    Ok(Json(banners))
+}
+
+#[put("")]
+pub async fn update_banner(
+    update_banner: Json<UpdateBanner>,
+    app_state: Data<AppState>,
+) -> Result<Json<Banner>, RangerError> {
+    let update_banner = update_banner.into_inner();
+
+    let banner = app_state
+        .database_address
+        .send(crate::services::database::banner::UpdateBanner(
+            update_banner.id,
+            update_banner,
+        ))
+        .await
+        .map_err(create_mailbox_error_handler("Database"))?
+        .map_err(create_database_error_handler("Update banner"))?;
+    log::debug!("Updated banner: {}", banner.id);
+    Ok(Json(banner))
+}
+
+#[delete("/{banner_uuid}")]
+pub async fn delete_banner(
+    path_variable: Path<(Uuid, Uuid)>,
+    app_state: Data<AppState>,
+) -> Result<String, RangerError> {
+    let (_, banner_uuid) = path_variable.into_inner();
+    app_state
+        .database_address
+        .send(DeleteBanner(banner_uuid))
+        .await
+        .map_err(create_mailbox_error_handler("Database"))?
+        .map_err(create_database_error_handler("Delete banner"))?;
+    log::debug!("Deleted banner {}", banner_uuid);
+    Ok(banner_uuid.to_string())
 }

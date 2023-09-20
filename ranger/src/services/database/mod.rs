@@ -1,4 +1,5 @@
 pub(crate) mod account;
+pub(crate) mod banner;
 pub(crate) mod condition;
 pub(crate) mod deployment;
 pub(crate) mod event;
