@@ -23,29 +23,24 @@ const DashboardPanel = ({exercise, deployments}:
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
   const createNewDeployment = (
-    name: string,
-    groupName: string,
-    deploymentGroup?: string,
-    start?: string,
-    end?: string,
+    deploymentForm: DeploymentForm,
   ): [NewDeployment, string] | undefined => {
-    if (exercise?.sdlSchema && exercise?.id && start && end) {
+    if (exercise?.sdlSchema && exercise?.id && deploymentForm.start && deploymentForm.end) {
       let updatedSchema = exercise.sdlSchema.replace(
-        /start: \d{4}-\d{2}-\d{2}t\d{2}:\d{2}:\d{2}z/i, // Added 'i' flag for case-insensitive match
-        `start: ${start}`,
+        /start: \d{4}-\d{2}-\d{2}t\d{2}:\d{2}:\d{2}z/i,
+        `start: ${deploymentForm.start}`,
       );
 
       updatedSchema = updatedSchema.replace(
-        /end: \d{4}-\d{2}-\d{2}t\d{2}:\d{2}:\d{2}z/i, // Added 'i' flag for case-insensitive match
-        `end: ${end}`,
+        /end: \d{4}-\d{2}-\d{2}t\d{2}:\d{2}:\d{2}z/i,
+        `end: ${deploymentForm.end}`,
       );
-      // eslint-disable-next-line no-console
-      console.log(updatedSchema);
+
       return [{
-        name,
+        name: deploymentForm.name,
         sdlSchema: updatedSchema,
-        deploymentGroup,
-        groupName,
+        deploymentGroup: deploymentForm.deploymentGroup,
+        groupName: deploymentForm.groupName,
       }, exercise.id];
     }
 
@@ -89,14 +84,14 @@ const DashboardPanel = ({exercise, deployments}:
   };
 
   const addNewDeployment = async (
-    {count, deploymentGroup, name, groupName, start, end}: DeploymentForm,
+    deploymentForm: DeploymentForm,
   ) => {
-    const deploymentInfo = createNewDeployment(name, groupName, deploymentGroup, start, end);
+    const deploymentInfo = createNewDeployment(deploymentForm);
     if (deploymentInfo) {
       const [deployment, exerciseId] = deploymentInfo;
 
       const promises = createPromises(
-        count,
+        deploymentForm.count,
         exerciseId,
         deployment,
       );
