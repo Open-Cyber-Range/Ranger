@@ -212,7 +212,10 @@ const language = {
     date: 'Timestamp',
     level: 'Level',
     message: 'Message',
-    empty: 'No logs availale.',
+    empty: 'No logs available.',
+  },
+  deployment: {
+    empty: 'No deployment available.',
   },
 };
 

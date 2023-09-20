@@ -165,6 +165,7 @@ const AddDialog = (
                         onBlur,
                         inputRef: ref,
                         placeholder: '',
+                        leftIcon: 'search',
                       }}
                       activeItem={activeItem}
                       inputValueRenderer={item => item.name}
