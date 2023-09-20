@@ -10,6 +10,8 @@ type DeploymentForm = {
   deploymentGroup?: string;
   groupName: string;
   count: number;
+  start: string;
+  end: string;
 };
 
 type NewDeployment = {

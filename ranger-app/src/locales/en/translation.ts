@@ -62,6 +62,14 @@ const language = {
         title: 'Deployment count',
         required: 'Deployment count is required',
       },
+      startDate: {
+        title: 'Deployment start time',
+        required: 'Deployment start time is required',
+      },
+      endDate: {
+        title: 'Deployment end time',
+        required: 'Deployment end time is required',
+      },
     },
   },
   menu: {
