@@ -31,7 +31,7 @@ const AccountList = ({users, deploymentElements}:
           </thead>
           <tbody className='text-center'>
             {users.map(adUser => (
-              <tr key={adUser.id} className='border-t border even:bg-slate-100'>
+              <tr key={adUser.vmId} className='border-t border even:bg-slate-100'>
                 <td className='my-4 border-r'>
                   {getElementNameById(sortedElements ?? [], adUser.vmId) ?? adUser.vmId}
                 </td>
@@ -40,7 +40,7 @@ const AccountList = ({users, deploymentElements}:
                     <tbody>
                       {adUser.accounts.map(account => (
                         <tr
-                          key={account.username}
+                          key={account.id}
                           className='w-full even:bg-slate-200 overflow-auto'
                         >
                           <td className='py-3 w-1/3 overflow-auto'>{account.username}</td>
