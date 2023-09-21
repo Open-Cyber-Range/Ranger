@@ -140,7 +140,7 @@ impl Handler<DeleteBanner> for Database {
                 let mut connection = connection_result?;
                 let id = block(move || {
                     let banner = Banner::by_id(id).first(&mut connection)?;
-                    banner.soft_delete().execute(&mut connection)?;
+                    banner.hard_delete().execute(&mut connection)?;
                     Ok(id)
                 })
                 .await??;

@@ -10,6 +10,7 @@ use chrono::NaiveDateTime;
 use diesel::{
     insert_into, AsChangeset, ExpressionMethods, Insertable, QueryDsl, Queryable, Selectable,
     SelectableHelper,
+    query_builder::DeleteStatement,
 };
 use serde::{Deserialize, Serialize};
 
@@ -45,9 +46,9 @@ impl Banner {
         Self::all().filter(banners::name.eq(name))
     }
 
-    pub fn soft_delete(&self) -> SoftDeleteById<banners::id, banners::deleted_at, banners::table> {
-        diesel::update(banners::table.filter(banners::id.eq(self.id)))
-            .set(banners::deleted_at.eq(diesel::dsl::now))
+    // TODO fix return type
+    pub fn hard_delete(&self) -> DeleteStatement<banners::table, U> {
+        diesel::delete(banners::table).filter(banners::id.eq(self.id))
     }
 }
 
