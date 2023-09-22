@@ -17,7 +17,7 @@ use ranger::routes::deployers::get_deployers;
 use ranger::routes::email::send_email;
 use ranger::routes::exercise::{
     add_banner, add_participant, delete_banner, delete_exercise_deployment, delete_participant,
-    get_admin_participants, get_banners, get_exercise, get_exercise_deployment,
+    get_admin_participants, get_banner, get_exercise, get_exercise_deployment,
     get_exercise_deployment_elements, get_exercise_deployment_scores,
     get_exercise_deployment_users, get_exercise_deployments, get_exercises, subscribe_to_exercise,
     update_banner, update_exercise,
@@ -109,7 +109,7 @@ async fn main() -> Result<(), Error> {
                                             .service(
                                                 scope("/banner")
                                                     .service(add_banner)
-                                                    .service(get_banners)
+                                                    .service(get_banner)
                                                     .service(update_banner)
                                                     .service(delete_banner)
                                             ),

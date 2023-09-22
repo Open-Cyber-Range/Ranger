@@ -2,15 +2,14 @@ use super::helpers::uuid::Uuid;
 use crate::{
     constants::NAIVEDATETIME_DEFAULT_VALUE,
     schema::banners,
-    services::database::{
-        All, Create, FilterExisting, SelectById, SelectByName, SoftDeleteById, UpdateById,
-    },
+    services::database::{All, Create, UpdateById, HardUpdateById},
 };
 use chrono::NaiveDateTime;
 use diesel::{
-    insert_into, AsChangeset, ExpressionMethods, Insertable, QueryDsl, Queryable, Selectable,
-    SelectableHelper,
-    query_builder::DeleteStatement,
+    helper_types::{Eq, Filter},
+    insert_into,
+    query_builder::{DeleteStatement, IntoUpdateTarget},
+    AsChangeset, ExpressionMethods, Insertable, QueryDsl, Queryable, Selectable, SelectableHelper,
 };
 use serde::{Deserialize, Serialize};
 
@@ -24,30 +23,29 @@ pub struct Banner {
     pub content: String,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
-    pub deleted_at: NaiveDateTime,
 }
 
 impl Banner {
-    fn all_with_deleted() -> All<banners::table, Self> {
+    pub fn all() -> All<banners::table, Self> {
         banners::table.select(Self::as_select())
     }
 
-    pub fn all() -> FilterExisting<All<banners::table, Self>, banners::deleted_at> {
-        Self::all_with_deleted().filter(banners::deleted_at.eq(*NAIVEDATETIME_DEFAULT_VALUE))
-    }
-
-    pub fn by_id(id: Uuid) -> SelectById<banners::table, banners::id, banners::deleted_at, Self> {
+    pub fn by_id(id: Uuid) -> Filter<All<banners::table, Self>, Eq<banners::id, Uuid>> {
         Self::all().filter(banners::id.eq(id))
     }
 
     pub fn by_name(
         name: String,
-    ) -> SelectByName<banners::table, banners::name, banners::deleted_at, Self> {
+    ) -> Filter<All<banners::table, Self>, Eq<banners::name, String>> {
         Self::all().filter(banners::name.eq(name))
     }
 
-    // TODO fix return type
-    pub fn hard_delete(&self) -> DeleteStatement<banners::table, U> {
+    pub fn hard_delete(
+        &self,
+    ) -> Filter<
+        DeleteStatement<banners::table, <banners::table as IntoUpdateTarget>::WhereClause>,
+        Eq<banners::id, Uuid>,
+    > {
         diesel::delete(banners::table).filter(banners::id.eq(self.id))
     }
 }
