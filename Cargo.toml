@@ -2,3 +2,4 @@
 
 members = ["ranger", "ranger-grpc"]
 default-members = ["ranger"]
+resolver = "2"
