@@ -207,6 +207,14 @@ const AddDialog = (
                 field: {onChange, onBlur, ref}, fieldState: {error},
               }) => {
                 const intent = error ? Intent.DANGER : Intent.NONE;
+                const filterFromStart = (time: Date) => {
+                  if (startDate) {
+                    return time > startDate;
+                  }
+
+                  return true;
+                };
+
                 return (
                   <FormGroup
                     labelFor='end-date'
@@ -226,6 +234,7 @@ const AddDialog = (
                       minDate={startDate}
                       timeFormat='HH:mm'
                       dateFormat='dd/MM/yyyy HH:mm'
+                      filterTime={filterFromStart}
                       onChange={date => {
                         setEndDate(date ?? undefined);
                         onChange(date?.toISOString() ?? '');
