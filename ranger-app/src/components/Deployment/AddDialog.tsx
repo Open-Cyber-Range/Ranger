@@ -68,8 +68,7 @@ const AddDialog = (
     if (startDate && endDate && new Date(endDate) <= new Date(startDate)) {
       setError('end', {
         type: 'manual',
-        message: t('deployments.form.endDate.earlierThanStart')
-        ?? 'Deployment end time must be later than start time',
+        message: t('deployments.form.endDate.earlierThanStart') ?? '',
       });
     } else {
       setError('end', {});
