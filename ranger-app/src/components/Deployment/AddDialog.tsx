@@ -23,7 +23,7 @@ import {Suggest2} from '@blueprintjs/select';
 import {MenuItem2} from '@blueprintjs/popover2';
 import {type AdGroup} from 'src/models/groups';
 import DatePicker from 'react-datepicker';
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 
 const AddDialog = (
   {isOpen, title, onSubmit, onCancel}:
@@ -47,7 +47,7 @@ const AddDialog = (
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
 
-  const {handleSubmit, control, register, formState: {errors}}
+  const {handleSubmit, control, register, formState: {errors}, setError}
   = useForm<DeploymentForm>({
     defaultValues: {
       name: '',
@@ -63,6 +63,18 @@ const AddDialog = (
       onSubmit(formContent);
     }
   };
+
+  useEffect(() => {
+    if (startDate && endDate && new Date(endDate) <= new Date(startDate)) {
+      setError('end', {
+        type: 'manual',
+        message: t('deployments.form.endDate.earlierThanStart')
+        ?? 'Deployment end time must be later than start time',
+      });
+    } else {
+      setError('end', {});
+    }
+  }, [startDate, endDate, setError, t]);
 
   if (isOpen !== undefined) {
     return (

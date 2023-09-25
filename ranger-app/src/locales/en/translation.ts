@@ -69,6 +69,7 @@ const language = {
       endDate: {
         title: 'Deployment end time',
         required: 'Deployment end time is required',
+        earlierThanStart: 'Deployment end time must be later than start time',
       },
     },
   },
