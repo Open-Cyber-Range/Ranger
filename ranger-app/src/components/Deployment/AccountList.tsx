@@ -45,11 +45,6 @@ const AccountList = ({users}:
 
   return (
     <Callout title={t('deployments.noAccounts') ?? ''}/>
-    // <div className='
-    //   flex justify-center align-center m-2 mt-10 mb-auto text-gray-400'
-    // >
-    //   {t('deployments.noAccounts')}
-    // </div>
   );
 };
 
