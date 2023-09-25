@@ -59,11 +59,9 @@ const DeploymentFocus = () => {
             </div>
           )}
           {activeTab === ActiveTab.Accounts && (
-            <div className='text-center '>
-              <AccountList
-                users={users}
-              />
-            </div>
+            <AccountList
+              users={users}
+            />
           )}
           {activeTab === ActiveTab.EntitySelector && (
             <>

@@ -21,6 +21,7 @@ import DeploymentDetailsGraph from 'src/components/Scoring/Graph';
 import PageHolder from 'src/components/PageHolder';
 import SideBar from 'src/components/Exercise/SideBar';
 import ScoreTag from 'src/components/Scoring/ScoreTag';
+import {Callout} from '@blueprintjs/core';
 
 const ScoreDetail = () => {
   const {t} = useTranslation();
@@ -76,9 +77,7 @@ const ScoreDetail = () => {
   }
 
   return (
-    <div className='flex justify-center align-center m-2 mt-10 mb-auto text-gray-400'>
-      {t('exercises.noDeploymentInfo')}
-    </div>
+    <Callout title={t('exercises.noDeploymentInfo') ?? ''}/>
   );
 };
 

@@ -13,6 +13,7 @@ import {flattenEntities, getMetricsByEntityKey} from 'src/utils';
 import AddNewMetric from 'src/components/Scoring/participant/AddMetric';
 import UpdateMetric from 'src/components/Scoring/participant/UpdateMetric';
 import {useTranslation} from 'react-i18next';
+import {Callout} from '@blueprintjs/core';
 
 const ManualMetrics = ({
   exerciseId, deploymentId}:
@@ -93,11 +94,7 @@ const ManualMetrics = ({
   }
 
   return (
-    <div className='
-  flex justify-center align-center m-2 mt-auto mb-4 text-gray-400'
-    >
-      {t('metricScoring.errors.noMetrics')}
-    </div>
+    <Callout title={t('metricScoring.errors.noMetrics') ?? ''}/>
   );
 };
 

@@ -1,3 +1,4 @@
+import {Callout} from '@blueprintjs/core';
 import React from 'react';
 import {useTranslation} from 'react-i18next';
 import {type DeploymentEvent} from 'src/models/exercise';
@@ -37,20 +38,12 @@ const Events = ({scenarioEvents, deploymentEvents}:
 
   if (deploymentEvents && deploymentEvents.length === 0) {
     return (
-      <div className='
-      flex justify-center align-center m-2 mt-auto mb-4 text-gray-400'
-      >
-        {t('participant.exercise.events.noTriggeredEvents')}
-      </div>
+      <Callout title={t('participant.exercise.events.noTriggeredEvents') ?? ''}/>
     );
   }
 
   return (
-    <div className='
-    flex justify-center align-center m-2 mt-auto mb-4 text-gray-400'
-    >
-      {t('participant.exercise.events.noEvents')}
-    </div>
+    <Callout title={t('participant.exercise.events.noEvents') ?? ''}/>
   );
 };
 

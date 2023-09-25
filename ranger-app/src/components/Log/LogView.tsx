@@ -4,6 +4,7 @@ import type {Log} from 'src/models/log';
 import {useLogs} from 'src/contexts/LogContext';
 import {useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
+import {Callout} from '@blueprintjs/core';
 
 const logSeverity = {
   DEBUG: 1,
@@ -68,9 +69,7 @@ const LogView: React.FC = () => {
 
       <div className='overflow-y-auto mt-4 max-h-[50vh]'>
         {filteredLogs.length === 0 ? (
-          <div className='flex flex-col items-center justify-center h-full'>
-            <span className='text-lg text-gray-400'>{t('log.empty')}</span>
-          </div>
+          <Callout title={t('log.empty') ?? ''}/>
         ) : (
           <table className='min-w-full divide-y divide-gray-200'>
             <thead className='bg-gray-50 sticky top-0'>
