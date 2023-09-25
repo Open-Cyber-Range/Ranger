@@ -23,6 +23,7 @@ import 'chartjs-adapter-luxon';
 import {useTranslation} from 'react-i18next';
 import {getLineChartOptions, scoresIntoGraphData} from 'src/utils/graph';
 import {type ScoringMetadata} from 'src/models/scenario';
+import {Callout} from '@blueprintjs/core';
 
 ChartJS.register(
   CategoryScale,
@@ -71,11 +72,7 @@ const DeploymentDetailsGraph = (
   }
 
   return (
-    <div className='
-    flex justify-center align-center m-2 mt-auto mb-4 text-gray-400'
-    >
-      {t('chart.scoring.noScoreData')}
-    </div>
+    <Callout title={t('chart.scoring.noScoreData') ?? ''}/>
   );
 };
 

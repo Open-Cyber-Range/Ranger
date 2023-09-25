@@ -11,7 +11,13 @@ import {
 } from 'src/slices/apiSlice';
 import DeploymentDetailsGraph from 'src/components/Scoring/Graph';
 import Editor from '@monaco-editor/react';
-import {AnchorButton, Card, Elevation, H2} from '@blueprintjs/core';
+import {
+  AnchorButton,
+  Callout,
+  Card,
+  Elevation,
+  H2,
+} from '@blueprintjs/core';
 import SideBar from 'src/components/Exercise/SideBar';
 import useExerciseStreaming from 'src/hooks/useExerciseStreaming';
 import {toastSuccess, toastWarning} from 'src/components/Toaster';
@@ -91,9 +97,7 @@ const DeploymentDetail = () => {
   }
 
   return (
-    <div className='flex justify-center align-center m-2 mt-10 mb-auto text-gray-400'>
-      {t('exercises.noDeploymentInfo')}
-    </div>
+    <Callout title={t('exercises.noDeploymentInfo') ?? ''}/>
   );
 };
 

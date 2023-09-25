@@ -1,6 +1,6 @@
 import React from 'react';
 import {useTranslation} from 'react-i18next';
-import {H3} from '@blueprintjs/core';
+import {Callout, H3} from '@blueprintjs/core';
 import {type AdUser} from 'src/models/groups';
 
 const AccountList = ({users}:
@@ -11,7 +11,7 @@ const AccountList = ({users}:
   if (users && users.length > 0) {
     return (
       <div className='flex flex-col mt-8'>
-        <H3>Accounts</H3>
+        <H3 className='text-center'>Accounts</H3>
         <div className='flex flex-col'>
           <table className='
               bp4-html-table
@@ -44,11 +44,7 @@ const AccountList = ({users}:
   }
 
   return (
-    <div className='
-      flex justify-center align-center m-2 mt-10 mb-auto text-gray-400'
-    >
-      {t('deployments.noAccounts')}
-    </div>
+    <Callout title={t('deployments.noAccounts') ?? ''}/>
   );
 };
 

@@ -2,7 +2,7 @@ import type React from 'react';
 import PageHolder from 'src/components/PageHolder';
 import {useTranslation} from 'react-i18next';
 import type {Deployment} from 'src/models/deployment';
-import {H4} from '@blueprintjs/core';
+import {Callout, H4} from '@blueprintjs/core';
 import {useNavigate} from 'react-router-dom';
 import {sortByProperty} from 'sort-by-property';
 import ScoreTagGroup from 'src/components/Scoring/ScoreTagGroup';
@@ -53,11 +53,7 @@ const ScoresPanel = ({deployments}:
   }
 
   return (
-    <div className='
-      flex justify-center align-center m-2 mt-10 mb-auto text-gray-400'
-    >
-      {t('exercises.noDeployments')}
-    </div>
+    <Callout title={t('exercises.noDeployments') ?? ''}/>
   );
 };
 

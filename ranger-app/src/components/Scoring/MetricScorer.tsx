@@ -1,4 +1,4 @@
-import {Button, ButtonGroup} from '@blueprintjs/core';
+import {Button, ButtonGroup, Callout} from '@blueprintjs/core';
 import React, {useEffect, useState} from 'react';
 import Accordion from 'src/components/Accordion';
 import AccordionGroup from 'src/components/AccordionGroup';
@@ -111,10 +111,7 @@ const MetricScorer = ({exerciseId, deploymentId}:
 
   return (
     <PageHolder>
-      <div className='flex justify-center align-center m-2 mt-auto mb-4 text-gray-400'>
-        {t('metricScoring.noManualMetrics')}
-      </div>
-
+      <Callout title={t('metricScoring.noManualMetrics') ?? ''}/>
     </PageHolder>
 
   );
