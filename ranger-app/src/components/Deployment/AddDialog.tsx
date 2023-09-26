@@ -168,22 +168,25 @@ const AddDialog = (
                     intent={intent}
                     label={t('deployments.form.startDate.title')}
                   >
-                    <DatePicker
-                      ref={ref}
-                      selectsStart
-                      showTimeSelect
-                      id='start-date'
-                      selected={startDate}
-                      startDate={startDate}
-                      endDate={endDate}
-                      timeFormat='HH:mm'
-                      dateFormat='dd/MM/yyyy HH:mm'
-                      onChange={date => {
-                        setStartDate(date ?? undefined);
-                        onChange(date?.toISOString() ?? '');
-                      }}
-                      onBlur={onBlur}
-                    />
+                    <div className='flex flex-col'>
+                      <DatePicker
+                        ref={ref}
+                        selectsStart
+                        showTimeSelect
+                        customInput={<input className='bp4-input bp4-large bp4-fill'/>}
+                        id='start-date'
+                        selected={startDate}
+                        startDate={startDate}
+                        endDate={endDate}
+                        timeFormat='HH:mm'
+                        dateFormat='dd/MM/yyyy HH:mm'
+                        onChange={date => {
+                          setStartDate(date ?? undefined);
+                          onChange(date?.toISOString() ?? '');
+                        }}
+                        onBlur={onBlur}
+                      />
+                    </div>
                   </FormGroup>
                 );
               }}
@@ -219,24 +222,27 @@ const AddDialog = (
                     intent={intent}
                     label={t('deployments.form.endDate.title')}
                   >
-                    <DatePicker
-                      ref={ref}
-                      selectsEnd
-                      showTimeSelect
-                      id='end-date'
-                      selected={endDate}
-                      startDate={startDate}
-                      endDate={endDate}
-                      minDate={startDate}
-                      timeFormat='HH:mm'
-                      dateFormat='dd/MM/yyyy HH:mm'
-                      filterTime={filterFromStart}
-                      onChange={date => {
-                        setEndDate(date ?? undefined);
-                        onChange(date?.toISOString() ?? '');
-                      }}
-                      onBlur={onBlur}
-                    />
+                    <div className='flex flex-col'>
+                      <DatePicker
+                        ref={ref}
+                        selectsEnd
+                        showTimeSelect
+                        customInput={<input className='bp4-input bp4-large bp4-fill'/>}
+                        id='end-date'
+                        selected={endDate}
+                        startDate={startDate}
+                        endDate={endDate}
+                        minDate={startDate}
+                        timeFormat='HH:mm'
+                        dateFormat='dd/MM/yyyy HH:mm'
+                        filterTime={filterFromStart}
+                        onChange={date => {
+                          setEndDate(date ?? undefined);
+                          onChange(date?.toISOString() ?? '');
+                        }}
+                        onBlur={onBlur}
+                      />
+                    </div>
                   </FormGroup>
                 );
               }}
