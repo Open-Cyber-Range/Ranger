@@ -23,7 +23,7 @@ import {Suggest2} from '@blueprintjs/select';
 import {MenuItem2} from '@blueprintjs/popover2';
 import {type AdGroup} from 'src/models/groups';
 import DatePicker from 'react-datepicker';
-import {useEffect, useState} from 'react';
+import {useState} from 'react';
 
 const AddDialog = (
   {isOpen, title, onSubmit, onCancel}:
@@ -47,7 +47,7 @@ const AddDialog = (
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
 
-  const {handleSubmit, control, register, formState: {errors}, setError}
+  const {handleSubmit, control, register, formState: {errors}}
   = useForm<DeploymentForm>({
     defaultValues: {
       name: '',
@@ -63,17 +63,6 @@ const AddDialog = (
       onSubmit(formContent);
     }
   };
-
-  useEffect(() => {
-    if (startDate && endDate && new Date(endDate) <= new Date(startDate)) {
-      setError('end', {
-        type: 'manual',
-        message: t('deployments.form.endDate.earlierThanStart') ?? '',
-      });
-    } else {
-      setError('end', {});
-    }
-  }, [startDate, endDate, setError, t]);
 
   if (isOpen !== undefined) {
     return (
@@ -202,7 +191,14 @@ const AddDialog = (
             <Controller
               control={control}
               name='end'
-              rules={{required: t('deployments.form.endDate.required') ?? ''}}
+              rules={{
+                required: t('deployments.form.endDate.required') ?? '',
+                validate: {
+                  endDateAfterStartDate: (value: string) =>
+                    !startDate || !value || new Date(value) > new Date(startDate)
+                    || (t('deployments.form.endDate.earlierThanStart') ?? ''),
+                },
+              }}
               render={({
                 field: {onChange, onBlur, ref}, fieldState: {error},
               }) => {
