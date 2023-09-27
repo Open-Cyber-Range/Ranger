@@ -852,9 +852,9 @@ dependencies = [
 
 [[package]]
 name = "depper"
-version = "0.3.0"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b6e78a6a82113767473f8b7fb2cc2c1ebacfba67c5a6fe8db77169dd119539fa"
+checksum = "641c9bd621b2d56f643fd5906067c8b461b4d0a96d3956038a62324493364462"
 dependencies = [
  "anyhow",
  "insta",
@@ -938,9 +938,9 @@ dependencies = [
 
 [[package]]
 name = "duration-str"
-version = "0.5.0"
+version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f94be4825ff6a563f1bfbdb786ae10c687333c7524fade954e2271170e7f7e6d"
+checksum = "5e172e85f305d6a442b250bf40667ffcb91a24f52c9a1ca59e2fa991ac9b7790"
 dependencies = [
  "chrono",
  "nom",
@@ -2183,9 +2183,9 @@ dependencies = [
 
 [[package]]
 name = "rust_decimal"
-version = "1.27.0"
+version = "1.32.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "33c321ee4e17d2b7abe12b5d20c1231db708dd36185c8a21e9de5fed6da4dbe9"
+checksum = "a4c4216490d5a413bc6d10fa4742bd7d4955941d062c0ef873141d6b0e7b30fd"
 dependencies = [
  "arrayvec",
  "num-traits",
@@ -2301,9 +2301,9 @@ dependencies = [
 
 [[package]]
 name = "sdl-parser"
-version = "0.13.0"
+version = "0.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cb9a8d705532a20cd4dba11906ae99bf078299e076247f9682b7eb9c8daab4fe"
+checksum = "ea6357cd35e9e8c37998ad871681067be5d7a1feab8908750636eb542ba60ae6"
 dependencies = [
  "anyhow",
  "bytesize",
