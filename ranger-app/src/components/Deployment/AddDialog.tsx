@@ -22,6 +22,8 @@ import {Controller, useForm} from 'react-hook-form';
 import {Suggest2} from '@blueprintjs/select';
 import {MenuItem2} from '@blueprintjs/popover2';
 import {type AdGroup} from 'src/models/groups';
+import DatePicker from 'react-datepicker';
+import {useState} from 'react';
 
 const AddDialog = (
   {isOpen, title, onSubmit, onCancel}:
@@ -33,6 +35,8 @@ const AddDialog = (
       name,
       deploymentGroup,
       groupName,
+      start,
+      end,
     }: DeploymentForm) => void;
     onCancel: () => void;
   },
@@ -40,6 +44,8 @@ const AddDialog = (
   const {t} = useTranslation();
   const {data: deployers} = useAdminGetDeploymentGroupsQuery();
   const {data: groups} = useAdminGetGroupsQuery();
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
 
   const {handleSubmit, control, register, formState: {errors}}
   = useForm<DeploymentForm>({
@@ -47,6 +53,8 @@ const AddDialog = (
       name: '',
       deploymentGroup: undefined,
       count: 1,
+      start: undefined,
+      end: undefined,
     },
   });
 
@@ -146,6 +154,99 @@ const AddDialog = (
             />
             <Controller
               control={control}
+              name='start'
+              rules={{required: t('deployments.form.startDate.required') ?? ''}}
+              render={({
+                field: {onChange, onBlur}, fieldState: {error},
+              }) => {
+                const intent = error ? Intent.DANGER : Intent.NONE;
+                return (
+                  <FormGroup
+                    labelFor='start-date'
+                    labelInfo='(required)'
+                    helperText={error?.message}
+                    intent={intent}
+                    label={t('deployments.form.startDate.title')}
+                  >
+                    <div className='flex flex-col'>
+                      <DatePicker
+                        selectsStart
+                        showTimeSelect
+                        customInput={<input className='bp4-input bp4-large bp4-fill'/>}
+                        id='start-date'
+                        selected={startDate}
+                        startDate={startDate}
+                        endDate={endDate}
+                        timeFormat='HH:mm'
+                        dateFormat='dd/MM/yyyy HH:mm'
+                        onChange={date => {
+                          setStartDate(date ?? undefined);
+                          onChange(date?.toISOString() ?? '');
+                        }}
+                        onBlur={onBlur}
+                      />
+                    </div>
+                  </FormGroup>
+                );
+              }}
+            />
+            <Controller
+              control={control}
+              name='end'
+              rules={{
+                required: t('deployments.form.endDate.required') ?? '',
+                validate: {
+                  endDateAfterStartDate: (value: string) =>
+                    !startDate || !value || new Date(value) > new Date(startDate)
+                    || (t('deployments.form.endDate.earlierThanStart') ?? ''),
+                },
+              }}
+              render={({
+                field: {onChange, onBlur}, fieldState: {error},
+              }) => {
+                const intent = error ? Intent.DANGER : Intent.NONE;
+                const filterFromStart = (time: Date) => {
+                  if (startDate) {
+                    return time > startDate;
+                  }
+
+                  return true;
+                };
+
+                return (
+                  <FormGroup
+                    labelFor='end-date'
+                    labelInfo='(required)'
+                    helperText={error?.message}
+                    intent={intent}
+                    label={t('deployments.form.endDate.title')}
+                  >
+                    <div className='flex flex-col'>
+                      <DatePicker
+                        selectsEnd
+                        showTimeSelect
+                        customInput={<input className='bp4-input bp4-large bp4-fill'/>}
+                        id='end-date'
+                        selected={endDate}
+                        startDate={startDate}
+                        endDate={endDate}
+                        minDate={startDate}
+                        timeFormat='HH:mm'
+                        dateFormat='dd/MM/yyyy HH:mm'
+                        filterTime={filterFromStart}
+                        onChange={date => {
+                          setEndDate(date ?? undefined);
+                          onChange(date?.toISOString() ?? '');
+                        }}
+                        onBlur={onBlur}
+                      />
+                    </div>
+                  </FormGroup>
+                );
+              }}
+            />
+            <Controller
+              control={control}
               name='groupName'
               render={({
                 field: {onBlur, ref, value, onChange}, fieldState: {error},
@@ -154,14 +255,14 @@ const AddDialog = (
                 const activeItem = groups?.find(group => group.name === value);
                 return (
                   <FormGroup
-                    labelFor='deployment-group'
+                    labelFor='group-name'
                     helperText={error?.message}
                     intent={intent}
                     label={t('common.adGroup')}
                   >
                     <Suggest2<AdGroup>
                       inputProps={{
-                        id: 'deployment-group',
+                        id: 'group-name',
                         onBlur,
                         inputRef: ref,
                         placeholder: '',

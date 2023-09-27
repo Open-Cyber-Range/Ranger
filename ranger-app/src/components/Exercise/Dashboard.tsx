@@ -24,16 +24,24 @@ const DashboardPanel = ({exercise, deployments}:
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
   const createNewDeployment = (
-    name: string,
-    groupName: string,
-    deploymentGroup?: string,
+    deploymentForm: DeploymentForm,
   ): [NewDeployment, string] | undefined => {
-    if (exercise?.sdlSchema && exercise?.id) {
+    if (exercise?.sdlSchema && exercise?.id && deploymentForm.start && deploymentForm.end) {
+      let updatedSchema = exercise.sdlSchema.replace(
+        /start: \d{4}-\d{2}-\d{2}t\d{2}:\d{2}:\d{2}z/i,
+        `start: ${deploymentForm.start}`,
+      );
+
+      updatedSchema = updatedSchema.replace(
+        /end: \d{4}-\d{2}-\d{2}t\d{2}:\d{2}:\d{2}z/i,
+        `end: ${deploymentForm.end}`,
+      );
+
       return [{
-        name,
-        sdlSchema: exercise.sdlSchema,
-        deploymentGroup,
-        groupName,
+        name: deploymentForm.name,
+        sdlSchema: updatedSchema,
+        deploymentGroup: deploymentForm.deploymentGroup,
+        groupName: deploymentForm.groupName,
       }, exercise.id];
     }
 
@@ -77,14 +85,14 @@ const DashboardPanel = ({exercise, deployments}:
   };
 
   const addNewDeployment = async (
-    {count, deploymentGroup, name, groupName}: DeploymentForm,
+    deploymentForm: DeploymentForm,
   ) => {
-    const deploymentInfo = createNewDeployment(name, groupName, deploymentGroup);
+    const deploymentInfo = createNewDeployment(deploymentForm);
     if (deploymentInfo) {
       const [deployment, exerciseId] = deploymentInfo;
 
       const promises = createPromises(
-        count,
+        deploymentForm.count,
         exerciseId,
         deployment,
       );
