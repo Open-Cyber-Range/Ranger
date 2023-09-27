@@ -226,6 +226,16 @@ const language = {
   deployment: {
     empty: 'No deployment available.',
   },
+  accountsTable: {
+    title: 'Accounts',
+    vmName: 'VM Name',
+    username: 'Username',
+    password: 'Password',
+    privatekey: 'Private Key',
+    copyButton: 'Copy value',
+    copyFail: 'Failed to copy value to clipboard: {{errorMessage}}',
+    copySuccess: 'Private key copied to clipboard',
+  },
 };
 
 export default language;

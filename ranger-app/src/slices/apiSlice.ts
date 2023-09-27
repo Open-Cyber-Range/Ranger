@@ -411,6 +411,13 @@ export const apiSlice = createApi({
       },
       invalidatesTags: ['ManualMetric'],
     }),
+    participantGetNodeDeploymentElements: builder
+      .query<DeploymentElement[],
+    {exerciseId: string; deploymentId: string; entitySelector: string}>({
+      query: ({exerciseId, deploymentId, entitySelector}) =>
+        // eslint-disable-next-line max-len
+        `/participant/exercise/${exerciseId}/deployment/${deploymentId}/entity/${entitySelector}/deployment_element`,
+    }),
   }),
 });
 
@@ -456,4 +463,5 @@ export const {
   useParticipantUpdateMetricMutation,
   useParticipantAddMetricMutation,
   useParticipantUploadMetricArtifactMutation,
+  useParticipantGetNodeDeploymentElementsQuery,
 } = apiSlice;

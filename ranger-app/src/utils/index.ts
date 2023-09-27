@@ -1,4 +1,5 @@
 import {Colors, type TreeNodeInfo} from '@blueprintjs/core';
+import {type DeploymentElement} from 'src/models/deployment';
 import {type AdUser} from 'src/models/groups';
 import {type Participant} from 'src/models/pariticpant';
 import {
@@ -402,3 +403,11 @@ export function tryIntoScoringMetadata(scenario?: Scenario): ScoringMetadata | u
     };
   }
 }
+
+export const getElementNameById
+= (deploymentElements: DeploymentElement[], id: string): string | undefined => {
+  if (deploymentElements) {
+    const vm = deploymentElements.find(element => element.handlerReference === id);
+    return vm?.scenarioReference ?? undefined;
+  }
+};

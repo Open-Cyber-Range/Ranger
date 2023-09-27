@@ -33,7 +33,6 @@ const DeploymentDetail = () => {
   const {data: deployment} = useAdminGetDeploymentQuery(queryArguments);
   const {data: scenario} = useAdminGetDeploymentScenarioQuery(queryArguments);
   const {data: scores} = useAdminGetDeploymentScoresQuery(queryArguments);
-
   const [deleteDeployment] = useAdminDeleteDeploymentMutation();
 
   const handleDeleteDeployment = async () => {

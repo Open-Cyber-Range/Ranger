@@ -114,6 +114,7 @@ const SideBar = ({renderMainContent}: {
                       <MenuItem
                         icon='chart'
                         text={t('exercises.tabs.scores')}
+                        active={activeTab === ActiveTab.Scores}
                         onClick={() => {
                           navigate(
                           // eslint-disable-next-line max-len
@@ -123,6 +124,7 @@ const SideBar = ({renderMainContent}: {
                       <MenuItem
                         icon='text-highlight'
                         text={t('exercises.tabs.sdl')}
+                        active={activeTab === ActiveTab.SDL}
                         onClick={() => {
                           navigate(
                           // eslint-disable-next-line max-len
@@ -132,6 +134,7 @@ const SideBar = ({renderMainContent}: {
                       <MenuItem
                         icon='join-table'
                         text={t('exercises.tabs.accounts')}
+                        active={activeTab === ActiveTab.Accounts}
                         onClick={() => {
                           navigate(
                           // eslint-disable-next-line max-len
@@ -141,15 +144,17 @@ const SideBar = ({renderMainContent}: {
                       <MenuItem
                         icon='data-connection'
                         text={t('exercises.tabs.entities')}
+                        active={activeTab === ActiveTab.EntitySelector}
                         onClick={() => {
                           navigate(
                           // eslint-disable-next-line max-len
-                            `/exercises/${deployment.exerciseId}/deployments/${deployment.id}/focus#entitites`);
+                            `/exercises/${deployment.exerciseId}/deployments/${deployment.id}/focus#entities`);
                           setActiveTab(ActiveTab.EntitySelector);
                         }}/>
                       <MenuItem
                         icon='manually-entered-data'
                         text={t('exercises.tabs.metrics')}
+                        active={activeTab === ActiveTab.ManualMetrics}
                         onClick={() => {
                           navigate(
                           // eslint-disable-next-line max-len

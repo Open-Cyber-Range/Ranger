@@ -24,6 +24,7 @@ use ranger::routes::exercise::{
 use ranger::routes::logger::subscribe_to_logs_with_level;
 use ranger::routes::participant::deployment::{
     get_participant_deployment, get_participant_deployments,
+    get_participant_node_deployment_elements,
 };
 use ranger::routes::participant::events::get_participant_events;
 use ranger::routes::participant::metric::{
@@ -137,8 +138,16 @@ async fn main() -> Result<(), Error> {
                                                             .service(get_exercise_deployment_users)
                                                             .service(get_exercise_deployment_scores)
                                                             .service(get_own_participants)
-                                                            .service(get_participant_events)
                                                             .wrap(DeploymentMiddlewareFactory)
+                                                            .service(
+                                                                scope("/entity")
+                                                                .service(
+                                                                    scope("/{entity_selector}")
+                                                                            .service(get_participant_events)
+                                                                            .service(get_participant_node_deployment_elements)
+                                                                            .wrap(DeploymentMiddlewareFactory)
+                                                                )
+                                                            )
                                                             .service(
                                                                 scope("/metric")
                                                                 .service(get_participant_metrics)

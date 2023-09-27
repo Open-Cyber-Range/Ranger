@@ -2,6 +2,7 @@ import type React from 'react';
 import {useParams} from 'react-router-dom';
 import type {DeploymentDetailRouteParameters} from 'src/models/routes';
 import {
+  useAdminGetDeploymentElementsQuery,
   useAdminGetDeploymentQuery,
   useAdminGetDeploymentScenarioQuery,
   useAdminGetDeploymentScoresQuery,
@@ -28,6 +29,7 @@ const DeploymentFocus = () => {
   const {data: deployment} = useAdminGetDeploymentQuery(queryArguments);
   const {data: scores} = useAdminGetDeploymentScoresQuery(queryArguments);
   const {data: users} = useAdminGetDeploymentUsersQuery(queryArguments);
+  const {data: deploymentElements} = useAdminGetDeploymentElementsQuery(queryArguments);
 
   if (scenario && exerciseId && deploymentId) {
     return (
@@ -59,9 +61,12 @@ const DeploymentFocus = () => {
             </div>
           )}
           {activeTab === ActiveTab.Accounts && (
-            <AccountList
-              users={users}
-            />
+            <div>
+              <AccountList
+                users={users}
+                deploymentElements={deploymentElements}
+              />
+            </div>
           )}
           {activeTab === ActiveTab.EntitySelector && (
             <>
