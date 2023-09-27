@@ -257,14 +257,14 @@ const AddDialog = (
                 const activeItem = groups?.find(group => group.name === value);
                 return (
                   <FormGroup
-                    labelFor='deployment-group'
+                    labelFor='group-name'
                     helperText={error?.message}
                     intent={intent}
                     label={t('common.adGroup')}
                   >
                     <Suggest2<AdGroup>
                       inputProps={{
-                        id: 'deployment-group',
+                        id: 'group-name',
                         onBlur,
                         inputRef: ref,
                         placeholder: '',
