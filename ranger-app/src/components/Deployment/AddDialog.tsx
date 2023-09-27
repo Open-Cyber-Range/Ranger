@@ -157,7 +157,7 @@ const AddDialog = (
               name='start'
               rules={{required: t('deployments.form.startDate.required') ?? ''}}
               render={({
-                field: {onChange, onBlur, ref}, fieldState: {error},
+                field: {onChange, onBlur}, fieldState: {error},
               }) => {
                 const intent = error ? Intent.DANGER : Intent.NONE;
                 return (
@@ -170,7 +170,6 @@ const AddDialog = (
                   >
                     <div className='flex flex-col'>
                       <DatePicker
-                        ref={ref}
                         selectsStart
                         showTimeSelect
                         customInput={<input className='bp4-input bp4-large bp4-fill'/>}
@@ -203,7 +202,7 @@ const AddDialog = (
                 },
               }}
               render={({
-                field: {onChange, onBlur, ref}, fieldState: {error},
+                field: {onChange, onBlur}, fieldState: {error},
               }) => {
                 const intent = error ? Intent.DANGER : Intent.NONE;
                 const filterFromStart = (time: Date) => {
@@ -224,7 +223,6 @@ const AddDialog = (
                   >
                     <div className='flex flex-col'>
                       <DatePicker
-                        ref={ref}
                         selectsEnd
                         showTimeSelect
                         customInput={<input className='bp4-input bp4-large bp4-fill'/>}
