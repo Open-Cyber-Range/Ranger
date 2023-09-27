@@ -61,7 +61,7 @@ const DeploymentFocus = () => {
             </div>
           )}
           {activeTab === ActiveTab.Accounts && (
-            <div className='text-center '>
+            <div>
               <AccountList
                 users={users}
                 deploymentElements={deploymentElements}
