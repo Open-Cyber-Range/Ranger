@@ -41,10 +41,6 @@ const TloTable = ({scoringData, scores, tloMap}:
                   className='w-full mt-6 border border-separate border-spacing-0
                   border-neutral-500 rounded-xl overflow-hidden'
                 >
-                  <colgroup/>
-                  <colgroup/>
-                  <colgroup
-                    span={3}/>
                   <thead
                     className={tableHeaderBgColor[role]}
                   >
