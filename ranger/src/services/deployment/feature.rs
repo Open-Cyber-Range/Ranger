@@ -152,6 +152,7 @@ impl DeployableNodeFeatures
                                 name: feature_source.name,
                                 version: feature_source.version,
                             }),
+                            environment: feature.environment.clone().unwrap_or_default(),
                         });
 
                         {

@@ -276,5 +276,6 @@ pub async fn create_condition_request(
             password: template_account.password.unwrap_or_default(),
             private_key: template_account.private_key.unwrap_or_default(),
         }),
+        environment: condition.environment.clone().unwrap_or_default(),
     }))
 }

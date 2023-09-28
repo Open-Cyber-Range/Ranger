@@ -86,6 +86,7 @@ impl DeployableInject
                 private_key: template_account.private_key.unwrap_or_default(),
             }),
             to_entities: inject.to_entities.clone().unwrap_or_default(),
+            environment: inject.environment.clone().unwrap_or_default(),
         });
 
         {
