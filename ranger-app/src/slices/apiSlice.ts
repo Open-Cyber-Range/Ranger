@@ -242,13 +242,15 @@ export const apiSlice = createApi({
       query: ({deploymentId, exerciseId}) =>
         `/participant/exercise/${exerciseId}/deployment/${deploymentId}/users`,
     }),
-    participantGetDeploymentScores: builder.query<Score[],
+    participantGetDeploymentScores: builder.query<Score[], //
     {
       exerciseId: string;
       deploymentId: string;
+      entitySelector: string;
     }>({
-      query: ({exerciseId, deploymentId}) =>
-        `/participant/exercise/${exerciseId}/deployment/${deploymentId}/score`,
+      query: ({exerciseId, deploymentId, entitySelector}) =>
+        // eslint-disable-next-line max-len
+        `/participant/exercise/${exerciseId}/deployment/${deploymentId}/entity/${entitySelector}/score`,
     }),
     participantGetDeploymentScenario: builder.query<Scenario | undefined,
     {

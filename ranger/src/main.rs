@@ -32,6 +32,7 @@ use ranger::routes::participant::metric::{
 };
 use ranger::routes::participant::participants::get_own_participants;
 use ranger::routes::participant::scenario::get_participant_exercise_deployment_scenario;
+use ranger::routes::participant::score::get_participant_exercise_deployment_scores;
 use ranger::routes::participant::{get_participant_exercise, get_participant_exercises};
 
 use ranger::routes::{
@@ -136,13 +137,13 @@ async fn main() -> Result<(), Error> {
                                                                 get_participant_exercise_deployment_scenario,
                                                             )
                                                             .service(get_exercise_deployment_users)
-                                                            .service(get_exercise_deployment_scores)
                                                             .service(get_own_participants)
                                                             .wrap(DeploymentMiddlewareFactory)
                                                             .service(
                                                                 scope("/entity")
                                                                 .service(
                                                                     scope("/{entity_selector}")
+                                                                            .service(get_participant_exercise_deployment_scores)
                                                                             .service(get_participant_events)
                                                                             .service(get_participant_node_deployment_elements)
                                                                             .wrap(DeploymentMiddlewareFactory)
