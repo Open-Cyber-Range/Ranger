@@ -4,10 +4,11 @@ use crate::services::database::deployment::GetDeploymentElementByEventIdByParent
 use crate::services::database::Database;
 use crate::{models::helpers::uuid::Uuid, services::database::event::GetEvent};
 use actix::Addr;
-use anyhow::{Ok, Result};
-use chrono::Utc;
+use anyhow::{anyhow, Ok, Result};
+use chrono::{NaiveDateTime, Utc};
 use log::info;
-use sdl_parser::node::Role;
+use sdl_parser::{event::Event as SdlEvent, node::Role, Scenario};
+use std::ops::Add;
 use std::time::Duration;
 use tokio::time::sleep;
 
@@ -80,4 +81,52 @@ pub async fn await_event_start(
         }
     }
     Ok(event)
+}
+
+pub fn calculate_event_start_end_times(
+    scenario: &Scenario,
+    event_key: &str,
+    event: &SdlEvent,
+) -> Result<(NaiveDateTime, NaiveDateTime)> {
+    let (parent_script_key, parent_script) = scenario
+        .scripts
+        .as_ref()
+        .and_then(|scripts| {
+            scripts
+                .iter()
+                .find(|(_, script)| script.events.contains(&event_key.to_owned()))
+        })
+        .map(|(script_key, script)| (script_key, script))
+        .ok_or_else(|| anyhow!("Failed to find parent script for {event_key}"))?;
+
+    let parent_story = scenario
+        .stories
+        .as_ref()
+        .and_then(|stories| {
+            stories
+                .iter()
+                .find(|(_, story)| story.scripts.contains(&parent_script_key.to_owned()))
+        })
+        .map(|(_, story)| story)
+        .ok_or_else(|| anyhow!("Failed to find parent story for {parent_script_key}"))?;
+
+    let story_and_script_multiplier = parent_story.clock * parent_script.speed as f64;
+    let mut adjusted_start_time = parent_script.start_time as f64 / story_and_script_multiplier;
+    let adjusted_end_time = parent_script.end_time as f64 / story_and_script_multiplier;
+
+    if let Some(event_relative_multiplier) = event.time {
+        adjusted_start_time = (adjusted_start_time
+            + (adjusted_end_time - adjusted_start_time) * event_relative_multiplier as f64)
+            .round();
+    }
+
+    let event_start_duration = chrono::Duration::seconds(adjusted_start_time as i64);
+    let event_start_datetime = scenario.start.add(event_start_duration).naive_utc();
+    let event_end_duration = chrono::Duration::seconds(adjusted_end_time as i64);
+    let event_end_datetime = match scenario.start.add(event_end_duration) > scenario.end {
+        true => scenario.end.naive_utc(),
+        false => scenario.start.add(event_end_duration).naive_utc(),
+    };
+
+    Ok((event_start_datetime, event_end_datetime))
 }
