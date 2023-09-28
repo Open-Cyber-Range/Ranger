@@ -115,8 +115,9 @@ pub fn calculate_event_start_end_times(
     let adjusted_end_time = parent_script.end_time as f64 / clock_and_speed_multiplier;
 
     if let Some(event_relative_multiplier) = event.time {
-        adjusted_start_time =
-            ((adjusted_end_time - adjusted_start_time) * event_relative_multiplier as f64).round();
+        adjusted_start_time = (adjusted_start_time
+            + (adjusted_end_time - adjusted_start_time) * event_relative_multiplier as f64)
+            .round();
     }
 
     let event_start_duration = chrono::Duration::seconds(adjusted_start_time as i64);
