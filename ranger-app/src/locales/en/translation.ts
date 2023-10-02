@@ -162,6 +162,11 @@ const language = {
       vm: 'VM',
       points: 'Points',
     },
+    evaluation: {
+      minScore: 'Min score',
+      passed: 'Passed',
+      notMet: 'Not met',
+    },
     noEvaluations: 'No Evaluations to display',
     noTlos: 'No Training Learning Objectives to display',
     noMetricData: 'No metric scores to display',

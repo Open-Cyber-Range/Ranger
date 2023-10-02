@@ -65,3 +65,21 @@ impl Score {
         }
     }
 }
+
+impl From<super::Metric> for Score {
+    fn from(metric: super::Metric) -> Self {
+        let score: BigDecimal = match metric.score {
+            Some(score) => BigDecimal::from(score),
+            None => BigDecimal::from(0),
+        };
+
+        Score::new(
+            metric.exercise_id,
+            metric.deployment_id,
+            metric.name,
+            metric.entity_selector,
+            score,
+            metric.updated_at,
+        )
+    }
+}

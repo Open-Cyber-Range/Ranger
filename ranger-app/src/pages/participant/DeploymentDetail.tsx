@@ -27,7 +27,7 @@ const ParticipantDeploymentDetail = () => {
     ? {exerciseId, deploymentId, entitySelector} : skipToken;
 
   const {data: users} = useParticipantGetDeploymentUsersQuery(generalQueryArgs);
-  const {data: scores} = useParticipantGetDeploymentScoresQuery(generalQueryArgs);
+  const {data: scores} = useParticipantGetDeploymentScoresQuery(participantQueryArgs);
   const {data: scenario} = useParticipantGetDeploymentScenarioQuery(participantQueryArgs);
   const {data: deplyomentEvents} = useParticipantGetTriggeredEventsQuery(participantQueryArgs);
   const {data: nodeDeploymentElements}

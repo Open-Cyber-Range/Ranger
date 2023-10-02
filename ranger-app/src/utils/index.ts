@@ -10,6 +10,7 @@ import {
   type TloMapsByRole,
   type TrainingLearningObjective,
   type ScoringMetadata,
+  type Evaluation,
 } from 'src/models/scenario';
 import {type Score} from 'src/models/score';
 import {
@@ -175,9 +176,9 @@ export const findLatestScoresByVms = (scores: Score[]) => {
   return latestScoresByVm;
 };
 
-export function sumScoresByMetric(
-  metricNames: string[], scoresByMetric: Record<string, Score[]>) {
-  return metricNames.reduce(
+export function sumScoresByMetrics(
+  metricKeys: string[], scoresByMetric: Record<string, Score[]>): number {
+  return metricKeys.reduce(
     (metricScoreSum, metricName) => {
       if (scoresByMetric[metricName]) {
         const currentScore = findLatestScore(scoresByMetric[metricName]);
@@ -196,7 +197,7 @@ export function sumScoresByRole(uniqueVmNames: string[], roleScores: Score[]) {
 
     const scoresByMetric = groupBy(vmScores, score => score.metricName);
     const metricNames = Object.keys(scoresByMetric);
-    const metricScoreSum = sumScoresByMetric(metricNames, scoresByMetric);
+    const metricScoreSum = sumScoresByMetrics(metricNames, scoresByMetric);
     totalScoreSum += metricScoreSum;
     return totalScoreSum;
   }, 0);
@@ -410,4 +411,21 @@ export const getElementNameById
     const vm = deploymentElements.find(element => element.handlerReference === id);
     return vm?.scenarioReference ?? undefined;
   }
+};
+
+export const sumMetricMaxScores = (metricKeys: string[], metrics: Record<string, Metric>) =>
+  metricKeys.reduce((sum, metricKey) => sum + metrics[metricKey].max_score, 0);
+
+export const getEvaluationMinScore = (evaluation: Evaluation, summedMaxScore: number) => {
+  const minScorePercentage = evaluation['min-score']?.percentage;
+
+  if (minScorePercentage) {
+    return roundToDecimalPlaces(minScorePercentage / 100 * summedMaxScore);
+  }
+
+  if (evaluation['min-score']?.absolute) {
+    return evaluation['min-score']?.absolute;
+  }
+
+  return 0;
 };
