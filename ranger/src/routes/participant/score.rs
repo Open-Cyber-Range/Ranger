@@ -9,7 +9,8 @@ use crate::{
     },
     utilities::{
         create_database_error_handler, create_mailbox_error_handler,
-        scenario::filter_scenario_by_role, try_some,
+        scenario::{filter_scenario_by_role, get_role_from_string},
+        try_some,
     },
     AppState,
 };
@@ -67,7 +68,7 @@ pub async fn get_participant_exercise_deployment_scores(
         RangerError::EntityNotFound
     })?;
 
-    let participant_scenario = filter_scenario_by_role(&scenario, participant_role);
+    let participant_scenario = filter_scenario_by_role(&scenario, participant_role.clone());
     let scenario_metrics = match participant_scenario.metrics {
         Some(metrics) => metrics,
         None => return Ok(Json(vec![])),
@@ -122,7 +123,12 @@ pub async fn get_participant_exercise_deployment_scores(
         .map_err(create_mailbox_error_handler("Database"))?
         .map_err(create_database_error_handler("Get Manual Metrics"))?;
 
-    let mut scores: Vec<Score> = manual_metrics.into_iter().map(Into::into).collect();
+    let mut scores: Vec<Score> = manual_metrics
+        .iter()
+        .filter(|metric| get_role_from_string(&metric.role) == Some(participant_role.clone()))
+        .cloned()
+        .map(Into::into)
+        .collect();
 
     for condition_message in condition_messages {
         if let Some((metric_key, metric)) = scenario_metrics

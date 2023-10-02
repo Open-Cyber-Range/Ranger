@@ -700,3 +700,13 @@ pub fn get_metric_by_condition(
     }
     None
 }
+
+pub fn get_role_from_string(role: &str) -> Option<ExerciseRole> {
+    match role {
+        "Blue" => Some(ExerciseRole::Blue),
+        "Red" => Some(ExerciseRole::Red),
+        "White" => Some(ExerciseRole::White),
+        "Green" => Some(ExerciseRole::Green),
+        _ => None,
+    }
+}
