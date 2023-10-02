@@ -1,9 +1,10 @@
-
-import React, {useEffect} from 'react';
+import type React from 'react';
+import {useEffect, useState} from 'react';
 import type {EmailForm, Exercise} from 'src/models/exercise';
 import {
   Button,
   FormGroup,
+  HTMLSelect,
   InputGroup,
   Intent,
   TagInput,
@@ -11,18 +12,27 @@ import {
 import {useTranslation} from 'react-i18next';
 import {Controller, type SubmitHandler, useForm} from 'react-hook-form';
 import {
+  useAdminGetDeploymentsQuery,
   useAdminGetEmailFormQuery,
+  useAdminGetGroupUsersQuery,
   useAdminSendEmailMutation,
 } from 'src/slices/apiSlice';
 import {toastSuccess, toastWarning} from 'src/components/Toaster';
 import nunjucks from 'nunjucks';
 import Editor from '@monaco-editor/react';
 import useExerciseStreaming from 'src/hooks/useExerciseStreaming';
+import {type Deployment} from 'src/models/deployment';
+import {type AdUser} from 'src/models/groups';
+import {skipToken} from '@reduxjs/toolkit/dist/query';
 
 const SendEmail = ({exercise}: {exercise: Exercise}) => {
   const {t} = useTranslation();
+  const {data: deployments} = useAdminGetDeploymentsQuery(exercise.id);
   const {data: fromAddress} = useAdminGetEmailFormQuery(exercise.id);
   const [sendMail, {isSuccess, error}] = useAdminSendEmailMutation();
+  const [selectedDeployment, setSelectedDeployment] = useState<string | undefined>(undefined);
+  const [selectedGroupName, setSelectedGroupName] = useState<string | undefined>(undefined);
+  const {data: users} = useAdminGetGroupUsersQuery(selectedGroupName ?? skipToken);
   useExerciseStreaming(exercise.id);
 
   const {handleSubmit, control} = useForm<EmailForm>({
@@ -49,18 +59,56 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
       return;
     }
 
-    email.subject = nunjucks
-      .renderString(
-        email.subject,
-        {exerciseName: exercise.name});
+    if (selectedDeployment === '') {
+      email.subject = nunjucks
+        .renderString(
+          email.subject,
+          {exerciseName: exercise.name});
 
-    email.body = nunjucks
-      .renderString(
-        email.body,
-        {exerciseName: exercise.name});
+      email.body = nunjucks
+        .renderString(
+          email.body,
+          {exerciseName: exercise.name});
 
-    await sendMail({email, exerciseId: exercise.id});
+      await sendMail({email, exerciseId: exercise.id});
+    } else if (selectedDeployment) {
+      const deployment = deployments?.find(d => d.id === selectedDeployment);
+      if (deployment && users) {
+        const emailPromises = users.map(async user =>
+          sendMail({
+            email: prepareEmailForDeploymentUser(email, deployment, user),
+            exerciseId: exercise.id,
+          }),
+        );
+        await Promise.all(emailPromises);
+      }
+    }
   };
+
+  function prepareEmailForDeploymentUser(
+    email: EmailForm,
+    deployment: Deployment,
+    user: AdUser) {
+    email.toAddresses = [user.email ?? ''];
+
+    email.subject = nunjucks.renderString(email.subject, {
+      exerciseName: exercise.name,
+      deploymentName: deployment.name,
+      participantFirstName: user.firstName,
+      participantLastName: user.lastName,
+      participantEmail: user.email,
+    });
+
+    email.body = nunjucks.renderString(email.body, {
+      exerciseName: exercise.name,
+      deploymentName: deployment.name,
+      participantFirstName: user.firstName,
+      participantLastName: user.lastName,
+      participantEmail: user.email,
+    });
+
+    return email;
+  }
 
   const validateEmails = (emails: string[]) => {
     const faultyEmails = [];
@@ -108,10 +156,34 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
             placeholder={fromAddress ?? ''}
           />
         </FormGroup>
+        <FormGroup label={t('emails.form.deploymentSelector.title')}>
+          <HTMLSelect
+            autoFocus
+            large
+            fill
+            value={selectedDeployment ?? ''}
+            onChange={event => {
+              setSelectedDeployment(event.target.value);
+              const deployment = deployments?.find(d => d.id === event.target.value);
+              setSelectedGroupName(deployment?.groupName);
+            }}
+          >
+            <option value=''>
+              {t('emails.form.deploymentSelector.placeholder')}
+            </option>
+            {deployments?.map((deployment: Deployment) => (
+              <option key={deployment.id} value={deployment.id}>
+                {deployment.name}
+              </option>
+            ))}
+          </HTMLSelect>
+        </FormGroup>
         <Controller
           control={control}
           name='toAddresses'
-          rules={{required: t('emails.form.to.required') ?? ''}}
+          rules={{
+            required: selectedDeployment ? false : (t('emails.form.to.required') ?? ''),
+          }}
           render={({
             field: {onChange, ref, value}, fieldState: {error},
           }) => {

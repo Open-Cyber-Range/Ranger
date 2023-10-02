@@ -128,6 +128,11 @@ const language = {
       from: {
         title: 'From',
       },
+      deploymentSelector: {
+        title: 'Selected deployment',
+        placeholder: 'Select exercise or specific deployment',
+        wholeExercise: 'Exercise-wide',
+      },
       to: {
         title: 'To',
         required: 'To address is required',
