@@ -535,13 +535,14 @@ pub async fn get_exercise_deployment_users(
 pub async fn add_banner(
     path_variable: Path<Uuid>,
     app_state: Data<AppState>,
-    mut new_banner: Json<NewBanner>,
+    new_banner: Json<NewBanner>,
 ) -> Result<Json<Banner>, RangerError> {
     let exercise_id = path_variable.into_inner();
+    let mut new_banner = new_banner.into_inner();
     new_banner.id = exercise_id;
     let banner = app_state
         .database_address
-        .send(CreateBanner(new_banner.into_inner()))
+        .send(CreateBanner(new_banner))
         .await
         .map_err(create_mailbox_error_handler("Database"))?
         .map_err(create_database_error_handler("Create banner"))?;

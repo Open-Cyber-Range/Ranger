@@ -65,33 +65,6 @@ impl Handler<GetBanner> for Database {
 }
 
 #[derive(Message)]
-#[rtype(result = "Result<Vec<Banner>>")]
-pub struct GetBanners;
-
-impl Handler<GetBanners> for Database {
-    type Result = ResponseActFuture<Self, Result<Vec<Banner>>>;
-
-    fn handle(&mut self, _: GetBanners, _ctx: &mut Self::Context) -> Self::Result {
-        let connection_result = self.get_connection();
-
-        Box::pin(
-            async move {
-                let mut connection = connection_result?;
-                let banner = block(move || {
-                    let banners = Banner::all().load(&mut connection)?;
-
-                    Ok(banners)
-                })
-                .await??;
-
-                Ok(banner)
-            }
-            .into_actor(self),
-        )
-    }
-}
-
-#[derive(Message)]
 #[rtype(result = "Result<Banner>")]
 pub struct UpdateBanner(pub Uuid, pub crate::models::UpdateBanner);
 

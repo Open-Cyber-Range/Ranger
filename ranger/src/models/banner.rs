@@ -1,8 +1,7 @@
 use super::helpers::uuid::Uuid;
 use crate::{
-    constants::NAIVEDATETIME_DEFAULT_VALUE,
     schema::banners,
-    services::database::{All, Create, UpdateById, HardUpdateById},
+    services::database::{All, Create, HardUpdateById},
 };
 use chrono::NaiveDateTime;
 use diesel::{
@@ -17,7 +16,6 @@ use serde::{Deserialize, Serialize};
 #[serde(rename_all = "camelCase")]
 #[diesel(table_name = banners)]
 pub struct Banner {
-    #[serde(default = "Uuid::random")]
     pub id: Uuid,
     pub name: String,
     pub content: String,
@@ -34,9 +32,7 @@ impl Banner {
         Self::all().filter(banners::id.eq(id))
     }
 
-    pub fn by_name(
-        name: String,
-    ) -> Filter<All<banners::table, Self>, Eq<banners::name, String>> {
+    pub fn by_name(name: String) -> Filter<All<banners::table, Self>, Eq<banners::name, String>> {
         Self::all().filter(banners::name.eq(name))
     }
 
@@ -70,19 +66,14 @@ impl NewBanner {
 #[serde(rename_all = "camelCase")]
 #[diesel(table_name = banners)]
 pub struct UpdateBanner {
-    pub id: Uuid,
     pub name: String,
     pub content: String,
 }
 
 impl UpdateBanner {
-    pub fn create_update(
-        &self,
-        id: Uuid,
-    ) -> UpdateById<banners::id, banners::deleted_at, banners::table, &Self> {
+    pub fn create_update(&self, id: Uuid) -> HardUpdateById<banners::id, banners::table, &Self> {
         diesel::update(banners::table)
             .filter(banners::id.eq(id))
-            .filter(banners::deleted_at.eq(*NAIVEDATETIME_DEFAULT_VALUE))
             .set(self)
     }
 }
