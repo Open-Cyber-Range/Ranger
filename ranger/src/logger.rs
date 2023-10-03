@@ -1,3 +1,4 @@
+use crate::constants::{DEFAULT_LOGGER_ENV_KEY, DEFAULT_LOGGER_LEVEL, PROJECT_NAME};
 use crate::services::websocket::{SocketLogUpdate, WebSocketManager, WebsocketStringMessage};
 use actix::Addr;
 use log::{Level, LevelFilter, Log, Metadata, Record};
@@ -94,7 +95,7 @@ impl CombinedLogger {
     ) -> Result<Self, std::io::Error> {
         let file_logger = FileWriterLogger::new(file_path)?;
 
-        let mut builder = env_logger::Builder::from_default_env();
+        let mut builder = env_logger::Builder::from_env(DEFAULT_LOGGER_ENV_KEY);
         builder.format(|buf, record| {
             writeln!(
                 buf,
@@ -105,7 +106,12 @@ impl CombinedLogger {
                 record.args()
             )
         });
-        builder.filter(None, log::LevelFilter::Debug);
+        let environment_log_level = std::env::var(DEFAULT_LOGGER_ENV_KEY)
+            .unwrap_or_else(|_| DEFAULT_LOGGER_LEVEL.to_string());
+        let level_filter: LevelFilter = environment_log_level.parse().unwrap_or(LevelFilter::Info);
+
+        builder.filter(None, LevelFilter::Info);
+        builder.filter_module(PROJECT_NAME, level_filter);
         let console_logger = builder.build();
 
         let websocket_logger = WebsocketLogger::new(websocket_manager);
@@ -126,7 +132,7 @@ impl Log for CombinedLogger {
     }
 
     fn log(&self, record: &Record) {
-        if record.level() <= Level::Info && self.console_logger.enabled(record.metadata()) {
+        if self.console_logger.enabled(record.metadata()) {
             self.console_logger.log(record);
         }
         if self.file_logger.enabled(record.metadata()) {
@@ -150,7 +156,7 @@ pub fn init(
 ) -> Result<(), Box<dyn std::error::Error>> {
     let logger = CombinedLogger::new(log_file, websocket_manager)?;
     log::set_boxed_logger(Box::new(logger))?;
-    log::set_max_level(LevelFilter::Info);
+    log::set_max_level(LevelFilter::Trace);
 
     Ok(())
 }
