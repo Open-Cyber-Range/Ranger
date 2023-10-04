@@ -1,6 +1,6 @@
 use crate::{
     errors::RangerError,
-    middleware::{authentication::UserInfo, deployment::DeploymentInfo, metric::MetricInfo},
+    middleware::{deployment::DeploymentInfo, metric::MetricInfo},
     models::{
         helpers::uuid::Uuid,
         metric::{NewMetric, NewMetricResource},
@@ -12,7 +12,7 @@ use crate::{
 };
 use actix_web::{
     get, post, put,
-    web::{Data, Json},
+    web::{Data, Json, Path},
 };
 use log::error;
 use sdl_parser::Scenario;
@@ -20,11 +20,11 @@ use sdl_parser::Scenario;
 #[get("")]
 pub async fn get_participant_metric(
     metric_info: MetricInfo,
-    user_details: UserInfo,
+    path_variables: Path<(Uuid, Uuid, String)>,
 ) -> Result<Json<Metric>, RangerError> {
     let metric = metric_info.into_inner();
-
-    if metric.user_id.eq(&user_details.id) {
+    let (_exercise_uuid, _deployment_uuid, entity_selector) = path_variables.into_inner();
+    if metric.entity_selector.eq(&entity_selector) {
         Ok(Json(metric))
     } else {
         Err(RangerError::NotAuthorized)
@@ -34,9 +34,10 @@ pub async fn get_participant_metric(
 #[get("")]
 pub async fn get_participant_metrics(
     app_state: Data<AppState>,
-    user_details: UserInfo,
+    path_variables: Path<(Uuid, Uuid, String)>,
     deployment: DeploymentInfo,
 ) -> Result<Json<Vec<Metric>>, RangerError> {
+    let (_exercise_uuid, _deployment_uuid, entity_selector) = path_variables.into_inner();
     let metrics = app_state
         .database_address
         .send(GetMetrics(deployment.id))
@@ -45,7 +46,7 @@ pub async fn get_participant_metrics(
         .map_err(create_database_error_handler("Get Manual Metrics"))?;
     let users_metrics = metrics
         .into_iter()
-        .filter_map(|metric| metric.user_id.eq(&user_details.id).then_some(metric))
+        .filter(|metric| metric.entity_selector.eq(&entity_selector))
         .collect();
 
     Ok(Json(users_metrics))
@@ -55,16 +56,17 @@ pub async fn get_participant_metrics(
 pub async fn update_participant_metric(
     app_state: Data<AppState>,
     metric_info: MetricInfo,
-    user_details: UserInfo,
+    path_variables: Path<(Uuid, Uuid, String)>,
     update_metric: Json<UpdateMetric>,
 ) -> Result<Json<Metric>, RangerError> {
     let metric = metric_info.into_inner();
     let update_metric = update_metric.into_inner();
+    let (_exercise_uuid, _deployment_uuid, entity_selector) = path_variables.into_inner();
 
     if metric.score.is_some() {
         return Err(RangerError::MetricAlreadyScored);
     };
-    if metric.user_id.eq(&user_details.id) || update_metric.score.is_some() {
+    if metric.entity_selector.eq(&entity_selector) || update_metric.score.is_some() {
         let metric = app_state
             .database_address
             .send(crate::services::database::metric::UpdateMetric(
@@ -83,7 +85,6 @@ pub async fn update_participant_metric(
 #[post("")]
 pub async fn add_metric(
     app_state: Data<AppState>,
-    user_info: UserInfo,
     deployment: DeploymentInfo,
     new_metric: Json<NewMetricResource>,
 ) -> Result<Json<Uuid>, RangerError> {
@@ -112,7 +113,6 @@ pub async fn add_metric(
         };
 
         let new_metric = NewMetric::new(
-            user_info.id.clone(),
             metric_name.clone(),
             metric.description.clone(),
             metric.max_score,

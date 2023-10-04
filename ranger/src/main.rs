@@ -155,20 +155,20 @@ async fn main() -> Result<(), Error> {
                                                                             .service(get_participant_events)
                                                                             .service(get_participant_node_deployment_elements)
                                                                             .wrap(DeploymentMiddlewareFactory)
+                                                                            .service(
+                                                                                scope("/metric")
+                                                                                .service(get_participant_metrics)
+                                                                                .service(add_metric)
+                                                                                .service(
+                                                                                    scope("/{metric_uuid}")
+                                                                                    .wrap(MetricMiddlewareFactory)
+                                                                                        .service(get_participant_metric)
+                                                                                        .service(update_participant_metric)
+                                                                                        .service(upload_participant_artifact)
+                                                                                    ),
+                                                                            ),
                                                                 )
                                                             )
-                                                            .service(
-                                                                scope("/metric")
-                                                                .service(get_participant_metrics)
-                                                                .service(add_metric)
-                                                                .service(
-                                                                    scope("/{metric_uuid}")
-                                                                    .wrap(MetricMiddlewareFactory)
-                                                                        .service(get_participant_metric)
-                                                                        .service(update_participant_metric)
-                                                                        .service(upload_participant_artifact)
-                                                                    ),
-                                                            ),
                                                     ),
                                             )
                                             .wrap(ExerciseMiddlewareFactory),

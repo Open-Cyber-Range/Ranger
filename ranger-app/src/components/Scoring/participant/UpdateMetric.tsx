@@ -13,6 +13,8 @@ import {
   useParticipantUploadMetricArtifactMutation,
 } from 'src/slices/apiSlice';
 import {ARTIFACT_FILETYPE_WHITELIST} from 'src/constants';
+import {useSelector} from 'react-redux';
+import {selectedEntity} from 'src/slices/userSlice';
 
 const UpdateMetric = ({exerciseId, deploymentId, manualMetric, metricHasArtifact}:
 {exerciseId: string;
@@ -21,6 +23,7 @@ const UpdateMetric = ({exerciseId, deploymentId, manualMetric, metricHasArtifact
   metricHasArtifact: boolean;
 }) => {
   const {t} = useTranslation();
+  const entitySelector = useSelector(selectedEntity);
   const [updateMetric, {isSuccess: isUpdateMetricSuccess}] = useParticipantUpdateMetricMutation();
   const [addArtifact, {isSuccess: isAddArtifactSuccess}]
    = useParticipantUploadMetricArtifactMutation();
@@ -29,16 +32,20 @@ const UpdateMetric = ({exerciseId, deploymentId, manualMetric, metricHasArtifact
   = useState<string | undefined>(manualMetric.textSubmission);
   const [buttonIsDisabled, setButtonIsDisabled] = useState(true);
   const metricHasBeenScored = manualMetric.score !== null;
-
   const handleUpdateMetric
   = async (updateManualMetric: UpdateManualMetric) => {
     try {
+      if (!entitySelector) {
+        throw new Error('No entity selected');
+      }
+
       if (artifactFile) {
         await addArtifact({
           exerciseId,
           deploymentId,
           metricId: manualMetric.id,
           artifactFile,
+          entitySelector,
         });
       }
 
@@ -47,9 +54,15 @@ const UpdateMetric = ({exerciseId, deploymentId, manualMetric, metricHasArtifact
         deploymentId,
         metricId: manualMetric.id,
         manualMetricUpdate: updateManualMetric,
+        entitySelector,
       });
-    } catch {
-      toastWarning(t('metricScoring.errors.updateFailed'));
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toastWarning(t('metricScoring.errors.updateFailedWithMessage',
+          {errorMessage: JSON.stringify(error.message)}));
+      } else {
+        toastWarning(t('metricScoring.errors.updateFailed'));
+      }
     }
   };
 
