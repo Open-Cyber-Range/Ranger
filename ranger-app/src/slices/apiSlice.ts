@@ -280,7 +280,7 @@ export const apiSlice = createApi({
     }>({
       query({exerciseId, deploymentId, entitySelector}) {
         return `/participant/exercise/${
-          exerciseId}/deployment/${deploymentId}/entity/${entitySelector}/events`;
+          exerciseId}/deployment/${deploymentId}/entity/${entitySelector}/event`;
       },
     }),
     adminGetManualMetrics: builder.query<ManualMetric[] | undefined,

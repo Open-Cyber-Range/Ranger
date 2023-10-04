@@ -6,6 +6,7 @@ use ranger::middleware::deployment::DeploymentMiddlewareFactory;
 use ranger::middleware::exercise::ExerciseMiddlewareFactory;
 use ranger::middleware::keycloak::KeycloakAccessMiddlewareFactory;
 use ranger::middleware::metric::MetricMiddlewareFactory;
+use ranger::middleware::participant_authentication::ParticipantAccessMiddlewareFactory;
 use ranger::roles::RangerRole;
 use ranger::routes::admin::groups::get_participant_groups_users;
 use ranger::routes::admin::metric::{
@@ -151,9 +152,19 @@ async fn main() -> Result<(), Error> {
                                                                 scope("/entity")
                                                                 .service(
                                                                     scope("/{entity_selector}")
-                                                                            .service(get_participant_exercise_deployment_scores)
-                                                                            .service(get_participant_events)
-                                                                            .service(get_participant_node_deployment_elements)
+                                                                            .wrap(ParticipantAccessMiddlewareFactory)
+                                                                            .service(
+                                                                                scope("/score")
+                                                                                .service(get_participant_exercise_deployment_scores)
+                                                                            )
+                                                                            .service(
+                                                                                scope("/event")
+                                                                                .service(get_participant_events)
+                                                                            )
+                                                                            .service(
+                                                                                scope("/deployment_element")
+                                                                                .service(get_participant_node_deployment_elements)
+                                                                            )
                                                                             .wrap(DeploymentMiddlewareFactory)
                                                                             .service(
                                                                                 scope("/metric")

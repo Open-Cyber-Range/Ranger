@@ -5,10 +5,7 @@ use crate::{
         keycloak::KeycloakInfo,
     },
     models::{helpers::uuid::Uuid, Deployment, DeploymentElement, ParticipantDeployment},
-    services::database::{
-        deployment::{GetDeploymentElementByDeploymentId, GetDeployments},
-        participant::GetParticipants,
-    },
+    services::database::deployment::{GetDeploymentElementByDeploymentId, GetDeployments},
     utilities::{create_database_error_handler, create_mailbox_error_handler},
     AppState,
 };
@@ -74,30 +71,14 @@ pub async fn get_participant_deployment(
     Ok(Json(deployment))
 }
 
-#[get("/deployment_element")]
+#[get("")]
 pub async fn get_participant_node_deployment_elements(
     path_variables: Path<(Uuid, Uuid, String)>,
     app_state: Data<AppState>,
     deployment: DeploymentInfo,
-    user_details: UserInfo,
 ) -> Result<Json<Vec<DeploymentElement>>, RangerError> {
     let (_exercise_id, _deployment_id, entity_selector) = path_variables.into_inner();
     let deployment = deployment.into_inner();
-
-    let is_authorized = app_state
-        .database_address
-        .send(GetParticipants(deployment.id))
-        .await
-        .map_err(create_mailbox_error_handler("Database"))?
-        .map_err(create_database_error_handler("Get participants"))?
-        .iter()
-        .any(|participant| {
-            participant.user_id.eq(&user_details.id) && participant.selector.eq(&entity_selector)
-        });
-
-    if !is_authorized {
-        return Err(RangerError::NotAuthorized);
-    }
 
     let elements = app_state
         .database_address
