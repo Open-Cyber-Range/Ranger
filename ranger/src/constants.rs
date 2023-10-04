@@ -3,7 +3,10 @@ use chrono::NaiveDateTime;
 use lazy_static::lazy_static;
 use std::{collections::HashMap, time::Duration};
 
+pub const PROJECT_NAME: &str = env!("CARGO_PKG_NAME");
 const DEFAULT_DEPLOYER_GROUP_NAME: &str = "default";
+pub const DEFAULT_LOGGER_ENV_KEY: &str = "RUST_LOG";
+pub const DEFAULT_LOGGER_LEVEL: &str = "INFO";
 
 pub const fn default_deployment_group_name() -> &'static str {
     DEFAULT_DEPLOYER_GROUP_NAME
