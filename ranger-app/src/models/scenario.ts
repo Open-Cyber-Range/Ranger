@@ -49,7 +49,7 @@ export type Evaluation = {
   name?: string;
   description?: string;
   metrics: string[];
-  'min-score': MinScore;
+  min_score: MinScore;
 };
 
 export type Event = {
