@@ -1,4 +1,5 @@
 mod account;
+mod banner;
 mod condition;
 mod deployment;
 mod email;
@@ -8,10 +9,11 @@ pub(crate) mod helpers;
 pub mod metric;
 mod participant;
 pub mod score;
-pub mod user;
 pub mod upload;
+pub mod user;
 
 pub use account::*;
+pub use banner::*;
 pub use condition::*;
 pub use deployment::*;
 pub use email::*;

@@ -1,4 +1,5 @@
 pub(crate) mod account;
+pub(crate) mod banner;
 pub(crate) mod condition;
 pub(crate) mod deployment;
 pub(crate) mod event;
@@ -48,6 +49,7 @@ pub type SoftDelete<L, DeletedAtColumn> = Update<L, UpdateDeletedAt<DeletedAtCol
 pub type SoftDeleteById<Id, DeleteAtColumn, Table> = SoftDelete<ById<Id, Table>, DeleteAtColumn>;
 pub type UpdateById<Id, DeletedAtColumn, Table, T> =
     Update<FilterExisting<ById<Id, Table>, DeletedAtColumn>, T>;
+pub type HardUpdateById<Id, Table, T> = Update<ById<Id, Table>, T>;
 pub type Create<Type, Table> = InsertStatement<Table, <Type as Insertable<Table>>::Values>;
 pub type CreateOrReplace<Type, Table> =
     ReplaceStatement<Table, <Type as Insertable<Table>>::Values>;
