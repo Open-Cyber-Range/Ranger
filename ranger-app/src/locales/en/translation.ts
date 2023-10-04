@@ -241,6 +241,9 @@ const language = {
     copyFail: 'Failed to copy value to clipboard: {{errorMessage}}',
     copySuccess: 'Private key copied to clipboard',
   },
+  fallback: {
+    role: 'You do not have any roles assigned to you. Please contact your Ranger administrator.',
+  },
 };
 
 export default language;

@@ -107,7 +107,10 @@
     "rules": {
       "import/extensions": [
         "error",
-        "never"
+        "never",
+        {
+          "svg": "always"
+        }
       ],
       "n/prefer-global/process": [
         "error",
