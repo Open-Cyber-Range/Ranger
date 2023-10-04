@@ -417,14 +417,12 @@ export const sumMetricMaxScores = (metricKeys: string[], metrics: Record<string,
   metricKeys.reduce((sum, metricKey) => sum + metrics[metricKey].max_score, 0);
 
 export const getEvaluationMinScore = (evaluation: Evaluation, summedMaxScore: number) => {
-  const minScorePercentage = evaluation['min-score']?.percentage;
-
-  if (minScorePercentage) {
-    return roundToDecimalPlaces(minScorePercentage / 100 * summedMaxScore);
+  if (evaluation.min_score?.percentage) {
+    return roundToDecimalPlaces(evaluation.min_score.percentage / 100 * summedMaxScore);
   }
 
-  if (evaluation['min-score']?.absolute) {
-    return evaluation['min-score']?.absolute;
+  if (evaluation.min_score?.absolute) {
+    return evaluation.min_score?.absolute;
   }
 
   return 0;
