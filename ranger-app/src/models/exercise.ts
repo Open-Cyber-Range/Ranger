@@ -19,6 +19,11 @@ type Exercise = {
 
 type UpdateExercise = NewExercise;
 
+type Banner = {
+  name: string;
+  content: string;
+};
+
 type DeploymentEvent = {
   id: string;
   name: string;
@@ -29,6 +34,7 @@ type DeploymentEvent = {
 
 export enum ActiveTab {
   Dash,
+  Banner,
   Scores,
   Emails,
   EmailLogs,
@@ -39,6 +45,7 @@ export enum ActiveTab {
 }
 
 export type {
+  Banner,
   ParticipantExercise,
   NewExercise,
   Exercise,

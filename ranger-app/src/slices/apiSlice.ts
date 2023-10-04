@@ -9,6 +9,7 @@ import type {
 } from 'src/models/deployment';
 import type {Participant, NewParticipant} from 'src/models/participant';
 import {
+  type Banner,
   type ParticipantExercise,
   type Exercise,
   type NewExercise,
@@ -58,6 +59,41 @@ export const apiSlice = createApi({
       query: ({deploymentId, exerciseId}) => ({
         url: `/admin/exercise/${exerciseId}/deployment/${deploymentId}/users`,
       }),
+    }),
+    adminGetBanner: builder.query<Banner, string>({
+      query: exerciseId => `/admin/exercise/${exerciseId}/banner`,
+      providesTags: (result, error, id) => [{type: 'Exercise', id}],
+    }),
+    adminAddBanner: builder
+      .mutation<Banner,
+    {newBanner: Banner; exerciseId: string}>({
+      query: ({newBanner, exerciseId}) => ({
+        url: `/admin/exercise/${exerciseId}/banner`,
+        method: 'POST',
+        body: newBanner,
+      }),
+      invalidatesTags: [{type: 'Exercise', id: 'LIST'}],
+    }),
+    adminDeleteBanner: builder
+      .mutation<string, {exerciseId: string}>({
+      query: exerciseId => ({
+        url: `/admin/exercise/${exerciseId}/banner`,
+        method: 'DELETE',
+        responseHandler: 'text',
+      }),
+      invalidatesTags: (result, error, {exerciseId}) =>
+        [{type: 'Exercise', id: exerciseId}],
+    }),
+    adminUpdateBanner: builder
+      .mutation<Banner,
+    {updatedBanner: Banner; exerciseId: string}>({
+      query: ({updatedBanner, exerciseId}) => ({
+        url: `/admin/exercise/${exerciseId}/banner`,
+        method: 'PUT',
+        body: updatedBanner,
+      }),
+      invalidatesTags: (result, error, {exerciseId}) =>
+        [{type: 'Exercise', id: exerciseId}],
     }),
     adminGetExercises: builder.query<Exercise[], void>({
       query: () => '/admin/exercise',
@@ -450,6 +486,10 @@ export const {
   useAdminGetGroupsQuery,
   useAdminGetGroupUsersQuery,
   useAdminGetDeploymentUsersQuery,
+  useAdminGetBannerQuery,
+  useAdminAddBannerMutation,
+  useAdminDeleteBannerMutation,
+  useAdminUpdateBannerMutation,
   useAdminGetExerciseQuery,
   useAdminGetExercisesQuery,
   useAdminAddExerciseMutation,

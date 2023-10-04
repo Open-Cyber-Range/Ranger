@@ -1,6 +1,9 @@
 const language = {
   homepage: 'Welcome to Ranger!',
   appName: 'Ranger',
+  create: 'Create',
+  update: 'Update',
+  delete: 'Delete',
   exercises: {
     title: 'Exercises',
     add: 'Add exercise',
@@ -14,6 +17,7 @@ const language = {
     addingFail: 'Failed to add the exercise',
     updateSuccess: 'Exercise {{exerciseName}} updated',
     updateFail: 'Failed to update the exercise: {{errorMessage}}',
+    noBanner: 'No banner exists for this exercise',
     noDeployments: 'No deployments',
     noDeploymentInfo: 'No deployment info',
     deleteSuccess: 'Exercise {{exerciseName}} deleted',
@@ -22,6 +26,7 @@ const language = {
     mustHaveName: 'Exercise must have a name',
     tabs: {
       dashboard: 'Dashboard',
+      banner: 'Banner',
       scores: 'Scores',
       deploymentScores: 'Deployment Scores',
       emails: 'Emails',
@@ -272,6 +277,11 @@ const language = {
     copyButton: 'Copy value',
     copyFail: 'Failed to copy value to clipboard: {{errorMessage}}',
     copySuccess: 'Private key copied to clipboard',
+  },
+  banners: {
+    required: 'Required',
+    name: 'Banner name',
+    content: 'Banner message content',
   },
   fallback: {
     role: 'You do not have any roles assigned to you. Please contact your Ranger administrator.',

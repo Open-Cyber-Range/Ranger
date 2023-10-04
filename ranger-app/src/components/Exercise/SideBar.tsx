@@ -113,6 +113,18 @@ const SideBar = ({renderMainContent}: {
                   }}
                 />
                 <MenuItem
+                  active={!deploymentId && activeTab === ActiveTab.Banner}
+                  text={t('exercises.tabs.banner')}
+                  icon='new-text-box'
+                  onClick={() => {
+                    if (exerciseId) {
+                      navigate(`/exercises/${exerciseId}#banner`);
+                    }
+
+                    setActiveTab(ActiveTab.Banner);
+                  }}
+                />
+                <MenuItem
                   disabled={!hasDeployments}
                   active={!deploymentId && activeTab === ActiveTab.Scores}
                   text={t('exercises.tabs.scores')}

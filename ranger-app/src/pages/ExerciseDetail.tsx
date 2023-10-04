@@ -6,6 +6,7 @@ import {
   useAdminGetExerciseQuery,
 } from 'src/slices/apiSlice';
 import {skipToken} from '@reduxjs/toolkit/dist/query';
+import BannerView from 'src/components/Exercise/Banner';
 import ScoresPanel from 'src/components/Scoring/ExerciseScores';
 import DashboardPanel from 'src/components/Exercise/Dashboard';
 import SendEmail from 'src/components/Email/SendEmail';
@@ -34,6 +35,12 @@ const ExerciseDetail = () => {
                 exercise={exercise}
                 deployments={deployments}
               />
+            </>
+          )}
+          {activeTab === ActiveTab.Banner && (
+            <>
+              <H2>{t('exercises.tabs.banner')}</H2>
+              <BannerView exercise={exercise}/>
             </>
           )}
           {activeTab === ActiveTab.Scores && (
