@@ -1,5 +1,10 @@
 import React from 'react';
-import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from 'react-router-dom';
 import ExerciseDetail from 'src/pages/ExerciseDetail';
 import Exercises from 'src/pages/Exercises';
 import MainNavbar from 'src/components/MainNavBar';
@@ -18,6 +23,8 @@ import {UserRole} from './models/userRoles';
 import useDefaultRoleSelect from './hooks/useDefaultRoleSelect';
 import ScoreDetail from './pages/ScoreDetail';
 import DeploymentFocus from './pages/DeploymentFocus';
+import MinimalNavBar from './components/MinimalNavBar';
+import RolesFallback from './pages/RolesFallback';
 
 const App = () => {
   const {keycloak: {authenticated}} = useKeycloak();
@@ -60,6 +67,18 @@ const App = () => {
           <Route
             path='/exercises/:exerciseId/deployments/:deploymentId'
             element={<ParticipantDeploymentDetail/>}/>
+        </Routes>
+      </Router>
+    );
+  }
+
+  if (authenticated && (currentRole === undefined)) {
+    return (
+      <Router>
+        <MinimalNavBar/>
+        <Routes>
+          <Route path='/' element={<RolesFallback/>}/>
+          <Route path='/*' element={<Navigate replace to='/'/>}/>
         </Routes>
       </Router>
     );

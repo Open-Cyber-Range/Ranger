@@ -41,7 +41,7 @@ const LoginInfo = () => {
       {keycloak.authenticated && (
         <>
           {keycloak.tokenParsed?.preferred_username !== undefined && (
-            <Navbar.Heading>
+            <Navbar.Heading className='hidden md:block'>
 
               {t('menu.greeting',
                 {
