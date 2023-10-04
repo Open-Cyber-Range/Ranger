@@ -64,7 +64,7 @@ export enum ActiveTab {
   SDL,
   Accounts,
   EntitySelector,
-  ManualMetrics,
+  UserSubmissions,
 }
 
 export type {

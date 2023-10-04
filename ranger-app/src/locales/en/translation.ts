@@ -25,7 +25,7 @@ const language = {
       scores: 'Scores',
       accounts: 'Accounts',
       entities: 'Entity Selector',
-      metrics: 'Manual Metrics',
+      userSubmissions: 'User Submissions',
       sdl: 'SDL',
     },
     estimatedResourcesTitle: 'Estimated resources:',
@@ -186,7 +186,7 @@ const language = {
         score: 'Score',
         events: 'Events',
         accounts: 'Accounts',
-        manualMetrics: 'Manual Metrics',
+        userSubmissions: 'User Submissions',
       },
       events: {
         noEvents: 'Participant is not connected to any Events in this deployment',
