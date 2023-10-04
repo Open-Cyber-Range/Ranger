@@ -4,7 +4,7 @@ use crate::{
     models::{
         helpers::uuid::Uuid,
         user::{User, UserAccount},
-        Banner, Deployment, DeploymentElement, Exercise, NewBanner, NewDeployment,
+        Banner, Deployment, DeploymentElement, Exercise, NewBanner, NewBannerWithId, NewDeployment,
         NewDeploymentResource, NewExercise, NewParticipant, NewParticipantResource, Participant,
         Score, UpdateBanner, UpdateExercise,
     },
@@ -538,11 +538,15 @@ pub async fn add_banner(
     new_banner: Json<NewBanner>,
 ) -> Result<Json<Banner>, RangerError> {
     let exercise_id = path_variable.into_inner();
-    let mut new_banner = new_banner.into_inner();
-    new_banner.exercise_id = exercise_id;
+    let new_banner = new_banner.into_inner();
+    let new_banner_with_id = NewBannerWithId {
+        exercise_id,
+        name: new_banner.name,
+        content: new_banner.content,
+    };
     let banner = app_state
         .database_address
-        .send(CreateBanner(new_banner))
+        .send(CreateBanner(new_banner_with_id))
         .await
         .map_err(create_mailbox_error_handler("Database"))?
         .map_err(create_database_error_handler("Create banner"))?;

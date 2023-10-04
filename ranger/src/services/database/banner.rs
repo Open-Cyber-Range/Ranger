@@ -1,7 +1,7 @@
 use super::Database;
 use crate::constants::RECORD_NOT_FOUND;
 use crate::models::helpers::uuid::Uuid;
-use crate::models::{Banner, NewBanner};
+use crate::models::{Banner, NewBannerWithId};
 use actix::{Handler, Message, ResponseActFuture, WrapFuture};
 use actix_web::web::block;
 use anyhow::{anyhow, Ok, Result};
@@ -9,7 +9,7 @@ use diesel::RunQueryDsl;
 
 #[derive(Message)]
 #[rtype(result = "Result<Banner>")]
-pub struct CreateBanner(pub NewBanner);
+pub struct CreateBanner(pub NewBannerWithId);
 
 impl Handler<CreateBanner> for Database {
     type Result = ResponseActFuture<Self, Result<Banner>>;

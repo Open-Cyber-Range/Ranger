@@ -42,17 +42,22 @@ impl Banner {
     }
 }
 
+#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
+pub struct NewBanner {
+    pub name: String,
+    pub content: String,
+}
+
 #[derive(Insertable, Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 #[diesel(table_name = banners)]
-pub struct NewBanner {
-    #[serde(default = "Uuid::random")]
+pub struct NewBannerWithId {
     pub exercise_id: Uuid,
     pub name: String,
     pub content: String,
 }
 
-impl NewBanner {
+impl NewBannerWithId {
     pub fn create_insert(&self) -> Create<&Self, banners::table> {
         insert_into(banners::table).values(self)
     }
