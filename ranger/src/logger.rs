@@ -67,16 +67,21 @@ impl Log for WebsocketLogger {
     }
 
     fn log(&self, record: &Record) {
-        let message = format!(
-            "{} [{}] {}",
-            chrono::Utc::now().format("%Y-%m-%dT%H:%M:%SZ"),
-            record.level(),
-            record.args()
-        );
-        let _ = self.websocket_manager.try_send(SocketLogUpdate(
-            WebsocketStringMessage(message),
-            record.level(),
-        ));
+        if record
+            .module_path()
+            .is_some_and(|module| module.contains(PROJECT_NAME))
+        {
+            let message = format!(
+                "{} [{}] {}",
+                chrono::Utc::now().format("%Y-%m-%dT%H:%M:%SZ"),
+                record.level(),
+                record.args()
+            );
+            let _ = self.websocket_manager.try_send(SocketLogUpdate(
+                WebsocketStringMessage(message),
+                record.level(),
+            ));
+        }
     }
 
     fn flush(&self) {}
