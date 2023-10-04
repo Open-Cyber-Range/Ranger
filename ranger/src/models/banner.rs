@@ -16,7 +16,7 @@ use serde::{Deserialize, Serialize};
 #[serde(rename_all = "camelCase")]
 #[diesel(table_name = banners)]
 pub struct Banner {
-    pub id: Uuid,
+    pub exercise_id: Uuid,
     pub name: String,
     pub content: String,
     pub created_at: NaiveDateTime,
@@ -28,21 +28,17 @@ impl Banner {
         banners::table.select(Self::as_select())
     }
 
-    pub fn by_id(id: Uuid) -> Filter<All<banners::table, Self>, Eq<banners::id, Uuid>> {
-        Self::all().filter(banners::id.eq(id))
-    }
-
-    pub fn by_name(name: String) -> Filter<All<banners::table, Self>, Eq<banners::name, String>> {
-        Self::all().filter(banners::name.eq(name))
+    pub fn by_id(id: Uuid) -> Filter<All<banners::table, Self>, Eq<banners::exercise_id, Uuid>> {
+        Self::all().filter(banners::exercise_id.eq(id))
     }
 
     pub fn hard_delete(
         &self,
     ) -> Filter<
         DeleteStatement<banners::table, <banners::table as IntoUpdateTarget>::WhereClause>,
-        Eq<banners::id, Uuid>,
+        Eq<banners::exercise_id, Uuid>,
     > {
-        diesel::delete(banners::table).filter(banners::id.eq(self.id))
+        diesel::delete(banners::table).filter(banners::exercise_id.eq(self.exercise_id))
     }
 }
 
@@ -51,7 +47,7 @@ impl Banner {
 #[diesel(table_name = banners)]
 pub struct NewBanner {
     #[serde(default = "Uuid::random")]
-    pub id: Uuid,
+    pub exercise_id: Uuid,
     pub name: String,
     pub content: String,
 }
@@ -71,9 +67,12 @@ pub struct UpdateBanner {
 }
 
 impl UpdateBanner {
-    pub fn create_update(&self, id: Uuid) -> HardUpdateById<banners::id, banners::table, &Self> {
+    pub fn create_update(
+        &self,
+        id: Uuid,
+    ) -> HardUpdateById<banners::exercise_id, banners::table, &Self> {
         diesel::update(banners::table)
-            .filter(banners::id.eq(id))
+            .filter(banners::exercise_id.eq(id))
             .set(self)
     }
 }

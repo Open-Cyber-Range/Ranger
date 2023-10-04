@@ -32,9 +32,9 @@ diesel::table! {
 }
 
 diesel::table! {
-    banners (id) {
+    banners (exercise_id) {
         #[max_length = 16]
-        id -> Binary,
+        exercise_id -> Binary,
         name -> Tinytext,
         content -> Text,
         created_at -> Timestamp,
@@ -170,6 +170,7 @@ diesel::table! {
 
 diesel::joinable!(accounts -> exercises (exercise_id));
 diesel::joinable!(artifacts -> metrics (metric_id));
+diesel::joinable!(banners -> exercises (exercise_id));
 diesel::joinable!(condition_messages -> deployments (deployment_id));
 diesel::joinable!(deployment_elements -> deployments (deployment_id));
 diesel::joinable!(deployment_elements -> events (event_id));

@@ -539,14 +539,14 @@ pub async fn add_banner(
 ) -> Result<Json<Banner>, RangerError> {
     let exercise_id = path_variable.into_inner();
     let mut new_banner = new_banner.into_inner();
-    new_banner.id = exercise_id;
+    new_banner.exercise_id = exercise_id;
     let banner = app_state
         .database_address
         .send(CreateBanner(new_banner))
         .await
         .map_err(create_mailbox_error_handler("Database"))?
         .map_err(create_database_error_handler("Create banner"))?;
-    log::debug!("Created banner: {}", banner.id);
+    log::debug!("Created banner: {}", banner.exercise_id);
     Ok(Json(banner))
 }
 
@@ -582,7 +582,7 @@ pub async fn update_banner(
         .await
         .map_err(create_mailbox_error_handler("Database"))?
         .map_err(create_database_error_handler("Update banner"))?;
-    log::debug!("Updated banner: {}", banner.id);
+    log::debug!("Updated banner: {}", banner.exercise_id);
     Ok(Json(banner))
 }
 

@@ -23,7 +23,7 @@ impl Handler<CreateBanner> for Database {
                 let mut connection = connection_result?;
                 let banner = block(move || {
                     new_banner.create_insert().execute(&mut connection)?;
-                    let banner = Banner::by_id(new_banner.id).first(&mut connection)?;
+                    let banner = Banner::by_id(new_banner.exercise_id).first(&mut connection)?;
 
                     Ok(banner)
                 })
