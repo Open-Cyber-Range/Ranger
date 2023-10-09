@@ -72,16 +72,24 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
 
       await sendMail({email, exerciseId: exercise.id});
     } else if (selectedDeployment) {
-      const deployment = deployments?.find(d => d.id === selectedDeployment);
-      if (deployment && users) {
-        const emailPromises = users.map(async user =>
-          sendMail({
-            email: prepareEmailForDeploymentUser(email, deployment, user),
-            exerciseId: exercise.id,
-          }),
-        );
-        await Promise.all(emailPromises);
+      if (!users || users.length === 0) {
+        toastWarning(t('emails.noUsers'));
+        return;
       }
+
+      const deployment = deployments?.find(d => d.id === selectedDeployment);
+      if (!deployment) {
+        toastWarning(t('emails.noDeployment'));
+        return;
+      }
+
+      const emailPromises = users.map(async user =>
+        sendMail({
+          email: prepareEmailForDeploymentUser(email, deployment, user),
+          exerciseId: exercise.id,
+        }),
+      );
+      await Promise.all(emailPromises);
     }
   };
 
