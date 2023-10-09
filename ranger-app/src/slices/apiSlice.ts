@@ -76,7 +76,7 @@ export const apiSlice = createApi({
     }),
     adminDeleteBanner: builder
       .mutation<string, {exerciseId: string}>({
-      query: exerciseId => ({
+      query: ({exerciseId}) => ({
         url: `/admin/exercise/${exerciseId}/banner`,
         method: 'DELETE',
         responseHandler: 'text',

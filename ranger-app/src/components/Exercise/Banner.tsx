@@ -6,25 +6,30 @@ import {Button, FormGroup, InputGroup, Intent} from '@blueprintjs/core';
 import {Controller, type SubmitHandler, useForm} from 'react-hook-form';
 import {
   useAdminAddBannerMutation,
+  useAdminDeleteBannerMutation,
   useAdminGetBannerQuery,
   useAdminUpdateBannerMutation,
 } from 'src/slices/apiSlice';
+import {useEffect} from 'react';
 
 const BannerView = ({exercise}:
-											 {
-												 exercise: Exercise;
-											 }) => {
+{
+  exercise: Exercise;
+}) => {
   const {t} = useTranslation();
   const {data: existingBanner} = useAdminGetBannerQuery(exercise?.id ?? skipToken);
-  const [addBanner, {createSuccess, createError}] = useAdminAddBannerMutation();
-  const [updateBanner, {updateSuccess, updateError}] = useAdminUpdateBannerMutation();
+  const [addBanner] = useAdminAddBannerMutation();
+  const [updateBanner] = useAdminUpdateBannerMutation();
+  const [deleteBanner] = useAdminDeleteBannerMutation();
 
-  const {handleSubmit, control} = useForm<Banner>({
-    defaultValues: {
-      name: '',
-      content: '',
-    },
-  });
+  const {handleSubmit, control, reset, setValue} = useForm<Banner>();
+
+  useEffect(() => {
+    if (existingBanner) {
+      setValue('name', existingBanner.name || '');
+      setValue('content', existingBanner.content || '');
+    }
+  }, [existingBanner, setValue]);
 
   const onCreate: SubmitHandler<Banner> = async newBanner => {
     await addBanner({newBanner, exerciseId: exercise.id});
@@ -34,26 +39,24 @@ const BannerView = ({exercise}:
     await updateBanner({updatedBanner, exerciseId: exercise.id});
   };
 
-  function submitHandling(existingBanner: Banner | undefined) {
-    if (existingBanner) {
-      return (
-        handleSubmit(onUpdate)
-      );
-    }
-
-    return handleSubmit(onCreate);
-  }
+  const onDelete: SubmitHandler<Banner> = async () => {
+    await deleteBanner({exerciseId: exercise.id});
+    reset();
+  };
 
   return (
     <div>
-      <form onSubmit={submitHandling(existingBanner)}>
+      <form
+        onSubmit={existingBanner ? handleSubmit(onUpdate) : handleSubmit(onCreate)}
+        onReset={handleSubmit(onDelete)}
+      >
         <Controller
           control={control}
           name='name'
           rules={{required: t('banners.required') ?? ''}}
           render={({
-										 field: {onChange, onBlur, ref, value}, fieldState: {error},
-									 }) => {
+            field: {onChange, onBlur, ref, value}, fieldState: {error},
+          }) => {
             const intent = error ? Intent.DANGER : Intent.NONE;
             return (
               <FormGroup
@@ -79,13 +82,13 @@ const BannerView = ({exercise}:
           name='content'
           rules={{required: t('banners.required') ?? ''}}
           render={({
-										 field: {onChange, onBlur, ref, value}, fieldState: {error},
-									 }) => (
+            field: {onChange, onBlur, ref, value}, fieldState: {error},
+          }) => (
             <FormGroup
-    helperText={error?.message}
-    label={t('banners.content')}
-  >
-    <InputGroup
+              helperText={error?.message}
+              label={t('banners.content')}
+            >
+              <InputGroup
                 large
                 value={value}
                 inputRef={ref}
@@ -93,14 +96,20 @@ const BannerView = ({exercise}:
                 onChange={onChange}
                 onBlur={onBlur}
               />
-  </FormGroup>
+            </FormGroup>
           )}
         />
         <Button
           large
           type='submit'
           intent='primary'
-          text={t('create')}
+          text={existingBanner ? t('update') : t('create')}
+        />
+        <Button
+          large
+          type='reset'
+          intent='danger'
+          text={t('delete')}
         />
       </form>
     </div>
