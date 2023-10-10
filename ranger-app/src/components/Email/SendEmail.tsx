@@ -24,6 +24,7 @@ import useExerciseStreaming from 'src/hooks/useExerciseStreaming';
 import {type Deployment} from 'src/models/deployment';
 import {type AdUser} from 'src/models/groups';
 import {skipToken} from '@reduxjs/toolkit/dist/query';
+import useGetDeploymentUsers from 'src/hooks/useGetDeploymentUsers';
 
 const SendEmail = ({exercise}: {exercise: Exercise}) => {
   const {t} = useTranslation();
@@ -33,6 +34,7 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
   const [selectedDeployment, setSelectedDeployment] = useState<string | undefined>(undefined);
   const [selectedGroupName, setSelectedGroupName] = useState<string | undefined>(undefined);
   const {data: users} = useAdminGetGroupUsersQuery(selectedGroupName ?? skipToken);
+  const {deploymentUsers, fetchDeploymentUsers} = useGetDeploymentUsers();
   useExerciseStreaming(exercise.id);
 
   const {handleSubmit, control} = useForm<EmailForm>({
@@ -71,6 +73,47 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
           {exerciseName: exercise.name});
 
       await sendMail({email, exerciseId: exercise.id});
+    } else if (selectedDeployment === 'wholeExercise') {
+      if (!deployments || deployments.length === 0) {
+        toastWarning(t('emails.noDeployments'));
+        return;
+      }
+
+      const deploymentPromises = deployments.map(async deployment =>
+        fetchDeploymentUsers(deployment.id, deployment.groupName));
+
+      await Promise.all(deploymentPromises);
+
+      if (!deploymentUsers) {
+        toastWarning(t('emails.noUsers'));
+        return;
+      }
+
+      const allEmailPromises = [];
+
+      for (const deployment of deployments) {
+        const currentDeploymentUsers = deploymentUsers[deployment.id];
+
+        if (!currentDeploymentUsers || currentDeploymentUsers.length === 0) {
+          continue;
+        }
+
+        const emailPromises = currentDeploymentUsers.map(async user =>
+          sendMail({
+            email: prepareEmailForDeploymentUser(email, deployment, user),
+            exerciseId: exercise.id,
+          }),
+        );
+
+        allEmailPromises.push(...emailPromises);
+      }
+
+      if (allEmailPromises.length === 0) {
+        toastWarning(t('emails.noUsers'));
+        return;
+      }
+
+      await Promise.all(allEmailPromises);
     } else if (selectedDeployment) {
       if (!users || users.length === 0) {
         toastWarning(t('emails.noUsers'));
@@ -171,12 +214,20 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
             value={selectedDeployment ?? ''}
             onChange={event => {
               setSelectedDeployment(event.target.value);
+              if (event.target.value === '' || event.target.value === 'wholeExercise') {
+                setSelectedGroupName(undefined);
+                return;
+              }
+
               const deployment = deployments?.find(d => d.id === event.target.value);
               setSelectedGroupName(deployment?.groupName);
             }}
           >
             <option value=''>
               {t('emails.form.deploymentSelector.placeholder')}
+            </option>
+            <option value='wholeExercise'>
+              {t('emails.form.deploymentSelector.wholeExercise')}
             </option>
             {deployments?.map((deployment: Deployment) => (
               <option key={deployment.id} value={deployment.id}>
