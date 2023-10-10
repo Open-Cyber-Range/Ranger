@@ -48,6 +48,12 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
     },
   });
 
+  const preventFormSubmissionWithEnterKey = (event: React.KeyboardEvent<HTMLFormElement>) => {
+    if (event.key === 'Enter' && event.target instanceof HTMLInputElement) {
+      event.preventDefault();
+    }
+  };
+
   const onSubmit: SubmitHandler<EmailForm> = async email => {
     const invalidEmailAddresses = [validateEmails(email.toAddresses)].flat()
       .concat(validateEmails(email.replyToAddresses ?? []))
@@ -195,7 +201,7 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
   }, [error, t]);
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form onSubmit={handleSubmit(onSubmit)} onKeyDown={preventFormSubmissionWithEnterKey}>
       <div>
         <FormGroup
           label={t('emails.form.from.title')}
