@@ -17,7 +17,7 @@ use anyhow::{Ok, Result};
 use async_trait::async_trait;
 use chrono::Utc;
 use futures::future::try_join_all;
-use log::info;
+use log::debug;
 use sdl_parser::inject::Inject;
 use sdl_parser::{node::Node, node::Role, Scenario};
 use std::collections::HashMap;
@@ -39,6 +39,7 @@ pub trait DeployableEvents {
         deployed_nodes: &[(Node, DeploymentElement, Uuid, Vec<ConditionProperties>)],
     ) -> Result<()>;
 }
+
 #[async_trait]
 impl DeployableEvents for Scenario {
     async fn create_events(
@@ -307,7 +308,7 @@ impl Handler<StartPolling> for EventPoller {
                 )
                 .await?;
 
-                info!(
+                debug!(
                     "Starting Polling for Event '{}' for node '{}'",
                     event.name, &node_deployment_element.scenario_reference
                 );
@@ -331,7 +332,7 @@ impl Handler<StartPolling> for EventPoller {
                         .len()
                         .eq(&successful_condition_count)
                     {
-                        info!(
+                        debug!(
                             "Event '{}' has been triggered successfully for node '{}'",
                             event.name, node_name
                         );
@@ -340,7 +341,7 @@ impl Handler<StartPolling> for EventPoller {
                         has_succeeded = true;
                         break;
                     } else if current_time > event.end {
-                        info!(
+                        debug!(
                             "Event '{}' deployment window has ended for node '{}'",
                             event.name, node_name
                         );
