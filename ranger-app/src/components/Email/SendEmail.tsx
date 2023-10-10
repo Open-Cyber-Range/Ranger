@@ -97,25 +97,24 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
     email: EmailForm,
     deployment: Deployment,
     user: AdUser) {
-    email.toAddresses = [user.email ?? ''];
-
-    email.subject = nunjucks.renderString(email.subject, {
-      exerciseName: exercise.name,
-      deploymentName: deployment.name,
-      participantFirstName: user.firstName,
-      participantLastName: user.lastName,
-      participantEmail: user.email,
-    });
-
-    email.body = nunjucks.renderString(email.body, {
-      exerciseName: exercise.name,
-      deploymentName: deployment.name,
-      participantFirstName: user.firstName,
-      participantLastName: user.lastName,
-      participantEmail: user.email,
-    });
-
-    return email;
+    return {
+      ...email,
+      toAddresses: [user.email ?? ''],
+      subject: nunjucks.renderString(email.subject, {
+        exerciseName: exercise.name,
+        deploymentName: deployment.name,
+        participantFirstName: user.firstName,
+        participantLastName: user.lastName,
+        participantEmail: user.email,
+      }),
+      body: nunjucks.renderString(email.body, {
+        exerciseName: exercise.name,
+        deploymentName: deployment.name,
+        participantFirstName: user.firstName,
+        participantLastName: user.lastName,
+        participantEmail: user.email,
+      }),
+    };
   }
 
   const validateEmails = (emails: string[]) => {
