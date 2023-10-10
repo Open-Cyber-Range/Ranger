@@ -258,7 +258,7 @@ const AddDialog = (
                     labelFor='group-name'
                     helperText={error?.message}
                     intent={intent}
-                    label={t('common.adGroup')}
+                    label={t('deployments.form.adGroups.title')}
                   >
                     <Suggest2<AdGroup>
                       inputProps={{
@@ -288,12 +288,7 @@ const AddDialog = (
                           roleStructure='listoption'/>
                       }
                       onItemSelect={item => {
-                        const event = {
-                          target: {
-                            value: item.name,
-                          },
-                        };
-                        onChange(event);
+                        onChange(item.name);
                       }}
                     />
                   </FormGroup>
