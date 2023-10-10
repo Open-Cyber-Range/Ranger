@@ -67,7 +67,7 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
       return;
     }
 
-    if (selectedDeployment === '') {
+    if (selectedDeployment === '' || selectedDeployment === undefined) {
       email.subject = nunjucks
         .renderString(
           email.subject,
