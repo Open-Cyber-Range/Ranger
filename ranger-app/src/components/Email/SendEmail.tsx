@@ -25,6 +25,7 @@ import {type Deployment} from 'src/models/deployment';
 import {type AdUser} from 'src/models/groups';
 import {skipToken} from '@reduxjs/toolkit/dist/query';
 import useGetDeploymentUsers from 'src/hooks/useGetDeploymentUsers';
+import validator from 'validator';
 
 const SendEmail = ({exercise}: {exercise: Exercise}) => {
   const {t} = useTranslation();
@@ -55,10 +56,12 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
   };
 
   const onSubmit: SubmitHandler<EmailForm> = async email => {
-    const invalidEmailAddresses = [validateEmails(email.toAddresses)].flat()
-      .concat(validateEmails(email.replyToAddresses ?? []))
-      .concat(validateEmails(email.ccAddresses ?? []))
-      .concat(validateEmails(email.bccAddresses ?? []));
+    const invalidEmailAddresses = [
+      ...validateEmails(email.toAddresses),
+      ...validateEmails(email.replyToAddresses ?? []),
+      ...validateEmails(email.ccAddresses ?? []),
+      ...validateEmails(email.bccAddresses ?? []),
+    ];
 
     if (invalidEmailAddresses.length > 0) {
       toastWarning(t('emails.invalidEmailAddress', {
@@ -167,19 +170,8 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
   }
 
   const validateEmails = (emails: string[]) => {
-    const faultyEmails = [];
-    for (const email of emails) {
-      if (email.trim().length > 0
-       && !/^[\w.%+-]+@[a-z\d.-]+\.[a-z]{2,4}$/i.test(email)) {
-        faultyEmails.push(email);
-      }
-    }
-
-    if (faultyEmails.length > 0) {
-      return faultyEmails;
-    }
-
-    return [];
+    const faultyEmails = emails.filter(email => !validator.isEmail(email));
+    return faultyEmails;
   };
 
   useEffect(() => {
