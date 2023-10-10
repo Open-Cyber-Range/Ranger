@@ -6,7 +6,7 @@ use crate::{models::helpers::uuid::Uuid, services::database::event::GetEvent};
 use actix::Addr;
 use anyhow::{anyhow, Ok, Result};
 use chrono::{NaiveDateTime, Utc};
-use log::info;
+use log::debug;
 use sdl_parser::{event::Event as SdlEvent, node::Role, Scenario};
 use std::ops::Add;
 use std::time::Duration;
@@ -70,7 +70,7 @@ pub async fn await_event_start(
     while current_time < event.start {
         let event_start_timedelta = get_event_start_timedelta(&event, current_time);
         if event_start_timedelta > Duration::from_secs(0) {
-            info!(
+            debug!(
                 "Starting Polling for Event '{}' in {:?} on node '{}'",
                 event.name, event_start_timedelta, node_name
             );
