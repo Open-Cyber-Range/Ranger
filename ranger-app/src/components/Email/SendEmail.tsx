@@ -260,7 +260,9 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
                   placeholder={t('emails.form.emailPlaceholder') ?? ''}
                   values={value}
                   tagProps={{interactive: true}}
-                  onChange={onChange}
+                  onChange={(values: React.ReactNode[]) => {
+                    onChange(values.filter(Boolean).map(String));
+                  }}
                 />
               </FormGroup>
             );
@@ -283,7 +285,9 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
                 placeholder={t('emails.form.emailPlaceholder') ?? ''}
                 values={value}
                 tagProps={{interactive: true}}
-                onChange={onChange}
+                onChange={(values: React.ReactNode[]) => {
+                  onChange(values.filter(Boolean).map(String));
+                }}
               />
             </FormGroup>
           )}
@@ -305,7 +309,9 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
                 placeholder={t('emails.form.emailPlaceholder') ?? ''}
                 values={value}
                 tagProps={{interactive: true}}
-                onChange={onChange}
+                onChange={(values: React.ReactNode[]) => {
+                  onChange(values.filter(Boolean).map(String));
+                }}
               />
             </FormGroup>
           )}
@@ -327,7 +333,9 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
                 placeholder={t('emails.form.emailPlaceholder') ?? ''}
                 values={value}
                 tagProps={{interactive: true}}
-                onChange={onChange}
+                onChange={(values: React.ReactNode[]) => {
+                  onChange(values.filter(Boolean).map(String));
+                }}
               />
             </FormGroup>
           )}
@@ -379,7 +387,9 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
                   <Editor
                     value={value}
                     defaultLanguage='html'
-                    onChange={onChange}
+                    onChange={value => {
+                      onChange(value ?? '');
+                    }}
                   />
                 </div>
               </FormGroup>
