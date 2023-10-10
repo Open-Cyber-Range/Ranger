@@ -54,19 +54,13 @@ const DashboardPanel = ({exercise, deployments}:
     deployment: NewDeployment,
   ) => {
     const promises = [];
-    if (count < 2) {
+    for (let index = 0; index < count; index += 1) {
       promises.push(
-        addDeployment({newDeployment: deployment, exerciseId}),
+        addDeployment({newDeployment: {
+          ...deployment,
+          name: count < 2 ? deployment.name : `${deployment.name}-${index}`,
+        }, exerciseId}),
       );
-    } else {
-      for (let index = 0; index < count; index += 1) {
-        promises.push(
-          addDeployment({newDeployment: {
-            ...deployment,
-            name: `${deployment.name}-${index}`,
-          }, exerciseId}),
-        );
-      }
     }
 
     return promises.map(async promise =>

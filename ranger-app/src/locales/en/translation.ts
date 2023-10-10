@@ -55,25 +55,28 @@ const language = {
     form: {
       group: {
         placeholder: 'Select group...',
-        title: 'Deployment group',
-        required: 'Deployment group is required',
+        title: 'Deployment(s) group',
+        required: 'Deployment(s) group is required',
       },
       name: {
-        title: 'Deployment name',
-        required: 'Deployment name is required',
+        title: 'Deployment(s) name',
+        required: 'Deployment(s) name is required',
       },
       count: {
-        title: 'Deployment count',
-        required: 'Deployment count is required',
+        title: 'Number of deployments',
+        required: 'Number of deployments is required',
       },
       startDate: {
-        title: 'Deployment start time',
-        required: 'Deployment start time is required',
+        title: 'Deployment(s) start time',
+        required: 'Deployment(s) start time is required',
+      },
+      adGroups: {
+        title: 'AD Group(s)',
       },
       endDate: {
-        title: 'Deployment end time',
-        required: 'Deployment end time is required',
-        earlierThanStart: 'Deployment end time must be later than start time',
+        title: 'Deployment(s) end time',
+        required: 'Deployment(s) end time is required',
+        earlierThanStart: 'Deployment(s) end time must be later than start time',
       },
     },
   },

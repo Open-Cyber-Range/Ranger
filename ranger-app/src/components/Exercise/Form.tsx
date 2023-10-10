@@ -73,6 +73,7 @@ const ExerciseForm = ({exercise, onContentChange, children}:
     }
 
     await updateExercise({exerciseUpdate, exerciseId: exercise.id});
+    onContentChange(false);
   };
 
   useEffect(() => {
