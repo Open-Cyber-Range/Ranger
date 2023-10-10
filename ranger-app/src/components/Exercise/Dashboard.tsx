@@ -23,9 +23,9 @@ const DashboardPanel = ({exercise, deployments}:
   const [isModified, setIsModified] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
-  const createNewDeployment = (
+  const createNewDeployments = (
     deploymentForm: DeploymentForm,
-  ): [NewDeployment, string] | undefined => {
+  ): [NewDeployment[], string] | undefined => {
     if (exercise?.sdlSchema && exercise?.id && deploymentForm.start && deploymentForm.end) {
       let updatedSchema = exercise.sdlSchema.replace(
         /start: \d{4}-\d{2}-\d{2}t\d{2}:\d{2}:\d{2}z/i,
@@ -37,12 +37,18 @@ const DashboardPanel = ({exercise, deployments}:
         `end: ${deploymentForm.end}`,
       );
 
-      return [{
-        name: deploymentForm.name,
-        sdlSchema: updatedSchema,
-        deploymentGroup: deploymentForm.deploymentGroup,
-        groupName: deploymentForm.groupName,
-      }, exercise.id];
+      const count = deploymentForm.count;
+      const deployments = [];
+      for (let index = 0; index < count; index += 1) {
+        deployments.push({
+          name: count < 2 ? deploymentForm.name : `${deploymentForm.name}-${index}`,
+          sdlSchema: updatedSchema,
+          deploymentGroup: deploymentForm.deploymentGroup,
+          groupName: deploymentForm.groupNames[index].groupName,
+        });
+      }
+
+      return [deployments, exercise.id];
     }
 
     toastWarning(t('deployments.sdlMissing'));
@@ -51,15 +57,12 @@ const DashboardPanel = ({exercise, deployments}:
   const createPromises = (
     count: number,
     exerciseId: string,
-    deployment: NewDeployment,
+    deployments: NewDeployment[],
   ) => {
     const promises = [];
     for (let index = 0; index < count; index += 1) {
       promises.push(
-        addDeployment({newDeployment: {
-          ...deployment,
-          name: count < 2 ? deployment.name : `${deployment.name}-${index}`,
-        }, exerciseId}),
+        addDeployment({newDeployment: deployments[index], exerciseId}),
       );
     }
 
@@ -81,14 +84,14 @@ const DashboardPanel = ({exercise, deployments}:
   const addNewDeployment = async (
     deploymentForm: DeploymentForm,
   ) => {
-    const deploymentInfo = createNewDeployment(deploymentForm);
-    if (deploymentInfo) {
-      const [deployment, exerciseId] = deploymentInfo;
+    const deploymentsInfo = createNewDeployments(deploymentForm);
+    if (deploymentsInfo) {
+      const [deployments, exerciseId] = deploymentsInfo;
 
       const promises = createPromises(
         deploymentForm.count,
         exerciseId,
-        deployment,
+        deployments,
       );
       await Promise.all(promises);
     }

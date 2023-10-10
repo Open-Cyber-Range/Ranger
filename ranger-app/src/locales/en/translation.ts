@@ -71,7 +71,7 @@ const language = {
         required: 'Deployment(s) start time is required',
       },
       adGroups: {
-        title: 'AD Group(s)',
+        title: 'AD Group for deployment #{{number}}',
       },
       endDate: {
         title: 'Deployment(s) end time',
