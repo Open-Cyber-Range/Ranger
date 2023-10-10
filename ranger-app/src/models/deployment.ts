@@ -8,7 +8,9 @@ type ParticipantDeployment = {
 type DeploymentForm = {
   name: string;
   deploymentGroup?: string;
-  groupName: string;
+  groupNames: Array<{
+    groupName: string;
+  }>;
   count: number;
   start: string;
   end: string;

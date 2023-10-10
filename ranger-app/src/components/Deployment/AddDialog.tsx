@@ -18,12 +18,12 @@ import {
   useAdminGetGroupsQuery,
 } from 'src/slices/apiSlice';
 import {useTranslation} from 'react-i18next';
-import {Controller, useForm} from 'react-hook-form';
+import {Controller, useFieldArray, useForm, useWatch} from 'react-hook-form';
 import {Suggest2} from '@blueprintjs/select';
 import {MenuItem2} from '@blueprintjs/popover2';
 import {type AdGroup} from 'src/models/groups';
 import DatePicker from 'react-datepicker';
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 
 const AddDialog = (
   {isOpen, title, onSubmit, onCancel}:
@@ -34,7 +34,7 @@ const AddDialog = (
       count,
       name,
       deploymentGroup,
-      groupName,
+      groupNames,
       start,
       end,
     }: DeploymentForm) => void;
@@ -52,11 +52,30 @@ const AddDialog = (
     defaultValues: {
       name: '',
       deploymentGroup: undefined,
+      groupNames: [],
       count: 1,
       start: undefined,
       end: undefined,
     },
   });
+  const count = useWatch({control, name: 'count', defaultValue: 1});
+  const {fields, append, remove} = useFieldArray({
+    control,
+    name: 'groupNames',
+  });
+  useEffect(() => {
+    let added = 0;
+    while (fields.length + added < count) {
+      append({groupName: ''});
+      added += 1;
+    }
+
+    let removed = 0;
+    while (fields.length - removed > count) {
+      remove(fields.length - 1);
+      removed += 1;
+    }
+  }, [count, append, remove, fields.length]);
 
   const onHandleSubmit = (formContent: DeploymentForm) => {
     if (onSubmit) {
@@ -245,56 +264,62 @@ const AddDialog = (
                 );
               }}
             />
-            <Controller
-              control={control}
-              name='groupName'
-              render={({
-                field: {onBlur, ref, value, onChange}, fieldState: {error},
-              }) => {
-                const intent = error ? Intent.DANGER : Intent.NONE;
-                const activeItem = groups?.find(group => group.name === value);
-                return (
-                  <FormGroup
-                    labelFor='group-name'
-                    helperText={error?.message}
-                    intent={intent}
-                    label={t('deployments.form.adGroups.title')}
-                  >
-                    <Suggest2<AdGroup>
-                      inputProps={{
-                        id: 'group-name',
-                        onBlur,
-                        inputRef: ref,
-                        placeholder: '',
-                        leftIcon: 'search',
-                      }}
-                      activeItem={activeItem}
-                      inputValueRenderer={item => item.name}
-                      itemPredicate={(query, item) =>
-                        item.name.toLowerCase().includes(query.toLowerCase())}
-                      itemRenderer={(item, {handleClick, handleFocus}) => (
-                        <MenuItem2
-                          key={item.id}
-                          text={item.name}
-                          onClick={handleClick}
-                          onFocus={handleFocus}
-                        />
-                      )}
-                      items={groups ?? []}
-                      noResults={
-                        <MenuItem
-                          disabled
-                          text={t('common.noResults')}
-                          roleStructure='listoption'/>
-                      }
-                      onItemSelect={item => {
-                        onChange(item.name);
-                      }}
-                    />
-                  </FormGroup>
-                );
-              }}
-            />
+            {fields.map((field, index) => (
+              <Controller
+                key={field.id}
+                control={control}
+                name={`groupNames.${index}.groupName`}
+                rules={{required: true}}
+                render={({
+                  field: {onBlur, ref, value, onChange}, fieldState: {error},
+                }) => {
+                  const intent = error ? Intent.DANGER : Intent.NONE;
+                  const activeItem = groups?.find(group => group.name === value);
+                  return (
+                    <FormGroup
+                      labelFor='group-name'
+                      labelInfo='(required)'
+                      helperText={error?.message}
+                      intent={intent}
+                      label={t('deployments.form.adGroups.title', {number: index + 1})}
+                    >
+                      <Suggest2<AdGroup>
+                        inputProps={{
+                          id: 'group-name',
+                          onBlur,
+                          inputRef: ref,
+                          placeholder: '',
+                          leftIcon: 'search',
+                        }}
+                        activeItem={activeItem}
+                        inputValueRenderer={item => item.name}
+                        itemPredicate={(query, item) =>
+                          item.name.toLowerCase().includes(query.toLowerCase())}
+                        itemRenderer={(item, {handleClick, handleFocus}) => (
+                          <MenuItem2
+                            key={item.id}
+                            text={item.name}
+                            onClick={handleClick}
+                            onFocus={handleFocus}
+                          />
+                        )}
+                        items={groups ?? []}
+                        noResults={
+                          <MenuItem
+                            disabled
+                            text={t('common.noResults')}
+                            roleStructure='listoption'/>
+                        }
+                        onItemSelect={item => {
+                          onChange(item.name);
+                        }}
+                      />
+                    </FormGroup>
+                  );
+                }}
+              />
+            ),
+            )}
             <Controller
               control={control}
               name='count'
