@@ -157,7 +157,7 @@ const language = {
         required: 'Email body is required',
       },
       emailPlaceholder:
-      'Enter email address, multiple addresses separated by comma',
+      '...multiple addresses separated by comma or enter',
     },
   },
   tloTable: {
