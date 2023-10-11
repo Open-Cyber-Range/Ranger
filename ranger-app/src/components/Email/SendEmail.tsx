@@ -22,10 +22,13 @@ import nunjucks from 'nunjucks';
 import Editor from '@monaco-editor/react';
 import useExerciseStreaming from 'src/hooks/useExerciseStreaming';
 import {type Deployment} from 'src/models/deployment';
-import {type AdUser} from 'src/models/groups';
 import {skipToken} from '@reduxjs/toolkit/dist/query';
 import useGetDeploymentUsers from 'src/hooks/useGetDeploymentUsers';
-import validator from 'validator';
+import {
+  validateEmails,
+  prepareEmailForDeploymentUser,
+  preventDefaultOnEnter,
+} from 'src/utils/email';
 
 const SendEmail = ({exercise}: {exercise: Exercise}) => {
   const {t} = useTranslation();
@@ -48,12 +51,6 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
       body: '',
     },
   });
-
-  const preventFormSubmissionWithEnterKey = (event: React.KeyboardEvent<HTMLFormElement>) => {
-    if (event.key === 'Enter' && event.target instanceof HTMLInputElement) {
-      event.preventDefault();
-    }
-  };
 
   const onSubmit: SubmitHandler<EmailForm> = async email => {
     const invalidEmailAddresses = [
@@ -109,7 +106,11 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
 
         const emailPromises = currentDeploymentUsers.map(async user =>
           sendMail({
-            email: prepareEmailForDeploymentUser(email, deployment, user),
+            email: prepareEmailForDeploymentUser(
+              email,
+              exercise.name,
+              deployment.name,
+              user),
             exerciseId: exercise.id,
           }),
         );
@@ -137,41 +138,15 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
 
       const emailPromises = users.map(async user =>
         sendMail({
-          email: prepareEmailForDeploymentUser(email, deployment, user),
-          exerciseId: exercise.id,
+          email: prepareEmailForDeploymentUser(
+            email,
+            exercise.name,
+            deployment.name,
+            user), exerciseId: exercise.id,
         }),
       );
       await Promise.all(emailPromises);
     }
-  };
-
-  function prepareEmailForDeploymentUser(
-    email: EmailForm,
-    deployment: Deployment,
-    user: AdUser) {
-    return {
-      ...email,
-      toAddresses: [user.email ?? ''],
-      subject: nunjucks.renderString(email.subject, {
-        exerciseName: exercise.name,
-        deploymentName: deployment.name,
-        participantFirstName: user.firstName,
-        participantLastName: user.lastName,
-        participantEmail: user.email,
-      }),
-      body: nunjucks.renderString(email.body, {
-        exerciseName: exercise.name,
-        deploymentName: deployment.name,
-        participantFirstName: user.firstName,
-        participantLastName: user.lastName,
-        participantEmail: user.email,
-      }),
-    };
-  }
-
-  const validateEmails = (emails: string[]) => {
-    const faultyEmails = emails.filter(email => !validator.isEmail(email));
-    return faultyEmails;
   };
 
   useEffect(() => {
@@ -193,7 +168,7 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
   }, [error, t]);
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} onKeyDown={preventFormSubmissionWithEnterKey}>
+    <form onSubmit={handleSubmit(onSubmit)} onKeyDown={preventDefaultOnEnter}>
       <div>
         <FormGroup
           label={t('emails.form.from.title')}
