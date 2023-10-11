@@ -158,6 +158,16 @@ const language = {
       },
       emailPlaceholder:
       '...multiple addresses separated by comma or enter',
+      required: ' (required)',
+    },
+    variables: {
+      available: 'Available variables:',
+      insert: 'Insert variable',
+      exerciseName: 'Exercise\'s name',
+      deploymentName: 'Deployment\'s name',
+      participantFirstName: 'Participant\'s first name',
+      participantLastName: 'Participant\'s last name',
+      participantEmail: 'Participant\'s email',
     },
   },
   tloTable: {

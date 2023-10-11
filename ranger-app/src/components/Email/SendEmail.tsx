@@ -8,6 +8,7 @@ import {
   HTMLSelect,
   InputGroup,
   Intent,
+  Label,
   TagInput,
 } from '@blueprintjs/core';
 import {useTranslation} from 'react-i18next';
@@ -21,6 +22,7 @@ import {
 import {toastSuccess, toastWarning} from 'src/components/Toaster';
 import nunjucks from 'nunjucks';
 import Editor from '@monaco-editor/react';
+import {type editor} from 'monaco-editor';
 import useExerciseStreaming from 'src/hooks/useExerciseStreaming';
 import {type Deployment} from 'src/models/deployment';
 import {skipToken} from '@reduxjs/toolkit/dist/query';
@@ -30,6 +32,9 @@ import {
   prepareEmailForDeploymentUser,
   preventDefaultOnEnter,
 } from 'src/utils/email';
+import {useEmailVariablesInEditor} from 'src/hooks/useEmailVariablesInEditor';
+import EmailVariablesPopover from './EmailVariablesPopover';
+import EmailVariablesInfo from './EmailVariablesInfo';
 
 const SendEmail = ({exercise}: {exercise: Exercise}) => {
   const {t} = useTranslation();
@@ -40,6 +45,10 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
   const [selectedGroupName, setSelectedGroupName] = useState<string | undefined>(undefined);
   const {data: users} = useAdminGetGroupUsersQuery(selectedGroupName ?? skipToken);
   const {deploymentUsers, fetchDeploymentUsers} = useGetDeploymentUsers();
+  const [editorInstance, setEditorInstance]
+  = useState<editor.IStandaloneCodeEditor | undefined>(undefined);
+  const {emailVariables, insertVariable}
+  = useEmailVariablesInEditor(selectedDeployment, editorInstance);
   useExerciseStreaming(exercise.id);
 
   const {handleSubmit, control} = useForm<EmailForm>({
@@ -326,10 +335,17 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
             const intent = error ? Intent.DANGER : Intent.NONE;
             return (
               <FormGroup
-                labelInfo='(required)'
                 helperText={error?.message}
                 intent={intent}
-                label={t('emails.form.subject.title')}
+                label={
+                  <div className='flex justify-between items-end'>
+                    <Label>
+                      {t('emails.form.subject.title')}
+                      <span className='bp4-text-muted'>{t('emails.form.required')}</span>
+                    </Label>
+                    <EmailVariablesInfo emailVariables={emailVariables}/>
+                  </div>
+                }
               >
                 <InputGroup
                   large
@@ -354,10 +370,19 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
             const intent = error ? Intent.DANGER : Intent.NONE;
             return (
               <FormGroup
-                labelInfo='(required)'
                 helperText={error?.message}
                 intent={intent}
-                label={t('emails.form.body.title')}
+                label={
+                  <div className='flex justify-between items-end'>
+                    <Label>
+                      {t('emails.form.body.title')}
+                      <span className='bp4-text-muted'>{t('emails.form.required')}</span>
+                    </Label>
+                    <EmailVariablesPopover
+                      emailVariables={emailVariables}
+                      insertVariable={insertVariable}/>
+                  </div>
+                }
               >
                 <div className='h-[40vh] p-[0.5vh] rounded-sm shadow-inner'>
                   <Editor
@@ -365,6 +390,9 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
                     defaultLanguage='html'
                     onChange={value => {
                       onChange(value ?? '');
+                    }}
+                    onMount={editor => {
+                      setEditorInstance(editor);
                     }}
                   />
                 </div>
