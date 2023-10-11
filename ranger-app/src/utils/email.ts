@@ -1,5 +1,5 @@
 import validator from 'validator';
-import type {EmailForm} from 'src/models/exercise';
+import type {EmailForm} from 'src/models/email';
 import type {AdUser} from 'src/models/groups';
 import nunjucks from 'nunjucks';
 

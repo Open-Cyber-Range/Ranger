@@ -1,6 +1,7 @@
 import type React from 'react';
 import {useEffect, useState} from 'react';
-import type {EmailForm, Exercise} from 'src/models/exercise';
+import type {Exercise} from 'src/models/exercise';
+import type {EmailForm} from 'src/models/email';
 import {
   Button,
   FormGroup,
