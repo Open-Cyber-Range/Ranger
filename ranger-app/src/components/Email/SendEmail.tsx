@@ -20,7 +20,6 @@ import {
   useAdminSendEmailMutation,
 } from 'src/slices/apiSlice';
 import {toastSuccess, toastWarning} from 'src/components/Toaster';
-import nunjucks from 'nunjucks';
 import Editor from '@monaco-editor/react';
 import {type editor} from 'monaco-editor';
 import useExerciseStreaming from 'src/hooks/useExerciseStreaming';
@@ -31,6 +30,7 @@ import {
   validateEmails,
   prepareEmailForDeploymentUser,
   preventDefaultOnEnter,
+  prepareEmail,
 } from 'src/utils/email';
 import {useEmailVariablesInEditor} from 'src/hooks/useEmailVariablesInEditor';
 import EmailVariablesPopover from './EmailVariablesPopover';
@@ -78,17 +78,7 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
     }
 
     if (selectedDeployment === '' || selectedDeployment === undefined) {
-      email.subject = nunjucks
-        .renderString(
-          email.subject,
-          {exerciseName: exercise.name});
-
-      email.body = nunjucks
-        .renderString(
-          email.body,
-          {exerciseName: exercise.name});
-
-      await sendMail({email, exerciseId: exercise.id});
+      await sendMail({email: prepareEmail(email, exercise.name), exerciseId: exercise.id});
     } else if (selectedDeployment === 'wholeExercise') {
       if (!deployments || deployments.length === 0) {
         toastWarning(t('emails.noDeployments'));

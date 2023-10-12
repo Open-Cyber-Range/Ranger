@@ -6,6 +6,15 @@ import nunjucks from 'nunjucks';
 export const validateEmails = (emails: string[]) =>
   emails.filter(email => !validator.isEmail(email));
 
+export const prepareEmail = (
+  email: EmailForm,
+  exerciseName: string,
+) => {
+  email.subject = nunjucks.renderString(email.subject, {exerciseName});
+  email.body = nunjucks.renderString(email.body, {exerciseName});
+  return email;
+};
+
 export const prepareEmailForDeploymentUser = (
   email: EmailForm,
   exerciseName: string,
