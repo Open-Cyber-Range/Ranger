@@ -220,7 +220,7 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
             const intent = error ? Intent.DANGER : Intent.NONE;
             return (
               <FormGroup
-                labelInfo='(required)'
+                labelInfo={selectedDeployment ? '' : '(required)'}
                 helperText={error?.message}
                 intent={intent}
                 label={t('emails.form.to.title')}
