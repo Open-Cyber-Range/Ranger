@@ -9,11 +9,15 @@ export const validateEmails = (emails: string[]) =>
 export const prepareEmail = (
   email: EmailForm,
   exerciseName: string,
-) => {
-  email.subject = nunjucks.renderString(email.subject, {exerciseName});
-  email.body = nunjucks.renderString(email.body, {exerciseName});
-  return email;
-};
+) => ({
+  ...email,
+  subject: nunjucks.renderString(email.subject, {
+    exerciseName,
+  }),
+  body: nunjucks.renderString(email.body, {
+    exerciseName,
+  }),
+});
 
 export const prepareEmailForDeploymentUser = (
   email: EmailForm,
