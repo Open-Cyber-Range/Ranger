@@ -120,6 +120,7 @@ const language = {
     cc: 'Cc',
     body: 'Body',
     send: 'Send',
+    sendButtonDisabled: 'Fetching users to send emails to...',
     sendingSuccess: 'Email sent',
     sendingFail: 'Error trying to send the email: {{errorMessage}}',
     sendingFailWithoutMessage: 'Failed to send the email',

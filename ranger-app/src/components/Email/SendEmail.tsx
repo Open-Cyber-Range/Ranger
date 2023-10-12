@@ -32,6 +32,7 @@ import {
   validateEmailForm,
 } from 'src/utils/email';
 import {useEmailVariablesInEditor} from 'src/hooks/useEmailVariablesInEditor';
+import {Tooltip2} from '@blueprintjs/popover2';
 import EmailVariablesPopover from './EmailVariablesPopover';
 import EmailVariablesInfo from './EmailVariablesInfo';
 
@@ -423,13 +424,18 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
           }}
         />
       </div>
-      <Button
-        large
-        type='submit'
-        intent='primary'
-        text={t('emails.send')}
-        disabled={isFetchingUsers}
-      />
+      <Tooltip2
+        content={t('emails.sendButtonDisabled') ?? ''}
+        disabled={!isFetchingUsers}
+      >
+        <Button
+          large
+          type='submit'
+          intent='primary'
+          text={t('emails.send')}
+          disabled={isFetchingUsers}
+        />
+      </Tooltip2>
     </form>
   );
 };
