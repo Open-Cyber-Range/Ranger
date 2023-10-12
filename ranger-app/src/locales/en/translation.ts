@@ -156,7 +156,7 @@ const language = {
         required: 'Email subject is required',
       },
       body: {
-        title: 'Email body',
+        title: 'Email body (HTML text editor)',
         required: 'Email body is required',
       },
       emailPlaceholder:
