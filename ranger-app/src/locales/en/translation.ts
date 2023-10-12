@@ -125,7 +125,9 @@ const language = {
     sendingFailWithoutMessage: 'Failed to send the email',
     invalidEmailAddress: 'Invalid email address(es): {{invalidEmailAddresses}}',
     noDeployment: 'Cannot find this deployment',
-    noUsers: 'No users in the deployment',
+    noDeployments: 'Cannot find any deployments for this exercise',
+    fetchingUsersFail: 'Failed to fetch users',
+    creatingEmailsFail: 'Failed to create emails',
     form: {
       from: {
         title: 'From',

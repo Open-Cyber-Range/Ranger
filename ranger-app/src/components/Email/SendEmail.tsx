@@ -16,7 +16,6 @@ import {Controller, type SubmitHandler, useForm} from 'react-hook-form';
 import {
   useAdminGetDeploymentsQuery,
   useAdminGetEmailFormQuery,
-  useAdminGetGroupUsersQuery,
   useAdminSendEmailMutation,
 } from 'src/slices/apiSlice';
 import {toastSuccess, toastWarning} from 'src/components/Toaster';
@@ -24,7 +23,6 @@ import Editor from '@monaco-editor/react';
 import {type editor} from 'monaco-editor';
 import useExerciseStreaming from 'src/hooks/useExerciseStreaming';
 import {type Deployment} from 'src/models/deployment';
-import {skipToken} from '@reduxjs/toolkit/dist/query';
 import useGetDeploymentUsers from 'src/hooks/useGetDeploymentUsers';
 import {
   prepareEmailForDeploymentUser,
@@ -43,14 +41,46 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
   const {data: fromAddress} = useAdminGetEmailFormQuery(exercise.id);
   const [sendMail, {isSuccess, error}] = useAdminSendEmailMutation();
   const [selectedDeployment, setSelectedDeployment] = useState<string | undefined>(undefined);
-  const [selectedGroupName, setSelectedGroupName] = useState<string | undefined>(undefined);
-  const {data: users} = useAdminGetGroupUsersQuery(selectedGroupName ?? skipToken);
   const {deploymentUsers, fetchDeploymentUsers} = useGetDeploymentUsers();
   const [editorInstance, setEditorInstance]
   = useState<editor.IStandaloneCodeEditor | undefined>(undefined);
   const {emailVariables, insertVariable}
   = useEmailVariablesInEditor(selectedDeployment, editorInstance);
+  const [isFetchingUsers, setIsFetchingUsers] = useState(false);
   useExerciseStreaming(exercise.id);
+
+  const handleDeploymentChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedValue = event.target.value;
+    setSelectedDeployment(selectedValue);
+
+    if (selectedValue === '') {
+      return;
+    }
+
+    setIsFetchingUsers(true);
+
+    try {
+      if (selectedValue === 'wholeExercise') {
+        if (!deployments || deployments.length === 0) {
+          toastWarning(t('emails.noDeployments'));
+          return;
+        }
+
+        const deploymentPromises = deployments.map(async deployment =>
+          fetchDeploymentUsers(deployment.id, deployment.groupName));
+        await Promise.all(deploymentPromises);
+      } else {
+        const selectedDeployment = deployments?.find(d => d.id === selectedValue);
+        if (selectedDeployment) {
+          await fetchDeploymentUsers(selectedDeployment.id, selectedDeployment.groupName);
+        }
+      }
+    } catch {
+      toastWarning(t('emails.fetchingUsersFail'));
+    } finally {
+      setIsFetchingUsers(false);
+    }
+  };
 
   const {handleSubmit, control} = useForm<EmailForm>({
     defaultValues: {
@@ -73,7 +103,9 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
       return;
     }
 
-    await sendMail({email: prepareEmail(email, exercise.name), exerciseId: exercise.id});
+    if (email.toAddresses.length > 0) {
+      await sendMail({email: prepareEmail(email, exercise.name), exerciseId: exercise.id});
+    }
 
     if (selectedDeployment === 'wholeExercise') {
       if (!deployments || deployments.length === 0) {
@@ -81,13 +113,8 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
         return;
       }
 
-      const deploymentPromises = deployments.map(async deployment =>
-        fetchDeploymentUsers(deployment.id, deployment.groupName));
-
-      await Promise.all(deploymentPromises);
-
       if (!deploymentUsers) {
-        toastWarning(t('emails.noUsers'));
+        toastWarning(t('emails.fetchingUsersFail'));
         return;
       }
 
@@ -116,14 +143,15 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
       }
 
       if (allEmailPromises.length === 0) {
-        toastWarning(t('emails.noUsers'));
+        toastWarning(t('emails.creatingEmailsFail'));
         return;
       }
 
       await Promise.all(allEmailPromises);
     } else if (selectedDeployment) {
-      if (!users || users.length === 0) {
-        toastWarning(t('emails.noUsers'));
+      const currentDeploymentUsers = deploymentUsers?.[selectedDeployment];
+      if (currentDeploymentUsers.length === 0) {
+        toastWarning(t('emails.fetchingUsersFail'));
         return;
       }
 
@@ -135,7 +163,7 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
 
       removeUnnecessaryEmailAddresses(email);
 
-      const emailPromises = users.map(async user =>
+      const emailPromises = currentDeploymentUsers.map(async user =>
         sendMail({
           email: prepareEmailForDeploymentUser(
             email,
@@ -184,16 +212,7 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
             large
             fill
             value={selectedDeployment ?? ''}
-            onChange={event => {
-              setSelectedDeployment(event.target.value);
-              if (event.target.value === '' || event.target.value === 'wholeExercise') {
-                setSelectedGroupName(undefined);
-                return;
-              }
-
-              const deployment = deployments?.find(d => d.id === event.target.value);
-              setSelectedGroupName(deployment?.groupName);
-            }}
+            onChange={handleDeploymentChange}
           >
             <option value=''>
               {t('emails.form.deploymentSelector.placeholder')}
@@ -395,6 +414,7 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
         type='submit'
         intent='primary'
         text={t('emails.send')}
+        disabled={isFetchingUsers}
       />
     </form>
   );
