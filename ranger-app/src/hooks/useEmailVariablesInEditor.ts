@@ -24,7 +24,7 @@ export const useEmailVariablesInEditor
   useEffect(() => {
     if (!selectedDeployment || selectedDeployment === '') {
       setEmailVariables(defaultEmailVariables());
-    } else if (selectedDeployment === 'wholeExercise' || selectedDeployment) {
+    } else if (selectedDeployment) {
       setEmailVariables(specificDeploymentVariables());
     }
   }, [selectedDeployment, t, defaultEmailVariables, specificDeploymentVariables]);
