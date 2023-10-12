@@ -27,11 +27,11 @@ import {type Deployment} from 'src/models/deployment';
 import {skipToken} from '@reduxjs/toolkit/dist/query';
 import useGetDeploymentUsers from 'src/hooks/useGetDeploymentUsers';
 import {
-  validateEmails,
   prepareEmailForDeploymentUser,
   preventDefaultOnEnter,
   prepareEmail,
   removeUnnecessaryEmailAddresses,
+  validateEmailForm,
 } from 'src/utils/email';
 import {useEmailVariablesInEditor} from 'src/hooks/useEmailVariablesInEditor';
 import EmailVariablesPopover from './EmailVariablesPopover';
@@ -64,14 +64,9 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
   });
 
   const onSubmit: SubmitHandler<EmailForm> = async email => {
-    const invalidEmailAddresses = [
-      ...validateEmails(email.toAddresses),
-      ...validateEmails(email.replyToAddresses ?? []),
-      ...validateEmails(email.ccAddresses ?? []),
-      ...validateEmails(email.bccAddresses ?? []),
-    ];
+    const {invalidEmailAddresses, isValid} = validateEmailForm(email);
 
-    if (invalidEmailAddresses.length > 0) {
+    if (!isValid) {
       toastWarning(t('emails.invalidEmailAddress', {
         invalidEmailAddresses: invalidEmailAddresses.join(', '),
       }));

@@ -3,8 +3,22 @@ import type {EmailForm} from 'src/models/email';
 import type {AdUser} from 'src/models/groups';
 import nunjucks from 'nunjucks';
 
-export const validateEmails = (emails: string[]) =>
+export const validateEmailAddresses = (emails: string[]) =>
   emails.filter(email => !validator.isEmail(email));
+
+export const validateEmailForm = (email: EmailForm) => {
+  const invalidEmailAddresses = [
+    ...validateEmailAddresses(email.toAddresses),
+    ...validateEmailAddresses(email.replyToAddresses ?? []),
+    ...validateEmailAddresses(email.ccAddresses ?? []),
+    ...validateEmailAddresses(email.bccAddresses ?? []),
+  ];
+
+  return {
+    invalidEmailAddresses,
+    isValid: invalidEmailAddresses.length === 0,
+  };
+};
 
 export const removeUnnecessaryEmailAddresses = (email: EmailForm) => {
   email.replyToAddresses = [];
