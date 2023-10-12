@@ -50,7 +50,7 @@ export const prepareEmailForDeploymentUser = (
   }),
 });
 
-export const preventDefaultOnEnter = (event: KeyboardEvent) => {
+export const preventDefaultOnEnter = (event: React.KeyboardEvent<HTMLFormElement>) => {
   if (event.key === 'Enter' && event.target instanceof HTMLInputElement) {
     event.preventDefault();
   }
