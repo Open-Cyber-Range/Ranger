@@ -6,6 +6,13 @@ import nunjucks from 'nunjucks';
 export const validateEmails = (emails: string[]) =>
   emails.filter(email => !validator.isEmail(email));
 
+export const removeUnnecessaryEmailAddresses = (email: EmailForm) => {
+  email.replyToAddresses = [];
+  email.toAddresses = [];
+  email.ccAddresses = [];
+  email.bccAddresses = [];
+};
+
 export const prepareEmail = (
   email: EmailForm,
   exerciseName: string,

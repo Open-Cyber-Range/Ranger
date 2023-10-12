@@ -31,6 +31,7 @@ import {
   prepareEmailForDeploymentUser,
   preventDefaultOnEnter,
   prepareEmail,
+  removeUnnecessaryEmailAddresses,
 } from 'src/utils/email';
 import {useEmailVariablesInEditor} from 'src/hooks/useEmailVariablesInEditor';
 import EmailVariablesPopover from './EmailVariablesPopover';
@@ -77,9 +78,9 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
       return;
     }
 
-    if (selectedDeployment === '' || selectedDeployment === undefined) {
-      await sendMail({email: prepareEmail(email, exercise.name), exerciseId: exercise.id});
-    } else if (selectedDeployment === 'wholeExercise') {
+    await sendMail({email: prepareEmail(email, exercise.name), exerciseId: exercise.id});
+
+    if (selectedDeployment === 'wholeExercise') {
       if (!deployments || deployments.length === 0) {
         toastWarning(t('emails.noDeployments'));
         return;
@@ -95,6 +96,7 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
         return;
       }
 
+      removeUnnecessaryEmailAddresses(email);
       const allEmailPromises = [];
 
       for (const deployment of deployments) {
@@ -135,6 +137,8 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
         toastWarning(t('emails.noDeployment'));
         return;
       }
+
+      removeUnnecessaryEmailAddresses(email);
 
       const emailPromises = users.map(async user =>
         sendMail({
