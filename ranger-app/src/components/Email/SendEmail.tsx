@@ -82,6 +82,84 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
     }
   };
 
+  const processWholeExercise = async (email: EmailForm) => {
+    if (!deployments || deployments.length === 0) {
+      toastWarning(t('emails.noDeployments'));
+      return;
+    }
+
+    if (!deploymentUsers) {
+      toastWarning(t('emails.fetchingUsersFail'));
+      return;
+    }
+
+    const allEmailPromises = [];
+    allEmailPromises.push(sendMail({
+      email: prepareEmail(email, exercise.name),
+      exerciseId: exercise.id,
+    }));
+    removeUnnecessaryEmailAddresses(email);
+
+    for (const deployment of deployments) {
+      const currentDeploymentUsers = deploymentUsers[deployment.id];
+      if (!currentDeploymentUsers || currentDeploymentUsers.length === 0) {
+        continue;
+      }
+
+      const emailPromises = currentDeploymentUsers.map(async user =>
+        sendMail({
+          email: prepareEmailForDeploymentUser(
+            email,
+            exercise.name,
+            deployment.name,
+            user),
+          exerciseId: exercise.id,
+        }),
+      );
+      allEmailPromises.push(...emailPromises);
+    }
+
+    if (allEmailPromises.length === 0) {
+      toastWarning(t('emails.creatingEmailsFail'));
+      return;
+    }
+
+    await Promise.all(allEmailPromises);
+  };
+
+  const processSelectedDeployment = async (email: EmailForm, selectedDeploymentId: string) => {
+    const currentDeploymentUsers = deploymentUsers?.[selectedDeploymentId];
+    if (currentDeploymentUsers.length === 0) {
+      toastWarning(t('emails.fetchingUsersFail'));
+      return;
+    }
+
+    const deployment = deployments?.find(d => d.id === selectedDeployment);
+    if (!deployment) {
+      toastWarning(t('emails.noDeployment'));
+      return;
+    }
+
+    const emailPromises = [];
+    emailPromises.push(sendMail({
+      email: prepareEmail(email, exercise.name),
+      exerciseId: exercise.id,
+    }));
+    removeUnnecessaryEmailAddresses(email);
+
+    emailPromises.push(currentDeploymentUsers.map(async user =>
+      sendMail({
+        email: prepareEmailForDeploymentUser(
+          email,
+          exercise.name,
+          deployment.name,
+          user), exerciseId: exercise.id,
+      }),
+    ));
+
+    await Promise.all(emailPromises);
+  };
+
   const {handleSubmit, control} = useForm<EmailForm>({
     defaultValues: {
       toAddresses: [],
@@ -103,76 +181,12 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
       return;
     }
 
-    if (email.toAddresses.length > 0) {
+    if (selectedDeployment === undefined || selectedDeployment === '') {
       await sendMail({email: prepareEmail(email, exercise.name), exerciseId: exercise.id});
-    }
-
-    if (selectedDeployment === 'wholeExercise') {
-      if (!deployments || deployments.length === 0) {
-        toastWarning(t('emails.noDeployments'));
-        return;
-      }
-
-      if (!deploymentUsers) {
-        toastWarning(t('emails.fetchingUsersFail'));
-        return;
-      }
-
-      removeUnnecessaryEmailAddresses(email);
-      const allEmailPromises = [];
-
-      for (const deployment of deployments) {
-        const currentDeploymentUsers = deploymentUsers[deployment.id];
-
-        if (!currentDeploymentUsers || currentDeploymentUsers.length === 0) {
-          continue;
-        }
-
-        const emailPromises = currentDeploymentUsers.map(async user =>
-          sendMail({
-            email: prepareEmailForDeploymentUser(
-              email,
-              exercise.name,
-              deployment.name,
-              user),
-            exerciseId: exercise.id,
-          }),
-        );
-
-        allEmailPromises.push(...emailPromises);
-      }
-
-      if (allEmailPromises.length === 0) {
-        toastWarning(t('emails.creatingEmailsFail'));
-        return;
-      }
-
-      await Promise.all(allEmailPromises);
+    } else if (selectedDeployment === 'wholeExercise') {
+      await processWholeExercise(email);
     } else if (selectedDeployment) {
-      const currentDeploymentUsers = deploymentUsers?.[selectedDeployment];
-      if (currentDeploymentUsers.length === 0) {
-        toastWarning(t('emails.fetchingUsersFail'));
-        return;
-      }
-
-      const deployment = deployments?.find(d => d.id === selectedDeployment);
-      if (!deployment) {
-        toastWarning(t('emails.noDeployment'));
-        return;
-      }
-
-      removeUnnecessaryEmailAddresses(email);
-
-      const emailPromises = currentDeploymentUsers.map(async user =>
-        sendMail({
-          email: prepareEmailForDeploymentUser(
-            email,
-            exercise.name,
-            deployment.name,
-            user), exerciseId: exercise.id,
-        }),
-      );
-      await Promise.all(emailPromises);
+      await processSelectedDeployment(email, selectedDeployment);
     }
   };
 
