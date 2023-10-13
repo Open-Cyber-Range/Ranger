@@ -1,31 +1,19 @@
+import {Callout} from '@blueprintjs/core';
 import React from 'react';
-import {skipToken} from '@reduxjs/toolkit/dist/query';
 import {useTranslation} from 'react-i18next';
-import {
-  useParticipantGetDeploymentScenarioQuery,
-  useParticipantGetTriggeredEventsQuery,
-} from 'src/slices/apiSlice';
-import {useSelector} from 'react-redux';
-import {selectedEntity} from 'src/slices/userSlice';
+import {type DeploymentEvent} from 'src/models/exercise';
+import {type Event} from 'src/models/scenario';
 
-const Events = ({
-  exerciseId, deploymentId}:
-{exerciseId: string; deploymentId: string;
+const Events = ({scenarioEvents, deploymentEvents}:
+{scenarioEvents: Record<string, Event> | undefined; deploymentEvents: DeploymentEvent[] | undefined;
 }) => {
   const {t} = useTranslation();
-  const entitySelector = useSelector(selectedEntity);
-  const scenarioQueryArguments = exerciseId && deploymentId && entitySelector
-    ? {exerciseId, deploymentId, entitySelector} : skipToken;
-  const {data: scenario} = useParticipantGetDeploymentScenarioQuery(scenarioQueryArguments);
-  const {data: triggeredDeploymentEvents}
-  = useParticipantGetTriggeredEventsQuery(scenarioQueryArguments);
-  const scenarioEvents = scenario?.events;
 
-  if (scenarioEvents && triggeredDeploymentEvents && triggeredDeploymentEvents.length > 0) {
+  if (scenarioEvents && deploymentEvents && deploymentEvents.length > 0) {
     return (
       <>
         {
-          triggeredDeploymentEvents.map(event => (
+          deploymentEvents.map(event => (
             <div key={event.id} className='p-2'>
               <details className='p-2 border-2 border-slate-300 shadow-md '>
                 <summary className='font-bold text-xl'>
@@ -48,22 +36,14 @@ const Events = ({
     );
   }
 
-  if (triggeredDeploymentEvents && triggeredDeploymentEvents.length === 0) {
+  if (deploymentEvents && deploymentEvents.length === 0) {
     return (
-      <div className='
-      flex justify-center align-center m-2 mt-auto mb-4 text-gray-400'
-      >
-        {t('participant.exercise.events.noTriggeredEvents')}
-      </div>
+      <Callout title={t('participant.exercise.events.noTriggeredEvents') ?? ''}/>
     );
   }
 
   return (
-    <div className='
-    flex justify-center align-center m-2 mt-auto mb-4 text-gray-400'
-    >
-      {t('participant.exercise.events.noEvents')}
-    </div>
+    <Callout title={t('participant.exercise.events.noEvents') ?? ''}/>
   );
 };
 

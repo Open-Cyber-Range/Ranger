@@ -8,7 +8,7 @@ use crate::Addressor;
 use anyhow::{anyhow, Ok, Result};
 use async_trait::async_trait;
 use futures::future::try_join_all;
-use log::info;
+use log::debug;
 use ranger_grpc::capabilities::DeployerTypes;
 use ranger_grpc::{
     Account as GrpcAccount, ExecutorResponse, Feature as GrpcFeature,
@@ -93,7 +93,7 @@ impl DeployableNodeFeatures
                 tranche
                     .iter()
                     .map(|(feature_name, feature, role)| async move {
-                        info!(
+                        debug!(
                             "Deploying feature '{feature_name}' for VM {node_name}",
                             node_name = deployment_element.scenario_reference
                         );
@@ -152,6 +152,7 @@ impl DeployableNodeFeatures
                                 name: feature_source.name,
                                 version: feature_source.version,
                             }),
+                            environment: feature.environment.clone().unwrap_or_default(),
                         });
 
                         {
@@ -175,7 +176,7 @@ impl DeployableNodeFeatures
                                         .value;
 
                                     if feature_type == GrpcFeatureType::Service {
-                                        info!(
+                                        debug!(
                                             "Feature: '{feature_name}' output: {:?}",
                                             feature_response.vm_log
                                         );

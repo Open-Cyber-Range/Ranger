@@ -14,16 +14,18 @@ use ranger::routes::admin::metric::{
 };
 use ranger::routes::admin::scenario::get_admin_exercise_deployment_scenario;
 use ranger::routes::deployers::get_deployers;
-use ranger::routes::email::send_email;
+use ranger::routes::email::{get_email_form, send_email};
 use ranger::routes::exercise::{
-    add_participant, delete_exercise_deployment, delete_participant, get_admin_participants,
-    get_exercise, get_exercise_deployment, get_exercise_deployment_elements,
-    get_exercise_deployment_scores, get_exercise_deployment_users, get_exercise_deployments,
-    get_exercises, subscribe_to_exercise, update_exercise,
+    add_banner, add_participant, delete_banner, delete_exercise_deployment, delete_participant,
+    get_admin_participants, get_banner, get_exercise, get_exercise_deployment,
+    get_exercise_deployment_elements, get_exercise_deployment_scores,
+    get_exercise_deployment_users, get_exercise_deployments, get_exercises, subscribe_to_exercise,
+    update_banner, update_exercise,
 };
 use ranger::routes::logger::subscribe_to_logs_with_level;
 use ranger::routes::participant::deployment::{
     get_participant_deployment, get_participant_deployments,
+    get_participant_node_deployment_elements,
 };
 use ranger::routes::participant::events::get_participant_events;
 use ranger::routes::participant::metric::{
@@ -31,6 +33,7 @@ use ranger::routes::participant::metric::{
 };
 use ranger::routes::participant::participants::get_own_participants;
 use ranger::routes::participant::scenario::get_participant_exercise_deployment_scenario;
+use ranger::routes::participant::score::get_participant_exercise_deployment_scores;
 use ranger::routes::participant::{get_participant_exercise, get_participant_exercises};
 
 use ranger::routes::{
@@ -68,6 +71,7 @@ async fn main() -> Result<(), Error> {
                                             .service(update_exercise)
                                             .service(delete_exercise)
                                             .service(subscribe_to_exercise)
+                                            .service(get_email_form)
                                             .service(send_email)
                                             .service(
                                                 scope("/deployment")
@@ -102,6 +106,13 @@ async fn main() -> Result<(), Error> {
                                                                     ),
                                                             ),
                                                     ),
+                                            )
+                                            .service(
+                                                scope("/banner")
+                                                    .service(add_banner)
+                                                    .service(get_banner)
+                                                    .service(update_banner)
+                                                    .service(delete_banner)
                                             ),
                                     ),
                             )
@@ -135,10 +146,18 @@ async fn main() -> Result<(), Error> {
                                                                 get_participant_exercise_deployment_scenario,
                                                             )
                                                             .service(get_exercise_deployment_users)
-                                                            .service(get_exercise_deployment_scores)
                                                             .service(get_own_participants)
-                                                            .service(get_participant_events)
                                                             .wrap(DeploymentMiddlewareFactory)
+                                                            .service(
+                                                                scope("/entity")
+                                                                .service(
+                                                                    scope("/{entity_selector}")
+                                                                            .service(get_participant_exercise_deployment_scores)
+                                                                            .service(get_participant_events)
+                                                                            .service(get_participant_node_deployment_elements)
+                                                                            .wrap(DeploymentMiddlewareFactory)
+                                                                )
+                                                            )
                                                             .service(
                                                                 scope("/metric")
                                                                 .service(get_participant_metrics)

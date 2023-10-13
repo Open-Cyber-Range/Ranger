@@ -1,6 +1,6 @@
 {
   "name": "ranger-app",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
   "dependencies": {
     "@blueprintjs/core": "^4.17.7",
@@ -8,7 +8,7 @@
     "@blueprintjs/popover2": "^1.8.0",
     "@blueprintjs/select": "^4.9.18",
     "@monaco-editor/react": "^4.4.6",
-    "@open-cyber-range/wasm-sdl-parser": "^0.1.5",
+    "@open-cyber-range/wasm-sdl-parser": "^0.15.0",
     "@popperjs/core": "^2.11.6",
     "@react-keycloak/web": "^3.4.0",
     "@reduxjs/toolkit": "^1.8.6",
@@ -32,9 +32,12 @@
     "keycloak-js": "^20.0.2",
     "lodash.clonedeep": "^4.5.0",
     "luxon": "^3.3.0",
+    "monaco-editor": "^0.44.0",
     "nunjucks": "^3.2.3",
+    "re-resizable": "^6.9.11",
     "react": "^18.2.0",
     "react-chartjs-2": "^5.2.0",
+    "react-datepicker": "^4.18.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.36.1",
     "react-i18next": "^12.0.0",
@@ -44,6 +47,7 @@
     "sort-by-property": "^1.2.4",
     "tailwindcss": "^3.2.7",
     "typescript": "^4.4.2",
+    "validator": "^13.11.0",
     "web-vitals": "^2.1.0"
   },
   "scripts": {
@@ -68,6 +72,8 @@
   "devDependencies": {
     "@types/lodash": "^4.14.191",
     "@types/nunjucks": "^3.2.2",
+    "@types/react-datepicker": "^4.15.0",
+    "@types/validator": "^13.11.2",
     "@vitejs/plugin-react": "^3.1.0",
     "autoprefixer": "^10.4.14",
     "eslint-config-xo-react": "^0.27.0",
@@ -104,7 +110,10 @@
     "rules": {
       "import/extensions": [
         "error",
-        "never"
+        "never",
+        {
+          "svg": "always"
+        }
       ],
       "n/prefer-global/process": [
         "error",

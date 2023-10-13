@@ -32,6 +32,17 @@ diesel::table! {
 }
 
 diesel::table! {
+    banners (exercise_id) {
+        #[max_length = 16]
+        exercise_id -> Binary,
+        name -> Tinytext,
+        content -> Text,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
+    }
+}
+
+diesel::table! {
     condition_messages (id) {
         #[max_length = 16]
         id -> Binary,
@@ -159,6 +170,7 @@ diesel::table! {
 
 diesel::joinable!(accounts -> exercises (exercise_id));
 diesel::joinable!(artifacts -> metrics (metric_id));
+diesel::joinable!(banners -> exercises (exercise_id));
 diesel::joinable!(condition_messages -> deployments (deployment_id));
 diesel::joinable!(deployment_elements -> deployments (deployment_id));
 diesel::joinable!(deployment_elements -> events (event_id));
@@ -169,6 +181,7 @@ diesel::joinable!(participants -> deployments (deployment_id));
 diesel::allow_tables_to_appear_in_same_query!(
     accounts,
     artifacts,
+    banners,
     condition_messages,
     deployment_elements,
     deployments,

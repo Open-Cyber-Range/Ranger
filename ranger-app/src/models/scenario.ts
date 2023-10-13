@@ -1,4 +1,3 @@
-import {type RequireAtLeastOne} from 'src/utils';
 
 export type Capability = {
   name?: string;
@@ -41,18 +40,16 @@ export type Entity = {
   entities?: Record<string, Entity>;
 };
 
-export type PotentialMinScore = {
+export type MinScore = {
   absolute?: number;
   percentage?: number;
 };
-
-export type MinScore = RequireAtLeastOne<PotentialMinScore, 'absolute' | 'percentage'>;
 
 export type Evaluation = {
   name?: string;
   description?: string;
   metrics: string[];
-  min_score?: MinScore;
+  min_score: MinScore;
 };
 
 export type Event = {

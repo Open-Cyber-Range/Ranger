@@ -1,15 +1,24 @@
 import React from 'react';
-import {H1} from '@blueprintjs/core';
-import ParticipantDeploymentGraph from 'src/components/Scoring/participant/Graph';
+import DeploymentDetailsGraph from 'src/components/Scoring/Graph';
+import TloTable from 'src/components/Scoring/TloTable';
+import {type ScoringMetadata} from 'src/models/scenario';
+import {type Score} from 'src/models/score';
 
 const ParticipantScore = ({
-  exerciseId, deploymentId}: {exerciseId: string; deploymentId: string;
+  scoringData, scores}: {scoringData: ScoringMetadata | undefined; scores: Score[] | undefined;
 }) => (
   <div>
-    <H1>Score</H1>
-    <ParticipantDeploymentGraph
-      exerciseId={exerciseId}
-      deploymentId={deploymentId}
+    <div className='py-8'>
+      <TloTable
+        scoringData={scoringData}
+        scores={scores}
+        tloMap={scoringData?.tlos}
+      />
+    </div>
+    <DeploymentDetailsGraph
+      colorsByRole
+      scoringData={scoringData}
+      scores={scores}
     />
   </div>
 );

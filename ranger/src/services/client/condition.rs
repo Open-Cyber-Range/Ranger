@@ -16,7 +16,7 @@ use actix::{
 use anyhow::{anyhow, Ok, Result};
 use async_trait::async_trait;
 use bigdecimal::{BigDecimal, FromPrimitive};
-use log::{debug, info};
+use log::debug;
 use ranger_grpc::{
     condition_service_client::ConditionServiceClient, Condition as GrpcCondition,
     ConditionStreamResponse, Identifier,
@@ -174,7 +174,7 @@ impl Handler<ConditionStream> for DeployerDistribution {
                     "Deployment element handler reference not found",
                 )?;
 
-                info!(
+                debug!(
                     "Finished deploying '{condition_name}' on '{node_name}', starting stream",
                     condition_name = condition_deployment_element.scenario_reference,
                     node_name = node_deployment_element.scenario_reference,

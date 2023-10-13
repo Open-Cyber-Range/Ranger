@@ -1,4 +1,5 @@
 import {Colors, type TreeNodeInfo} from '@blueprintjs/core';
+import {type DeploymentElement} from 'src/models/deployment';
 import {type AdUser} from 'src/models/groups';
 import {type Participant} from 'src/models/pariticpant';
 import {
@@ -9,14 +10,20 @@ import {
   type TloMapsByRole,
   type TrainingLearningObjective,
   type ScoringMetadata,
+  type Evaluation,
 } from 'src/models/scenario';
 import {type Score} from 'src/models/score';
+import {
+  deleteEntityConnectionButton,
+} from 'src/components/Deployment/EntityTree';
 
 export const createEntityTree = (
+  clickedDelete: (participantId: string) => void,
   entities: Record<string, Entity>,
   participants: Participant[] = [],
   users: AdUser[] = [],
   selector?: string,
+  // eslint-disable-next-line max-params
 ): TreeNodeInfo[] => {
   const sortedEntityKeys = Object.keys(entities).sort((a, b) => {
     const entityA = entities[a];
@@ -35,9 +42,19 @@ export const createEntityTree = (
       label: `${entity.name ?? entityId}${matchingUser ? ': ' : ''}${matchingUser?.username ?? ''}`,
       icon: 'person',
       isExpanded: true,
+      secondaryLabel: deleteEntityConnectionButton(
+        clickedDelete,
+        matchingParticipant?.id,
+      ),
     };
     if (entity.entities) {
-      entityNode.childNodes = createEntityTree(entity.entities, participants, users, id);
+      entityNode.childNodes = createEntityTree(
+        clickedDelete,
+        entity.entities,
+        participants,
+        users,
+        id,
+      );
     }
 
     tree.push(entityNode);
@@ -159,9 +176,9 @@ export const findLatestScoresByVms = (scores: Score[]) => {
   return latestScoresByVm;
 };
 
-export function sumScoresByMetric(
-  metricNames: string[], scoresByMetric: Record<string, Score[]>) {
-  return metricNames.reduce(
+export function sumScoresByMetrics(
+  metricKeys: string[], scoresByMetric: Record<string, Score[]>): number {
+  return metricKeys.reduce(
     (metricScoreSum, metricName) => {
       if (scoresByMetric[metricName]) {
         const currentScore = findLatestScore(scoresByMetric[metricName]);
@@ -180,7 +197,7 @@ export function sumScoresByRole(uniqueVmNames: string[], roleScores: Score[]) {
 
     const scoresByMetric = groupBy(vmScores, score => score.metricName);
     const metricNames = Object.keys(scoresByMetric);
-    const metricScoreSum = sumScoresByMetric(metricNames, scoresByMetric);
+    const metricScoreSum = sumScoresByMetrics(metricNames, scoresByMetric);
     totalScoreSum += metricScoreSum;
     return totalScoreSum;
   }, 0);
@@ -387,3 +404,26 @@ export function tryIntoScoringMetadata(scenario?: Scenario): ScoringMetadata | u
     };
   }
 }
+
+export const getElementNameById
+= (deploymentElements: DeploymentElement[], id: string): string | undefined => {
+  if (deploymentElements) {
+    const vm = deploymentElements.find(element => element.handlerReference === id);
+    return vm?.scenarioReference ?? undefined;
+  }
+};
+
+export const sumMetricMaxScores = (metricKeys: string[], metrics: Record<string, Metric>) =>
+  metricKeys.reduce((sum, metricKey) => sum + metrics[metricKey].max_score, 0);
+
+export const getEvaluationMinScore = (evaluation: Evaluation, summedMaxScore: number) => {
+  if (evaluation.min_score?.percentage) {
+    return roundToDecimalPlaces(evaluation.min_score.percentage / 100 * summedMaxScore);
+  }
+
+  if (evaluation.min_score?.absolute) {
+    return evaluation.min_score?.absolute;
+  }
+
+  return 0;
+};

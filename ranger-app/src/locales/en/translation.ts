@@ -43,6 +43,7 @@ const language = {
     deleteFail: 'Failed to delete the deployment',
     noDeployments: 'No deployments',
     noAccounts: 'No accounts',
+    entitySelect: 'Select an entity',
     entityConnector: {
       entityConnector: 'Entity Connector',
       selectEntity: 'Select entity...',
@@ -54,16 +55,28 @@ const language = {
     form: {
       group: {
         placeholder: 'Select group...',
-        title: 'Deployment group',
-        required: 'Deployment group is required',
+        title: 'Deployment(s) group',
+        required: 'Deployment(s) group is required',
       },
       name: {
-        title: 'Deployment name',
-        required: 'Deployment name is required',
+        title: 'Deployment(s) name',
+        required: 'Deployment(s) name is required',
       },
       count: {
-        title: 'Deployment count',
-        required: 'Deployment count is required',
+        title: 'Number of deployments',
+        required: 'Number of deployments is required',
+      },
+      startDate: {
+        title: 'Deployment(s) start time',
+        required: 'Deployment(s) start time is required',
+      },
+      adGroups: {
+        title: 'AD Group for deployment #{{number}}',
+      },
+      endDate: {
+        title: 'Deployment(s) end time',
+        required: 'Deployment(s) end time is required',
+        earlierThanStart: 'Deployment(s) end time must be later than start time',
       },
     },
   },
@@ -110,13 +123,23 @@ const language = {
     cc: 'Cc',
     body: 'Body',
     send: 'Send',
+    sendButtonDisabled: 'Fetching users to send emails to...',
     sendingSuccess: 'Email sent',
     sendingFail: 'Error trying to send the email: {{errorMessage}}',
     sendingFailWithoutMessage: 'Failed to send the email',
     invalidEmailAddress: 'Invalid email address(es): {{invalidEmailAddresses}}',
+    noDeployment: 'Cannot find this deployment',
+    noDeployments: 'Cannot find any deployments for this exercise',
+    fetchingUsersFail: 'Failed to fetch users',
+    creatingEmailsFail: 'Failed to create emails',
     form: {
       from: {
         title: 'From',
+      },
+      deploymentSelector: {
+        title: 'Selected deployment',
+        placeholder: 'Select exercise or specific deployment',
+        wholeExercise: 'Exercise-wide',
       },
       to: {
         title: 'To',
@@ -136,11 +159,21 @@ const language = {
         required: 'Email subject is required',
       },
       body: {
-        title: 'Email body',
+        title: 'Email body (HTML text editor)',
         required: 'Email body is required',
       },
       emailPlaceholder:
-      'Enter email address, multiple addresses separated by comma',
+      '...multiple addresses separated by comma or enter',
+      required: ' (required)',
+    },
+    variables: {
+      available: 'Available variables:',
+      insert: 'Insert variable',
+      exerciseName: 'Exercise\'s name',
+      deploymentName: 'Deployment\'s name',
+      participantFirstName: 'Participant\'s first name',
+      participantLastName: 'Participant\'s last name',
+      participantEmail: 'Participant\'s email',
     },
   },
   tloTable: {
@@ -151,6 +184,11 @@ const language = {
       name: 'Name',
       vm: 'VM',
       points: 'Points',
+    },
+    evaluation: {
+      minScore: 'Min score',
+      passed: 'Passed',
+      notMet: 'Not met',
     },
     noEvaluations: 'No Evaluations to display',
     noTlos: 'No Training Learning Objectives to display',
@@ -211,7 +249,23 @@ const language = {
     date: 'Timestamp',
     level: 'Level',
     message: 'Message',
-    empty: 'No logs availale.',
+    empty: 'No logs available.',
+  },
+  deployment: {
+    empty: 'No deployment available.',
+  },
+  accountsTable: {
+    title: 'Accounts',
+    vmName: 'VM Name',
+    username: 'Username',
+    password: 'Password',
+    privatekey: 'Private Key',
+    copyButton: 'Copy value',
+    copyFail: 'Failed to copy value to clipboard: {{errorMessage}}',
+    copySuccess: 'Private key copied to clipboard',
+  },
+  fallback: {
+    role: 'You do not have any roles assigned to you. Please contact your Ranger administrator.',
   },
 };
 

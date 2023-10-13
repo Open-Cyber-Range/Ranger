@@ -4,13 +4,15 @@ use crate::{
     models::{
         helpers::uuid::Uuid,
         user::{User, UserAccount},
-        Deployment, DeploymentElement, Exercise, NewDeployment, NewDeploymentResource, NewExercise,
-        NewParticipant, NewParticipantResource, Participant, Score, UpdateExercise,
+        Banner, Deployment, DeploymentElement, Exercise, NewBanner, NewBannerWithId, NewDeployment,
+        NewDeploymentResource, NewExercise, NewParticipant, NewParticipantResource, Participant,
+        Score, UpdateBanner, UpdateExercise,
     },
     roles::RangerRole,
     services::{
         database::{
             account::GetAccount,
+            banner::{CreateBanner, DeleteBanner, GetBanner},
             condition::GetConditionMessagesByDeploymentId,
             deployment::{
                 CreateDeployment, DeleteDeployment, GetDeploymentElementByDeploymentId,
@@ -315,7 +317,11 @@ pub async fn get_exercise_deployment_scores(
     app_state: Data<AppState>,
     deployment: DeploymentInfo,
 ) -> Result<Json<Vec<Score>>, RangerError> {
-    let (exercise_uuid, deployment_uuid) = path_variables.into_inner();
+    let (_exercise_uuid, deployment_uuid) = path_variables.into_inner();
+    let scenario = parse_sdl(&deployment.sdl_schema).map_err(|error| {
+        error!("Failed to parse sdl: {error}");
+        RangerError::ScenarioParsingFailed
+    })?;
 
     let mut condition_messages = app_state
         .database_address
@@ -323,11 +329,15 @@ pub async fn get_exercise_deployment_scores(
         .await
         .map_err(create_mailbox_error_handler("Database"))?
         .map_err(create_database_error_handler("Get condition_messages"))?;
+    condition_messages.retain(|condition| {
+        condition.created_at > scenario.start.naive_utc()
+            && condition.created_at < scenario.end.naive_utc()
+    });
 
-    let scenario = parse_sdl(&deployment.sdl_schema).map_err(|error| {
-        error!("Failed to parse sdl: {error}");
-        RangerError::ScenarioParsingFailed
-    })?;
+    let scenario_metrics = match scenario.metrics {
+        Some(metrics) => metrics,
+        None => return Ok(Json(vec![])),
+    };
 
     let deployment_elements = app_state
         .database_address
@@ -336,7 +346,7 @@ pub async fn get_exercise_deployment_scores(
         .map_err(create_mailbox_error_handler("Database"))?
         .map_err(create_database_error_handler("Get deployment elements"))?;
 
-    let vm_deplyoment_elements = deployment_elements
+    let vm_scenario_refs_by_id = deployment_elements
         .iter()
         .filter(|element| {
             matches!(element.deployer_type.0, GrpcDeployerTypes::VirtualMachine)
@@ -352,63 +362,42 @@ pub async fn get_exercise_deployment_scores(
         .collect::<Result<HashMap<String, String>>>()
         .map_err(create_database_error_handler("Get deployment elements"))?;
 
-    if let Some(metrics) = scenario.metrics {
-        let mut scores: Vec<Score> = vec![];
+    let manual_metrics = app_state
+        .database_address
+        .send(GetMetrics(deployment.id))
+        .await
+        .map_err(create_mailbox_error_handler("Database"))?
+        .map_err(create_database_error_handler("Get Manual Metrics"))?;
 
-        let manual_metrics = app_state
-            .database_address
-            .send(GetMetrics(deployment.id))
-            .await
-            .map_err(create_mailbox_error_handler("Database"))?
-            .map_err(create_database_error_handler("Get Manual Metrics"))?;
+    let mut scores: Vec<Score> = manual_metrics.into_iter().map(Into::into).collect();
 
-        manual_metrics.into_iter().for_each(|manual_metric| {
-            if let Some(score) = manual_metric.score {
+    for condition_message in condition_messages.iter() {
+        if let Some((metric_key, metric)) = scenario_metrics.iter().find(|(_, metric)| {
+            metric
+                .condition
+                .eq(&Some(condition_message.clone().condition_name))
+        }) {
+            if let Some(vm_name) =
+                vm_scenario_refs_by_id.get(&condition_message.virtual_machine_id.to_string())
+            {
+                let metric_reference = match &metric.name {
+                    Some(metric_name) => metric_name.to_owned(),
+                    None => metric_key.to_owned(),
+                };
+
                 scores.push(Score::new(
-                    exercise_uuid,
-                    deployment_uuid,
-                    manual_metric.name,
-                    manual_metric.entity_selector,
-                    BigDecimal::from(score),
-                    manual_metric.updated_at,
-                ));
-            }
-        });
-
-        condition_messages.retain(|condition| {
-            condition.created_at > scenario.start.naive_utc()
-                && condition.created_at < scenario.end.naive_utc()
-        });
-
-        for condition_message in condition_messages.iter() {
-            if let Some((metric_key, metric)) = metrics.iter().find(|(_, metric)| {
-                metric
-                    .condition
-                    .eq(&Some(condition_message.clone().condition_name))
-            }) {
-                if let Some(vm_name) =
-                    vm_deplyoment_elements.get(&condition_message.virtual_machine_id.to_string())
-                {
-                    let metric_reference = match &metric.name {
-                        Some(metric_name) => metric_name.to_owned(),
-                        None => metric_key.to_owned(),
-                    };
-
-                    scores.push(Score::new(
-                        exercise_uuid,
-                        deployment_uuid,
-                        metric_reference,
-                        vm_name.to_owned(),
-                        condition_message.clone().value * BigDecimal::from(metric.max_score),
-                        condition_message.created_at,
-                    ))
-                }
+                    condition_message.exercise_id,
+                    condition_message.deployment_id,
+                    metric_reference,
+                    vm_name.to_owned(),
+                    condition_message.clone().value * BigDecimal::from(metric.max_score),
+                    condition_message.created_at,
+                ))
             }
         }
-
-        return Ok(Json(scores));
     }
-    Ok(Json(vec![]))
+
+    Ok(Json(scores))
 }
 
 #[get("users")]
@@ -540,4 +529,79 @@ pub async fn get_exercise_deployment_users(
     } else {
         Ok(Json(vec![]))
     }
+}
+
+#[post("")]
+pub async fn add_banner(
+    path_variable: Path<Uuid>,
+    app_state: Data<AppState>,
+    new_banner: Json<NewBanner>,
+) -> Result<Json<Banner>, RangerError> {
+    let exercise_id = path_variable.into_inner();
+    let new_banner = new_banner.into_inner();
+    let new_banner_with_id = NewBannerWithId {
+        exercise_id,
+        name: new_banner.name,
+        content: new_banner.content,
+    };
+    let banner = app_state
+        .database_address
+        .send(CreateBanner(new_banner_with_id))
+        .await
+        .map_err(create_mailbox_error_handler("Database"))?
+        .map_err(create_database_error_handler("Create banner"))?;
+    log::debug!("Created banner: {}", banner.exercise_id);
+    Ok(Json(banner))
+}
+
+#[get("")]
+pub async fn get_banner(
+    path_variable: Path<Uuid>,
+    app_state: Data<AppState>
+) -> Result<Json<Banner>, RangerError> {
+    let exercise_id = path_variable.into_inner();
+    let banners = app_state
+        .database_address
+        .send(GetBanner(exercise_id))
+        .await
+        .map_err(create_mailbox_error_handler("Database"))?
+        .map_err(create_database_error_handler("Get banner"))?;
+    Ok(Json(banners))
+}
+
+#[put("")]
+pub async fn update_banner(
+    path_variable: Path<Uuid>,
+    update_banner: Json<UpdateBanner>,
+    app_state: Data<AppState>,
+) -> Result<Json<Banner>, RangerError> {
+    let update_banner = update_banner.into_inner();
+    let exercise_id = path_variable.into_inner();
+    let banner = app_state
+        .database_address
+        .send(crate::services::database::banner::UpdateBanner(
+            exercise_id,
+            update_banner,
+        ))
+        .await
+        .map_err(create_mailbox_error_handler("Database"))?
+        .map_err(create_database_error_handler("Update banner"))?;
+    log::debug!("Updated banner: {}", banner.exercise_id);
+    Ok(Json(banner))
+}
+
+#[delete("")]
+pub async fn delete_banner(
+    path_variable: Path<Uuid>,
+    app_state: Data<AppState>,
+) -> Result<String, RangerError> {
+    let exercise_id = path_variable.into_inner();
+    app_state
+        .database_address
+        .send(DeleteBanner(exercise_id))
+        .await
+        .map_err(create_mailbox_error_handler("Database"))?
+        .map_err(create_database_error_handler("Delete banner"))?;
+    log::debug!("Deleted banner {}", exercise_id);
+    Ok(exercise_id.to_string())
 }

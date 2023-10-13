@@ -4,16 +4,21 @@ use crate::{
         authentication::UserInfo, deployment::DeploymentInfo, exercise::ExerciseInfo,
         keycloak::KeycloakInfo,
     },
-    models::{Deployment, ParticipantDeployment},
-    services::database::deployment::GetDeployments,
+    models::{helpers::uuid::Uuid, Deployment, DeploymentElement, ParticipantDeployment},
+    services::database::{
+        deployment::{GetDeploymentElementByDeploymentId, GetDeployments},
+        participant::GetParticipants,
+    },
     utilities::{create_database_error_handler, create_mailbox_error_handler},
     AppState,
 };
 use actix_web::{
     get,
-    web::{Data, Json},
+    web::{Data, Json, Path},
 };
 use futures_util::future::join_all;
+use log::error;
+use sdl_parser::parse_sdl;
 
 #[get("")]
 pub async fn get_participant_deployments(
@@ -67,4 +72,68 @@ pub async fn get_participant_deployment(
     let deployment = deployment.into_inner().into();
 
     Ok(Json(deployment))
+}
+
+#[get("/deployment_element")]
+pub async fn get_participant_node_deployment_elements(
+    path_variables: Path<(Uuid, Uuid, String)>,
+    app_state: Data<AppState>,
+    deployment: DeploymentInfo,
+    user_details: UserInfo,
+) -> Result<Json<Vec<DeploymentElement>>, RangerError> {
+    let (_exercise_id, _deployment_id, entity_selector) = path_variables.into_inner();
+    let deployment = deployment.into_inner();
+
+    let is_authorized = app_state
+        .database_address
+        .send(GetParticipants(deployment.id))
+        .await
+        .map_err(create_mailbox_error_handler("Database"))?
+        .map_err(create_database_error_handler("Get participants"))?
+        .iter()
+        .any(|participant| {
+            participant.user_id.eq(&user_details.id) && participant.selector.eq(&entity_selector)
+        });
+
+    if !is_authorized {
+        return Err(RangerError::NotAuthorized);
+    }
+
+    let elements = app_state
+        .database_address
+        .send(GetDeploymentElementByDeploymentId(deployment.id, false))
+        .await
+        .map_err(create_mailbox_error_handler("Database"))?
+        .map_err(create_database_error_handler("Get deployment elements"))?;
+
+    let scenario = parse_sdl(&deployment.sdl_schema).map_err(|error| {
+        error!("Failed to parse sdl: {error}");
+        RangerError::ScenarioParsingFailed
+    })?;
+
+    let node_keys_filtered_by_entity: Vec<String> =
+        scenario
+            .nodes
+            .into_iter()
+            .fold(Vec::new(), |mut accumulator, nodes| {
+                nodes.into_iter().for_each(|(node_key, node)| {
+                    if let Some(roles) = node.roles {
+                        roles.iter().for_each(|(_role_key, role)| {
+                            if let Some(entities) = &role.entities {
+                                if entities.contains(&entity_selector) {
+                                    accumulator.push(node_key.clone());
+                                }
+                            }
+                        })
+                    }
+                });
+                accumulator
+            });
+
+    let entity_node_elements = elements
+        .into_iter()
+        .filter(|element| node_keys_filtered_by_entity.contains(&element.scenario_reference))
+        .collect::<Vec<_>>();
+
+    Ok(Json(entity_node_elements))
 }

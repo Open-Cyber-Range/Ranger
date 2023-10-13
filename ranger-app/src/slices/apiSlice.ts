@@ -10,12 +10,12 @@ import type {
 import type {Participant, NewParticipant} from 'src/models/pariticpant';
 import {
   type ParticipantExercise,
-  type EmailForm,
   type Exercise,
   type NewExercise,
   type UpdateExercise,
   type DeploymentEvent,
 } from 'src/models/exercise';
+import type {EmailForm} from 'src/models/email';
 import {type AdGroup, type AdUser} from 'src/models/groups';
 import {type Scenario} from 'src/models/scenario';
 import {type Score} from 'src/models/score';
@@ -182,6 +182,20 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: [{type: 'Participant', id: 'LIST'}],
     }),
+    adminDeleteParticipant: builder
+      .mutation<Participant, {
+      exerciseId: string;
+      deploymentId: string;
+      participantId: string;
+    }>({
+      query: ({exerciseId, deploymentId, participantId}) => ({
+        url: `/admin/exercise/${
+          exerciseId}/deployment/${deploymentId}/participant/${participantId}`,
+        method: 'DELETE',
+        responseHandler: 'text',
+      }),
+      invalidatesTags: [{type: 'Participant', id: 'LIST'}],
+    }),
     adminGetDeploymentParticipants: builder.query<Participant[] | undefined,
     {
       exerciseId: string;
@@ -228,13 +242,15 @@ export const apiSlice = createApi({
       query: ({deploymentId, exerciseId}) =>
         `/participant/exercise/${exerciseId}/deployment/${deploymentId}/users`,
     }),
-    participantGetDeploymentScores: builder.query<Score[],
+    participantGetDeploymentScores: builder.query<Score[], //
     {
       exerciseId: string;
       deploymentId: string;
+      entitySelector: string;
     }>({
-      query: ({exerciseId, deploymentId}) =>
-        `/participant/exercise/${exerciseId}/deployment/${deploymentId}/score`,
+      query: ({exerciseId, deploymentId, entitySelector}) =>
+        // eslint-disable-next-line max-len
+        `/participant/exercise/${exerciseId}/deployment/${deploymentId}/entity/${entitySelector}/score`,
     }),
     participantGetDeploymentScenario: builder.query<Scenario | undefined,
     {
@@ -397,6 +413,13 @@ export const apiSlice = createApi({
       },
       invalidatesTags: ['ManualMetric'],
     }),
+    participantGetNodeDeploymentElements: builder
+      .query<DeploymentElement[],
+    {exerciseId: string; deploymentId: string; entitySelector: string}>({
+      query: ({exerciseId, deploymentId, entitySelector}) =>
+        // eslint-disable-next-line max-len
+        `/participant/exercise/${exerciseId}/deployment/${deploymentId}/entity/${entitySelector}/deployment_element`,
+    }),
   }),
 });
 
@@ -421,6 +444,7 @@ export const {
   useAdminGetEmailFormQuery,
   useAdminGetDeploymentScenarioQuery,
   useAdminAddParticipantMutation,
+  useAdminDeleteParticipantMutation,
   useAdminGetDeploymentParticipantsQuery,
   useAdminGetManualMetricsQuery,
   useAdminGetMetricQuery,
@@ -441,4 +465,5 @@ export const {
   useParticipantUpdateMetricMutation,
   useParticipantAddMetricMutation,
   useParticipantUploadMetricArtifactMutation,
+  useParticipantGetNodeDeploymentElementsQuery,
 } = apiSlice;

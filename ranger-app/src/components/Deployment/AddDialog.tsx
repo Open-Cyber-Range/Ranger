@@ -18,10 +18,12 @@ import {
   useAdminGetGroupsQuery,
 } from 'src/slices/apiSlice';
 import {useTranslation} from 'react-i18next';
-import {Controller, useForm} from 'react-hook-form';
+import {Controller, useFieldArray, useForm, useWatch} from 'react-hook-form';
 import {Suggest2} from '@blueprintjs/select';
 import {MenuItem2} from '@blueprintjs/popover2';
 import {type AdGroup} from 'src/models/groups';
+import DatePicker from 'react-datepicker';
+import {useEffect, useState} from 'react';
 
 const AddDialog = (
   {isOpen, title, onSubmit, onCancel}:
@@ -32,7 +34,9 @@ const AddDialog = (
       count,
       name,
       deploymentGroup,
-      groupName,
+      groupNames,
+      start,
+      end,
     }: DeploymentForm) => void;
     onCancel: () => void;
   },
@@ -40,15 +44,38 @@ const AddDialog = (
   const {t} = useTranslation();
   const {data: deployers} = useAdminGetDeploymentGroupsQuery();
   const {data: groups} = useAdminGetGroupsQuery();
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
 
   const {handleSubmit, control, register, formState: {errors}}
   = useForm<DeploymentForm>({
     defaultValues: {
       name: '',
       deploymentGroup: undefined,
+      groupNames: [],
       count: 1,
+      start: undefined,
+      end: undefined,
     },
   });
+  const count = useWatch({control, name: 'count', defaultValue: 1});
+  const {fields, append, remove} = useFieldArray({
+    control,
+    name: 'groupNames',
+  });
+  useEffect(() => {
+    let added = 0;
+    while (fields.length + added < count) {
+      append({groupName: ''});
+      added += 1;
+    }
+
+    let removed = 0;
+    while (fields.length - removed > count) {
+      remove(fields.length - 1);
+      removed += 1;
+    }
+  }, [count, append, remove, fields.length]);
 
   const onHandleSubmit = (formContent: DeploymentForm) => {
     if (onSubmit) {
@@ -146,58 +173,153 @@ const AddDialog = (
             />
             <Controller
               control={control}
-              name='groupName'
+              name='start'
+              rules={{required: t('deployments.form.startDate.required') ?? ''}}
               render={({
-                field: {onBlur, ref, value, onChange}, fieldState: {error},
+                field: {onChange, onBlur}, fieldState: {error},
               }) => {
                 const intent = error ? Intent.DANGER : Intent.NONE;
-                const activeItem = groups?.find(group => group.name === value);
                 return (
                   <FormGroup
-                    labelFor='deployment-group'
+                    labelFor='start-date'
+                    labelInfo='(required)'
                     helperText={error?.message}
                     intent={intent}
-                    label={t('common.adGroup')}
+                    label={t('deployments.form.startDate.title')}
                   >
-                    <Suggest2<AdGroup>
-                      inputProps={{
-                        id: 'deployment-group',
-                        onBlur,
-                        inputRef: ref,
-                        placeholder: '',
-                      }}
-                      activeItem={activeItem}
-                      inputValueRenderer={item => item.name}
-                      itemPredicate={(query, item) =>
-                        item.name.toLowerCase().includes(query.toLowerCase())}
-                      itemRenderer={(item, {handleClick, handleFocus}) => (
-                        <MenuItem2
-                          key={item.id}
-                          text={item.name}
-                          onClick={handleClick}
-                          onFocus={handleFocus}
-                        />
-                      )}
-                      items={groups ?? []}
-                      noResults={
-                        <MenuItem
-                          disabled
-                          text={t('common.noResults')}
-                          roleStructure='listoption'/>
-                      }
-                      onItemSelect={item => {
-                        const event = {
-                          target: {
-                            value: item.name,
-                          },
-                        };
-                        onChange(event);
-                      }}
-                    />
+                    <div className='flex flex-col'>
+                      <DatePicker
+                        selectsStart
+                        showTimeSelect
+                        customInput={<input className='bp4-input bp4-large bp4-fill'/>}
+                        id='start-date'
+                        selected={startDate}
+                        startDate={startDate}
+                        endDate={endDate}
+                        timeFormat='HH:mm'
+                        dateFormat='dd/MM/yyyy HH:mm'
+                        onChange={date => {
+                          setStartDate(date ?? undefined);
+                          onChange(date?.toISOString() ?? '');
+                        }}
+                        onBlur={onBlur}
+                      />
+                    </div>
                   </FormGroup>
                 );
               }}
             />
+            <Controller
+              control={control}
+              name='end'
+              rules={{
+                required: t('deployments.form.endDate.required') ?? '',
+                validate: {
+                  endDateAfterStartDate: (value: string) =>
+                    !startDate || !value || new Date(value) > new Date(startDate)
+                    || (t('deployments.form.endDate.earlierThanStart') ?? ''),
+                },
+              }}
+              render={({
+                field: {onChange, onBlur}, fieldState: {error},
+              }) => {
+                const intent = error ? Intent.DANGER : Intent.NONE;
+                const filterFromStart = (time: Date) => {
+                  if (startDate) {
+                    return time > startDate;
+                  }
+
+                  return true;
+                };
+
+                return (
+                  <FormGroup
+                    labelFor='end-date'
+                    labelInfo='(required)'
+                    helperText={error?.message}
+                    intent={intent}
+                    label={t('deployments.form.endDate.title')}
+                  >
+                    <div className='flex flex-col'>
+                      <DatePicker
+                        selectsEnd
+                        showTimeSelect
+                        customInput={<input className='bp4-input bp4-large bp4-fill'/>}
+                        id='end-date'
+                        selected={endDate}
+                        startDate={startDate}
+                        endDate={endDate}
+                        minDate={startDate}
+                        timeFormat='HH:mm'
+                        dateFormat='dd/MM/yyyy HH:mm'
+                        filterTime={filterFromStart}
+                        onChange={date => {
+                          setEndDate(date ?? undefined);
+                          onChange(date?.toISOString() ?? '');
+                        }}
+                        onBlur={onBlur}
+                      />
+                    </div>
+                  </FormGroup>
+                );
+              }}
+            />
+            {fields.map((field, index) => (
+              <Controller
+                key={field.id}
+                control={control}
+                name={`groupNames.${index}.groupName`}
+                rules={{required: true}}
+                render={({
+                  field: {onBlur, ref, value, onChange}, fieldState: {error},
+                }) => {
+                  const intent = error ? Intent.DANGER : Intent.NONE;
+                  const activeItem = groups?.find(group => group.name === value);
+                  return (
+                    <FormGroup
+                      labelFor='group-name'
+                      labelInfo='(required)'
+                      helperText={error?.message}
+                      intent={intent}
+                      label={t('deployments.form.adGroups.title', {number: index + 1})}
+                    >
+                      <Suggest2<AdGroup>
+                        inputProps={{
+                          id: 'group-name',
+                          onBlur,
+                          inputRef: ref,
+                          placeholder: '',
+                          leftIcon: 'search',
+                        }}
+                        activeItem={activeItem}
+                        inputValueRenderer={item => item.name}
+                        itemPredicate={(query, item) =>
+                          item.name.toLowerCase().includes(query.toLowerCase())}
+                        itemRenderer={(item, {handleClick, handleFocus}) => (
+                          <MenuItem2
+                            key={item.id}
+                            text={item.name}
+                            onClick={handleClick}
+                            onFocus={handleFocus}
+                          />
+                        )}
+                        items={groups ?? []}
+                        noResults={
+                          <MenuItem
+                            disabled
+                            text={t('common.noResults')}
+                            roleStructure='listoption'/>
+                        }
+                        onItemSelect={item => {
+                          onChange(item.name);
+                        }}
+                      />
+                    </FormGroup>
+                  );
+                }}
+              />
+            ),
+            )}
             <Controller
               control={control}
               name='count'

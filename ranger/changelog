@@ -1,3 +1,11 @@
+ranger-server (1.2.0) stretch; urgency=medium
+
+  * Adopt new depper algorith
+  * Add AD group per deployment
+  * Bug fixes
+
+ -- Kaarel Allemann <kaarel.allemann@cr14.ee>  Fri, 13 Oct 2023 13:43:13 +0300
+
 ranger-server (1.1.0) stretch; urgency=medium
 
   * Improved handling of the entities

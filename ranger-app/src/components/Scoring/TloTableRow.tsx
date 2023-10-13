@@ -1,6 +1,13 @@
 import React from 'react';
 import {useTranslation} from 'react-i18next';
-import {findLatestScoresByVms, groupBy, roundToDecimalPlaces} from 'src/utils';
+import {
+  findLatestScoresByVms,
+  getEvaluationMinScore,
+  groupBy,
+  roundToDecimalPlaces,
+  sumMetricMaxScores,
+  sumScoresByMetrics,
+} from 'src/utils';
 import {
   type ScoringMetadata,
   type TrainingLearningObjective,
@@ -17,9 +24,13 @@ const TloTableRow = ({scoringData, scores, tloKey, tlo}:
 }) => {
   const {t} = useTranslation();
 
-  if (tlo && scores) {
-    const tloEvaluation = scoringData.evaluations[tlo.evaluation];
-    const scoresByMetric = groupBy(scores, score => score.metricName);
+  if (tlo) {
+    const evaluation = scoringData.evaluations[tlo.evaluation];
+    const scoresByMetric = groupBy(scores ?? [], score => score.metricName);
+    const scoreByEvaluation = sumScoresByMetrics(evaluation.metrics, scoresByMetric);
+    const summedMaxScore = sumMetricMaxScores(evaluation.metrics, scoringData.metrics);
+    const minScore = getEvaluationMinScore(evaluation, summedMaxScore);
+    const evaluationMet = minScore === 0 ? undefined : (scoreByEvaluation >= minScore);
 
     return (
       <tr key={tloKey} className='overflow-y-auto even:bg-slate-200'>
@@ -30,16 +41,21 @@ const TloTableRow = ({scoringData, scores, tloKey, tlo}:
           </p>
         </td>
         <td className='w-1/3 px-6 py-4 overflow-y-auto border-r border-neutral-500'>
-          <H5>{tloEvaluation.name ?? tlo.evaluation}</H5>
-          <p className='max-h-32 overflow-auto break-words'>
-            {tloEvaluation.description}
+          <H5>{evaluation.name ?? tlo.evaluation}</H5>
+          <p>{t('tloTable.evaluation.minScore')}: {minScore}</p>
+          <p className={`${evaluationMet ? 'text-green-600' : 'text-red-600'} `}>
+            {evaluationMet ?? ''
+              ? t('tloTable.evaluation.passed') : t('tloTable.evaluation.notMet')}
+          </p>
+          <p className='pt-4 max-h-32 overflow-auto break-words'>
+            {evaluation.description}
           </p>
         </td>
         <td className='w-1/3 py-1' colSpan={3}>
           <table className='w-full'>
             <tbody>
               <tr className='flex flex-col'>
-                {tloEvaluation.metrics.map(metricKey => {
+                {evaluation.metrics.map(metricKey => {
                   const metric = scoringData.metrics[metricKey];
                   const metricReference = metric.name ?? metricKey;
                   const scores = scoresByMetric[metricReference];

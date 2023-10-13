@@ -1,16 +1,18 @@
 import {
-  MenuItem,
-  type TreeNodeInfo,
+  Button,
   Card,
   Elevation,
   H5,
-  Button,
+  MenuItem,
+  type TreeNodeInfo,
 } from '@blueprintjs/core';
 import {Suggest2} from '@blueprintjs/select';
 import {skipToken} from '@reduxjs/toolkit/dist/query';
 import React, {useEffect} from 'react';
 import {
   useAdminAddParticipantMutation,
+  useAdminDeleteParticipantMutation,
+  useAdminGetDeploymentParticipantsQuery,
   useAdminGetDeploymentQuery,
   useAdminGetDeploymentScenarioQuery,
   useAdminGetGroupUsersQuery,
@@ -20,6 +22,7 @@ import {MenuItem2} from '@blueprintjs/popover2';
 import {useTranslation} from 'react-i18next';
 import {toastSuccess, toastWarning} from 'src/components/Toaster';
 import {createEntityTree} from 'src/utils';
+import {type Participant} from 'src/models/pariticpant';
 
 const flattenList = (
   nonFlattenedList: TreeNodeInfo[], initialList: TreeNodeInfo[] = [],
@@ -34,6 +37,21 @@ const flattenList = (
   return initialList;
 };
 
+const filterList = (
+  nonFilteredList: TreeNodeInfo[],
+  participants: Participant[],
+  initialList: TreeNodeInfo[] = [],
+): TreeNodeInfo[] => {
+  const selectors = new Set(participants.map(participant => participant.selector));
+  for (const entity of Object.values(nonFilteredList)) {
+    if (!selectors.has(entity.id as string)) {
+      initialList.push(entity);
+    }
+  }
+
+  return initialList;
+};
+
 const EntityConnector = ({exerciseId, deploymentId}: {
   exerciseId: string;
   deploymentId: string;
@@ -42,17 +60,30 @@ const EntityConnector = ({exerciseId, deploymentId}: {
   const [addParticipant, {isSuccess, error}] = useAdminAddParticipantMutation();
   const {data: scenario} = useAdminGetDeploymentScenarioQuery({exerciseId, deploymentId});
   const {data: deployment} = useAdminGetDeploymentQuery({exerciseId, deploymentId});
+  const {
+    data: participants,
+  } = useAdminGetDeploymentParticipantsQuery({exerciseId, deploymentId});
   const {data: users} = useAdminGetGroupUsersQuery(deployment?.groupName ?? skipToken);
+  const [deleteParticipant] = useAdminDeleteParticipantMutation();
   const [selectedUser, setSelectedUser] = React.useState<AdUser | undefined>(undefined);
   const [selectedEntity, setSelectedEntity] = React.useState<TreeNodeInfo | undefined>(undefined);
 
   const tree: TreeNodeInfo[] = React.useMemo(() => {
-    if (!scenario?.entities) {
+    if (!scenario?.entities || !participants) {
       return [];
     }
 
-    return flattenList(createEntityTree(scenario.entities));
-  }, [scenario]);
+    const clickedDelete = async (participantId: string) => {
+      await deleteParticipant({
+        exerciseId,
+        deploymentId,
+        participantId,
+      });
+    };
+
+    const flattenedList = flattenList(createEntityTree(clickedDelete, scenario.entities));
+    return filterList(flattenedList, participants);
+  }, [exerciseId, deploymentId, deleteParticipant, scenario]);
 
   useEffect(() => {
     if (isSuccess) {

@@ -18,7 +18,7 @@ use log::error;
 use sdl_parser::parse_sdl;
 use std::collections::HashMap;
 
-#[get("entity/{entity_selector}/events")]
+#[get("/events")]
 pub async fn get_participant_events(
     app_state: Data<AppState>,
     user_details: UserInfo,

@@ -7,7 +7,7 @@ use crate::utilities::try_some;
 use crate::Addressor;
 use anyhow::{Ok, Result};
 use async_trait::async_trait;
-use log::{debug, info};
+use log::debug;
 use ranger_grpc::capabilities::DeployerTypes;
 use ranger_grpc::{
     Account as GrpcAccount, ExecutorResponse, Inject as GrpcInject, Source as GrpcSource,
@@ -86,6 +86,7 @@ impl DeployableInject
                 private_key: template_account.private_key.unwrap_or_default(),
             }),
             to_entities: inject.to_entities.clone().unwrap_or_default(),
+            environment: inject.environment.clone().unwrap_or_default(),
         });
 
         {
@@ -121,7 +122,7 @@ impl DeployableInject
                         ))
                         .await??;
 
-                    info!(
+                    debug!(
                         "Deployed '{inject_name}' on '{node_name}'",
                         node_name = deployment_element.scenario_reference
                     );

@@ -3,6 +3,7 @@ pub mod events;
 pub mod metric;
 pub mod participants;
 pub mod scenario;
+pub mod score;
 
 use crate::{
     errors::RangerError,
