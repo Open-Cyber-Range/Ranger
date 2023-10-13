@@ -10,12 +10,12 @@ import type {
 import type {Participant, NewParticipant} from 'src/models/pariticpant';
 import {
   type ParticipantExercise,
-  type EmailForm,
   type Exercise,
   type NewExercise,
   type UpdateExercise,
   type DeploymentEvent,
 } from 'src/models/exercise';
+import type {EmailForm} from 'src/models/email';
 import {type AdGroup, type AdUser} from 'src/models/groups';
 import {type Scenario} from 'src/models/scenario';
 import {type Score} from 'src/models/score';

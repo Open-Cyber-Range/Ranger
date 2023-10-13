@@ -1,7 +1,7 @@
-import {Intent, Tag} from '@blueprintjs/core';
 import React from 'react';
+import {Intent, Tag} from '@blueprintjs/core';
 import {useTranslation} from 'react-i18next';
-import {EmailStatus, type Email} from 'src/models/exercise';
+import {EmailStatus, type Email} from 'src/models/email';
 
 const dummyEmails: Email[] = [
   {

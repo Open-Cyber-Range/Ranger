@@ -9,6 +9,9 @@ export type AdUser = {
   id: string;
   vmId: string;
   username?: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
   accounts: Account[];
 };
 

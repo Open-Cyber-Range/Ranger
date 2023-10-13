@@ -120,13 +120,23 @@ const language = {
     cc: 'Cc',
     body: 'Body',
     send: 'Send',
+    sendButtonDisabled: 'Fetching users to send emails to...',
     sendingSuccess: 'Email sent',
     sendingFail: 'Error trying to send the email: {{errorMessage}}',
     sendingFailWithoutMessage: 'Failed to send the email',
     invalidEmailAddress: 'Invalid email address(es): {{invalidEmailAddresses}}',
+    noDeployment: 'Cannot find this deployment',
+    noDeployments: 'Cannot find any deployments for this exercise',
+    fetchingUsersFail: 'Failed to fetch users',
+    creatingEmailsFail: 'Failed to create emails',
     form: {
       from: {
         title: 'From',
+      },
+      deploymentSelector: {
+        title: 'Selected deployment',
+        placeholder: 'Select exercise or specific deployment',
+        wholeExercise: 'Exercise-wide',
       },
       to: {
         title: 'To',
@@ -146,11 +156,21 @@ const language = {
         required: 'Email subject is required',
       },
       body: {
-        title: 'Email body',
+        title: 'Email body (HTML text editor)',
         required: 'Email body is required',
       },
       emailPlaceholder:
-      'Enter email address, multiple addresses separated by comma',
+      '...multiple addresses separated by comma or enter',
+      required: ' (required)',
+    },
+    variables: {
+      available: 'Available variables:',
+      insert: 'Insert variable',
+      exerciseName: 'Exercise\'s name',
+      deploymentName: 'Deployment\'s name',
+      participantFirstName: 'Participant\'s first name',
+      participantLastName: 'Participant\'s last name',
+      participantEmail: 'Participant\'s email',
     },
   },
   tloTable: {

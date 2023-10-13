@@ -188,7 +188,7 @@ impl DeployableEvents for Scenario {
                             if let Some(event_id) = properties.event_id {
                                 event_conditions
                                     .entry(event_id)
-                                    .or_insert_with(Vec::new)
+                                    .or_default()
                                     .push((properties.name.to_owned(), properties.role.to_owned()));
                             }
                             event_conditions
