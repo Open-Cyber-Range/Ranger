@@ -82,7 +82,7 @@ const SideBar = ({renderMainContent}: {
                 <H2>{exercise.name}</H2>
                 <H4>{deployment.name}</H4>
                 <EntitySelect
-                  participants={participants}
+                  participants={participants ?? []}
                   selectedEntityKey={currentEntity}
                   onChange={(selectedKey: string | undefined) => {
                     dispatch(setSelectedEntity(selectedKey));
