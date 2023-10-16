@@ -9,6 +9,8 @@ import {
   useParticipantAddMetricMutation,
   useParticipantUploadMetricArtifactMutation,
 } from 'src/slices/apiSlice';
+import {useSelector} from 'react-redux';
+import {selectedEntity} from 'src/slices/userSlice';
 
 const AddNewMetric = ({exerciseId, deploymentId, newManualMetric, metricHasArtifact}:
 {exerciseId: string;
@@ -17,6 +19,7 @@ const AddNewMetric = ({exerciseId, deploymentId, newManualMetric, metricHasArtif
   metricHasArtifact: boolean;
 }) => {
   const {t} = useTranslation();
+  const entitySelector = useSelector(selectedEntity);
   const [addMetric, {isError: isMetricError}] = useParticipantAddMetricMutation();
   const [addArtifact, {isError: isArtifactError}]
    = useParticipantUploadMetricArtifactMutation();
@@ -25,11 +28,16 @@ const AddNewMetric = ({exerciseId, deploymentId, newManualMetric, metricHasArtif
 
   const handleAddMetric = async () => {
     try {
+      if (!entitySelector) {
+        throw new Error('No entity selected');
+      }
+
       newManualMetric.textSubmission = submissionText;
       await addMetric({
         exerciseId,
         deploymentId,
         newManualMetric,
+        entitySelector,
       }).unwrap().then(async metricId => {
         if (artifactFile) {
           await addArtifact({
@@ -37,6 +45,7 @@ const AddNewMetric = ({exerciseId, deploymentId, newManualMetric, metricHasArtif
             deploymentId,
             metricId,
             artifactFile,
+            entitySelector,
           });
         }
       });
@@ -46,8 +55,13 @@ const AddNewMetric = ({exerciseId, deploymentId, newManualMetric, metricHasArtif
       } else {
         toastWarning(t('metricScoring.errors.newManualMetricFailed'));
       }
-    } catch {
-      toastWarning(t('metricScoring.errors.newManualMetricFailed'));
+    } catch (error) {
+      if (error instanceof Error) {
+        toastWarning(t('metricScoring.errors.addMetricFailedWithMessage',
+          {errorMessage: JSON.stringify(error.message)}));
+      } else {
+        toastWarning(t('metricScoring.errors.addMetricFailed'));
+      }
     }
   };
 

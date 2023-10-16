@@ -139,7 +139,6 @@ diesel::table! {
         exercise_id -> Binary,
         #[max_length = 16]
         deployment_id -> Binary,
-        user_id -> Text,
         entity_selector -> Text,
         name -> Text,
         description -> Nullable<Text>,

@@ -280,7 +280,7 @@ export const apiSlice = createApi({
     }>({
       query({exerciseId, deploymentId, entitySelector}) {
         return `/participant/exercise/${
-          exerciseId}/deployment/${deploymentId}/entity/${entitySelector}/events`;
+          exerciseId}/deployment/${deploymentId}/entity/${entitySelector}/event`;
       },
     }),
     adminGetManualMetrics: builder.query<ManualMetric[] | undefined,
@@ -354,17 +354,21 @@ export const apiSlice = createApi({
       exerciseId: string;
       deploymentId: string;
       metricId: string;
+      entitySelector: string;
     }>({
-      query: ({exerciseId, deploymentId, metricId}) =>
-        `/participant/exercise/${exerciseId}/deployment/${deploymentId}/metric/${metricId}`,
+      query: ({exerciseId, deploymentId, metricId, entitySelector}) =>
+        // eslint-disable-next-line max-len
+        `/participant/exercise/${exerciseId}/deployment/${deploymentId}/entity/${entitySelector}/metric/${metricId}`,
     }),
     participantGetMetrics: builder.query<ManualMetric[],
     {
       exerciseId: string;
       deploymentId: string;
+      entitySelector: string;
     }>({
-      query({exerciseId, deploymentId}) {
-        return `/participant/exercise/${exerciseId}/deployment/${deploymentId}/metric`;
+      query({exerciseId, deploymentId, entitySelector}) {
+        // eslint-disable-next-line max-len
+        return `/participant/exercise/${exerciseId}/deployment/${deploymentId}/entity/${entitySelector}/metric`;
       },
       providesTags: ['ManualMetric'],
     }),
@@ -373,9 +377,11 @@ export const apiSlice = createApi({
       deploymentId: string;
       metricId: string;
       manualMetricUpdate: UpdateManualMetric;
+      entitySelector: string;
     }>({
-      query: ({manualMetricUpdate, exerciseId, deploymentId, metricId}) => ({
-        url: `/participant/exercise/${exerciseId}/deployment/${deploymentId}/metric/${metricId}`,
+      query: ({manualMetricUpdate, exerciseId, deploymentId, metricId, entitySelector}) => ({
+        // eslint-disable-next-line max-len
+        url: `/participant/exercise/${exerciseId}/deployment/${deploymentId}/entity/${entitySelector}/metric/${metricId}`,
         method: 'PUT',
         body: manualMetricUpdate,
       }),
@@ -385,9 +391,11 @@ export const apiSlice = createApi({
       exerciseId: string;
       deploymentId: string;
       newManualMetric: NewManualMetric;
+      entitySelector: string;
     }>({
-      query: ({newManualMetric, exerciseId, deploymentId}) => ({
-        url: `/participant/exercise/${exerciseId}/deployment/${deploymentId}/metric`,
+      query: ({newManualMetric, exerciseId, deploymentId, entitySelector}) => ({
+        // eslint-disable-next-line max-len
+        url: `/participant/exercise/${exerciseId}/deployment/${deploymentId}/entity/${entitySelector}/metric`,
         method: 'POST',
         body: newManualMetric,
       }),
@@ -398,14 +406,15 @@ export const apiSlice = createApi({
       deploymentId: string;
       metricId: string;
       artifactFile: File;
+      entitySelector: string;
     }>({
-      query({exerciseId, deploymentId, metricId, artifactFile}) {
+      query({exerciseId, deploymentId, metricId, artifactFile, entitySelector}) {
         const formData = new FormData();
         formData.append('artifact', artifactFile, artifactFile.name);
 
         return {
         // eslint-disable-next-line max-len
-          url: `/participant/exercise/${exerciseId}/deployment/${deploymentId}/metric/${metricId}/upload`,
+          url: `/participant/exercise/${exerciseId}/deployment/${deploymentId}/entity/${entitySelector}/metric/${metricId}/upload`,
           method: 'POST',
           body: formData,
           formData: true,

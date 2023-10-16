@@ -31,7 +31,6 @@ pub struct NewMetric {
     pub id: Uuid,
     pub exercise_id: Uuid,
     pub deployment_id: Uuid,
-    pub user_id: String,
     pub entity_selector: String,
     pub name: String,
     pub description: Option<String>,
@@ -42,7 +41,6 @@ pub struct NewMetric {
 
 impl NewMetric {
     pub fn new(
-        user_id: String,
         name: String,
         description: Option<String>,
         max_score: u32,
@@ -52,7 +50,6 @@ impl NewMetric {
             id: Uuid::random(),
             exercise_id: new_metric_resource.exercise_id,
             deployment_id: new_metric_resource.deployment_id,
-            user_id,
             entity_selector: new_metric_resource.entity_selector,
             name,
             description,
@@ -74,7 +71,6 @@ pub struct Metric {
     pub id: Uuid,
     pub exercise_id: Uuid,
     pub deployment_id: Uuid,
-    pub user_id: String,
     pub entity_selector: String,
     pub name: String,
     pub description: Option<String>,

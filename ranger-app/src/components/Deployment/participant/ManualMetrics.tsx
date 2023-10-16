@@ -21,11 +21,11 @@ const ManualMetrics = ({
 }) => {
   const {t} = useTranslation();
   const entitySelector = useSelector(selectedEntity);
-  const {data: scenario} = useParticipantGetDeploymentScenarioQuery(
-    exerciseId && deploymentId && entitySelector
-      ? {exerciseId, deploymentId, entitySelector} : skipToken);
-  let {data: existingManualMetrics} = useParticipantGetMetricsQuery(exerciseId && deploymentId
-    ? {exerciseId, deploymentId} : skipToken);
+  const participantQueryArgs = exerciseId && deploymentId && entitySelector
+    ? {exerciseId, deploymentId, entitySelector} : skipToken;
+
+  const {data: scenario} = useParticipantGetDeploymentScenarioQuery(participantQueryArgs);
+  let {data: existingManualMetrics} = useParticipantGetMetricsQuery(participantQueryArgs);
   const entities = scenario?.entities ?? {};
   const entity = flattenEntities(entities)[entitySelector ?? ''];
   const entityRole = entity?.role;

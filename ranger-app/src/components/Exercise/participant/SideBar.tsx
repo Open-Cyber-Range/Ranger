@@ -21,7 +21,7 @@ import {selectedEntity, setSelectedEntity} from 'src/slices/userSlice';
 import EntitySelect from 'src/components/EntitySelect';
 
 export type ParticipantActiveTab =
-'Dash' | 'Score' | 'Events' | 'Accounts' | 'Manual Metrics' | undefined;
+'Dash' | 'Score' | 'Events' | 'Accounts' | 'User Submissions' | undefined;
 
 const hashToTab = (hash: string): ParticipantActiveTab => {
   switch (hash) {
@@ -41,8 +41,8 @@ const hashToTab = (hash: string): ParticipantActiveTab => {
       return 'Accounts';
     }
 
-    case '#manualMetrics': {
-      return 'Manual Metrics';
+    case '#submissions': {
+      return 'User Submissions';
     }
 
     default: {
@@ -135,13 +135,13 @@ const SideBar = ({renderMainContent}: {
               />
 
               <MenuItem
-                active={!deploymentId && activeTab === 'Manual Metrics'}
-                text={t('participant.exercise.tabs.manualMetrics')}
+                active={!deploymentId && activeTab === 'User Submissions'}
+                text={t('participant.exercise.tabs.userSubmissions')}
                 icon='shapes'
                 onClick={() => {
-                  navigate(`/exercises/${exercise.id}/deployments/${deployment.id}#manualMetrics`);
+                  navigate(`/exercises/${exercise.id}/deployments/${deployment.id}#submissions`);
 
-                  setActiveTab('Manual Metrics');
+                  setActiveTab('User Submissions');
                 }}
               />
 

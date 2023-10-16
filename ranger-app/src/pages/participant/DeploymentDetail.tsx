@@ -51,7 +51,7 @@ const ParticipantDeploymentDetail = () => {
             && <PariticpantEvents
               scenarioEvents={scenario?.events}
               deploymentEvents={deplyomentEvents}/>}
-          {activeTab === 'Manual Metrics'
+          {activeTab === 'User Submissions'
             && <ManualMetrics
               exerciseId={exerciseId}
               deploymentId={deploymentId}/>}

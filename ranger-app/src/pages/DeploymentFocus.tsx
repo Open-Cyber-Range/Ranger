@@ -76,7 +76,7 @@ const DeploymentFocus = () => {
               </div>
             </>
           )}
-          {activeTab === ActiveTab.ManualMetrics && (
+          {activeTab === ActiveTab.UserSubmissions && (
             <MetricScorer
               exerciseId={exerciseId}
               deploymentId={deploymentId}/>
