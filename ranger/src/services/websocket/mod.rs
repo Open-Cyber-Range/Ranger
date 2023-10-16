@@ -1,7 +1,6 @@
 mod exercise;
 mod logger;
 
-use log::Level as LogLevel;
 use crate::models::{
     helpers::{uuid::Uuid, websocket_wrapper::WebsocketWrapper},
     Deployment, DeploymentElement, Score, UpdateExercise,
@@ -9,6 +8,7 @@ use crate::models::{
 use actix::{Actor, Context, Handler, Message, Recipient};
 use anyhow::{anyhow, Result};
 pub use exercise::ExerciseWebsocket;
+use log::Level as LogLevel;
 pub use logger::LogWebSocket;
 use std::collections::{HashMap, HashSet};
 
@@ -81,7 +81,7 @@ impl Handler<RegisterLogSocket> for WebSocketManager {
     fn handle(&mut self, msg: RegisterLogSocket, _: &mut Context<Self>) -> Self::Result {
         self.log_websockets
             .entry(msg.log_level)
-            .or_insert(HashSet::new())
+            .or_default()
             .insert(msg.recipient);
         Ok(())
     }
@@ -165,7 +165,6 @@ impl Handler<SocketLogUpdate> for WebSocketManager {
         Ok(())
     }
 }
-
 
 #[derive(Message)]
 #[rtype(result = "Result<()>")]
