@@ -17,7 +17,7 @@ type LogProviderProps = {
 
 export const LogProvider: React.FC<LogProviderProps> = ({children}) => {
   const [selectedLogLevel, setSelectedLogLevel] = useState<LogLevel>(LogLevel.INFO);
-  const logs = useLogStreaming(LogLevel.INFO);
+  const logs = useLogStreaming(LogLevel.DEBUG);
 
   const value = useMemo(() => ({
     selectedLogLevel,
