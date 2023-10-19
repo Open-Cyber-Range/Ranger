@@ -82,10 +82,7 @@ impl CreateFeatureDeploymentSchedule {
         let node = &self.1;
         let mut tranches_with_roles: HashMap<&String, Vec<Vec<String>>> = HashMap::new();
 
-        let node_features = node
-            .clone()
-            .features
-            .ok_or_else(|| anyhow!("Node Features not found"))?;
+        let node_features = node.clone().features.unwrap_or_default();
 
         for (node_feature_name, node_feature_role) in node_features.iter() {
             let dependencies = scenario.get_a_node_features_dependencies(node_feature_name)?;
@@ -97,10 +94,7 @@ impl CreateFeatureDeploymentSchedule {
 
             tranches_with_roles.insert(node_feature_role, tranches);
         }
-        let roles = node
-            .roles
-            .as_ref()
-            .ok_or_else(|| anyhow!("Node Roles not found"))?;
+        let roles = node.roles.clone().unwrap_or_default();
 
         if let Some(features) = &scenario.features {
             let mut feature_schedule: Vec<Vec<(String, Feature, Role)>> = Vec::new();
