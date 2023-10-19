@@ -18,7 +18,7 @@ const LogView: React.FC = () => {
 
   const {logs, selectedLogLevel, setSelectedLogLevel} = useLogs();
 
-  const logLevels = Object.values(LogLevel).filter(level => level !== LogLevel.DEBUG);
+  const logLevels = Object.values(LogLevel);
 
   const [filteredLogs, setFilteredLogs] = useState<Log[]>([]);
 
