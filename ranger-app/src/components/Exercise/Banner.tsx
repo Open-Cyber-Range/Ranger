@@ -3,6 +3,7 @@ import {useTranslation} from 'react-i18next';
 import type {Exercise, Banner} from 'src/models/exercise';
 import {skipToken} from '@reduxjs/toolkit/query';
 import {Button, FormGroup, InputGroup, Intent} from '@blueprintjs/core';
+import {useNavigate} from 'react-router-dom';
 import {Controller, type SubmitHandler, useForm} from 'react-hook-form';
 import {
   useAdminAddBannerMutation,
@@ -10,19 +11,24 @@ import {
   useAdminGetBannerQuery,
   useAdminUpdateBannerMutation,
 } from 'src/slices/apiSlice';
-import {useEffect} from 'react';
+import {useEffect, useState} from 'react';
+import {ActiveTab} from "src/models/exercise";
 
-const BannerView = ({exercise}:
-{
-  exercise: Exercise;
-}) => {
+const BannerView = ({exercise}: {exercise: Exercise}) => {
   const {t} = useTranslation();
-  const {data: existingBanner} = useAdminGetBannerQuery(exercise?.id ?? skipToken);
+  const navigate = useNavigate();
+  let {data: existingBanner} = useAdminGetBannerQuery(exercise?.id ?? skipToken);
+  const [, setActiveTab] = useState<ActiveTab>(ActiveTab.Banner);
+
   const [addBanner] = useAdminAddBannerMutation();
   const [updateBanner] = useAdminUpdateBannerMutation();
   const [deleteBanner] = useAdminDeleteBannerMutation();
 
-  const {handleSubmit, control, reset, setValue} = useForm<Banner>();
+  const {handleSubmit, control, setValue} = useForm<Banner>();
+  const routeChange = () => {
+    navigate(``);
+    setActiveTab(ActiveTab.Dash);
+  };
 
   useEffect(() => {
     if (existingBanner) {
@@ -41,7 +47,9 @@ const BannerView = ({exercise}:
 
   const onDelete: SubmitHandler<Banner> = async () => {
     await deleteBanner({exerciseId: exercise.id});
-    reset();
+    setValue('name', '');
+    setValue('content', '');
+    existingBanner = undefined;
   };
 
   return (
@@ -49,6 +57,7 @@ const BannerView = ({exercise}:
       <form
         onSubmit={existingBanner ? handleSubmit(onUpdate) : handleSubmit(onCreate)}
         onReset={handleSubmit(onDelete)}
+        onClick={routeChange}
       >
         <Controller
           control={control}
