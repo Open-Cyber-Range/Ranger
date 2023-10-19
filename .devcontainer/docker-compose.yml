@@ -47,18 +47,10 @@ services:
       - ./.deputy/configuration.toml:/root/.deputy/configuration.toml
     restart: unless-stopped
 
-  deputy-package-server-repository-combo:
-    image: nexus.ocr.cr14.net:8003/deputy-package-server-repository-combo:latest
-    environment:
-      - RUST_LOG=debug
-    restart: unless-stopped
-    volumes:
-      - ./configs/deputy-package-server-configuration.yml:/etc/opt/deputy/deputy-package-server/config.yml
-
   featurer-redis-server:
     image: nexus.ocr.cr14.net:8003/featurer-redis-server
     restart: always
-    command: ["redis-server", "/etc/redis/redis.conf"]
+    command: [ "redis-server", "/etc/redis/redis.conf" ]
     volumes:
       - ./configs/ranger-redis-config.conf:/etc/redis/redis.conf
 
