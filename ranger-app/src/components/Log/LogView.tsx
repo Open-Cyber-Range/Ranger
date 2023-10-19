@@ -13,6 +13,13 @@ const logSeverity = {
   ERROR: 4,
 };
 
+const logSeverityColors = {
+  DEBUG: 'bg-yellow-100',
+  INFO: 'bg-green-100',
+  WARN: 'bg-orange-100',
+  ERROR: 'bg-red-100',
+};
+
 const LogView: React.FC = () => {
   const {t} = useTranslation();
 
@@ -95,7 +102,7 @@ const LogView: React.FC = () => {
               </thead>
               <tbody className='bg-white divide-y divide-gray-200'>
                 {filteredLogs.map(log => (
-                  <tr key={log.datetime}>
+                  <tr key={log.datetime} className={logSeverityColors[log.level]}>
                     <td className='px-6 py-4 whitespace-nowrap'>
                       {new Date(log.datetime).toLocaleString()}
                     </td>
