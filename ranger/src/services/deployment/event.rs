@@ -76,7 +76,7 @@ impl DeployableEvents for Scenario {
             |(node, deployment_element, template_id)| async move {
                 let mut node_event_conditions: Vec<ConditionProperties> = vec![];
 
-                let node_roles = try_some(node.roles.clone(), "Node missing Roles")?;
+                let node_roles = node.roles.clone().unwrap_or_default();
                 let node_condition_roles = node.conditions.clone().unwrap_or_default();
                 let node_conditions = conditions
                     .iter()
