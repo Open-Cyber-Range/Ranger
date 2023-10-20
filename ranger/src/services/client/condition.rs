@@ -214,7 +214,7 @@ impl Handler<ConditionStream> for DeployerDistribution {
                             );
                             break;
                         }
-                        if condition_status == ElementStatus::Success && event.has_triggered {
+                        if condition_status == ElementStatus::ConditionSuccess && event.has_triggered {
                             debug!(
                                 "Event '{}' has triggered, closing '{condition_name}' stream for '{node_name}'",
                                 event.name,
@@ -225,11 +225,11 @@ impl Handler<ConditionStream> for DeployerDistribution {
                             break;
                         }
                         if condition_is_met {
-                            if condition_status == ElementStatus::Ongoing {
-                                condition_deployment_element.status = ElementStatus::Success;
+                            if condition_status == ElementStatus::ConditionPolling {
+                                condition_deployment_element.status = ElementStatus::ConditionSuccess;
                             }
-                        } else if condition_status == ElementStatus::Success {
-                            condition_deployment_element.status = ElementStatus::Ongoing;
+                        } else if condition_status == ElementStatus::ConditionSuccess {
+                            condition_deployment_element.status = ElementStatus::ConditionPolling;
                         }
 
                         condition_deployment_element.update(

@@ -126,6 +126,9 @@ pub enum ElementStatus {
     Failed,
     Removed,
     RemoveFailed,
+    ConditionSuccess,
+    ConditionPolling,
+    ConditionClosed,
 }
 
 pub trait ScenarioReference
