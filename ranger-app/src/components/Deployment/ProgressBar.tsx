@@ -6,6 +6,9 @@ import {ElementStatus} from 'src/models/deployment';
 
 const loadingIntent = (status: ElementStatus): Intent => {
   switch (status) {
+    case ElementStatus.ConditionSuccess:
+    case ElementStatus.ConditionPolling:
+    case ElementStatus.ConditionClosed:
     case ElementStatus.Success:
     case ElementStatus.Removed: {
       return Intent.SUCCESS;

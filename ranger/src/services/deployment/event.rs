@@ -330,7 +330,9 @@ impl Handler<StartPolling> for EventPoller {
 
                     let successful_condition_count = condition_deployment_elements
                         .iter()
-                        .filter(|condition| matches!(condition.status, ElementStatus::Success))
+                        .filter(|condition| {
+                            matches!(condition.status, ElementStatus::ConditionSuccess)
+                        })
                         .count();
 
                     if condition_deployment_elements
