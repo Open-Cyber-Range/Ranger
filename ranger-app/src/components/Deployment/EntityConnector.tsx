@@ -83,7 +83,7 @@ const EntityConnector = ({exerciseId, deploymentId}: {
 
     const flattenedList = flattenList(createEntityTree(clickedDelete, scenario.entities));
     return filterList(flattenedList, participants);
-  }, [exerciseId, deploymentId, deleteParticipant, scenario]);
+  }, [exerciseId, deploymentId, deleteParticipant, participants, scenario]);
 
   useEffect(() => {
     if (isSuccess) {
