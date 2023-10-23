@@ -50,7 +50,7 @@ pub async fn await_conditions_to_be_deployed(
     Ok(())
 }
 
-fn get_event_start_timedelta(event: &Event, current_time: chrono::NaiveDateTime) -> Duration {
+fn get_event_start_timedelta(event: &Event, current_time: NaiveDateTime) -> Duration {
     let timedelta = (event.start - current_time).num_seconds();
     if timedelta <= 0 {
         Duration::from_secs(0)
@@ -87,6 +87,8 @@ pub fn calculate_event_start_end_times(
     scenario: &Scenario,
     event_key: &str,
     event: &SdlEvent,
+    deployment_start: NaiveDateTime,
+    deployment_end: NaiveDateTime,
 ) -> Result<(NaiveDateTime, NaiveDateTime)> {
     let (parent_script_key, parent_script) = scenario
         .scripts
@@ -121,11 +123,11 @@ pub fn calculate_event_start_end_times(
     }
 
     let event_start_duration = chrono::Duration::seconds(adjusted_start_time as i64);
-    let event_start_datetime = scenario.start.add(event_start_duration).naive_utc();
+    let event_start_datetime = deployment_start.add(event_start_duration);
     let event_end_duration = chrono::Duration::seconds(adjusted_end_time as i64);
-    let event_end_datetime = match scenario.start.add(event_end_duration) > scenario.end {
-        true => scenario.end.naive_utc(),
-        false => scenario.start.add(event_end_duration).naive_utc(),
+    let event_end_datetime = match deployment_start.add(event_end_duration) > deployment_end {
+        true => deployment_end,
+        false => deployment_start.add(event_end_duration),
     };
 
     Ok((event_start_datetime, event_end_datetime))
