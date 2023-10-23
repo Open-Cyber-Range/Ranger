@@ -112,7 +112,7 @@ pub fn calculate_event_start_end_times(
         .map(|(_, story)| story)
         .ok_or_else(|| anyhow!("Failed to find parent story for {parent_script_key}"))?;
 
-    let story_and_script_multiplier = parent_story.clock * parent_script.speed as f64;
+    let story_and_script_multiplier = parent_story.speed * parent_script.speed as f64;
     let mut adjusted_start_time = parent_script.start_time as f64 / story_and_script_multiplier;
     let adjusted_end_time = parent_script.end_time as f64 / story_and_script_multiplier;
 
