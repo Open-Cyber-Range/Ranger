@@ -91,6 +91,8 @@ diesel::table! {
         sdl_schema -> Longtext,
         #[max_length = 16]
         exercise_id -> Binary,
+        start -> Timestamp,
+        end -> Timestamp,
         created_at -> Timestamp,
         updated_at -> Timestamp,
         deleted_at -> Timestamp,

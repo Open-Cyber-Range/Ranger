@@ -35,6 +35,8 @@ pub struct NewDeploymentResource {
     pub deployment_group: Option<String>,
     pub group_name: Option<String>,
     pub sdl_schema: String,
+    pub start: NaiveDateTime,
+    pub end: NaiveDateTime,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize, Insertable)]
@@ -47,6 +49,8 @@ pub struct NewDeployment {
     pub group_name: Option<String>,
     pub sdl_schema: String,
     pub exercise_id: Uuid,
+    pub start: NaiveDateTime,
+    pub end: NaiveDateTime,
 }
 
 impl NewDeployment {
@@ -58,6 +62,8 @@ impl NewDeployment {
             group_name: resource.group_name,
             sdl_schema: resource.sdl_schema,
             exercise_id,
+            start: resource.start,
+            end: resource.end,
         }
     }
 
@@ -85,6 +91,8 @@ pub struct Deployment {
     pub sdl_schema: String,
     pub group_name: Option<String>,
     pub exercise_id: Uuid,
+    pub start: NaiveDateTime,
+    pub end: NaiveDateTime,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
     pub deleted_at: NaiveDateTime,
