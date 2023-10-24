@@ -56,7 +56,7 @@ impl DeployableEvents for Scenario {
             .clone()
             .unwrap_or_default()
             .iter()
-            .flat_map(|(_, script)| script.events.clone())
+            .flat_map(|(_, script)| script.events.keys().cloned())
             .collect::<Vec<_>>();
 
         let event_conditions_tuple = &sdl_events
@@ -106,7 +106,6 @@ impl DeployableEvents for Scenario {
                                 let (event_start, event_end) = calculate_event_start_end_times(
                                     self,
                                     event_key,
-                                    event,
                                     deployment.start,
                                     deployment.end,
                                 )?;
@@ -133,7 +132,6 @@ impl DeployableEvents for Scenario {
                                     .send(CreateEvent {
                                         event_id,
                                         event_name: event_key.to_owned(),
-                                        event: event.clone(),
                                         deployment_id: deployment_element.deployment_id,
                                         description: event.description.clone(),
                                         parent_node_id: Uuid::try_from(

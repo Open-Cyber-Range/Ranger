@@ -7,7 +7,7 @@ use actix::Addr;
 use anyhow::{anyhow, Ok, Result};
 use chrono::{NaiveDateTime, Utc};
 use log::debug;
-use sdl_parser::{event::Event as SdlEvent, node::Role, Scenario};
+use sdl_parser::{node::Role, Scenario};
 use std::ops::Add;
 use std::time::Duration;
 use tokio::time::sleep;
@@ -86,7 +86,6 @@ pub async fn await_event_start(
 pub fn calculate_event_start_end_times(
     scenario: &Scenario,
     event_key: &str,
-    event: &SdlEvent,
     deployment_start: NaiveDateTime,
     deployment_end: NaiveDateTime,
 ) -> Result<(NaiveDateTime, NaiveDateTime)> {
@@ -96,7 +95,7 @@ pub fn calculate_event_start_end_times(
         .and_then(|scripts| {
             scripts
                 .iter()
-                .find(|(_, script)| script.events.contains(&event_key.to_owned()))
+                .find(|(_, script)| script.events.contains_key(&event_key.to_owned()))
         })
         .map(|(script_key, script)| (script_key, script))
         .ok_or_else(|| anyhow!("Failed to find parent script for {event_key}"))?;
@@ -113,18 +112,16 @@ pub fn calculate_event_start_end_times(
         .ok_or_else(|| anyhow!("Failed to find parent story for {parent_script_key}"))?;
 
     let story_and_script_multiplier = parent_story.speed * parent_script.speed as f64;
-    let mut adjusted_start_time = parent_script.start_time as f64 / story_and_script_multiplier;
-    let adjusted_end_time = parent_script.end_time as f64 / story_and_script_multiplier;
 
-    if let Some(event_relative_multiplier) = event.time {
-        adjusted_start_time = (adjusted_start_time
-            + (adjusted_end_time - adjusted_start_time) * event_relative_multiplier as f64)
-            .round();
-    }
+    let event_start_time = parent_script.events.get(event_key).ok_or_else(|| {
+        anyhow!("Failed to find event {event_key} in parent script {parent_script_key}",)
+    })?;
+    let adjusted_event_start_time = *event_start_time as f64 / story_and_script_multiplier;
+    let adjusted_script_end_time = parent_script.end_time as f64 / story_and_script_multiplier;
 
-    let event_start_duration = chrono::Duration::seconds(adjusted_start_time as i64);
+    let event_start_duration = chrono::Duration::seconds(adjusted_event_start_time as i64);
     let event_start_datetime = deployment_start.add(event_start_duration);
-    let event_end_duration = chrono::Duration::seconds(adjusted_end_time as i64);
+    let event_end_duration = chrono::Duration::seconds(adjusted_script_end_time as i64);
     let event_end_datetime = match deployment_start.add(event_end_duration) > deployment_end {
         true => deployment_end,
         false => deployment_start.add(event_end_duration),

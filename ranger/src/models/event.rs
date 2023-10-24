@@ -20,7 +20,6 @@ pub struct NewEvent {
     #[serde(default = "Uuid::random")]
     pub id: Uuid,
     pub name: String,
-    pub is_scheduled: bool,
     pub deployment_id: Uuid,
     pub parent_node_id: Uuid,
     pub description: Option<String>,
@@ -45,7 +44,6 @@ pub struct Event {
     #[serde(default = "Uuid::random")]
     pub id: Uuid,
     pub name: String,
-    pub is_scheduled: bool,
     pub deployment_id: Uuid,
     pub parent_node_id: Uuid,
     pub start: NaiveDateTime,
