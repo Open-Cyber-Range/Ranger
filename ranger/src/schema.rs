@@ -111,7 +111,6 @@ diesel::table! {
         #[max_length = 16]
         parent_node_id -> Binary,
         description -> Nullable<Mediumtext>,
-        is_scheduled -> Bool,
         has_triggered -> Bool,
         triggered_at -> Timestamp,
         created_at -> Timestamp,
