@@ -26,25 +26,17 @@ const DashboardPanel = ({exercise, deployments}:
   const createNewDeployments = (
     deploymentForm: DeploymentForm,
   ): [NewDeployment[], string] | undefined => {
-    if (exercise?.sdlSchema && exercise?.id && deploymentForm.start && deploymentForm.end) {
-      let updatedSchema = exercise.sdlSchema.replace(
-        /start: \d{4}-\d{2}-\d{2}t\d{2}:\d{2}:\d{2}z/i,
-        `start: ${deploymentForm.start}`,
-      );
-
-      updatedSchema = updatedSchema.replace(
-        /end: \d{4}-\d{2}-\d{2}t\d{2}:\d{2}:\d{2}z/i,
-        `end: ${deploymentForm.end}`,
-      );
-
+    if (exercise?.sdlSchema && exercise?.id) {
       const count = deploymentForm.count;
       const deployments = [];
       for (let index = 0; index < count; index += 1) {
         deployments.push({
           name: count < 2 ? deploymentForm.name : `${deploymentForm.name}-${index}`,
-          sdlSchema: updatedSchema,
+          sdlSchema: exercise.sdlSchema,
           deploymentGroup: deploymentForm.deploymentGroup,
           groupName: deploymentForm.groupNames[index].groupName,
+          start: deploymentForm.start,
+          end: deploymentForm.end,
         });
       }
 

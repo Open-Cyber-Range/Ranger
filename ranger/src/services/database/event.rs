@@ -8,8 +8,6 @@ use actix_web::web::block;
 use anyhow::{anyhow, Ok, Result};
 use chrono::NaiveDateTime;
 use diesel::RunQueryDsl;
-use log::debug;
-use sdl_parser::event::Event as SdlEvent;
 
 #[derive(Message)]
 #[rtype(result = "Result<()>")]
@@ -20,7 +18,6 @@ pub struct CreateEvents;
 pub struct CreateEvent {
     pub event_id: Uuid,
     pub event_name: String,
-    pub event: SdlEvent,
     pub deployment_id: Uuid,
     pub description: Option<String>,
     pub parent_node_id: Uuid,
@@ -40,7 +37,6 @@ impl Handler<CreateEvent> for Database {
                 let CreateEvent {
                     event_id,
                     event_name,
-                    event,
                     deployment_id,
                     parent_node_id,
                     description,
@@ -50,11 +46,9 @@ impl Handler<CreateEvent> for Database {
                 } = msg;
 
                 let mutex_connection = &connection_result?;
-                let is_scheduled = event.time.is_some();
                 let new_event = NewEvent {
                     id: event_id,
                     name: event_name,
-                    is_scheduled,
                     deployment_id,
                     parent_node_id,
                     description,
@@ -70,7 +64,6 @@ impl Handler<CreateEvent> for Database {
 
                 let event = Event::by_id(new_event.id).first(&mut *connection)?;
 
-                debug!("Created a new event {:#?}", event);
                 Ok(event)
             }
             .into_actor(self),

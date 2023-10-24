@@ -21,6 +21,8 @@ type NewDeployment = {
   deploymentGroup?: string;
   groupName: string;
   sdlSchema: string;
+  start: string;
+  end: string;
 };
 
 type Deployment = {
