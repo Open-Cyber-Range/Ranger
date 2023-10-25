@@ -4,7 +4,7 @@ import type {Log} from 'src/models/log';
 import {useLogs} from 'src/contexts/LogContext';
 import {useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {Callout} from '@blueprintjs/core';
+import {Callout, H2} from '@blueprintjs/core';
 
 const logSeverity = {
   DEBUG: 1,
@@ -37,75 +37,78 @@ const LogView: React.FC = () => {
   }, [selectedLogLevel, logs]);
 
   return (
-    <div className='container mx-auto p-4'>
-      <div className='relative inline-block w-full text-gray-700'>
-        <select
-          value={selectedLogLevel}
-          // eslint-disable-next-line max-len
-          className='w-full h-10 pl-3 pr-6 text-base placeholder-gray-600 border rounded-lg appearance-none'
-          onChange={event => {
-            const eventValue = event.target.value;
-            const newLevel = eventValue as LogLevel;
-            setSelectedLogLevel(newLevel);
-          }}
-        >
-          {logLevels.map(level => (
-            <option key={level} value={level}>
-              {level}
-            </option>
-          ))}
-        </select>
-        <div className='absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none'>
-          <svg
-            className='w-4 h-4 text-gray-400'
-            viewBox='0 0 24 24'
-            fill='none'
-            xmlns='http://www.w3.org/2000/svg'
+    <>
+      <H2>{t('menu.logs')}</H2>
+      <div className='container mx-auto'>
+        <div className='relative inline-block w-full text-gray-700'>
+          <select
+            value={selectedLogLevel}
+            // eslint-disable-next-line max-len
+            className='w-full h-10 pl-3 pr-6 text-base placeholder-gray-600 border rounded-lg appearance-none'
+            onChange={event => {
+              const eventValue = event.target.value;
+              const newLevel = eventValue as LogLevel;
+              setSelectedLogLevel(newLevel);
+            }}
           >
-            <path d='M7 10l5 5 5-5H7z' fill='currentColor'/>
-          </svg>
+            {logLevels.map(level => (
+              <option key={level} value={level}>
+                {level}
+              </option>
+            ))}
+          </select>
+          <div className='absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none'>
+            <svg
+              className='w-4 h-4 text-gray-400'
+              viewBox='0 0 24 24'
+              fill='none'
+              xmlns='http://www.w3.org/2000/svg'
+            >
+              <path d='M7 10l5 5 5-5H7z' fill='currentColor'/>
+            </svg>
+          </div>
+        </div>
+
+        <div className='overflow-y-auto mt-4 max-h-[50vh]'>
+          {filteredLogs.length === 0 ? (
+            <Callout title={t('log.empty') ?? ''}/>
+          ) : (
+            <table className='min-w-full divide-y divide-gray-200'>
+              <thead className='bg-gray-50 sticky top-0'>
+                <tr>
+                  <th
+                    // eslint-disable-next-line max-len
+                    className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4'
+                  >{t('log.date')}
+                  </th>
+                  <th
+                    // eslint-disable-next-line max-len
+                    className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4'
+                  >{t('log.level')}
+                  </th>
+                  <th
+                    // eslint-disable-next-line max-len
+                    className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-2/4'
+                  >{t('log.message')}
+                  </th>
+                </tr>
+              </thead>
+              <tbody className='bg-white divide-y divide-gray-200'>
+                {filteredLogs.map(log => (
+                  <tr key={log.datetime}>
+                    <td className='px-6 py-4 whitespace-nowrap'>
+                      {new Date(log.datetime).toLocaleString()}
+                    </td>
+                    <td className='px-6 py-4 whitespace-nowrap'>{log.level}</td>
+                    <td className='px-6 py-4'>{log.message}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
-
-      <div className='overflow-y-auto mt-4 max-h-[50vh]'>
-        {filteredLogs.length === 0 ? (
-          <Callout title={t('log.empty') ?? ''}/>
-        ) : (
-          <table className='min-w-full divide-y divide-gray-200'>
-            <thead className='bg-gray-50 sticky top-0'>
-              <tr>
-                <th
-                  // eslint-disable-next-line max-len
-                  className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4'
-                >{t('log.date')}
-                </th>
-                <th
-                  // eslint-disable-next-line max-len
-                  className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4'
-                >{t('log.level')}
-                </th>
-                <th
-                  // eslint-disable-next-line max-len
-                  className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-2/4'
-                >{t('log.message')}
-                </th>
-              </tr>
-            </thead>
-            <tbody className='bg-white divide-y divide-gray-200'>
-              {filteredLogs.map(log => (
-                <tr key={log.datetime}>
-                  <td className='px-6 py-4 whitespace-nowrap'>
-                    {new Date(log.datetime).toLocaleString()}
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap'>{log.level}</td>
-                  <td className='px-6 py-4'>{log.message}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
-    </div>
+    </>
   );
 };
 

@@ -20,8 +20,11 @@ import MetricScorer from 'src/components/Scoring/MetricScorer';
 import EntityTree from 'src/components/Deployment/EntityTree';
 import {ActiveTab} from 'src/models/exercise';
 import {tryIntoScoringMetadata} from 'src/utils';
+import {H2} from '@blueprintjs/core';
+import {useTranslation} from 'react-i18next';
 
 const DeploymentFocus = () => {
+  const {t} = useTranslation();
   const {exerciseId, deploymentId} = useParams<DeploymentDetailRouteParameters>();
   useExerciseStreaming(exerciseId);
   const queryArguments = exerciseId && deploymentId ? {exerciseId, deploymentId} : skipToken;
@@ -37,6 +40,7 @@ const DeploymentFocus = () => {
         <>
           {activeTab === ActiveTab.Scores && (
             <>
+              <H2>{t('exercises.tabs.deploymentScores')}</H2>
               <TloTable
                 scoringData={tryIntoScoringMetadata(scenario)}
                 scores={scores}
@@ -53,6 +57,7 @@ const DeploymentFocus = () => {
           )}
           {activeTab === ActiveTab.SDL && (
             <div className='h-[80vh]'>
+              <H2>{t('exercises.tabs.sdl')}</H2>
               <Editor
                 value={deployment?.sdlSchema ?? ''}
                 defaultLanguage='yaml'
@@ -62,6 +67,7 @@ const DeploymentFocus = () => {
           )}
           {activeTab === ActiveTab.Accounts && (
             <div>
+              <H2>{t('exercises.tabs.accounts')}</H2>
               <AccountList
                 users={users}
                 deploymentElements={deploymentElements}
@@ -70,6 +76,7 @@ const DeploymentFocus = () => {
           )}
           {activeTab === ActiveTab.EntitySelector && (
             <>
+              <H2>{t('exercises.tabs.entities')}</H2>
               <EntityConnector exerciseId={exerciseId} deploymentId={deploymentId}/>
               <div className='mt-[2rem]'>
                 <EntityTree exerciseId={exerciseId} deploymentId={deploymentId}/>
@@ -77,9 +84,12 @@ const DeploymentFocus = () => {
             </>
           )}
           {activeTab === ActiveTab.UserSubmissions && (
-            <MetricScorer
-              exerciseId={exerciseId}
-              deploymentId={deploymentId}/>
+            <>
+              <H2>{t('exercises.tabs.userSubmissions')}</H2>
+              <MetricScorer
+                exerciseId={exerciseId}
+                deploymentId={deploymentId}/>
+            </>
           )}
         </>
       )}/>
