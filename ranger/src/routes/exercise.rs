@@ -455,6 +455,9 @@ pub async fn get_exercise_deployment_users(
                     },
                 )
             }
+            RangerRole::Client => {
+                return Err(RangerError::AccessForbidden);
+            }
         };
 
         let roles_by_node = try_join_all(requesters_nodes.into_iter().map(|node| async {

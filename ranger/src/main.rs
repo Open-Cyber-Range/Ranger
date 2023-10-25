@@ -52,6 +52,7 @@ async fn main() -> Result<(), Error> {
     HttpServer::new(move || {
         let admin_auth_middleware = AuthenticationMiddlewareFactory(RangerRole::Admin);
         let participant_auth_middleware = AuthenticationMiddlewareFactory(RangerRole::Participant);
+        let client_auth_middleware = AuthenticationMiddlewareFactory(RangerRole::Client);
         App::new()
             .app_data(app_data.to_owned())
             .service(status)
@@ -129,6 +130,8 @@ async fn main() -> Result<(), Error> {
                             )
                             .wrap(admin_auth_middleware),
                     )
+                    .service(
+                        scope("/client").wrap(client_auth_middleware))
                     .service(
                         scope("/participant")
                             .service(

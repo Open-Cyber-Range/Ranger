@@ -90,6 +90,7 @@ const language = {
     userRoles: {
       'ranger-manager': 'Manager',
       'ranger-participant': 'Participant',
+      'ranger-client': 'Client',
     },
     noRole: 'NO ROLE',
     logs: 'Logs',
