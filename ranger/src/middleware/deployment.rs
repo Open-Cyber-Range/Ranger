@@ -152,6 +152,9 @@ where
                         Err(RangerError::DeploymentNotFound)
                     }
                 }
+                RangerRole::Client => {
+                    return Err(RangerError::AccessForbidden.into());
+                }
             }?;
             req.extensions_mut().insert(deployment);
 

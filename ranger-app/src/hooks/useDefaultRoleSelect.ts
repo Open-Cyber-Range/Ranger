@@ -15,6 +15,8 @@ const useDefaultRoleSelect = (): (UserRole | undefined) => {
         dispatch(selectRole(UserRole.MANAGER));
       } else if (keycloak.hasRealmRole(UserRole.PARTICIPANT.toString())) {
         dispatch(selectRole(UserRole.PARTICIPANT));
+      } else if (keycloak.hasRealmRole(UserRole.CLIENT.toString())) {
+        dispatch(selectRole(UserRole.CLIENT));
       }
     }
   }, [currentRole, keycloak, dispatch, keycloak?.realmAccess?.roles]);
