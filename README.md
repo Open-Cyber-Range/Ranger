@@ -25,6 +25,7 @@ Users for the development keycloak server are:
  | admin   | admin   |
  | participant   | participant   |
  | manager   | manager   |
+ | client   | client   |
 
 Test exercise users are:
 
@@ -32,6 +33,7 @@ Test exercise users are:
  | :---: | :---: |
  | noormeister   | noormeister   |
  | noormeister1   | noormeister1   |
+ | noormeister2   | noormeister2   |
 
 To add new values to realm permanently follow these steps:
 
