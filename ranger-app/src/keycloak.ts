@@ -9,4 +9,8 @@ const keycloak = new Keycloak({
 });
 /* eslint-enable @typescript-eslint/no-unsafe-assignment */
 
+keycloak.onAuthRefreshError = async () => {
+  keycloak.clearToken();
+};
+
 export default keycloak;
