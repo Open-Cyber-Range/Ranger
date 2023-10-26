@@ -81,6 +81,8 @@ const language = {
         earlierThanStart: 'Deployment(s) end time must be later than start time',
       },
     },
+    beingDeployed: 'Deployment can not be deleted while it is being deployed',
+    beingDeleted: 'Deployment is being deleted',
   },
   menu: {
     home: 'Home',

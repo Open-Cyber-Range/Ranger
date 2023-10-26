@@ -1,5 +1,9 @@
 import {Colors, type TreeNodeInfo} from '@blueprintjs/core';
-import {type DeploymentElement} from 'src/models/deployment';
+import {
+  DeployerType,
+  ElementStatus,
+  type DeploymentElement,
+} from 'src/models/deployment';
 import {type AdUser} from 'src/models/groups';
 import {type Participant} from 'src/models/pariticpant';
 import {
@@ -426,4 +430,12 @@ export const getEvaluationMinScore = (evaluation: Evaluation, summedMaxScore: nu
   }
 
   return 0;
+};
+
+export const isVMDeploymentOngoing = (deploymentElements: DeploymentElement[]) => {
+  const isVMDeploymentOngoing = deploymentElements.some(
+    element => element.deployerType === DeployerType.VirtualMachine
+    && element.status === ElementStatus.Ongoing);
+
+  return isVMDeploymentOngoing;
 };
