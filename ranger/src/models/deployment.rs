@@ -118,7 +118,7 @@ impl From<Deployment> for ParticipantDeployment {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, FromSqlRow, AsExpression, Eq, Deserialize, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, FromSqlRow, AsExpression, Eq, Deserialize, Serialize)]
 #[diesel(sql_type = Text)]
 pub enum ElementStatus {
     Ongoing,
@@ -126,6 +126,9 @@ pub enum ElementStatus {
     Failed,
     Removed,
     RemoveFailed,
+    ConditionSuccess,
+    ConditionPolling,
+    ConditionClosed,
 }
 
 pub trait ScenarioReference

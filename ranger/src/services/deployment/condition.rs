@@ -184,7 +184,7 @@ impl Handler<DeployConditions> for ConditionAggregator {
                                             ConditionResponse::try_from(handler_response)?;
 
                                         let condition_status = match event_id {
-                                            Some(_) => ElementStatus::Ongoing,
+                                            Some(_) => ElementStatus::ConditionPolling,
                                             None => ElementStatus::Success,
                                         };
 
