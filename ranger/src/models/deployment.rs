@@ -7,10 +7,11 @@ use crate::{
         deployments,
     },
     services::database::{
-        deployment::UpdateDeploymentElement, All, Create, CreateOrIgnore, Database, FilterExisting,
-        SelectById, SoftDelete, SoftDeleteById, UpdateById,
+        deployment::UpdateDeploymentElement, participant::GetParticipants, All, Create,
+        CreateOrIgnore, Database, FilterExisting, SelectById, SoftDelete, SoftDeleteById,
+        UpdateById,
     },
-    utilities::Validation,
+    utilities::{create_database_error_handler, create_mailbox_error_handler, Validation},
 };
 use actix::Addr;
 use anyhow::{anyhow, Result};
@@ -380,7 +381,7 @@ impl Deployment {
             .set(deployments::deleted_at.eq(diesel::dsl::now))
     }
 
-    pub async fn is_member(
+    async fn is_member(
         &self,
         user_id: String,
         keycloak_info: KeycloakInfo,
@@ -408,5 +409,42 @@ impl Deployment {
             }
         }
         Ok(false)
+    }
+
+    async fn is_assigned_entity(
+        &self,
+        user_id: String,
+        database_address: &Addr<Database>,
+    ) -> Result<bool> {
+        let participants = database_address
+            .send(GetParticipants(self.id))
+            .await
+            .map_err(create_mailbox_error_handler("Database"))?
+            .map_err(create_database_error_handler("Get participants"))?;
+
+        for participant in participants {
+            if participant.user_id == user_id {
+                return Ok(true);
+            }
+        }
+
+        Ok(false)
+    }
+
+    pub async fn is_connected(
+        &self,
+        user_id: String,
+        database_address: &Addr<Database>,
+        keycloak_info: KeycloakInfo,
+        realm_name: String,
+    ) -> Result<bool> {
+        let is_member = self
+            .is_member(user_id.clone(), keycloak_info, realm_name.clone())
+            .await?;
+        let is_connected = self
+            .is_assigned_entity(user_id.clone(), database_address)
+            .await?;
+
+        Ok(is_member && is_connected)
     }
 }

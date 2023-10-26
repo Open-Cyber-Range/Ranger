@@ -4,7 +4,7 @@ use crate::{
         authentication::UserInfo, deployment::DeploymentInfo, exercise::ExerciseInfo,
         keycloak::KeycloakInfo,
     },
-    models::{helpers::uuid::Uuid, Deployment, DeploymentElement, ParticipantDeployment},
+    models::{helpers::uuid::Uuid, DeploymentElement, ParticipantDeployment},
     services::database::deployment::{GetDeploymentElementByDeploymentId, GetDeployments},
     utilities::{create_database_error_handler, create_mailbox_error_handler},
     AppState,
@@ -31,30 +31,30 @@ pub async fn get_participant_deployments(
         .map_err(create_mailbox_error_handler("Database"))?
         .map_err(create_database_error_handler("Get deployments"))?;
 
-    let deployment_with_members: Vec<(Deployment, bool)> =
-        join_all(deployments.into_iter().map(|deployment| async {
-            let is_member = deployment
-                .is_member(
-                    user_info.id.clone(),
-                    KeycloakInfo(keycloak_info.clone()),
-                    app_state.configuration.keycloak.realm.clone(),
-                )
-                .await
-                .unwrap_or(false);
-            (deployment, is_member)
-        }))
-        .await;
-    let deployments = deployment_with_members
-        .into_iter()
-        .filter_map(|(exercise, is_member)| {
-            if is_member {
-                return Some(exercise);
-            }
-            None
-        })
-        .collect::<Vec<_>>();
+    let deployment_with_members = join_all(deployments.into_iter().map(|deployment| async {
+        let is_connected = deployment
+            .is_connected(
+                user_info.id.clone(),
+                &app_state.database_address,
+                KeycloakInfo(keycloak_info.clone()),
+                app_state.configuration.keycloak.realm.clone(),
+            )
+            .await
+            .unwrap_or(false);
 
-    let participant_deployments = deployments
+        (deployment, is_connected)
+    }))
+    .await
+    .into_iter()
+    .filter_map(|(exercise, is_connected)| {
+        if is_connected {
+            return Some(exercise);
+        }
+        None
+    })
+    .collect::<Vec<_>>();
+
+    let participant_deployments = deployment_with_members
         .into_iter()
         .map(ParticipantDeployment::from)
         .collect();

@@ -131,9 +131,10 @@ where
             let deployment = match user.role {
                 RangerRole::Admin => std::result::Result::Ok(deployment),
                 RangerRole::Participant => {
-                    let is_member = deployment
-                        .is_member(
+                    let is_connected = deployment
+                        .is_connected(
                             user.id.clone(),
+                            &app_state.database_address,
                             keycloak_info,
                             app_state.configuration.keycloak.realm.clone(),
                         )
@@ -145,10 +146,10 @@ where
                             );
                             RangerError::DeploymentNotFound
                         })?;
-                    if is_member {
+                    if is_connected {
                         std::result::Result::Ok(deployment)
                     } else {
-                        debug!("User is not a member of the deployment");
+                        debug!("User is not a member of the deployment or is not connected to the deployment");
                         Err(RangerError::DeploymentNotFound)
                     }
                 }
