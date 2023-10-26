@@ -23,6 +23,8 @@ const language = {
     tabs: {
       dashboard: 'Dashboard',
       scores: 'Scores',
+      deploymentScores: 'Deployment Scores',
+      emails: 'Emails',
       accounts: 'Accounts',
       entities: 'Entity Selector',
       userSubmissions: 'User Submissions',
