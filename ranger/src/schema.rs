@@ -91,6 +91,8 @@ diesel::table! {
         sdl_schema -> Longtext,
         #[max_length = 16]
         exercise_id -> Binary,
+        start -> Timestamp,
+        end -> Timestamp,
         created_at -> Timestamp,
         updated_at -> Timestamp,
         deleted_at -> Timestamp,
@@ -109,7 +111,6 @@ diesel::table! {
         #[max_length = 16]
         parent_node_id -> Binary,
         description -> Nullable<Mediumtext>,
-        is_scheduled -> Bool,
         has_triggered -> Bool,
         triggered_at -> Timestamp,
         created_at -> Timestamp,
@@ -139,7 +140,6 @@ diesel::table! {
         exercise_id -> Binary,
         #[max_length = 16]
         deployment_id -> Binary,
-        user_id -> Text,
         entity_selector -> Text,
         name -> Text,
         description -> Nullable<Text>,

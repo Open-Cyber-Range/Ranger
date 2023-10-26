@@ -21,6 +21,8 @@ type NewDeployment = {
   deploymentGroup?: string;
   groupName: string;
   sdlSchema: string;
+  start: string;
+  end: string;
 };
 
 type Deployment = {
@@ -47,6 +49,9 @@ export enum ElementStatus {
   Failed = 'Failed',
   Removed = 'Removed',
   RemoveFailed = 'RemoveFailed',
+  ConditionSuccess = 'ConditionSuccess',
+  ConditionPolling = 'ConditionPolling',
+  ConditionClosed = 'ConditionClosed',
 }
 
 type DeploymentElement = {

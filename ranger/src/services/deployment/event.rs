@@ -2,7 +2,7 @@ use super::condition::ConditionProperties;
 use super::Database;
 use crate::constants::{EVENT_POLLER_RETRY_DURATION, NAIVEDATETIME_DEFAULT_VALUE};
 use crate::models::helpers::uuid::Uuid;
-use crate::models::{DeploymentElement, ElementStatus, Exercise};
+use crate::models::{Deployment, DeploymentElement, ElementStatus, Exercise};
 use crate::services::database::deployment::GetDeploymentElementByEventIdByParentNodeId;
 use crate::services::database::event::{CreateEvent, UpdateEvent};
 use crate::services::deployment::inject::DeployableInject;
@@ -29,6 +29,7 @@ pub trait DeployableEvents {
         &self,
         addressor: &Addressor,
         deployed_nodes: &[(Node, DeploymentElement, Uuid)],
+        deployment: &Deployment,
     ) -> Result<Vec<(Node, DeploymentElement, Uuid, Vec<ConditionProperties>)>>;
 
     async fn deploy_event_pollers(
@@ -46,6 +47,7 @@ impl DeployableEvents for Scenario {
         &self,
         addressor: &Addressor,
         deployed_nodes: &[(Node, DeploymentElement, Uuid)],
+        deployment: &Deployment,
     ) -> Result<Vec<(Node, DeploymentElement, Uuid, Vec<ConditionProperties>)>> {
         let sdl_events = self.events.clone().unwrap_or_default();
         let conditions = &self.conditions.clone().unwrap_or_default();
@@ -54,7 +56,7 @@ impl DeployableEvents for Scenario {
             .clone()
             .unwrap_or_default()
             .iter()
-            .flat_map(|(_, script)| script.events.clone())
+            .flat_map(|(_, script)| script.events.keys().cloned())
             .collect::<Vec<_>>();
 
         let event_conditions_tuple = &sdl_events
@@ -74,7 +76,7 @@ impl DeployableEvents for Scenario {
             |(node, deployment_element, template_id)| async move {
                 let mut node_event_conditions: Vec<ConditionProperties> = vec![];
 
-                let node_roles = try_some(node.roles.clone(), "Node missing Roles")?;
+                let node_roles = node.roles.clone().unwrap_or_default();
                 let node_condition_roles = node.conditions.clone().unwrap_or_default();
                 let node_conditions = conditions
                     .iter()
@@ -101,8 +103,12 @@ impl DeployableEvents for Scenario {
                             if node_condition_roles.contains_key(condition_name)
                                 && event_conditions.contains_key(condition_name)
                             {
-                                let (event_start, event_end) =
-                                    calculate_event_start_end_times(self, event_key, event)?;
+                                let (event_start, event_end) = calculate_event_start_end_times(
+                                    self,
+                                    event_key,
+                                    deployment.start,
+                                    deployment.end,
+                                )?;
                                 let injects = get_injects_and_roles_by_node_event(
                                     self,
                                     event,
@@ -126,7 +132,6 @@ impl DeployableEvents for Scenario {
                                     .send(CreateEvent {
                                         event_id,
                                         event_name: event_key.to_owned(),
-                                        event: event.clone(),
                                         deployment_id: deployment_element.deployment_id,
                                         description: event.description.clone(),
                                         parent_node_id: Uuid::try_from(
@@ -325,7 +330,9 @@ impl Handler<StartPolling> for EventPoller {
 
                     let successful_condition_count = condition_deployment_elements
                         .iter()
-                        .filter(|condition| matches!(condition.status, ElementStatus::Success))
+                        .filter(|condition| {
+                            matches!(condition.status, ElementStatus::ConditionSuccess)
+                        })
                         .count();
 
                     if condition_deployment_elements

@@ -6,6 +6,7 @@ use ranger::middleware::deployment::DeploymentMiddlewareFactory;
 use ranger::middleware::exercise::ExerciseMiddlewareFactory;
 use ranger::middleware::keycloak::KeycloakAccessMiddlewareFactory;
 use ranger::middleware::metric::MetricMiddlewareFactory;
+use ranger::middleware::participant_authentication::ParticipantAccessMiddlewareFactory;
 use ranger::roles::RangerRole;
 use ranger::routes::admin::groups::get_participant_groups_users;
 use ranger::routes::admin::metric::{
@@ -51,6 +52,7 @@ async fn main() -> Result<(), Error> {
     HttpServer::new(move || {
         let admin_auth_middleware = AuthenticationMiddlewareFactory(RangerRole::Admin);
         let participant_auth_middleware = AuthenticationMiddlewareFactory(RangerRole::Participant);
+        let client_auth_middleware = AuthenticationMiddlewareFactory(RangerRole::Client);
         App::new()
             .app_data(app_data.to_owned())
             .service(status)
@@ -129,6 +131,8 @@ async fn main() -> Result<(), Error> {
                             .wrap(admin_auth_middleware),
                     )
                     .service(
+                        scope("/client").wrap(client_auth_middleware))
+                    .service(
                         scope("/participant")
                             .service(
                                 scope("/exercise")
@@ -152,24 +156,34 @@ async fn main() -> Result<(), Error> {
                                                                 scope("/entity")
                                                                 .service(
                                                                     scope("/{entity_selector}")
-                                                                            .service(get_participant_exercise_deployment_scores)
-                                                                            .service(get_participant_events)
-                                                                            .service(get_participant_node_deployment_elements)
+                                                                            .wrap(ParticipantAccessMiddlewareFactory)
+                                                                            .service(
+                                                                                scope("/score")
+                                                                                .service(get_participant_exercise_deployment_scores)
+                                                                            )
+                                                                            .service(
+                                                                                scope("/event")
+                                                                                .service(get_participant_events)
+                                                                            )
+                                                                            .service(
+                                                                                scope("/deployment_element")
+                                                                                .service(get_participant_node_deployment_elements)
+                                                                            )
                                                                             .wrap(DeploymentMiddlewareFactory)
+                                                                            .service(
+                                                                                scope("/metric")
+                                                                                .service(get_participant_metrics)
+                                                                                .service(add_metric)
+                                                                                .service(
+                                                                                    scope("/{metric_uuid}")
+                                                                                    .wrap(MetricMiddlewareFactory)
+                                                                                        .service(get_participant_metric)
+                                                                                        .service(update_participant_metric)
+                                                                                        .service(upload_participant_artifact)
+                                                                                    ),
+                                                                            ),
                                                                 )
                                                             )
-                                                            .service(
-                                                                scope("/metric")
-                                                                .service(get_participant_metrics)
-                                                                .service(add_metric)
-                                                                .service(
-                                                                    scope("/{metric_uuid}")
-                                                                    .wrap(MetricMiddlewareFactory)
-                                                                        .service(get_participant_metric)
-                                                                        .service(update_participant_metric)
-                                                                        .service(upload_participant_artifact)
-                                                                    ),
-                                                            ),
                                                     ),
                                             )
                                             .wrap(ExerciseMiddlewareFactory),

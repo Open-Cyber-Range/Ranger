@@ -27,7 +27,7 @@ const hashTabs: Record<string, ActiveTab> = {
   '#sdl': ActiveTab.SDL,
   '#accounts': ActiveTab.Accounts,
   '#entities': ActiveTab.EntitySelector,
-  '#metrics': ActiveTab.ManualMetrics,
+  '#submissions': ActiveTab.UserSubmissions,
 };
 
 const SideBar = ({renderMainContent}: {
@@ -153,13 +153,13 @@ const SideBar = ({renderMainContent}: {
                         }}/>
                       <MenuItem
                         icon='manually-entered-data'
-                        text={t('exercises.tabs.metrics')}
-                        active={activeTab === ActiveTab.ManualMetrics}
+                        text={t('exercises.tabs.userSubmissions')}
+                        active={activeTab === ActiveTab.UserSubmissions}
                         onClick={() => {
                           navigate(
                           // eslint-disable-next-line max-len
-                            `/exercises/${deployment.exerciseId}/deployments/${deployment.id}/focus#metrics`);
-                          setActiveTab(ActiveTab.ManualMetrics);
+                            `/exercises/${deployment.exerciseId}/deployments/${deployment.id}/focus#submissions`);
+                          setActiveTab(ActiveTab.UserSubmissions);
                         }}/>
                     </MenuItem>
                   ))

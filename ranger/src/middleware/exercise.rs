@@ -65,8 +65,8 @@ where
 {
     type Response = ServiceResponse<B>;
     type Error = Error;
-    type InitError = ();
     type Transform = ExerciseMiddleware<S>;
+    type InitError = ();
     type Future = Ready<Result<Self::Transform, Self::InitError>>;
 
     fn new_transform(&self, service: S) -> Self::Future {
@@ -151,6 +151,9 @@ where
                         debug!("User is not a member of the exercise");
                         Err(RangerError::ExericseNotFound)
                     }
+                }
+                RangerRole::Client => {
+                    return Err(RangerError::AccessForbidden.into());
                 }
             }?;
             req.extensions_mut().insert(exercise);

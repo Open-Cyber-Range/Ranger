@@ -330,8 +330,7 @@ pub async fn get_exercise_deployment_scores(
         .map_err(create_mailbox_error_handler("Database"))?
         .map_err(create_database_error_handler("Get condition_messages"))?;
     condition_messages.retain(|condition| {
-        condition.created_at > scenario.start.naive_utc()
-            && condition.created_at < scenario.end.naive_utc()
+        condition.created_at > deployment.start && condition.created_at < deployment.end
     });
 
     let scenario_metrics = match scenario.metrics {
@@ -456,6 +455,9 @@ pub async fn get_exercise_deployment_users(
                     },
                 )
             }
+            RangerRole::Client => {
+                return Err(RangerError::AccessForbidden);
+            }
         };
 
         let roles_by_node = try_join_all(requesters_nodes.into_iter().map(|node| async {
@@ -557,7 +559,7 @@ pub async fn add_banner(
 #[get("")]
 pub async fn get_banner(
     path_variable: Path<Uuid>,
-    app_state: Data<AppState>
+    app_state: Data<AppState>,
 ) -> Result<Json<Banner>, RangerError> {
     let exercise_id = path_variable.into_inner();
     let banners = app_state

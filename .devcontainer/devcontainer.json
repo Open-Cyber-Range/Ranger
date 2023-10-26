@@ -27,7 +27,6 @@
     "RUST_LOG": "info"
   },
   "forwardPorts": [
-    "deputy-package-server-repository-combo:3306",
     "development-keycloak:8080"
   ]
 }
