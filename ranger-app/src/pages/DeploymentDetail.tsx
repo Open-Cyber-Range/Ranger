@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {useNavigate, useParams} from 'react-router-dom';
 import type {DeploymentDetailRouteParameters} from 'src/models/routes';
 import {useTranslation} from 'react-i18next';
@@ -39,31 +39,31 @@ const DeploymentDetail = () => {
   const {data: deploymentElements} = useAdminGetDeploymentElementsQuery(queryArguments);
   const [deleteDeployment] = useAdminDeleteDeploymentMutation();
 
-  const [deplyomentInProgress, setDeplyomentInProgress] = React.useState(false);
-  const [deplyomentBeingRemoved, setDeplyomentBeingRemoved] = React.useState(false);
+  const [deploymentInProgress, setDeploymentInProgress] = useState(false);
+  const [deploymentBeingRemoved, setDeploymentBeingRemoved] = useState(false);
 
   useEffect(() => {
     const isOngoing = isVMDeploymentOngoing(deploymentElements ?? []);
-    setDeplyomentInProgress(isOngoing);
+    setDeploymentInProgress(isOngoing);
   }, [deploymentElements]);
 
   const handleDeleteDeployment = async () => {
     try {
-      setDeplyomentBeingRemoved(true);
+      setDeploymentBeingRemoved(true);
       const response = await deleteDeployment({
         exerciseId: deployment?.exerciseId ?? '',
         deploymentId: deployment?.id ?? '',
       }).unwrap();
 
       if (response === deployment?.id) {
-        setDeplyomentBeingRemoved(false);
+        setDeploymentBeingRemoved(false);
         toastSuccess(t('deployments.deleteSuccess', {
           deploymentName: deployment?.name,
         }));
         navigate(`/exercises/${deployment.exerciseId}`);
       }
     } catch {
-      setDeplyomentBeingRemoved(false);
+      setDeploymentBeingRemoved(false);
       toastWarning(t('deployments.deleteFail'));
     }
   };
@@ -73,23 +73,23 @@ const DeploymentDetail = () => {
       <SideBar renderMainContent={() => (
         <>
           <div className='flex justify-between overflow-auto'>
-            <div className='flex space-x-6'>
+            <div className='flex space-x-6 align-middle'>
               <H2>{deployment?.name}</H2>
               <InfoTags deploymentElements={deploymentElements ?? []}/>
             </div>
             <Tooltip2
-              content={deplyomentInProgress
+              content={deploymentInProgress
                 ? t('deployments.beingDeployed') ?? ''
-                : (deplyomentBeingRemoved
+                : (deploymentBeingRemoved
                   ? t('deployments.beingDeleted') ?? ''
                   : '')}
-              disabled={!deplyomentInProgress && !deplyomentBeingRemoved}
+              disabled={!deploymentInProgress && !deploymentBeingRemoved}
             >
               <AnchorButton
                 icon='trash'
                 intent='danger'
-                disabled={deplyomentInProgress || deplyomentBeingRemoved}
-                loading={deplyomentBeingRemoved}
+                disabled={deploymentInProgress || deploymentBeingRemoved}
+                loading={deploymentBeingRemoved}
                 onClick={handleDeleteDeployment}
               >
                 {t('common.delete')}

@@ -5,7 +5,7 @@ import {
   type DeploymentElement,
 } from 'src/models/deployment';
 import {type AdUser} from 'src/models/groups';
-import {type Participant} from 'src/models/pariticpant';
+import {type Participant} from 'src/models/participant';
 import {
   type Entity,
   ExerciseRole,
@@ -432,8 +432,8 @@ export const getEvaluationMinScore = (evaluation: Evaluation, summedMaxScore: nu
   return 0;
 };
 
-export const isVMDeploymentOngoing = (deploymentElements: DeploymentElement[]) => {
-  return deploymentElements.some(
+export const isVMDeploymentOngoing = (deploymentElements: DeploymentElement[]) => (
+  deploymentElements.some(
     element => element.deployerType === DeployerType.VirtualMachine
-    && element.status === ElementStatus.Ongoing);
-};
+    && element.status === ElementStatus.Ongoing)
+);
