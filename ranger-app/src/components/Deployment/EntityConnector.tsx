@@ -22,7 +22,7 @@ import {MenuItem2} from '@blueprintjs/popover2';
 import {useTranslation} from 'react-i18next';
 import {toastSuccess, toastWarning} from 'src/components/Toaster';
 import {createEntityTree} from 'src/utils';
-import {type Participant} from 'src/models/pariticpant';
+import {type Participant} from 'src/models/participant';
 
 const flattenList = (
   nonFlattenedList: TreeNodeInfo[], initialList: TreeNodeInfo[] = [],

@@ -41,6 +41,9 @@ export enum DeployerType {
   Switch = 'switch',
   Template = 'template',
   VirtualMachine = 'virtual_machine',
+  Feature = 'feature',
+  Condition = 'condition',
+  Inject = 'inject',
 }
 
 export enum ElementStatus {
