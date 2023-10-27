@@ -433,9 +433,7 @@ export const getEvaluationMinScore = (evaluation: Evaluation, summedMaxScore: nu
 };
 
 export const isVMDeploymentOngoing = (deploymentElements: DeploymentElement[]) => {
-  const isVMDeploymentOngoing = deploymentElements.some(
+  return deploymentElements.some(
     element => element.deployerType === DeployerType.VirtualMachine
     && element.status === ElementStatus.Ongoing);
-
-  return isVMDeploymentOngoing;
 };
