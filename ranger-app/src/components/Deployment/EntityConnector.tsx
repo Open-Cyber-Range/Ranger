@@ -108,7 +108,13 @@ const EntityConnector = ({exerciseId, deploymentId}: {
             placeholder: t('deployments.entityConnector.selectEntity') ?? '',
           }}
           activeItem={selectedEntity ?? null}
-          inputValueRenderer={item => item.id.toString() ?? ''}
+          inputValueRenderer={item => {
+            if (selectedEntity === undefined) {
+              return '';
+            }
+
+            return item.id.toString() ?? '';
+          }}
           itemPredicate={(query, item) =>
             item.id.toString().toLowerCase().includes(query.toLowerCase()) ?? false}
           itemRenderer={(item, {handleClick, handleFocus}) => (
@@ -139,7 +145,13 @@ const EntityConnector = ({exerciseId, deploymentId}: {
             placeholder: t('deployments.entityConnector.selectUser') ?? '',
           }}
           activeItem={selectedUser ?? null}
-          inputValueRenderer={item => item.username ?? ''}
+          inputValueRenderer={item => {
+            if (selectedUser === undefined) {
+              return '';
+            }
+
+            return item.username ?? '';
+          }}
           itemPredicate={(query, item) =>
             item.username?.toLowerCase().includes(query.toLowerCase()) ?? false}
           itemRenderer={(item, {handleClick, handleFocus}) => (
