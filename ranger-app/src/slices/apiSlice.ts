@@ -144,7 +144,7 @@ export const apiSlice = createApi({
       }),
     }),
     adminGetEmailForm: builder.query <string, string>({
-      query: exerciseId => `/admin/exercise/${exerciseId}/email`,
+      query: exerciseId => `/admin/exercise/${exerciseId}/email/form`,
     }),
     adminUploadFile: builder.mutation<string, FormData>({
       query: formData => ({

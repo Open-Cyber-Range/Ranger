@@ -15,7 +15,7 @@ use ranger::routes::admin::metric::{
 };
 use ranger::routes::admin::scenario::get_admin_exercise_deployment_scenario;
 use ranger::routes::deployers::get_deployers;
-use ranger::routes::email::{get_email_form, send_email};
+use ranger::routes::email::{delete_email, get_email_form, get_emails, send_email};
 use ranger::routes::exercise::{
     add_banner, add_participant, delete_banner, delete_exercise_deployment, delete_participant,
     get_admin_participants, get_banner, get_exercise, get_exercise_deployment,
@@ -114,7 +114,14 @@ async fn main() -> Result<(), Error> {
                                                     .service(get_banner)
                                                     .service(update_banner)
                                                     .service(delete_banner)
-                                            ),
+                                            )
+                                            .service(
+                                                scope("/email")
+                                                .service(get_emails)
+                                                .service(send_email)
+                                                .service(delete_email)
+                                                .service(get_email_form)
+                                        ),
                                     ),
                             )
                             .service(get_deployers)
