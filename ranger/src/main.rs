@@ -72,8 +72,6 @@ async fn main() -> Result<(), Error> {
                                             .service(update_exercise)
                                             .service(delete_exercise)
                                             .service(subscribe_to_exercise)
-                                            .service(get_email_form)
-                                            .service(send_email)
                                             .service(
                                                 scope("/deployment")
                                                     .service(get_exercise_deployments)
