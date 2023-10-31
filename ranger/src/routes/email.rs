@@ -3,7 +3,7 @@ use crate::{
     middleware::exercise::ExerciseInfo,
     models::{helpers::uuid::Uuid, Email, EmailResource, NewEmail},
     services::{
-        database::email::{CreateEmail, DeleteEmail, GetEmails, GetEmail},
+        database::email::{CreateEmail, DeleteEmail, GetEmail, GetEmails},
         mailer::Mailer,
     },
     utilities::{create_database_error_handler, create_mailbox_error_handler},
@@ -45,7 +45,6 @@ pub async fn send_email(
             email_resource,
             mailer_configuration.from_address,
             exercise.id,
-            None,
         );
 
         email = app_state

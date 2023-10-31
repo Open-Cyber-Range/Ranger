@@ -26,6 +26,7 @@ pub struct EmailResource {
     pub bcc_addresses: Option<Vec<String>>,
     pub subject: String,
     pub body: String,
+    pub user_id: Option<String>,
 }
 
 impl EmailResource {
@@ -90,16 +91,11 @@ pub struct NewEmail {
 }
 
 impl NewEmail {
-    pub fn new(
-        resource: EmailResource,
-        from_address: String,
-        exercise_id: Uuid,
-        user_id: Option<String>,
-    ) -> Self {
+    pub fn new(resource: EmailResource, from_address: String, exercise_id: Uuid) -> Self {
         Self {
             id: resource.id,
             exercise_id,
-            user_id,
+            user_id: resource.user_id,
             from_address,
             to_addresses: resource.to_addresses.join(","),
             reply_to_addresses: resource

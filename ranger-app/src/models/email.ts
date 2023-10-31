@@ -20,6 +20,7 @@ type EmailForm = {
   bccAddresses?: string[];
   subject: string;
   body: string;
+  userId?: string;
 };
 
 type EmailVariable = {
