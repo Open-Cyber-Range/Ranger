@@ -105,7 +105,7 @@ pub async fn delete_email(
     Ok(email_id.to_string())
 }
 
-#[get("form")]
+#[get("")]
 pub async fn get_email_form(app_state: Data<AppState>) -> Result<Json<String>, RangerError> {
     let mailer_configuration = app_state.configuration.mailer_configuration.clone();
     let from_address;

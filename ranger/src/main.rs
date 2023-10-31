@@ -119,8 +119,11 @@ async fn main() -> Result<(), Error> {
                                                 .service(get_email)
                                                 .service(send_email)
                                                 .service(delete_email)
+                                        )
+                                            .service(
+                                                scope("/email-form")
                                                 .service(get_email_form)
-                                        ),
+                                            ),
                                     ),
                             )
                             .service(get_deployers)
