@@ -3,7 +3,7 @@ use crate::{
     middleware::exercise::ExerciseInfo,
     models::{helpers::uuid::Uuid, Email, EmailResource, NewEmail},
     services::{
-        database::email::{CreateEmail, DeleteEmail, GetEmails},
+        database::email::{CreateEmail, DeleteEmail, GetEmails, GetEmail},
         mailer::Mailer,
     },
     utilities::{create_database_error_handler, create_mailbox_error_handler},
@@ -71,6 +71,22 @@ pub async fn get_emails(app_state: Data<AppState>) -> Result<Json<Vec<Email>>, R
         .map_err(create_database_error_handler("Get emails"))?;
 
     Ok(Json(emails))
+}
+
+#[get("{email_uuid}")]
+pub async fn get_email(
+    path_variables: Path<(Uuid, Uuid)>,
+    app_state: Data<AppState>,
+) -> Result<Json<Email>, RangerError> {
+    let (_, email_id) = path_variables.into_inner();
+    let email = app_state
+        .database_address
+        .send(GetEmail(email_id))
+        .await
+        .map_err(create_mailbox_error_handler("Database"))?
+        .map_err(create_database_error_handler("Get email"))?;
+
+    Ok(Json(email))
 }
 
 #[delete("{email_uuid}")]
