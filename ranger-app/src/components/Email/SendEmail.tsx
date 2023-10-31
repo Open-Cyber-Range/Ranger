@@ -95,10 +95,14 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
     }
 
     const allEmailPromises = [];
-    allEmailPromises.push(sendMail({
-      email: prepareEmail(email, exercise.name),
-      exerciseId: exercise.id,
-    }));
+
+    if (email.toAddresses.length > 0) {
+      allEmailPromises.push(sendMail({
+        email: prepareEmail(email, exercise.name),
+        exerciseId: exercise.id,
+      }));
+    }
+
     removeUnnecessaryEmailAddresses(email);
 
     for (const deployment of deployments) {
@@ -142,10 +146,14 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
     }
 
     const emailPromises = [];
-    emailPromises.push(sendMail({
-      email: prepareEmail(email, exercise.name),
-      exerciseId: exercise.id,
-    }));
+
+    if (email.toAddresses.length > 0) {
+      emailPromises.push(sendMail({
+        email: prepareEmail(email, exercise.name),
+        exerciseId: exercise.id,
+      }));
+    }
+
     removeUnnecessaryEmailAddresses(email);
 
     emailPromises.push(currentDeploymentUsers.map(async user =>
