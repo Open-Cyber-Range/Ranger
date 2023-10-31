@@ -333,6 +333,13 @@ export const apiSlice = createApi({
           exerciseId}/deployment/${deploymentId}/entity/${entitySelector}/event`;
       },
     }),
+    participantGetBanner: builder.query<Banner,
+      {
+        exerciseId: string;
+      }>({
+      query: ({exerciseId}) =>
+        `/participant/exercise/${exerciseId}/banner`,
+    }),
     adminGetManualMetrics: builder.query<ManualMetric[] | undefined,
     {
       exerciseId: string;
@@ -524,6 +531,7 @@ export const {
   useParticipantGetDeploymentScenarioQuery,
   useParticipantGetOwnParticipantsQuery,
   useParticipantGetTriggeredEventsQuery,
+  useParticipantGetBannerQuery,
   useParticipantGetMetricQuery,
   useParticipantGetMetricsQuery,
   useParticipantUpdateMetricMutation,
