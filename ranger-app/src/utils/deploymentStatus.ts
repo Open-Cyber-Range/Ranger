@@ -1,8 +1,5 @@
-import React from 'react';
-import {Intent, ProgressBar} from '@blueprintjs/core';
-import type {Deployment, DeploymentElement} from 'src/models/deployment';
-import '@blueprintjs/popover2/lib/css/blueprint-popover2.css';
-import {ElementStatus} from 'src/models/deployment';
+import {Intent} from '@blueprintjs/core';
+import {ElementStatus, type DeploymentElement} from 'src/models/deployment';
 
 const loadingIntent = (status: ElementStatus): Intent => {
   switch (status) {
@@ -29,7 +26,7 @@ const loadingIntent = (status: ElementStatus): Intent => {
   }
 };
 
-const getProgressionAndStatus = (
+export const getProgressionAndStatus = (
   deploymentElements: DeploymentElement[],
 ) => {
   let loadingBarValue = 0;
@@ -47,23 +44,3 @@ const getProgressionAndStatus = (
 
   return [loadingBarValue, intentStatus] as const;
 };
-
-const StatusBar = (
-  {deployment, deploymentElements}: {
-    deployment: Deployment;
-    deploymentElements: DeploymentElement[];
-  },
-) => {
-  const [loadingValue, intent] = getProgressionAndStatus(deploymentElements);
-  return (
-    <ProgressBar
-      key={deployment.id}
-      value={loadingValue}
-      animate={loadingValue < 0.999}
-      stripes={loadingValue < 0.999}
-      intent={intent}
-    />
-  );
-};
-
-export default StatusBar;

@@ -12,7 +12,6 @@ import AddDialog from 'src/components/Deployment/AddDialog';
 import {type Exercise} from 'src/models/exercise';
 import {useState} from 'react';
 import {Alert, Button} from '@blueprintjs/core';
-import DeploymentList from 'src/components/Deployment/List';
 
 const DashboardPanel = ({exercise, deployments}:
 {exercise: Exercise | undefined;
@@ -116,13 +115,6 @@ const DashboardPanel = ({exercise, deployments}:
         >
           <p>{t('exercises.sdlNotSaved')}</p>
         </Alert>
-        <div className='justify-end items-center pb-4 mt-[2rem]'>
-          {deployments === null ? (
-            <span className='text-lg text-gray-400'>{t('deployment.empty')}</span>
-          ) : (
-            <DeploymentList deployments={deployments}/>
-          )}
-        </div>
         <AddDialog
           isOpen={!isModified && isAddDialogOpen}
           title={t('deployments.title')}
