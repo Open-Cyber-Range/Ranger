@@ -14,6 +14,7 @@ pub const fn default_deployment_group_name() -> &'static str {
 
 pub const MAX_DEPLOYMENT_NAME_LENGTH: usize = 20;
 pub const MAX_EXERCISE_NAME_LENGTH: usize = 20;
+pub const MAX_ORDER_NAME_LENGTH: usize = 20;
 pub const MAX_ARTIFACT_FILE_SIZE: usize = 10_000_000;
 
 pub const RECORD_NOT_FOUND: &str = "Record not found";

@@ -8,6 +8,7 @@ pub(crate) mod event;
 pub(crate) mod event_info;
 pub(crate) mod exercise;
 pub(crate) mod metric;
+pub(crate) mod order;
 pub(crate) mod participant;
 pub(crate) mod upload;
 

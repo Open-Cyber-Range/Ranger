@@ -15,7 +15,7 @@ use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 use log::error;
 pub use validation::*;
 pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!();
-use std::path::Path;
+use std::{collections::HashMap, path::Path};
 
 pub fn create_mailbox_error_handler(actor_name: &str) -> impl Fn(MailboxError) -> RangerError + '_ {
     move |err| {
@@ -73,4 +73,14 @@ pub fn try_some<T>(item: Option<T>, error_message: &str) -> Result<T> {
 pub fn get_file_extension(filename: &str) -> Option<&str> {
     let path = Path::new(filename);
     path.extension().and_then(|extension| extension.to_str())
+}
+
+pub fn get_query_param(
+    query_params: &HashMap<String, String>,
+    param: &str,
+) -> Result<String, RangerError> {
+    query_params
+        .get(param)
+        .cloned()
+        .ok_or(RangerError::MissingParameter(param.to_string()))
 }

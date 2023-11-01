@@ -211,6 +211,18 @@ diesel::table! {
 }
 
 diesel::table! {
+    orders (id) {
+        #[max_length = 16]
+        id -> Binary,
+        name -> Tinytext,
+        client_id -> Text,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
+        deleted_at -> Timestamp,
+    }
+}
+
+diesel::table! {
     participants (id) {
         #[max_length = 16]
         id -> Binary,
@@ -249,5 +261,6 @@ diesel::allow_tables_to_appear_in_same_query!(
     events,
     exercises,
     metrics,
+    orders,
     participants,
 );

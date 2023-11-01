@@ -32,6 +32,7 @@ use ranger::routes::exercise::{
     get_exercises, subscribe_to_exercise, update_banner, update_exercise,
 };
 use ranger::routes::logger::subscribe_to_logs_with_level;
+use ranger::routes::order::create_order;
 use ranger::routes::participant::deployment::{
     get_participant_deployment, get_participant_deployments,
     get_participant_node_deployment_elements, subscribe_participant_to_deployment,
@@ -186,7 +187,14 @@ async fn main() -> Result<(), Error> {
                             .wrap(admin_auth_middleware),
                     )
                     .service(
-                        scope("/client").wrap(client_auth_middleware))
+                    scope("/client")
+                        .service(
+                            scope("/order")
+                            .service(create_order)
+                        )
+                      .wrap(client_auth_middleware)
+                        
+                    )
                     .service(
                         scope("/participant")
                             .service(
