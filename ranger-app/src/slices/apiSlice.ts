@@ -333,11 +333,8 @@ export const apiSlice = createApi({
           exerciseId}/deployment/${deploymentId}/entity/${entitySelector}/event`;
       },
     }),
-    participantGetBanner: builder.query<Banner,
-      {
-        exerciseId: string;
-      }>({
-      query: ({exerciseId}) =>
+    participantGetBanner: builder.query<Banner, string>({
+      query: exerciseId =>
         `/participant/exercise/${exerciseId}/banner`,
     }),
     adminGetManualMetrics: builder.query<ManualMetric[] | undefined,
