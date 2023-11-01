@@ -1,5 +1,5 @@
 use super::Database;
-use crate::models::{Email, NewEmail, helpers::uuid::Uuid};
+use crate::models::{helpers::uuid::Uuid, Email, NewEmail};
 use actix::{Handler, Message, ResponseActFuture, WrapFuture};
 use actix_web::web::block;
 use anyhow::{Ok, Result};
@@ -42,14 +42,14 @@ impl Handler<GetEmail> for Database {
     type Result = ResponseActFuture<Self, Result<Email>>;
 
     fn handle(&mut self, msg: GetEmail, _ctx: &mut Self::Context) -> Self::Result {
-        let uuid = msg.0;
+        let email_id = msg.0;
         let connection_result = self.get_connection();
 
         Box::pin(
             async move {
                 let mut connection = connection_result?;
                 let email = block(move || {
-                    let email = Email::by_id(uuid).first(&mut connection)?;
+                    let email = Email::by_id(email_id).first(&mut connection)?;
 
                     Ok(email)
                 })
@@ -64,19 +64,20 @@ impl Handler<GetEmail> for Database {
 
 #[derive(Message)]
 #[rtype(result = "Result<Vec<Email>>")]
-pub struct GetEmails;
+pub struct GetEmails(pub Uuid);
 
 impl Handler<GetEmails> for Database {
     type Result = ResponseActFuture<Self, Result<Vec<Email>>>;
 
-    fn handle(&mut self, _: GetEmails, _ctx: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, msg: GetEmails, _ctx: &mut Self::Context) -> Self::Result {
+        let exercise_id = msg.0;
         let connection_result = self.get_connection();
 
         Box::pin(
             async move {
                 let mut connection = connection_result?;
                 let emails = block(move || {
-                    let emails = Email::all().load(&mut connection)?;
+                    let emails = Email::by_exercise_id(exercise_id).load(&mut connection)?;
 
                     Ok(emails)
                 })
@@ -116,4 +117,3 @@ impl Handler<DeleteEmail> for Database {
         )
     }
 }
-
