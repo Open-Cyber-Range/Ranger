@@ -21,5 +21,5 @@ CREATE TABLE email_statuses (
     message TEXT,
     created_at TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
-    FOREIGN KEY (email_id) REFERENCES emails(id)
+    FOREIGN KEY (email_id) REFERENCES emails(id) ON DELETE CASCADE
 );
