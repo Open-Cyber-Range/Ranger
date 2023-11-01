@@ -3,6 +3,7 @@ pub(crate) mod banner;
 pub(crate) mod condition;
 pub(crate) mod deployment;
 pub(crate) mod email;
+pub(crate) mod email_status;
 pub(crate) mod event;
 pub(crate) mod exercise;
 pub(crate) mod metric;
@@ -49,6 +50,7 @@ pub type SelectByDeploymentId<Table, DeploymentId, DeletedAtColumn, T> =
     ByDeploymentId<DeploymentId, FilterExisting<All<Table, T>, DeletedAtColumn>>;
 pub type SelectByTemplateIdAndUsername<Table, TemplateId, Username, DeletedAtColumn, T> =
     ByUsername<Username, ByTemplateId<TemplateId, FilterExisting<All<Table, T>, DeletedAtColumn>>>;
+pub type SelectByEmailId<Table, EmailId, T> = ById<EmailId, All<Table, T>>;
 type UpdateDeletedAt<DeletedAtColumn> = Eq<DeletedAtColumn, now>;
 pub type SoftDelete<L, DeletedAtColumn> = Update<L, UpdateDeletedAt<DeletedAtColumn>>;
 pub type SoftDeleteById<Id, DeleteAtColumn, Table> = SoftDelete<ById<Id, Table>, DeleteAtColumn>;
