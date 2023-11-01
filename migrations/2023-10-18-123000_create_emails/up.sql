@@ -19,7 +19,7 @@ CREATE TABLE email_statuses (
     email_id BINARY(16) NOT NULL,
     name TINYTEXT NOT NULL,
     message TEXT,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     FOREIGN KEY (email_id) REFERENCES emails(id)
 );
