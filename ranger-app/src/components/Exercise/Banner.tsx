@@ -12,7 +12,8 @@ import {
   useAdminUpdateBannerMutation,
 } from 'src/slices/apiSlice';
 import {useEffect, useState} from 'react';
-import {ActiveTab} from "src/models/exercise";
+import {ActiveTab} from 'src/models/exercise';
+import {toastSuccess, toastWarning} from 'src/components/Toaster';
 
 const BannerView = ({exercise}: {exercise: Exercise}) => {
   const {t} = useTranslation();
@@ -20,15 +21,55 @@ const BannerView = ({exercise}: {exercise: Exercise}) => {
   let {data: existingBanner} = useAdminGetBannerQuery(exercise?.id ?? skipToken);
   const [, setActiveTab] = useState<ActiveTab>(ActiveTab.Banner);
 
-  const [addBanner] = useAdminAddBannerMutation();
-  const [updateBanner] = useAdminUpdateBannerMutation();
-  const [deleteBanner] = useAdminDeleteBannerMutation();
+  const [addBanner, {isSuccess: isAddSuccess, error: addError}] = useAdminAddBannerMutation();
+  const [updateBanner, {isSuccess: isUpdateSuccess, error: updateError}]
+    = useAdminUpdateBannerMutation();
+  const [deleteBanner, {isSuccess: isDeleteSuccess, error: deleteError}]
+    = useAdminDeleteBannerMutation();
 
   const {handleSubmit, control, setValue} = useForm<Banner>();
   const routeChange = () => {
-    navigate(``);
+    navigate('');
     setActiveTab(ActiveTab.Dash);
   };
+
+  useEffect(() => {
+    if (isAddSuccess) {
+      toastSuccess(t('banners.createSuccess'));
+    } else if (isUpdateSuccess) {
+      toastSuccess(t('banners.updateSuccess'));
+    } else if (isDeleteSuccess) {
+      toastSuccess(t('banners.deleteSuccess'));
+    }
+  }, [isAddSuccess, isUpdateSuccess, isDeleteSuccess, t]);
+
+  useEffect(() => {
+    if (addError) {
+      if ('data' in addError) {
+        toastWarning(t('banners.createFail', {
+          errorMessage: JSON.stringify(addError.data),
+        }));
+      } else {
+        toastWarning(t('banners.createFailWithoutMessage'));
+      }
+    } else if (updateError) {
+      if ('data' in updateError) {
+        toastWarning(t('banners.updateFail', {
+          errorMessage: JSON.stringify(updateError.data),
+        }));
+      } else {
+        toastWarning(t('banners.updateFailWithoutMessage'));
+      }
+    } else if (deleteError) {
+      if ('data' in deleteError) {
+        toastWarning(t('banners.deleteFail', {
+          errorMessage: JSON.stringify(deleteError.data),
+        }));
+      } else {
+        toastWarning(t('banners.deleteFailWithoutMessage'));
+      }
+    }
+  }, [addError, updateError, deleteError, t]);
 
   useEffect(() => {
     if (existingBanner) {
