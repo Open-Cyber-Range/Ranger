@@ -10,6 +10,7 @@ import Exercises from 'src/pages/Exercises';
 import Home from 'src/pages/Home';
 import Logs from 'src/pages/Logs';
 import HomeParticipant from 'src/pages/participant/Home';
+import HomeClient from 'src/pages/client/Home';
 import {useKeycloak} from '@react-keycloak/web';
 import {LogProvider} from 'src/contexts/LogContext';
 import {useDispatch} from 'react-redux';
@@ -26,6 +27,7 @@ import {setToken} from './slices/userSlice';
 import MainNavbar from './components/Navbar/MainNavBar';
 import ManagerNavbarLinks from './components/Navbar/ManagerLinks';
 import ParticipantNavbarLinks from './components/Navbar/ParticipantLinks';
+import ClientNavBar from './components/ClientNavBar';
 
 const App = () => {
   const {keycloak, keycloak: {authenticated, token}} = useKeycloak();
@@ -108,6 +110,17 @@ const App = () => {
           <Route
             path='/exercises/:exerciseId/deployments/:deploymentId'
             element={<ParticipantDeploymentDetail/>}/>
+        </Routes>
+      </Router>
+    );
+  }
+
+  if (authenticated && (currentRole === UserRole.CLIENT)) {
+    return (
+      <Router>
+        <ClientNavBar/>
+        <Routes>
+          <Route path='/' element={<HomeClient/>}/>
         </Routes>
       </Router>
     );

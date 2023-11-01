@@ -34,6 +34,7 @@ import {
   type NewManualMetric,
 } from 'src/models/manualMetric';
 import {type Package} from 'src/models/package';
+import {type NewOrder, type Order} from 'src/models/order';
 
 export const apiSlice = createApi({
   reducerPath: 'api',
@@ -48,15 +49,24 @@ export const apiSlice = createApi({
       return headers;
     },
   }),
-  tagTypes: ['Deployment',
+  tagTypes: [
+    'Deployment',
     'Exercise',
     'Score',
     'Scenario',
     'Participant',
     'ManualMetric',
     'Email',
-    'DeploymentEvent'],
+    'DeploymentEvent',
+    'Order',
+  ],
   endpoints: builder => ({
+    clientAddOrder: builder.mutation<Order, NewOrder>({
+      query: newOrder => ({
+        url: '/client/order', method: 'POST', body: newOrder,
+      }),
+      invalidatesTags: [{type: 'Order', id: 'LIST'}],
+    }),
     adminGetGroups: builder.query<AdGroup[], void>({
       query: () => '/admin/group',
     }),
@@ -564,6 +574,7 @@ export const apiSlice = createApi({
 });
 
 export const {
+  useClientAddOrderMutation,
   useAdminGetGroupsQuery,
   useAdminGetGroupUsersQuery,
   useAdminGetDeploymentUsersQuery,

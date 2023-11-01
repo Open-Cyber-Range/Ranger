@@ -414,7 +414,11 @@ const language = {
     allRoles: 'All roles',
     errorFetchingRoles: 'Error fetching roles',
   },
-
+  orders: {
+    noOrdersCallout: 'No orders have been created yet. Start by creating a new order.',
+    createOrder: 'Create order',
+    newOrder: 'New order',
+  },
 };
 
 export default language;

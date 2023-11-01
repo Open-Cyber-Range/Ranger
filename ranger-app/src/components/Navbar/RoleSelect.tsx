@@ -26,6 +26,10 @@ const RoleSelect = ({keycloak}: {keycloak: Keycloak}) => {
       newRoles.push(UserRole.PARTICIPANT);
     }
 
+    if (keycloak.hasRealmRole(UserRole.CLIENT.toString())) {
+      newRoles.push(UserRole.CLIENT);
+    }
+
     dispatch(setRoles(newRoles));
   }, [keycloak, dispatch]);
 
