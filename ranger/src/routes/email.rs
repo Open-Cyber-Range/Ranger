@@ -2,8 +2,7 @@ use crate::{
     errors::RangerError,
     middleware::exercise::ExerciseInfo,
     models::{
-        helpers::uuid::Uuid, Email, EmailResource, EmailWithStatus, NewEmail,
-        NewEmailStatus,
+        helpers::uuid::Uuid, Email, EmailResource, EmailWithStatus, NewEmail, NewEmailStatus,
     },
     services::{
         database::{
