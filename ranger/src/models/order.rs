@@ -64,4 +64,8 @@ impl Order {
     pub fn by_id(id: Uuid) -> SelectById<orders::table, orders::id, orders::deleted_at, Self> {
         Self::all().filter(orders::id.eq(id))
     }
+
+    pub fn is_owner(&self, client_id: &str) -> bool {
+        self.client_id == client_id
+    }
 }

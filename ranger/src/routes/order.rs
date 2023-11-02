@@ -1,12 +1,13 @@
 use crate::{
     errors::RangerError,
+    middleware::order::OrderInfo,
     models::{NewOrder, Order},
     services::database::order::CreateOrder,
     utilities::{create_database_error_handler, create_mailbox_error_handler},
     AppState,
 };
 use actix_web::{
-    post,
+    get, post,
     web::{Data, Json},
 };
 use anyhow::Result;
@@ -26,16 +27,9 @@ pub async fn create_order(
     Ok(Json(order))
 }
 
-// #[get("order")]
-// pub async fn get_order(app_state: Data<AppState>) -> Result<Json<String>, RangerError> {
-//     let mailer_configuration = app_state.configuration.mailer_configuration.clone();
-//     let from_address;
+#[get("")]
+pub async fn get_order(order: OrderInfo) -> Result<Json<Order>, RangerError> {
+    let order = order.into_inner();
 
-//     if let Some(mailer_configuration) = mailer_configuration {
-//         from_address = mailer_configuration.from_address;
-//     } else {
-//         return Err(RangerError::MailerConfigurationNotFound);
-//     }
-
-//     Ok(Json(from_address))
-// }
+    Ok(Json(order))
+}
