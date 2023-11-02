@@ -24,6 +24,11 @@ type Banner = {
   content: string;
 };
 
+type BannerVariable = {
+  name: string;
+  content: string;
+}
+
 type DeploymentEvent = {
   id: string;
   name: string;
@@ -46,6 +51,7 @@ export enum ActiveTab {
 
 export type {
   Banner,
+  BannerVariable,
   ParticipantExercise,
   NewExercise,
   Exercise,

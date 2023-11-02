@@ -1,5 +1,5 @@
 import React from 'react';
-import {H2, H3} from '@blueprintjs/core';
+import {H2} from '@blueprintjs/core';
 import {type Banner} from 'src/models/exercise';
 
 const ParticipantDashBoard = ({existingBanner}:
@@ -7,7 +7,7 @@ const ParticipantDashBoard = ({existingBanner}:
 ) => (
   <>
     <H2>{existingBanner?.name}</H2>
-    <H3>{existingBanner?.content}</H3>
+    <p>{existingBanner?.content}</p>
   </>
 );
 

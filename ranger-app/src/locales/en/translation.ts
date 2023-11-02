@@ -182,6 +182,7 @@ const language = {
       participantFirstName: 'Participant\'s first name',
       participantLastName: 'Participant\'s last name',
       participantEmail: 'Participant\'s email',
+      username: 'Participant\'s username',
     },
     fetchingEmails: 'Fetching emails...',
     fetchingEmailsFail: 'Failed to fetch emails',

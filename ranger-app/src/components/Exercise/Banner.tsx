@@ -1,24 +1,73 @@
 import type React from 'react';
 import {useTranslation} from 'react-i18next';
-import type {Exercise, Banner} from 'src/models/exercise';
+import type {Exercise, Banner, BannerVariable} from 'src/models/exercise';
 import {skipToken} from '@reduxjs/toolkit/query';
-import {Button, FormGroup, InputGroup, Intent} from '@blueprintjs/core';
+import {Button, FormGroup, InputGroup, Intent, Label, Menu, MenuItem} from '@blueprintjs/core';
 import {useNavigate} from 'react-router-dom';
 import {Controller, type SubmitHandler, useForm} from 'react-hook-form';
 import {
   useAdminAddBannerMutation,
   useAdminDeleteBannerMutation,
-  useAdminGetBannerQuery,
+  useAdminGetBannerQuery, useAdminGetDeploymentsQuery,
   useAdminUpdateBannerMutation,
 } from 'src/slices/apiSlice';
 import {useEffect, useState} from 'react';
 import {ActiveTab} from 'src/models/exercise';
 import {toastSuccess, toastWarning} from 'src/components/Toaster';
+import Editor from "@monaco-editor/react";
+import {editor} from "monaco-editor";
+import {useBannerVariablesInEditor} from "../../hooks/useBannerVariablesInEditor";
+import {Popover2} from "@blueprintjs/popover2";
+import useGetDeploymentUsers from "../../hooks/useGetDeploymentUsers";
+import {prepareBannerForDeploymentUser} from "../../utils/banner";
+
+type BannerVariablesProps = {
+  bannerVariables: BannerVariable[];
+  insertVariable: (variableName: string) => void;
+};
+
+const BannerVariablesMenu = ({bannerVariables, insertVariable}: BannerVariablesProps) => (
+  <Menu>
+    {bannerVariables.map(variable => (
+      <MenuItem
+        key={variable.name}
+        text={variable.content}
+        onClick={() => {
+          insertVariable(variable.name);
+        }}
+      />
+    ))}
+  </Menu>
+);
+
+const BannerVariablesPopover = ({bannerVariables, insertVariable}: BannerVariablesProps) => {
+  const {t} = useTranslation();
+
+  return (
+    <Popover2
+      content={<BannerVariablesMenu
+        bannerVariables={bannerVariables}
+        insertVariable={insertVariable}/>}
+      position='bottom-left'
+    >
+      <Button minimal icon='insert' text={t('emails.variables.insert')}/>
+    </Popover2>
+  );
+};
 
 const BannerView = ({exercise}: {exercise: Exercise}) => {
   const {t} = useTranslation();
   const navigate = useNavigate();
+  const {data: deployments} = useAdminGetDeploymentsQuery(exercise.id);
+  const {deploymentUsers, fetchDeploymentUsers} = useGetDeploymentUsers();
   let {data: existingBanner} = useAdminGetBannerQuery(exercise?.id ?? skipToken);
+
+  const [selectedDeployment, setSelectedDeployment]
+    = useState<string | undefined>(undefined);
+  const [editorInstance, setEditorInstance]
+    = useState<editor.IStandaloneCodeEditor | undefined>(undefined);
+  const {bannerVariables, insertVariable}
+    = useBannerVariablesInEditor(selectedDeployment, editorInstance);
   const [, setActiveTab] = useState<ActiveTab>(ActiveTab.Banner);
 
   const [addBanner, {isSuccess: isAddSuccess, error: addError}] = useAdminAddBannerMutation();
@@ -31,6 +80,26 @@ const BannerView = ({exercise}: {exercise: Exercise}) => {
   const routeChange = () => {
     navigate('');
     setActiveTab(ActiveTab.Dash);
+  };
+
+  const processWholeExercise = async (banner: Banner) => {
+    if (!deployments || deployments.length === 0) {
+      toastWarning(t('emails.noDeployments'));
+      return;
+    }
+
+    if (!deploymentUsers) {
+      toastWarning(t('emails.fetchingUsersFail'));
+      return;
+    }
+
+    for (const deployment of deployments) {
+      console.log(prepareBannerForDeploymentUser(
+        banner,
+        exercise.name,
+        exercise.name)
+      );
+    }
   };
 
   useEffect(() => {
@@ -79,10 +148,12 @@ const BannerView = ({exercise}: {exercise: Exercise}) => {
   }, [existingBanner, setValue]);
 
   const onCreate: SubmitHandler<Banner> = async newBanner => {
+    await processWholeExercise(newBanner);
     await addBanner({newBanner, exerciseId: exercise.id});
   };
 
   const onUpdate: SubmitHandler<Banner> = async updatedBanner => {
+    await processWholeExercise(updatedBanner);
     await updateBanner({updatedBanner, exerciseId: exercise.id});
   };
 
@@ -136,16 +207,29 @@ const BannerView = ({exercise}: {exercise: Exercise}) => {
           }) => (
             <FormGroup
               helperText={error?.message}
-              label={t('banners.content')}
+              label={
+                <div className='flex justify-between items-end'>
+                  <Label>
+                    {t('banners.content')}
+                    <span className='bp4-text-muted'>{t('banners.required')}</span>
+                  </Label>
+                  <BannerVariablesPopover
+                    bannerVariables={bannerVariables}
+                    insertVariable={insertVariable}/>
+                </div>
+              }
             >
-              <InputGroup
-                large
-                value={value}
-                inputRef={ref}
-                id='banner-content'
-                onChange={onChange}
-                onBlur={onBlur}
-              />
+              <div className='h-[40vh] p-[0.5vh] rounded-sm shadow-inner'>
+                <Editor
+                  value={value}
+                  onChange={value => {
+                    onChange(value ?? '');
+                  }}
+                  onMount={editor => {
+                    setEditorInstance(editor);
+                  }}
+                />
+              </div>
             </FormGroup>
           )}
         />
