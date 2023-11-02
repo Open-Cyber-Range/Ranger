@@ -40,7 +40,10 @@ const ParticipantDeploymentDetail = () => {
       <PariticpantSidebar renderMainContent={activeTab => (
         <>
           {activeTab === 'Dash'
-            && <ParticipantDashboard existingBanner={existingBanner}/>}
+            && <ParticipantDashboard
+              exerciseId={exerciseId}
+              deploymentId={deploymentId}
+              existingBanner={existingBanner}/>}
           {activeTab === 'Score'
             && <ParticipantScore
               scoringData={tryIntoScoringMetadata(scenario)}

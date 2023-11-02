@@ -27,7 +27,7 @@ type Banner = {
 type BannerVariable = {
   name: string;
   content: string;
-}
+};
 
 type DeploymentEvent = {
   id: string;

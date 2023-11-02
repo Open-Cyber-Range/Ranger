@@ -1,16 +1,16 @@
-import {AdUser} from "../models/groups";
-import nunjucks from "nunjucks";
-import {Banner} from "../models/exercise";
+import nunjucks from 'nunjucks';
+import {type Banner} from 'src/models/exercise';
 
-export const prepareBannerForDeploymentUser = (
-	banner: Banner,
-	exerciseName: string,
-	deploymentName: string,
+export const parseBannerForParticipant = (
+  banner: Banner,
+  exerciseName: string,
+  deploymentName: string,
+  username: string,
 ) => ({
-	...banner,
-	content: nunjucks.renderString(banner.content, {
-		exerciseName,
-		deploymentName,
-		participantUsername: 'hue',
-	}),
+  ...banner,
+  content: nunjucks.renderString(banner.content, {
+    exerciseName,
+    deploymentName,
+    username,
+  }),
 });

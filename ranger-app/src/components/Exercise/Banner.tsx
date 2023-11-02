@@ -1,25 +1,31 @@
 import type React from 'react';
+import {useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import type {Exercise, Banner, BannerVariable} from 'src/models/exercise';
+import type {Banner, BannerVariable, Exercise} from 'src/models/exercise';
 import {skipToken} from '@reduxjs/toolkit/query';
-import {Button, FormGroup, InputGroup, Intent, Label, Menu, MenuItem} from '@blueprintjs/core';
-import {useNavigate} from 'react-router-dom';
+import {
+  Button,
+  FormGroup,
+  InputGroup,
+  Intent,
+  Label,
+  Menu,
+  MenuItem,
+} from '@blueprintjs/core';
 import {Controller, type SubmitHandler, useForm} from 'react-hook-form';
 import {
   useAdminAddBannerMutation,
   useAdminDeleteBannerMutation,
-  useAdminGetBannerQuery, useAdminGetDeploymentsQuery,
+  useAdminGetBannerQuery,
   useAdminUpdateBannerMutation,
 } from 'src/slices/apiSlice';
-import {useEffect, useState} from 'react';
-import {ActiveTab} from 'src/models/exercise';
 import {toastSuccess, toastWarning} from 'src/components/Toaster';
-import Editor from "@monaco-editor/react";
-import {editor} from "monaco-editor";
-import {useBannerVariablesInEditor} from "../../hooks/useBannerVariablesInEditor";
-import {Popover2} from "@blueprintjs/popover2";
-import useGetDeploymentUsers from "../../hooks/useGetDeploymentUsers";
-import {prepareBannerForDeploymentUser} from "../../utils/banner";
+import Editor from '@monaco-editor/react';
+import {type editor} from 'monaco-editor';
+import {Popover2} from '@blueprintjs/popover2';
+import {
+  useBannerVariablesInEditor,
+} from 'src/hooks/useBannerVariablesInEditor';
 
 type BannerVariablesProps = {
   bannerVariables: BannerVariable[];
@@ -57,50 +63,17 @@ const BannerVariablesPopover = ({bannerVariables, insertVariable}: BannerVariabl
 
 const BannerView = ({exercise}: {exercise: Exercise}) => {
   const {t} = useTranslation();
-  const navigate = useNavigate();
-  const {data: deployments} = useAdminGetDeploymentsQuery(exercise.id);
-  const {deploymentUsers, fetchDeploymentUsers} = useGetDeploymentUsers();
   let {data: existingBanner} = useAdminGetBannerQuery(exercise?.id ?? skipToken);
-
-  const [selectedDeployment, setSelectedDeployment]
-    = useState<string | undefined>(undefined);
-  const [editorInstance, setEditorInstance]
-    = useState<editor.IStandaloneCodeEditor | undefined>(undefined);
-  const {bannerVariables, insertVariable}
-    = useBannerVariablesInEditor(selectedDeployment, editorInstance);
-  const [, setActiveTab] = useState<ActiveTab>(ActiveTab.Banner);
-
   const [addBanner, {isSuccess: isAddSuccess, error: addError}] = useAdminAddBannerMutation();
   const [updateBanner, {isSuccess: isUpdateSuccess, error: updateError}]
     = useAdminUpdateBannerMutation();
   const [deleteBanner, {isSuccess: isDeleteSuccess, error: deleteError}]
     = useAdminDeleteBannerMutation();
 
+  const [editorInstance, setEditorInstance]
+    = useState<editor.IStandaloneCodeEditor | undefined>(undefined);
+  const {bannerVariables, insertVariable} = useBannerVariablesInEditor(editorInstance);
   const {handleSubmit, control, setValue} = useForm<Banner>();
-  const routeChange = () => {
-    navigate('');
-    setActiveTab(ActiveTab.Dash);
-  };
-
-  const processWholeExercise = async (banner: Banner) => {
-    if (!deployments || deployments.length === 0) {
-      toastWarning(t('emails.noDeployments'));
-      return;
-    }
-
-    if (!deploymentUsers) {
-      toastWarning(t('emails.fetchingUsersFail'));
-      return;
-    }
-
-    for (const deployment of deployments) {
-      console.log(prepareBannerForDeploymentUser(
-        banner,
-        exercise.name,
-        exercise.name)
-      );
-    }
-  };
 
   useEffect(() => {
     if (isAddSuccess) {
@@ -148,12 +121,10 @@ const BannerView = ({exercise}: {exercise: Exercise}) => {
   }, [existingBanner, setValue]);
 
   const onCreate: SubmitHandler<Banner> = async newBanner => {
-    await processWholeExercise(newBanner);
     await addBanner({newBanner, exerciseId: exercise.id});
   };
 
   const onUpdate: SubmitHandler<Banner> = async updatedBanner => {
-    await processWholeExercise(updatedBanner);
     await updateBanner({updatedBanner, exerciseId: exercise.id});
   };
 
@@ -169,7 +140,6 @@ const BannerView = ({exercise}: {exercise: Exercise}) => {
       <form
         onSubmit={existingBanner ? handleSubmit(onUpdate) : handleSubmit(onCreate)}
         onReset={handleSubmit(onDelete)}
-        onClick={routeChange}
       >
         <Controller
           control={control}
@@ -203,7 +173,7 @@ const BannerView = ({exercise}: {exercise: Exercise}) => {
           name='content'
           rules={{required: t('banners.required') ?? ''}}
           render={({
-            field: {onChange, onBlur, ref, value}, fieldState: {error},
+            field: {onChange, value}, fieldState: {error},
           }) => (
             <FormGroup
               helperText={error?.message}
