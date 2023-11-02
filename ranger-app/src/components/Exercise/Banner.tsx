@@ -181,7 +181,7 @@ const BannerView = ({exercise}: {exercise: Exercise}) => {
                 <div className='flex justify-between items-end'>
                   <Label>
                     {t('banners.content')}
-                    <span className='bp4-text-muted'>{t('banners.required')}</span>
+                    <span className='bp4-text-muted'> {t('banners.required')}</span>
                   </Label>
                   <BannerVariablesPopover
                     bannerVariables={bannerVariables}
@@ -192,6 +192,7 @@ const BannerView = ({exercise}: {exercise: Exercise}) => {
               <div className='h-[40vh] p-[0.5vh] rounded-sm shadow-inner'>
                 <Editor
                   value={value}
+                  defaultLanguage='markdown'
                   onChange={value => {
                     onChange(value ?? '');
                   }}
