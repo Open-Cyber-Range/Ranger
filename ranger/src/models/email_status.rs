@@ -4,6 +4,7 @@ use diesel::{
     expression::AsExpression,
     helper_types::{Desc, Limit, Order},
     insert_into,
+    prelude::QueryableByName,
     sql_types::Text,
     ExpressionMethods, Insertable, QueryDsl, Queryable, Selectable, SelectableHelper,
 };
@@ -66,7 +67,9 @@ impl NewEmailStatus {
     }
 }
 
-#[derive(Queryable, Selectable, Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
+#[derive(
+    Queryable, Selectable, Debug, PartialEq, Eq, Clone, Serialize, Deserialize, QueryableByName,
+)]
 #[serde(rename_all = "camelCase")]
 #[diesel(table_name = email_statuses)]
 pub struct EmailStatus {

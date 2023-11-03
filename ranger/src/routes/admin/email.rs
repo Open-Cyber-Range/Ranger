@@ -7,7 +7,7 @@ use crate::{
     services::{
         database::{
             email::{CreateEmail, DeleteEmail, GetEmail, GetEmails},
-            email_status::{CreateEmailStatus, GetEmailStatus},
+            email_status::{CreateEmailStatus, GetEmailStatus, GetEmailStatuses},
         },
         mailer::Mailer,
     },
@@ -116,24 +116,22 @@ pub async fn get_emails(
         .map_err(create_mailbox_error_handler("Database"))?
         .map_err(create_database_error_handler("Get emails"))?;
 
-    let email_status_futures = emails.into_iter().map(|email| {
-        let app_state_clone = app_state.clone();
-        async move {
-            let email_status = app_state_clone
-                .database_address
-                .send(GetEmailStatus(email.id))
-                .await
-                .map_err(create_mailbox_error_handler("Database"))?
-                .map_err(create_database_error_handler("Get email status"))?;
+    let email_statuses = app_state
+        .database_address
+        .send(GetEmailStatuses())
+        .await
+        .map_err(create_mailbox_error_handler("Database"))?
+        .map_err(create_database_error_handler("Get email statuses"))?;
 
-            Ok(EmailWithStatus::new(email, email_status))
-        }
-    });
-
-    let email_status_results: Result<Vec<EmailWithStatus>, RangerError> =
-        futures::future::try_join_all(email_status_futures).await;
-
-    let emails_with_statuses = email_status_results?;
+    let emails_with_statuses: Vec<EmailWithStatus> = emails
+        .into_iter()
+        .filter_map(|email| {
+            email_statuses
+                .iter()
+                .find(|status| status.email_id == email.id)
+                .map(|status| EmailWithStatus::new(email.clone(), status.clone()))
+        })
+        .collect();
 
     Ok(Json(emails_with_statuses))
 }
