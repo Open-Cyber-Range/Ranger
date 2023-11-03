@@ -8,6 +8,9 @@ use ranger::middleware::keycloak::KeycloakAccessMiddlewareFactory;
 use ranger::middleware::metric::MetricMiddlewareFactory;
 use ranger::middleware::participant_authentication::ParticipantAccessMiddlewareFactory;
 use ranger::roles::RangerRole;
+use ranger::routes::admin::email::{
+    delete_email, get_email, get_email_form, get_emails, send_email,
+};
 use ranger::routes::admin::groups::get_participant_groups_users;
 use ranger::routes::admin::metric::{
     delete_metric, download_metric_artifact, get_admin_metric, get_admin_metrics,
@@ -15,7 +18,6 @@ use ranger::routes::admin::metric::{
 };
 use ranger::routes::admin::scenario::get_admin_exercise_deployment_scenario;
 use ranger::routes::deployers::get_deployers;
-use ranger::routes::email::{delete_email, get_email, get_email_form, get_emails, send_email};
 use ranger::routes::exercise::{
     add_banner, add_participant, delete_banner, delete_exercise_deployment, delete_participant,
     get_admin_participants, get_banner, get_exercise, get_exercise_deployment,
