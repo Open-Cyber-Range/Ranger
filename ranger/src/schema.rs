@@ -91,11 +91,21 @@ diesel::table! {
         sdl_schema -> Longtext,
         #[max_length = 16]
         exercise_id -> Binary,
-        start -> Timestamp,
-        end -> Timestamp,
         created_at -> Timestamp,
         updated_at -> Timestamp,
         deleted_at -> Timestamp,
+        start -> Timestamp,
+        end -> Timestamp,
+    }
+}
+
+diesel::table! {
+    emailtemplates (id) {
+        #[max_length = 16]
+        id -> Binary,
+        name -> Tinytext,
+        content -> Text,
+        created_at -> Timestamp,
     }
 }
 
@@ -218,6 +228,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     deployments,
     email_statuses,
     emails,
+    emailtemplates,
     events,
     exercises,
     metrics,

@@ -18,12 +18,15 @@ use ranger::routes::admin::metric::{
 };
 use ranger::routes::admin::scenario::get_admin_exercise_deployment_scenario;
 use ranger::routes::deployers::get_deployers;
+use ranger::routes::email::{
+    add_emailtemplate, delete_emailtemplate, get_emailtemplate, get_emailtemplates,
+};
 use ranger::routes::exercise::{
-    add_banner, add_participant, delete_banner, delete_exercise_deployment, delete_participant,
-    get_admin_participants, get_banner, get_exercise, get_exercise_deployment,
-    get_exercise_deployment_elements, get_exercise_deployment_scores,
-    get_exercise_deployment_users, get_exercise_deployments, get_exercises, subscribe_to_exercise,
-    update_banner, update_exercise,
+    add_banner, add_exercise, add_exercise_deployment, add_participant, delete_banner,
+    delete_exercise, delete_exercise_deployment, delete_participant, get_admin_participants,
+    get_banner, get_exercise, get_exercise_deployment, get_exercise_deployment_elements,
+    get_exercise_deployment_scores, get_exercise_deployment_users, get_exercise_deployments,
+    get_exercises, subscribe_to_exercise, update_banner, update_exercise,
 };
 use ranger::routes::logger::subscribe_to_logs_with_level;
 use ranger::routes::participant::deployment::{
@@ -42,7 +45,6 @@ use ranger::routes::participant::{get_participant_exercise, get_participant_exer
 use ranger::routes::{
     admin::groups::get_participant_groups,
     basic::{status, version},
-    exercise::{add_exercise, add_exercise_deployment, delete_exercise},
     upload::upload_participant_artifact,
 };
 
@@ -122,11 +124,21 @@ async fn main() -> Result<(), Error> {
                                                 .service(get_email)
                                                 .service(send_email)
                                                 .service(delete_email)
-                                        )
+                                            )
                                             .service(
                                                 scope("/email-form")
                                                 .service(get_email_form)
-                                            ),
+                                            )
+                                            .service(
+                                                scope("emailtemplate")
+                                                    .service(add_emailtemplate)
+                                                    .service(get_emailtemplates)
+                                                    .service(
+                                                        scope("/{emailtemplate_uuid}")
+                                                        .service(get_emailtemplate)
+                                                        .service(delete_emailtemplate)
+                                                    )
+                                            )
                                     ),
                             )
                             .service(get_deployers)

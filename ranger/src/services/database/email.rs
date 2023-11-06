@@ -1,5 +1,6 @@
 use super::Database;
-use crate::models::{helpers::uuid::Uuid, Email, NewEmail};
+use crate::models::{helpers::uuid::Uuid, Email, EmailTemplate,
+                    NewEmail, NewEmailTemplate};
 use actix::{Handler, Message, ResponseActFuture, WrapFuture};
 use actix_web::web::block;
 use anyhow::{Ok, Result};
@@ -114,6 +115,112 @@ impl Handler<DeleteEmail> for Database {
                 Ok(id)
             }
             .into_actor(self),
+        )
+    }
+}
+
+#[derive(Message)]
+#[rtype(result = "Result<EmailTemplate>")]
+pub struct CreateEmailTemplate(pub NewEmailTemplate);
+
+impl Handler<CreateEmailTemplate> for Database {
+    type Result = ResponseActFuture<Self, Result<EmailTemplate>>;
+
+    fn handle(&mut self, msg: CreateEmailTemplate, _ctx: &mut Self::Context) -> Self::Result {
+        let new_emailtemplate = msg.0;
+        let connection_result = self.get_connection();
+
+        Box::pin(
+            async move {
+                let mut connection = connection_result?;
+                let emailtemplate = block(move || {
+                    new_emailtemplate.create_insert().execute(&mut connection)?;
+                    let deployment =
+                        EmailTemplate::by_id(new_emailtemplate.id).first(&mut connection)?;
+                    Ok(deployment)
+                })
+                    .await??;
+                Ok(emailtemplate)
+            }
+                .into_actor(self),
+        )
+    }
+}
+
+#[derive(Message)]
+#[rtype(result = "Result<Vec<EmailTemplate>>")]
+pub struct GetEmailTemplates;
+
+impl Handler<GetEmailTemplates> for Database {
+    type Result = ResponseActFuture<Self, Result<Vec<EmailTemplate>>>;
+
+    fn handle(&mut self, _: GetEmailTemplates, _ctx: &mut Self::Context) -> Self::Result {
+        let connection_result = self.get_connection();
+
+        Box::pin(
+            async move {
+                let mut connection = connection_result?;
+                let emailtemplates = block(move || {
+                    let emailtemplates = EmailTemplate::all().load(&mut connection)?;
+                    Ok(emailtemplates)
+                })
+                    .await??;
+                Ok(emailtemplates)
+            }
+                .into_actor(self),
+        )
+    }
+}
+
+#[derive(Message)]
+#[rtype(result = "Result<EmailTemplate>")]
+pub struct GetEmailTemplate(pub Uuid);
+
+impl Handler<GetEmailTemplate> for Database {
+    type Result = ResponseActFuture<Self, Result<EmailTemplate>>;
+
+    fn handle(&mut self, msg: GetEmailTemplate, _ctx: &mut Self::Context) -> Self::Result {
+        let uuid = msg.0;
+        let connection_result = self.get_connection();
+
+        Box::pin(
+            async move {
+                let mut connection = connection_result?;
+                let emailtemplate = block(move || {
+                    let emailtemplate = EmailTemplate::by_id(uuid).first(&mut connection)?;
+                    Ok(emailtemplate)
+                })
+                    .await??;
+                Ok(emailtemplate)
+            }
+                .into_actor(self),
+        )
+    }
+}
+
+#[derive(Message)]
+#[rtype(result = "Result<Uuid>")]
+pub struct DeleteEmailTemplate(pub Uuid);
+
+impl Handler<DeleteEmailTemplate> for Database {
+    type Result = ResponseActFuture<Self, Result<Uuid>>;
+
+    fn handle(&mut self, msg: DeleteEmailTemplate, _ctx: &mut Self::Context) -> Self::Result {
+        let id = msg.0;
+        let connection_result = self.get_connection();
+
+        Box::pin(
+            async move {
+                let mut connection = connection_result?;
+                let id = block(move || {
+                    let emailtemplate = EmailTemplate::by_id(id).first(&mut connection)?;
+                    emailtemplate.hard_delete().execute(&mut connection)?;
+                    Ok(id)
+                })
+                    .await??;
+                Ok(id)
+            }
+                .into_actor(self),
         )
     }
 }

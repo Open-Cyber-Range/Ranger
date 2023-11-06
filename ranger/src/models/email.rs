@@ -1,10 +1,12 @@
 use crate::{
-    schema::emails,
+    schema::{emails, emailtemplates},
     services::database::{All, Create, DeleteById, SelectByIdFromAll},
 };
 use chrono::NaiveDateTime;
 use diesel::{
+    helper_types::{Eq, Filter},
     insert_into, ExpressionMethods, Insertable, QueryDsl, Queryable, Selectable, SelectableHelper,
+    query_builder::{DeleteStatement, IntoUpdateTarget},
 };
 use lettre::{
     message::{header, SinglePart},
@@ -185,5 +187,54 @@ impl EmailWithStatus {
             status_message: email_status.message,
             created_at: email.created_at,
         }
+    }
+}
+
+#[derive(Queryable, Selectable, Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
+#[diesel(table_name = emailtemplates)]
+pub struct EmailTemplate {
+    #[serde(default = "Uuid::random")]
+    pub id: Uuid,
+    pub name: String,
+    pub content: String,
+    pub created_at: NaiveDateTime,
+}
+
+impl EmailTemplate {
+    pub fn all() -> All<emailtemplates::table, Self> {
+        emailtemplates::table.select(Self::as_select())
+    }
+
+    pub fn by_id(
+        id: Uuid,
+    ) -> Filter<All<emailtemplates::table, Self>, Eq<emailtemplates::id, Uuid>> {
+        Self::all().filter(emailtemplates::id.eq(id))
+    }
+
+    pub fn hard_delete(
+        &self,
+    ) -> Filter<
+        DeleteStatement<
+            emailtemplates::table,
+            <emailtemplates::table as IntoUpdateTarget>::WhereClause,
+        >,
+        Eq<emailtemplates::id, Uuid>,
+    > {
+        diesel::delete(emailtemplates::table).filter(emailtemplates::id.eq(self.id))
+    }
+}
+
+#[derive(Insertable, Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
+#[diesel(table_name = emailtemplates)]
+pub struct NewEmailTemplate {
+    #[serde(default = "Uuid::random")]
+    pub id: Uuid,
+    pub name: String,
+    pub content: String,
+}
+
+impl NewEmailTemplate {
+    pub fn create_insert(&self) -> Create<&Self, emailtemplates::table> {
+        insert_into(emailtemplates::table).values(self)
     }
 }
