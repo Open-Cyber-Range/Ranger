@@ -26,6 +26,10 @@ const EmailTable = ({exercise}: {exercise: Exercise}) => {
   const {t} = useTranslation();
 
   if (emails) {
+    const sortedEmails = [...emails].sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    );
+
     return (
       <div>
         <table className='bp4-html-table bp4-html-table-striped'>
@@ -41,7 +45,7 @@ const EmailTable = ({exercise}: {exercise: Exercise}) => {
             <th>{t('emails.body')}</th>
           </thead>
           <tbody>
-            {emails.map(email => (
+            {sortedEmails.map(email => (
               <tr key={email.id}>
                 <td>
                   <Tag intent={emailIntent(email.statusType)}>
