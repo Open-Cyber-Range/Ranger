@@ -48,7 +48,7 @@ const EmailTable = ({exercise}: {exercise: Exercise}) => {
                     {email.statusType}
                   </Tag>
                 </td>
-                <td>{email.createdAt}</td>
+                <td>{new Date(email.createdAt).toLocaleString()}</td>
                 <td>{email.fromAddress}</td>
                 <td>{email.toAddresses}</td>
                 <td>{email.replyToAddresses}</td>
