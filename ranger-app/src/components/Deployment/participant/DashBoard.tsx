@@ -1,5 +1,4 @@
 import React from 'react';
-import Markdown from 'react-markdown';
 import {H2} from '@blueprintjs/core';
 import {type Banner} from 'src/models/exercise';
 import {useKeycloak} from '@react-keycloak/web';
@@ -8,7 +7,7 @@ import {
   useParticipantGetDeploymentQuery,
   useParticipantGetExerciseQuery,
 } from 'src/slices/apiSlice';
-import remarkGfm from 'remark-gfm';
+import MarkdownFrame from 'src/components/MarkdownFrame';
 
 const ParticipantDashBoard = ({exerciseId, deploymentId, existingBanner}:
 {exerciseId: string; deploymentId: string; existingBanner: Banner | undefined},
@@ -38,7 +37,7 @@ const ParticipantDashBoard = ({exerciseId, deploymentId, existingBanner}:
   return (
     <div>
       <H2>{parsedBanner.name}</H2>
-      <Markdown remarkPlugins={[remarkGfm]}>{parsedBanner.content}</Markdown>
+      <MarkdownFrame content={parsedBanner.content}/>
     </div>
   );
 };
