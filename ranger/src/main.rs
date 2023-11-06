@@ -9,7 +9,7 @@ use ranger::middleware::metric::MetricMiddlewareFactory;
 use ranger::middleware::participant_authentication::ParticipantAccessMiddlewareFactory;
 use ranger::roles::RangerRole;
 use ranger::routes::admin::email::{
-    delete_email, get_email, get_email_form, get_emails, send_email,
+    delete_email, get_email, get_email_form, get_emails, send_email, add_emailtemplate, delete_emailtemplate, get_emailtemplate, get_emailtemplates
 };
 use ranger::routes::admin::groups::get_participant_groups_users;
 use ranger::routes::admin::metric::{
@@ -18,9 +18,6 @@ use ranger::routes::admin::metric::{
 };
 use ranger::routes::admin::scenario::get_admin_exercise_deployment_scenario;
 use ranger::routes::deployers::get_deployers;
-use ranger::routes::email::{
-    add_emailtemplate, delete_emailtemplate, get_emailtemplate, get_emailtemplates,
-};
 use ranger::routes::exercise::{
     add_banner, add_exercise, add_exercise_deployment, add_participant, delete_banner,
     delete_exercise, delete_exercise_deployment, delete_participant, get_admin_participants,
@@ -113,10 +110,10 @@ async fn main() -> Result<(), Error> {
                                             )
                                             .service(
                                                 scope("/banner")
-                                                    .service(add_banner)
-                                                    .service(get_banner)
-                                                    .service(update_banner)
-                                                    .service(delete_banner)
+                                                .service(add_banner)
+                                                .service(get_banner)
+                                                .service(update_banner)
+                                                .service(delete_banner)
                                             )
                                             .service(
                                                 scope("/email")
@@ -131,13 +128,10 @@ async fn main() -> Result<(), Error> {
                                             )
                                             .service(
                                                 scope("emailtemplate")
-                                                    .service(add_emailtemplate)
-                                                    .service(get_emailtemplates)
-                                                    .service(
-                                                        scope("/{emailtemplate_uuid}")
-                                                        .service(get_emailtemplate)
-                                                        .service(delete_emailtemplate)
-                                                    )
+                                                .service(add_emailtemplate)
+                                                .service(get_emailtemplates)
+                                                .service(get_emailtemplate)
+                                                .service(delete_emailtemplate)
                                             )
                                     ),
                             )
