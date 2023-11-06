@@ -67,6 +67,14 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: [{type: 'Order', id: 'LIST'}],
     }),
+    clientGetOrders: builder.query<Order[], void>({
+      query: () => '/client/order',
+      providesTags: (result = []) =>
+        [
+          ...result.map(({id}) => ({type: 'Order' as const, id})),
+          {type: 'Order', id: 'LIST'},
+        ],
+    }),
     adminGetGroups: builder.query<AdGroup[], void>({
       query: () => '/admin/group',
     }),
@@ -575,6 +583,7 @@ export const apiSlice = createApi({
 
 export const {
   useClientAddOrderMutation,
+  useClientGetOrdersQuery,
   useAdminGetGroupsQuery,
   useAdminGetGroupUsersQuery,
   useAdminGetDeploymentUsersQuery,

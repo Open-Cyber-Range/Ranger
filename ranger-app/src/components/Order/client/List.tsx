@@ -1,43 +1,32 @@
-import {Button, Callout, H5, Icon} from '@blueprintjs/core';
+import {Callout, H5, Icon} from '@blueprintjs/core';
 import {useKeycloak} from '@react-keycloak/web';
-import React, {useState} from 'react';
+import humanInterval from 'human-interval';
+import React from 'react';
 import {useTranslation} from 'react-i18next';
+import Header from 'src/components/Header';
 import NameDialog from 'src/components/NameDialog';
-import {type Order} from 'src/models/order';
-import {useClientAddOrderMutation} from 'src/slices/apiSlice';
+import {
+  useClientAddOrderMutation,
+  useClientGetOrdersQuery,
+} from 'src/slices/apiSlice';
 
 const OrderList = () => {
-  const orders: Order[] = [];
+  const {
+    data: potentialOrders,
+  } = useClientGetOrdersQuery(
+    undefined,
+    {pollingInterval: humanInterval('5 seconds')},
+  );
   const {t} = useTranslation();
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [addOrder, _newOrder] = useClientAddOrderMutation();
   const {keycloak} = useKeycloak();
 
   return (
-    <div className='flex flex-col gap-8'>
-      {orders.length === 0 && (
-        <Callout icon={null} className='mt-8 flex items-center justify-between' intent='primary'>
-          <div className='flex items-end'>
-            <Icon icon='info-sign' className='mr-2'/>
-            <H5 className='leading-[normal]'>{t('orders.noOrdersCallout')}</H5>
-          </div>
-          <Button
-            large
-            intent='success'
-            onClick={() => {
-              setIsDialogOpen(true);
-            }}
-          >{t('orders.createOrder')}
-          </Button>
-        </Callout>
-      )}
-      <NameDialog
-        isOpen={isDialogOpen}
-        title={t('orders.newOrder')}
-        onCancel={() => {
-          setIsDialogOpen(false);
-        }}
-        onSubmit={async name => {
+    <>
+      <Header
+        headerTitle={t('orders.title')}
+        buttonTitle={t('orders.createOrder')}
+        onSubmit={async (name: string) => {
           const userInfo = await keycloak.loadUserInfo() as {email?: string};
           if (userInfo.email) {
             await addOrder({
@@ -45,13 +34,21 @@ const OrderList = () => {
               clientId: userInfo.email,
             });
           }
-
-          setIsDialogOpen(false);
-        }}/>
-      {orders.length > 1 && orders.map(order => (
-        <span key={order.id}>{JSON.stringify(order)}</span>
-      ))}
-    </div>
+        }}
+      >
+        <NameDialog
+          title={t('orders.newOrder')}
+        />
+      </Header>
+      {potentialOrders && potentialOrders.length === 0
+      && (
+        <Callout icon={null} className='my-8 flex items-center justify-between' intent='primary'>
+          <div className='flex items-end'>
+            <Icon icon='info-sign' className='mr-2'/>
+            <H5 className='leading-[normal]'>{t('orders.noOrdersCallout')}</H5>
+          </div>
+        </Callout>)}
+    </>
   );
 };
 

@@ -415,6 +415,7 @@ const language = {
     errorFetchingRoles: 'Error fetching roles',
   },
   orders: {
+    title: 'Orders',
     noOrdersCallout: 'No orders have been created yet. Start by creating a new order.',
     createOrder: 'Create order',
     newOrder: 'New order',

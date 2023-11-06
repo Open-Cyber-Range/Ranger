@@ -6,6 +6,7 @@ use ranger::middleware::deployment::DeploymentMiddlewareFactory;
 use ranger::middleware::exercise::ExerciseMiddlewareFactory;
 use ranger::middleware::keycloak::KeycloakAccessMiddlewareFactory;
 use ranger::middleware::metric::MetricMiddlewareFactory;
+use ranger::middleware::order::OrderMiddlewareFactory;
 use ranger::middleware::participant_authentication::ParticipantAccessMiddlewareFactory;
 use ranger::roles::RangerRole;
 use ranger::routes::admin::email::{
@@ -192,8 +193,11 @@ async fn main() -> Result<(), Error> {
                         .service(
                             scope("/order")
                             .service(create_order)
-                            .service(get_order)
                             .service(get_orders_client)
+                            .service(
+                                scope("/{order_uuid}")
+                                    .wrap(OrderMiddlewareFactory)
+                                    .service(get_order))
                         )
                       .wrap(client_auth_middleware)
                         

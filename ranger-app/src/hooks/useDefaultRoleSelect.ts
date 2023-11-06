@@ -1,11 +1,16 @@
 import {useKeycloak} from '@react-keycloak/web';
 import {useEffect} from 'react';
 import {useDispatch, useSelector} from 'react-redux';
-import {selectedRoleSelector, selectRole} from 'src/slices/userSlice';
+import {
+  roleSelectedSelector,
+  selectedRoleSelector,
+  selectRole,
+} from 'src/slices/userSlice';
 import {UserRole} from 'src/models/userRoles';
 
-const useDefaultRoleSelect = (): (UserRole | undefined) => {
+const useDefaultRoleSelect = (): (UserRole | undefined | 'loading') => {
   const currentRole = useSelector(selectedRoleSelector);
+  const roleSelected = useSelector(roleSelectedSelector);
   const {keycloak} = useKeycloak();
   const dispatch = useDispatch();
 
@@ -21,7 +26,7 @@ const useDefaultRoleSelect = (): (UserRole | undefined) => {
     }
   }, [currentRole, keycloak, dispatch, keycloak?.realmAccess?.roles]);
 
-  return currentRole;
+  return roleSelected === true ? currentRole : 'loading';
 };
 
 export default useDefaultRoleSelect;
