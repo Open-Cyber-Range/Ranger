@@ -12,6 +12,7 @@ import SendEmail from 'src/components/Email/SendEmail';
 import SideBar from 'src/components/Exercise/SideBar';
 import useExerciseStreaming from 'src/hooks/useExerciseStreaming';
 import {ActiveTab} from 'src/models/exercise';
+import EmailTable from 'src/components/Email/EmailTable';
 
 const ExerciseDetail = () => {
   const {exerciseId} = useParams<ExerciseDetailRouteParameters>();
@@ -31,6 +32,7 @@ const ExerciseDetail = () => {
             deployments={deployments}
           />)}
           {activeTab === ActiveTab.Emails && (<SendEmail exercise={exercise}/>)}
+          {activeTab === ActiveTab.EmailLogs && (<EmailTable exercise={exercise}/>)}
         </>
       )}/>
     );

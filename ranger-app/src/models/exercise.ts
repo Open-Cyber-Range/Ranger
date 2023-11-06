@@ -31,6 +31,7 @@ export enum ActiveTab {
   Dash,
   Scores,
   Emails,
+  EmailLogs,
   SDL,
   Accounts,
   EntitySelector,

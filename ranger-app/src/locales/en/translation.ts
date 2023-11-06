@@ -23,6 +23,8 @@ const language = {
     tabs: {
       dashboard: 'Dashboard',
       scores: 'Scores',
+      emails: 'Emails',
+      emailLogs: 'Email Logs',
       accounts: 'Accounts',
       entities: 'Entity Selector',
       userSubmissions: 'User Submissions',
@@ -110,8 +112,6 @@ const language = {
     points: 'Points',
   },
   emails: {
-    link: 'Emails',
-    emailLog: 'Email log:',
     status: 'Status',
     timestamp: 'Timestamp',
     toEntity: 'To Entity',
@@ -175,6 +175,7 @@ const language = {
       participantLastName: 'Participant\'s last name',
       participantEmail: 'Participant\'s email',
     },
+    noEmails: 'No emails to display',
   },
   tloTable: {
     headers: {
