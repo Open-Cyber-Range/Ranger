@@ -100,6 +100,36 @@ diesel::table! {
 }
 
 diesel::table! {
+    email_statuses (id) {
+        #[max_length = 16]
+        id -> Binary,
+        #[max_length = 16]
+        email_id -> Binary,
+        name -> Tinytext,
+        message -> Nullable<Text>,
+        created_at -> Timestamp,
+    }
+}
+
+diesel::table! {
+    emails (id) {
+        #[max_length = 16]
+        id -> Binary,
+        #[max_length = 16]
+        exercise_id -> Binary,
+        user_id -> Nullable<Text>,
+        from_address -> Text,
+        to_addresses -> Text,
+        reply_to_addresses -> Nullable<Text>,
+        cc_addresses -> Nullable<Text>,
+        bcc_addresses -> Nullable<Text>,
+        subject -> Text,
+        body -> Text,
+        created_at -> Timestamp,
+    }
+}
+
+diesel::table! {
     events (id) {
         #[max_length = 16]
         id -> Binary,
@@ -169,12 +199,13 @@ diesel::table! {
 }
 
 diesel::joinable!(accounts -> exercises (exercise_id));
-diesel::joinable!(artifacts -> metrics (metric_id));
 diesel::joinable!(banners -> exercises (exercise_id));
 diesel::joinable!(condition_messages -> deployments (deployment_id));
 diesel::joinable!(deployment_elements -> deployments (deployment_id));
 diesel::joinable!(deployment_elements -> events (event_id));
 diesel::joinable!(deployments -> exercises (exercise_id));
+diesel::joinable!(email_statuses -> emails (email_id));
+diesel::joinable!(emails -> exercises (exercise_id));
 diesel::joinable!(metrics -> deployments (deployment_id));
 diesel::joinable!(participants -> deployments (deployment_id));
 
@@ -185,6 +216,8 @@ diesel::allow_tables_to_appear_in_same_query!(
     condition_messages,
     deployment_elements,
     deployments,
+    email_statuses,
+    emails,
     events,
     exercises,
     metrics,

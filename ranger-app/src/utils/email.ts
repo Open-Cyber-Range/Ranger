@@ -62,6 +62,7 @@ export const prepareEmailForDeploymentUser = (
     participantLastName: user.lastName,
     participantEmail: user.email,
   }),
+  userId: user.id,
 });
 
 export const preventDefaultOnEnter = (event: React.KeyboardEvent<HTMLFormElement>) => {

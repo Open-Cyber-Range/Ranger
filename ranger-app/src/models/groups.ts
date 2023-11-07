@@ -6,7 +6,7 @@ export type AdGroup = {
 };
 
 export type AdUser = {
-  id: string;
+  id?: string;
   vmId: string;
   username?: string;
   firstName?: string;
