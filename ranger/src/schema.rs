@@ -100,16 +100,6 @@ diesel::table! {
 }
 
 diesel::table! {
-    emailtemplates (id) {
-        #[max_length = 16]
-        id -> Binary,
-        name -> Tinytext,
-        content -> Text,
-        created_at -> Timestamp,
-    }
-}
-
-diesel::table! {
     email_statuses (id) {
         #[max_length = 16]
         id -> Binary,
@@ -117,6 +107,16 @@ diesel::table! {
         email_id -> Binary,
         name -> Tinytext,
         message -> Nullable<Text>,
+        created_at -> Timestamp,
+    }
+}
+
+diesel::table! {
+    email_templates (id) {
+        #[max_length = 16]
+        id -> Binary,
+        name -> Tinytext,
+        content -> Text,
         created_at -> Timestamp,
     }
 }
@@ -227,8 +227,8 @@ diesel::allow_tables_to_appear_in_same_query!(
     deployment_elements,
     deployments,
     email_statuses,
+    email_templates,
     emails,
-    emailtemplates,
     events,
     exercises,
     metrics,

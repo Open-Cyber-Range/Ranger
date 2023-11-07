@@ -1,1 +1,1 @@
-DROP TABLE emailtemplates;
+DROP TABLE email_templates;

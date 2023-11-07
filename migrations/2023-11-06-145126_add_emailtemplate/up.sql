@@ -1,4 +1,4 @@
-CREATE TABLE emailtemplates (
+CREATE TABLE email_templates (
     id BINARY(16) NOT NULL,
     name TINYTEXT NOT NULL,
     content TEXT NOT NULL,

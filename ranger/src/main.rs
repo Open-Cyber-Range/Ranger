@@ -9,7 +9,8 @@ use ranger::middleware::metric::MetricMiddlewareFactory;
 use ranger::middleware::participant_authentication::ParticipantAccessMiddlewareFactory;
 use ranger::roles::RangerRole;
 use ranger::routes::admin::email::{
-    delete_email, get_email, get_email_form, get_emails, send_email, add_emailtemplate, delete_emailtemplate, get_emailtemplate, get_emailtemplates
+    add_email_template, delete_email, delete_email_template, get_email, get_email_form,
+    get_email_template, get_email_templates, get_emails, send_email,
 };
 use ranger::routes::admin::groups::get_participant_groups_users;
 use ranger::routes::admin::metric::{
@@ -126,13 +127,6 @@ async fn main() -> Result<(), Error> {
                                                 scope("/email-form")
                                                 .service(get_email_form)
                                             )
-                                            .service(
-                                                scope("emailtemplate")
-                                                .service(add_emailtemplate)
-                                                .service(get_emailtemplates)
-                                                .service(get_emailtemplate)
-                                                .service(delete_emailtemplate)
-                                            )
                                     ),
                             )
                             .service(get_deployers)
@@ -144,6 +138,13 @@ async fn main() -> Result<(), Error> {
                             .service(
                                 scope("/log")
                                     .service(subscribe_to_logs_with_level)
+                            )
+                            .service(
+                                scope("/email_template")
+                                    .service(add_email_template)
+                                    .service(get_email_templates)
+                                    .service(get_email_template)
+                                    .service(delete_email_template)
                             )
                             .wrap(admin_auth_middleware),
                     )

@@ -1,6 +1,5 @@
 use super::Database;
-use crate::models::{helpers::uuid::Uuid, Email, EmailTemplate,
-                    NewEmail, NewEmailTemplate};
+use crate::models::{helpers::uuid::Uuid, Email, EmailTemplate, NewEmail, NewEmailTemplate};
 use actix::{Handler, Message, ResponseActFuture, WrapFuture};
 use actix_web::web::block;
 use anyhow::{Ok, Result};
@@ -127,22 +126,24 @@ impl Handler<CreateEmailTemplate> for Database {
     type Result = ResponseActFuture<Self, Result<EmailTemplate>>;
 
     fn handle(&mut self, msg: CreateEmailTemplate, _ctx: &mut Self::Context) -> Self::Result {
-        let new_emailtemplate = msg.0;
+        let new_email_template = msg.0;
         let connection_result = self.get_connection();
 
         Box::pin(
             async move {
                 let mut connection = connection_result?;
-                let emailtemplate = block(move || {
-                    new_emailtemplate.create_insert().execute(&mut connection)?;
+                let email_template = block(move || {
+                    new_email_template
+                        .create_insert()
+                        .execute(&mut connection)?;
                     let deployment =
-                        EmailTemplate::by_id(new_emailtemplate.id).first(&mut connection)?;
+                        EmailTemplate::by_id(new_email_template.id).first(&mut connection)?;
                     Ok(deployment)
                 })
-                    .await??;
-                Ok(emailtemplate)
+                .await??;
+                Ok(email_template)
             }
-                .into_actor(self),
+            .into_actor(self),
         )
     }
 }
@@ -160,14 +161,14 @@ impl Handler<GetEmailTemplates> for Database {
         Box::pin(
             async move {
                 let mut connection = connection_result?;
-                let emailtemplates = block(move || {
-                    let emailtemplates = EmailTemplate::all().load(&mut connection)?;
-                    Ok(emailtemplates)
+                let email_templates = block(move || {
+                    let email_templates = EmailTemplate::all().load(&mut connection)?;
+                    Ok(email_templates)
                 })
-                    .await??;
-                Ok(emailtemplates)
+                .await??;
+                Ok(email_templates)
             }
-                .into_actor(self),
+            .into_actor(self),
         )
     }
 }
@@ -186,14 +187,14 @@ impl Handler<GetEmailTemplate> for Database {
         Box::pin(
             async move {
                 let mut connection = connection_result?;
-                let emailtemplate = block(move || {
-                    let emailtemplate = EmailTemplate::by_id(uuid).first(&mut connection)?;
-                    Ok(emailtemplate)
+                let email_template = block(move || {
+                    let email_template = EmailTemplate::by_id(uuid).first(&mut connection)?;
+                    Ok(email_template)
                 })
-                    .await??;
-                Ok(emailtemplate)
+                .await??;
+                Ok(email_template)
             }
-                .into_actor(self),
+            .into_actor(self),
         )
     }
 }
@@ -213,14 +214,14 @@ impl Handler<DeleteEmailTemplate> for Database {
             async move {
                 let mut connection = connection_result?;
                 let id = block(move || {
-                    let emailtemplate = EmailTemplate::by_id(id).first(&mut connection)?;
-                    emailtemplate.hard_delete().execute(&mut connection)?;
+                    let email_template = EmailTemplate::by_id(id).first(&mut connection)?;
+                    email_template.hard_delete().execute(&mut connection)?;
                     Ok(id)
                 })
-                    .await??;
+                .await??;
                 Ok(id)
             }
-                .into_actor(self),
+            .into_actor(self),
         )
     }
 }

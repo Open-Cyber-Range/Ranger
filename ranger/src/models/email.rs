@@ -1,12 +1,11 @@
 use crate::{
-    schema::{emails, emailtemplates},
+    schema::{email_templates, emails},
     services::database::{All, Create, DeleteById, SelectByIdFromAll},
 };
 use chrono::NaiveDateTime;
 use diesel::{
     helper_types::{Eq, Filter},
     insert_into, ExpressionMethods, Insertable, QueryDsl, Queryable, Selectable, SelectableHelper,
-    query_builder::{DeleteStatement, IntoUpdateTarget},
 };
 use lettre::{
     message::{header, SinglePart},
@@ -191,7 +190,7 @@ impl EmailWithStatus {
 }
 
 #[derive(Queryable, Selectable, Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
-#[diesel(table_name = emailtemplates)]
+#[diesel(table_name = email_templates)]
 pub struct EmailTemplate {
     #[serde(default = "Uuid::random")]
     pub id: Uuid,
@@ -201,31 +200,23 @@ pub struct EmailTemplate {
 }
 
 impl EmailTemplate {
-    pub fn all() -> All<emailtemplates::table, Self> {
-        emailtemplates::table.select(Self::as_select())
+    pub fn all() -> All<email_templates::table, Self> {
+        email_templates::table.select(Self::as_select())
     }
 
     pub fn by_id(
         id: Uuid,
-    ) -> Filter<All<emailtemplates::table, Self>, Eq<emailtemplates::id, Uuid>> {
-        Self::all().filter(emailtemplates::id.eq(id))
+    ) -> Filter<All<email_templates::table, Self>, Eq<email_templates::id, Uuid>> {
+        Self::all().filter(email_templates::id.eq(id))
     }
 
-    pub fn hard_delete(
-        &self,
-    ) -> Filter<
-        DeleteStatement<
-            emailtemplates::table,
-            <emailtemplates::table as IntoUpdateTarget>::WhereClause,
-        >,
-        Eq<emailtemplates::id, Uuid>,
-    > {
-        diesel::delete(emailtemplates::table).filter(emailtemplates::id.eq(self.id))
+    pub fn hard_delete(&self) -> DeleteById<email_templates::id, email_templates::table> {
+        diesel::delete(email_templates::table.filter(email_templates::id.eq(self.id)))
     }
 }
 
 #[derive(Insertable, Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
-#[diesel(table_name = emailtemplates)]
+#[diesel(table_name = email_templates)]
 pub struct NewEmailTemplate {
     #[serde(default = "Uuid::random")]
     pub id: Uuid,
@@ -234,7 +225,7 @@ pub struct NewEmailTemplate {
 }
 
 impl NewEmailTemplate {
-    pub fn create_insert(&self) -> Create<&Self, emailtemplates::table> {
-        insert_into(emailtemplates::table).values(self)
+    pub fn create_insert(&self) -> Create<&Self, email_templates::table> {
+        insert_into(email_templates::table).values(self)
     }
 }
