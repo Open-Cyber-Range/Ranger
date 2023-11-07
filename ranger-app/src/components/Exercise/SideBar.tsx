@@ -39,6 +39,26 @@ const hashTabs: Record<string, ActiveTab> = {
   '#events': ActiveTab.Events,
 };
 
+const intentToIcon = (intent: Intent, progressionValue: number) => {
+  switch (intent) {
+    case 'danger': {
+      return <Icon icon='error' intent={intent}/>;
+    }
+
+    case 'warning': {
+      return <Icon icon='full-circle' intent={intent}/>;
+    }
+
+    case 'success': {
+      return <Icon icon='tick-circle' intent={intent}/>;
+    }
+
+    default: {
+      return <Spinner size={16} intent={intent} value={progressionValue}/>;
+    }
+  }
+};
+
 const DeploymentText = ({deployment}: {deployment: Deployment}) => {
   const {data: deploymentElements} = useAdminGetDeploymentElementsQuery({
     exerciseId: deployment.exerciseId,
@@ -67,27 +87,11 @@ const DeploymentText = ({deployment}: {deployment: Deployment}) => {
   }
   , [deploymentElements, scenario]);
 
-  const renderIcon = () => {
-    switch (intent) {
-      case Intent.SUCCESS: {
-        return <Icon icon='tick-circle' intent={intent}/>;
-      }
-
-      case Intent.DANGER: {
-        return <Icon icon='error' intent={intent}/>;
-      }
-
-      default: {
-        return <Spinner size={16} intent={intent} value={progressionValue}/>;
-      }
-    }
-  };
-
   return (
     <div className={deploymentElements ? '' : 'bp5-skeleton'}>
       <div className='flex items-center'>
-        {renderIcon()}
-        <h5 className='ml-2'>{deployment.name}</h5>
+        {intentToIcon(intent, progressionValue)}
+        <h5 className='ml-2 truncate'>{deployment.name}</h5>
       </div>
     </div>
   );
@@ -191,7 +195,6 @@ const SideBar = ({renderMainContent}: {
                   orderedDeployments.map(deployment => (
                     <MenuItem
                       key={deployment.id}
-                      className='truncate'
                       popoverProps={{hoverCloseDelay: 200}}
                       active={deploymentId === deployment.id}
                       text={<DeploymentText deployment={deployment}/>}
