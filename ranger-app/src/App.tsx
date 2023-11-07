@@ -27,6 +27,7 @@ import {setToken} from './slices/userSlice';
 import MainNavbar from './components/Navbar/MainNavBar';
 import ManagerNavbarLinks from './components/Navbar/ManagerLinks';
 import ParticipantNavbarLinks from './components/Navbar/ParticipantLinks';
+import NotFoundFallback from './pages/NotFoundFallback';
 import ClientNavBar from './components/ClientNavBar';
 
 const App = () => {
@@ -94,6 +95,7 @@ const App = () => {
             <Route
               path='/exercises/:exerciseId/deployments/:deploymentId/scores/:role'
               element={<ScoreDetail/>}/>
+            <Route path='/*' element={<NotFoundFallback/>}/>
           </Routes>
         </Router>
       </LogProvider>
@@ -110,6 +112,7 @@ const App = () => {
           <Route
             path='/exercises/:exerciseId/deployments/:deploymentId'
             element={<ParticipantDeploymentDetail/>}/>
+          <Route path='/*' element={<NotFoundFallback/>}/>
         </Routes>
       </Router>
     );
@@ -121,6 +124,7 @@ const App = () => {
         <ClientNavBar/>
         <Routes>
           <Route path='/' element={<HomeClient/>}/>
+          <Route path='/*' element={<NotFoundFallback/>}/>
         </Routes>
       </Router>
     );

@@ -401,6 +401,7 @@ const language = {
   },
   fallback: {
     role: 'You do not have any roles assigned to you. Please contact your Ranger administrator.',
+    notFound: 'We could not find the page you were looking for.',
   },
   scoreTable: {
     orderPlaceholder: 'Order by',
