@@ -2,11 +2,15 @@ use crate::{
     errors::RangerError,
     middleware::exercise::ExerciseInfo,
     models::{
-        helpers::uuid::Uuid, Email, EmailResource, EmailWithStatus, NewEmail, NewEmailStatus,
+        helpers::uuid::Uuid, Email, EmailResource, EmailTemplate, EmailWithStatus, NewEmail,
+        NewEmailStatus, NewEmailTemplate,
     },
     services::{
         database::{
-            email::{CreateEmail, DeleteEmail, GetEmail, GetEmails},
+            email::{
+                CreateEmail, CreateEmailTemplate, DeleteEmail, DeleteEmailTemplate, GetEmail,
+                GetEmailTemplate, GetEmailTemplates, GetEmails,
+            },
             email_status::{CreateEmailStatus, GetEmailStatus, GetEmailStatuses},
         },
         mailer::Mailer,
@@ -189,4 +193,64 @@ pub async fn get_email_form(app_state: Data<AppState>) -> Result<Json<String>, R
     }
 
     Ok(Json(from_address))
+}
+
+#[post("")]
+pub async fn add_email_template(
+    app_state: Data<AppState>,
+    new_email_template_json: Json<NewEmailTemplate>,
+) -> Result<Json<EmailTemplate>, RangerError> {
+    let new_email_template = new_email_template_json.into_inner();
+    let email_template = app_state
+        .database_address
+        .send(CreateEmailTemplate(new_email_template))
+        .await
+        .map_err(create_mailbox_error_handler("Database"))?
+        .map_err(create_database_error_handler("Create email_template"))?;
+    log::debug!("Created email_template: {}", email_template.id);
+    Ok(Json(email_template))
+}
+
+#[get("")]
+pub async fn get_email_templates(
+    app_state: Data<AppState>,
+) -> Result<Json<Vec<EmailTemplate>>, RangerError> {
+    let email_templates = app_state
+        .database_address
+        .send(GetEmailTemplates)
+        .await
+        .map_err(create_mailbox_error_handler("Database"))?
+        .map_err(create_database_error_handler("Get email_template"))?;
+    Ok(Json(email_templates))
+}
+
+#[get("{email_template_uuid}")]
+pub async fn get_email_template(
+    path_variable: Path<Uuid>,
+    app_state: Data<AppState>,
+) -> Result<Json<EmailTemplate>, RangerError> {
+    let id = path_variable.into_inner();
+    let email_template = app_state
+        .database_address
+        .send(GetEmailTemplate(id))
+        .await
+        .map_err(create_mailbox_error_handler("Database"))?
+        .map_err(create_database_error_handler("Get email_template"))?;
+    Ok(Json(email_template))
+}
+
+#[delete("{email_template_uuid}")]
+pub async fn delete_email_template(
+    path_variable: Path<Uuid>,
+    app_state: Data<AppState>,
+) -> Result<String, RangerError> {
+    let id = path_variable.into_inner();
+    app_state
+        .database_address
+        .send(DeleteEmailTemplate(id))
+        .await
+        .map_err(create_mailbox_error_handler("Database"))?
+        .map_err(create_database_error_handler("Delete email_template"))?;
+    log::debug!("Deleted email_template {}", id);
+    Ok(id.to_string())
 }
