@@ -9,6 +9,8 @@ import {
   useClientAddOrderMutation,
   useClientGetOrdersQuery,
 } from 'src/slices/apiSlice';
+import {sortByProperty} from 'sort-by-property';
+import OrderCard from './Card';
 
 const OrderList = () => {
   const {
@@ -17,6 +19,7 @@ const OrderList = () => {
     undefined,
     {pollingInterval: humanInterval('5 seconds')},
   );
+  const orders = potentialOrders?.slice().sort(sortByProperty('createdAt', 'desc'));
   const {t} = useTranslation();
   const [addOrder, _newOrder] = useClientAddOrderMutation();
   const {keycloak} = useKeycloak();
@@ -40,7 +43,7 @@ const OrderList = () => {
           title={t('orders.newOrder')}
         />
       </Header>
-      {potentialOrders && potentialOrders.length === 0
+      {orders?.length === 0
       && (
         <Callout icon={null} className='my-8 flex items-center justify-between' intent='primary'>
           <div className='flex items-end'>
@@ -48,6 +51,11 @@ const OrderList = () => {
             <H5 className='leading-[normal]'>{t('orders.noOrdersCallout')}</H5>
           </div>
         </Callout>)}
+      <div className='flex flex-col gap-4'>
+        {orders?.map(order => (
+          <OrderCard key={order.id} order={order}/>
+        ))}
+      </div>
     </>
   );
 };
