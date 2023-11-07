@@ -75,6 +75,10 @@ export const apiSlice = createApi({
           {type: 'Order', id: 'LIST'},
         ],
     }),
+    clientGetOrder: builder.query<Order, string>({
+      query: orderId => `/client/order/${orderId}`,
+      providesTags: (result, error, id) => [{type: 'Order', id}],
+    }),
     adminGetGroups: builder.query<AdGroup[], void>({
       query: () => '/admin/group',
     }),
@@ -584,6 +588,7 @@ export const apiSlice = createApi({
 export const {
   useClientAddOrderMutation,
   useClientGetOrdersQuery,
+  useClientGetOrderQuery,
   useAdminGetGroupsQuery,
   useAdminGetGroupUsersQuery,
   useAdminGetDeploymentUsersQuery,
