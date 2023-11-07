@@ -15,7 +15,7 @@ use anyhow::{anyhow, Ok, Result};
 use async_trait::async_trait;
 use futures::future::try_join_all;
 use ranger_grpc::{
-    capabilities::DeployerTypes, Configuration, DeploySwitch, DeployVirtualMachine, Identifier,
+    capabilities::DeployerType as GrpcDeployerType, Configuration, DeploySwitch, DeployVirtualMachine, Identifier,
     MetaInfo, Switch, VirtualMachine,
 };
 use sdl_parser::{
@@ -111,8 +111,8 @@ impl DeployableNodes for Scenario {
                     .iter()
                     .map(|(unique_name, node, infra_node)| async move {
                         let deployer_type = match node.type_field {
-                            sdl_parser::node::NodeType::VM => DeployerTypes::VirtualMachine,
-                            sdl_parser::node::NodeType::Switch => DeployerTypes::Switch,
+                            sdl_parser::node::NodeType::VM => GrpcDeployerType::VirtualMachine,
+                            sdl_parser::node::NodeType::Switch => GrpcDeployerType::Switch,
                         };
                         let mut deployment_element = addressor
                             .database
@@ -237,7 +237,7 @@ impl RemoveableNodes for Vec<DeploymentElement> {
     ) -> Result<()> {
         try_join_all(self.iter().map(|element| async move {
             match element.deployer_type {
-                DeployerType(DeployerTypes::VirtualMachine | DeployerTypes::Switch) => {
+                DeployerType(GrpcDeployerType::VirtualMachine | GrpcDeployerType::Switch) => {
                     if let Some(handler_reference) = &element.handler_reference {
                         let mut element_update = element.clone();
 

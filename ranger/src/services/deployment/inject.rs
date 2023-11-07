@@ -8,7 +8,7 @@ use crate::Addressor;
 use anyhow::{Ok, Result};
 use async_trait::async_trait;
 use log::debug;
-use ranger_grpc::capabilities::DeployerTypes;
+use ranger_grpc::capabilities::DeployerType as GrpcDeployerType;
 use ranger_grpc::{
     Account as GrpcAccount, ExecutorResponse, Inject as GrpcInject, Source as GrpcSource,
 };
@@ -65,7 +65,7 @@ impl DeployableInject
                 DeploymentElement::new_ongoing(
                     deployment_element.deployment_id,
                     Box::new(inject_name.to_owned()),
-                    DeployerTypes::Inject,
+                    GrpcDeployerType::Inject,
                     None,
                     Some(virtual_machine_id),
                 ),
@@ -93,7 +93,7 @@ impl DeployableInject
             match addressor
                 .distributor
                 .send(Deploy(
-                    DeployerTypes::Inject,
+                    GrpcDeployerType::Inject,
                     inject_deployment,
                     deployers.to_owned(),
                 ))

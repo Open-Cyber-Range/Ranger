@@ -9,7 +9,7 @@ use anyhow::{anyhow, Ok, Result};
 use async_trait::async_trait;
 use futures::future::try_join_all;
 use log::debug;
-use ranger_grpc::capabilities::DeployerTypes;
+use ranger_grpc::capabilities::DeployerType as GrpcDeployerType;
 use ranger_grpc::{
     Account as GrpcAccount, ExecutorResponse, Feature as GrpcFeature,
     FeatureType as GrpcFeatureType, Source as GrpcSource,
@@ -120,7 +120,7 @@ impl DeployableNodeFeatures
                                 DeploymentElement::new_ongoing(
                                     deployment_element.deployment_id,
                                     Box::new(feature_name.to_string()),
-                                    DeployerTypes::Feature,
+                                    GrpcDeployerType::Feature,
                                     None,
                                     Some(virtual_machine_id),
                                 ),
@@ -159,7 +159,7 @@ impl DeployableNodeFeatures
                             match addressor
                                 .distributor
                                 .send(Deploy(
-                                    DeployerTypes::Feature,
+                                    GrpcDeployerType::Feature,
                                     feature_deployment,
                                     deployers.to_owned(),
                                 ))
