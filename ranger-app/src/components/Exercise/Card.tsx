@@ -1,6 +1,6 @@
 import type React from 'react';
 import {useEffect, useState} from 'react';
-import {AnchorButton, Card, H2} from '@blueprintjs/core';
+import {AnchorButton, Card, H2, Tooltip} from '@blueprintjs/core';
 import {useNavigate} from 'react-router-dom';
 import type {Exercise} from 'src/models/exercise';
 import {useTranslation} from 'react-i18next';
@@ -9,7 +9,6 @@ import {
   useAdminGetDeploymentsQuery,
 } from 'src/slices/apiSlice';
 import {toastSuccess, toastWarning} from 'src/components/Toaster';
-import {Tooltip2} from '@blueprintjs/popover2';
 
 const ExerciseCard = ({exercise}: {exercise: Exercise}) => {
   const {t} = useTranslation();
@@ -52,7 +51,7 @@ const ExerciseCard = ({exercise}: {exercise: Exercise}) => {
     <Card interactive elevation={2} onClick={handleCardClick}>
       <div className='flex flex-row justify-between'>
         <H2>{exercise.name}</H2>
-        <Tooltip2
+        <Tooltip
           content='This exercise has active deployments!'
           disabled={!deploymentsExist}
         >
@@ -76,7 +75,7 @@ const ExerciseCard = ({exercise}: {exercise: Exercise}) => {
               {isLoading ? t('common.deleting') : t('common.delete')}
             </AnchorButton>
           </div>
-        </Tooltip2>
+        </Tooltip>
 
       </div>
     </Card>

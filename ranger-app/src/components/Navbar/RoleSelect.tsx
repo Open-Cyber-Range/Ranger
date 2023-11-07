@@ -35,9 +35,9 @@ const RoleSelect = ({keycloak}: {keycloak: Keycloak}) => {
 
   return (
     <div className='
-    bp4-html-select
-    bp4-minimal
-    bp4-large'
+    bp5-html-select
+    bp5-minimal
+    bp5-large'
     >
       <select
         disabled={roles.length < 2}
@@ -69,7 +69,7 @@ const RoleSelect = ({keycloak}: {keycloak: Keycloak}) => {
             })}
         <option className='hidden' value='no-role'>{t('menu.noRole')}</option>
       </select>
-      <span className='bp4-icon bp4-icon-double-caret-vertical'/>
+      <span className='bp5-icon bp5-icon-double-caret-vertical'/>
     </div>
 
   );

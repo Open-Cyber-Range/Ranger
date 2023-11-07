@@ -29,9 +29,9 @@ const EntitySelect: React.FC<EntitySelectProps> = ({
 
   return (
     <div className='
-    bp4-html-select
-    bp4-minimal
-    bp4-large'
+    bp5-html-select
+    bp5-minimal
+    bp5-large'
     >
       <select
         value={selectedEntityKey ?? ''}
@@ -44,7 +44,7 @@ const EntitySelect: React.FC<EntitySelectProps> = ({
           </option>
         ))}
       </select>
-      <span className='bp4-icon bp4-icon-double-caret-vertical'/>
+      <span className='bp5-icon bp5-icon-double-caret-vertical'/>
     </div>
   );
 };

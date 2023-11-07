@@ -77,9 +77,9 @@ const ScoresPanel = ({deployments}:
         </div>
         <div className='flex flex-col'>
           <table className='
-              bp4-html-table
-              bp4-html-table-striped
-              bp4-interactive'
+              bp5-html-table
+              bp5-html-table-striped
+              bp5-interactive'
           >
             <tbody>
               {sortedDeployments.map(deployment => (

@@ -84,7 +84,7 @@ const DeploymentText = ({deployment}: {deployment: Deployment}) => {
   };
 
   return (
-    <div className={deploymentElements ? '' : 'bp4-skeleton'}>
+    <div className={deploymentElements ? '' : 'bp5-skeleton'}>
       <div className='flex items-center'>
         {renderIcon()}
         <h5 className='ml-2'>{deployment.name}</h5>
@@ -111,11 +111,12 @@ const SideBar = ({renderMainContent}: {
       <div className='flex h-[100%]'>
         <div className='pb-[2rem] '>
           <Resizable
+            defaultSize={{width: '20%', height: '100%'}}
             minWidth={200}
-            maxWidth={500}
+            maxWidth={300}
           >
-            <Menu large className='max-w-[100%] bp4-elevation-3 h-screen'>
-              <div className='flex flex-col max-h-[100%] overflow-y-auto'>
+            <Menu large className='max-w-[100%] bp5-elevation-3 h-screen '>
+              <div className='flex flex-col max-h-[100%]'>
                 <div className='mt-[2rem] px-[7px]'>
                   <H2>{exercise.name}</H2>
                 </div>
@@ -190,6 +191,7 @@ const SideBar = ({renderMainContent}: {
                   orderedDeployments.map(deployment => (
                     <MenuItem
                       key={deployment.id}
+                      className='truncate'
                       popoverProps={{hoverCloseDelay: 200}}
                       active={deploymentId === deployment.id}
                       text={<DeploymentText deployment={deployment}/>}

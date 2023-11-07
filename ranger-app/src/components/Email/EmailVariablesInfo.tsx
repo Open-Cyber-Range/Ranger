@@ -1,13 +1,12 @@
 import React from 'react';
-import {Button} from '@blueprintjs/core';
+import {Button, Tooltip} from '@blueprintjs/core';
 import {type EmailVariable} from 'src/models/email';
-import {Tooltip2} from '@blueprintjs/popover2';
 import {useTranslation} from 'react-i18next';
 
 const EmailVariablesInfo = ({emailVariables}: {emailVariables: EmailVariable[]}) => {
   const {t} = useTranslation();
   return (
-    <Tooltip2
+    <Tooltip
       content={
         <div>
           <strong>{t('emails.variables.available')}</strong>
@@ -20,7 +19,7 @@ const EmailVariablesInfo = ({emailVariables}: {emailVariables: EmailVariable[]})
       }
     >
       <Button minimal icon='info-sign'/>
-    </Tooltip2>
+    </Tooltip>
   );
 };
 

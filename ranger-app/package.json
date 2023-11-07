@@ -3,10 +3,9 @@
   "version": "2.1.1",
   "private": true,
   "dependencies": {
-    "@blueprintjs/core": "^4.17.7",
-    "@blueprintjs/docs-theme": "^4.4.23",
-    "@blueprintjs/popover2": "^1.8.0",
-    "@blueprintjs/select": "^4.9.18",
+    "@blueprintjs/core": "^5.6.0",
+    "@blueprintjs/docs-theme": "^5.2.0",
+    "@blueprintjs/select": "^5.0.17",
     "@monaco-editor/react": "^4.4.6",
     "@open-cyber-range/wasm-sdl-parser": "^0.20.0",
     "@popperjs/core": "^2.11.6",
@@ -210,7 +209,9 @@
         }
       ],
       "no-plusplus": "error",
-      "prefer-const": "error"
+      "prefer-const": "error",
+      "import/no-duplicates": "off",
+      "react/prefer-read-only-props": "off"
     }
   }
 }

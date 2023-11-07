@@ -6,7 +6,6 @@ import {
   MenuItem,
   type TreeNodeInfo,
 } from '@blueprintjs/core';
-import {Suggest2} from '@blueprintjs/select';
 import {skipToken} from '@reduxjs/toolkit/dist/query';
 import React, {useEffect} from 'react';
 import {
@@ -18,11 +17,11 @@ import {
   useAdminGetGroupUsersQuery,
 } from 'src/slices/apiSlice';
 import {type AdUser} from 'src/models/groups';
-import {MenuItem2} from '@blueprintjs/popover2';
 import {useTranslation} from 'react-i18next';
 import {toastSuccess, toastWarning} from 'src/components/Toaster';
 import {createEntityTree} from 'src/utils';
 import {type Participant} from 'src/models/participant';
+import {Suggest} from '@blueprintjs/select';
 
 const flattenList = (
   nonFlattenedList: TreeNodeInfo[], initialList: TreeNodeInfo[] = [],
@@ -103,7 +102,7 @@ const EntityConnector = ({exerciseId, deploymentId}: {
     <Card elevation={Elevation.TWO}>
       <H5>{t('deployments.entityConnector.entityConnector')}</H5>
       <div className='grid grid-cols-2 gap-2'>
-        <Suggest2<TreeNodeInfo>
+        <Suggest<TreeNodeInfo>
           inputProps={{
             placeholder: t('deployments.entityConnector.selectEntity') ?? '',
           }}
@@ -118,7 +117,7 @@ const EntityConnector = ({exerciseId, deploymentId}: {
           itemPredicate={(query, item) =>
             item.id.toString().toLowerCase().includes(query.toLowerCase()) ?? false}
           itemRenderer={(item, {handleClick, handleFocus}) => (
-            <MenuItem2
+            <MenuItem
               key={item.id}
               style={{
                 paddingLeft: `${Number(item.id.toString().split('.').length) * 0.5}rem`,
@@ -140,7 +139,7 @@ const EntityConnector = ({exerciseId, deploymentId}: {
           }}
         />
 
-        <Suggest2<AdUser>
+        <Suggest<AdUser>
           inputProps={{
             placeholder: t('deployments.entityConnector.selectUser') ?? '',
           }}
@@ -155,7 +154,7 @@ const EntityConnector = ({exerciseId, deploymentId}: {
           itemPredicate={(query, item) =>
             item.username?.toLowerCase().includes(query.toLowerCase()) ?? false}
           itemRenderer={(item, {handleClick, handleFocus}) => (
-            <MenuItem2
+            <MenuItem
               key={item.id}
               text={item.username}
               onClick={handleClick}
@@ -179,18 +178,15 @@ const EntityConnector = ({exerciseId, deploymentId}: {
           icon='confirm'
           intent='primary'
           onClick={async () => {
-            if (selectedUser && selectedEntity) {
-              if (selectedUser.id) {
-                await addParticipant({
-                  exerciseId,
-                  deploymentId,
-                  newParticipant: {
-                    userId: selectedUser.id,
-                    selector: selectedEntity.id.toString(),
-                  },
-                });
-              }
-
+            if (selectedUser?.id && selectedEntity) {
+              await addParticipant({
+                exerciseId,
+                deploymentId,
+                newParticipant: {
+                  userId: selectedUser.id,
+                  selector: selectedEntity.id.toString(),
+                },
+              });
               setSelectedEntity(undefined);
               setSelectedUser(undefined);
             }

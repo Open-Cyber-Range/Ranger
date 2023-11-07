@@ -1,6 +1,5 @@
 import type React from 'react';
-import {Button, FileInput, TextArea} from '@blueprintjs/core';
-import {Tooltip2} from '@blueprintjs/popover2';
+import {Button, FileInput, TextArea, Tooltip} from '@blueprintjs/core';
 import {useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {toastSuccess, toastWarning} from 'src/components/Toaster';
@@ -122,7 +121,7 @@ const UpdateMetric = ({exerciseId, deploymentId, manualMetric, metricHasArtifact
               setSubmissionText(event.target.value);
             }}/>
 
-          <Tooltip2
+          <Tooltip
             content={manualMetric.score
               ? t('metricScoring.errors.alreadyScored') ?? ''
               : t('metricScoring.errors.notAltered') ?? ''}
@@ -137,8 +136,7 @@ const UpdateMetric = ({exerciseId, deploymentId, manualMetric, metricHasArtifact
                 textSubmission: submissionText,
               })}
             />
-          </Tooltip2>
-
+          </Tooltip>
         </form>
       </div>
     </div>

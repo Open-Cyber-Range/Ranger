@@ -14,8 +14,7 @@ import {
 import {useAdminGetGroupsQuery} from 'src/slices/apiSlice';
 import {useTranslation} from 'react-i18next';
 import {Controller, useFieldArray, useForm, useWatch} from 'react-hook-form';
-import {Suggest2} from '@blueprintjs/select';
-import {MenuItem2} from '@blueprintjs/popover2';
+import {Suggest} from '@blueprintjs/select';
 import {type AdGroup} from 'src/models/groups';
 import DatePicker from 'react-datepicker';
 import {useEffect, useState} from 'react';
@@ -151,7 +150,7 @@ const AddDialog = (
                       <DatePicker
                         selectsStart
                         showTimeSelect
-                        customInput={<input className='bp4-input bp4-large bp4-fill'/>}
+                        customInput={<input className='bp5-input bp5-large bp5-fill'/>}
                         id='start-date'
                         selected={startDate}
                         startDate={startDate}
@@ -204,7 +203,7 @@ const AddDialog = (
                       <DatePicker
                         selectsEnd
                         showTimeSelect
-                        customInput={<input className='bp4-input bp4-large bp4-fill'/>}
+                        customInput={<input className='bp5-input bp5-large bp5-fill'/>}
                         id='end-date'
                         selected={endDate}
                         startDate={startDate}
@@ -276,7 +275,7 @@ const AddDialog = (
                       intent={intent}
                       label={t('deployments.form.adGroups.title', {number: index + 1})}
                     >
-                      <Suggest2<AdGroup>
+                      <Suggest<AdGroup>
                         inputProps={{
                           id: 'group-name',
                           onBlur,
@@ -288,7 +287,7 @@ const AddDialog = (
                         itemPredicate={(query, item) =>
                           item.name.toLowerCase().includes(query.toLowerCase())}
                         itemRenderer={(item, {handleClick, handleFocus}) => (
-                          <MenuItem2
+                          <MenuItem
                             key={item.id}
                             text={item.name}
                             onClick={handleClick}

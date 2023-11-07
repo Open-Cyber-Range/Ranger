@@ -1,5 +1,4 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import '@blueprintjs/popover2/lib/css/blueprint-popover2.css';
 import {type ExerciseRole} from 'src/models/scenario';
 import {type RoleScore} from 'src/models/score';
 import {useAdminGetDeploymentScenarioQuery} from 'src/slices/apiSlice';
