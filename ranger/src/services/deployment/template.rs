@@ -18,7 +18,7 @@ use anyhow::{anyhow, Ok, Result};
 use async_trait::async_trait;
 use futures::future::try_join_all;
 use log::debug;
-use ranger_grpc::{capabilities::DeployerTypes, Account, Source as GrpcSource, TemplateResponse};
+use ranger_grpc::{capabilities::DeployerType as GrpcDeployerType, Account, Source as GrpcSource, TemplateResponse};
 use sdl_parser::{common::Source as SDLSource, node::NodeType, Scenario};
 
 impl Deployable for SDLSource {
@@ -99,7 +99,7 @@ impl DeployableTemplates for Scenario {
                                 deployment.id,
                                 Box::new(source.to_owned()),
                                 Some(placeholder_template_id),
-                                DeployerTypes::Template,
+                                GrpcDeployerType::Template,
                                 ElementStatus::Ongoing,
                             ),
                             true,
@@ -109,7 +109,7 @@ impl DeployableTemplates for Scenario {
                     match addressor
                         .distributor
                         .send(Deploy(
-                            DeployerTypes::Template,
+                            GrpcDeployerType::Template,
                             source.try_to_deployment_command()?,
                             deployers.to_owned(),
                         ))

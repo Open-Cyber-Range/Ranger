@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 pub enum RangerRole {
     Admin,
     Participant,
+    Client,
 }
 
 impl Display for RangerRole {
@@ -13,6 +14,7 @@ impl Display for RangerRole {
         match self {
             RangerRole::Admin => write!(f, "ranger-manager"),
             RangerRole::Participant => write!(f, "ranger-participant"),
+            RangerRole::Client => write!(f, "ranger-client"),
         }
     }
 }

@@ -12,7 +12,6 @@ import AddDialog from 'src/components/Deployment/AddDialog';
 import {type Exercise} from 'src/models/exercise';
 import {useState} from 'react';
 import {Alert, Button} from '@blueprintjs/core';
-import DeploymentList from 'src/components/Deployment/List';
 
 const DashboardPanel = ({exercise, deployments}:
 {exercise: Exercise | undefined;
@@ -26,25 +25,17 @@ const DashboardPanel = ({exercise, deployments}:
   const createNewDeployments = (
     deploymentForm: DeploymentForm,
   ): [NewDeployment[], string] | undefined => {
-    if (exercise?.sdlSchema && exercise?.id && deploymentForm.start && deploymentForm.end) {
-      let updatedSchema = exercise.sdlSchema.replace(
-        /start: \d{4}-\d{2}-\d{2}t\d{2}:\d{2}:\d{2}z/i,
-        `start: ${deploymentForm.start}`,
-      );
-
-      updatedSchema = updatedSchema.replace(
-        /end: \d{4}-\d{2}-\d{2}t\d{2}:\d{2}:\d{2}z/i,
-        `end: ${deploymentForm.end}`,
-      );
-
+    if (exercise?.sdlSchema && exercise?.id) {
       const count = deploymentForm.count;
       const deployments = [];
       for (let index = 0; index < count; index += 1) {
         deployments.push({
           name: count < 2 ? deploymentForm.name : `${deploymentForm.name}-${index}`,
-          sdlSchema: updatedSchema,
+          sdlSchema: exercise.sdlSchema,
           deploymentGroup: deploymentForm.deploymentGroup,
           groupName: deploymentForm.groupNames[index].groupName,
+          start: deploymentForm.start,
+          end: deploymentForm.end,
         });
       }
 
@@ -124,13 +115,6 @@ const DashboardPanel = ({exercise, deployments}:
         >
           <p>{t('exercises.sdlNotSaved')}</p>
         </Alert>
-        <div className='justify-end items-center pb-4 mt-[2rem]'>
-          {deployments === null ? (
-            <span className='text-lg text-gray-400'>{t('deployment.empty')}</span>
-          ) : (
-            <DeploymentList deployments={deployments}/>
-          )}
-        </div>
         <AddDialog
           isOpen={!isModified && isAddDialogOpen}
           title={t('deployments.title')}

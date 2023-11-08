@@ -23,6 +23,7 @@ const language = {
     tabs: {
       dashboard: 'Dashboard',
       scores: 'Scores',
+      deploymentScores: 'Deployment Scores',
       emails: 'Emails',
       emailLogs: 'Email Activity',
       accounts: 'Accounts',
@@ -81,6 +82,8 @@ const language = {
         earlierThanStart: 'Deployment(s) end time must be later than start time',
       },
     },
+    beingDeployed: 'Deployment can not be deleted while it is being deployed',
+    beingDeleted: 'Deployment is being deleted',
   },
   menu: {
     home: 'Home',
@@ -90,6 +93,7 @@ const language = {
     userRoles: {
       'ranger-manager': 'Manager',
       'ranger-participant': 'Participant',
+      'ranger-client': 'Client',
     },
     noRole: 'NO ROLE',
     logs: 'Logs',

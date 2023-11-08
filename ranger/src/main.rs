@@ -9,7 +9,8 @@ use ranger::middleware::metric::MetricMiddlewareFactory;
 use ranger::middleware::participant_authentication::ParticipantAccessMiddlewareFactory;
 use ranger::roles::RangerRole;
 use ranger::routes::admin::email::{
-    delete_email, get_email, get_email_form, get_emails, send_email,
+    add_email_template, delete_email, delete_email_template, get_email, get_email_form,
+    get_email_template, get_email_templates, get_emails, send_email,
 };
 use ranger::routes::admin::groups::get_participant_groups_users;
 use ranger::routes::admin::metric::{
@@ -19,11 +20,11 @@ use ranger::routes::admin::metric::{
 use ranger::routes::admin::scenario::get_admin_exercise_deployment_scenario;
 use ranger::routes::deployers::get_deployers;
 use ranger::routes::exercise::{
-    add_banner, add_participant, delete_banner, delete_exercise_deployment, delete_participant,
-    get_admin_participants, get_banner, get_exercise, get_exercise_deployment,
-    get_exercise_deployment_elements, get_exercise_deployment_scores,
-    get_exercise_deployment_users, get_exercise_deployments, get_exercises, subscribe_to_exercise,
-    update_banner, update_exercise,
+    add_banner, add_exercise, add_exercise_deployment, add_participant, delete_banner,
+    delete_exercise, delete_exercise_deployment, delete_participant, get_admin_participants,
+    get_banner, get_exercise, get_exercise_deployment, get_exercise_deployment_elements,
+    get_exercise_deployment_scores, get_exercise_deployment_users, get_exercise_deployments,
+    get_exercises, subscribe_to_exercise, update_banner, update_exercise,
 };
 use ranger::routes::logger::subscribe_to_logs_with_level;
 use ranger::routes::participant::deployment::{
@@ -42,7 +43,6 @@ use ranger::routes::participant::{get_participant_exercise, get_participant_exer
 use ranger::routes::{
     admin::groups::get_participant_groups,
     basic::{status, version},
-    exercise::{add_exercise, add_exercise_deployment, delete_exercise},
     upload::upload_participant_artifact,
 };
 
@@ -54,6 +54,7 @@ async fn main() -> Result<(), Error> {
     HttpServer::new(move || {
         let admin_auth_middleware = AuthenticationMiddlewareFactory(RangerRole::Admin);
         let participant_auth_middleware = AuthenticationMiddlewareFactory(RangerRole::Participant);
+        let client_auth_middleware = AuthenticationMiddlewareFactory(RangerRole::Client);
         App::new()
             .app_data(app_data.to_owned())
             .service(status)
@@ -110,10 +111,10 @@ async fn main() -> Result<(), Error> {
                                             )
                                             .service(
                                                 scope("/banner")
-                                                    .service(add_banner)
-                                                    .service(get_banner)
-                                                    .service(update_banner)
-                                                    .service(delete_banner)
+                                                .service(add_banner)
+                                                .service(get_banner)
+                                                .service(update_banner)
+                                                .service(delete_banner)
                                             )
                                             .service(
                                                 scope("/email")
@@ -121,11 +122,11 @@ async fn main() -> Result<(), Error> {
                                                 .service(get_email)
                                                 .service(send_email)
                                                 .service(delete_email)
-                                        )
+                                            )
                                             .service(
                                                 scope("/email-form")
                                                 .service(get_email_form)
-                                            ),
+                                            )
                                     ),
                             )
                             .service(get_deployers)
@@ -138,8 +139,17 @@ async fn main() -> Result<(), Error> {
                                 scope("/log")
                                     .service(subscribe_to_logs_with_level)
                             )
+                            .service(
+                                scope("/email_template")
+                                    .service(add_email_template)
+                                    .service(get_email_templates)
+                                    .service(get_email_template)
+                                    .service(delete_email_template)
+                            )
                             .wrap(admin_auth_middleware),
                     )
+                    .service(
+                        scope("/client").wrap(client_auth_middleware))
                     .service(
                         scope("/participant")
                             .service(

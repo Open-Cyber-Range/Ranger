@@ -13,7 +13,7 @@ use anyhow::{anyhow, Ok, Result};
 use async_trait::async_trait;
 use futures::future::try_join_all;
 use log::debug;
-use ranger_grpc::capabilities::DeployerTypes;
+use ranger_grpc::capabilities::DeployerType as GrpcDeployerType;
 use ranger_grpc::{Account as GrpcAccount, Condition as GrpcCondition, Source as GrpcSource};
 use sdl_parser::condition::Condition;
 use sdl_parser::inject::Inject;
@@ -154,7 +154,7 @@ impl Handler<DeployConditions> for ConditionAggregator {
                                         DeploymentElement::new_ongoing(
                                             deployment_element.deployment_id,
                                             Box::new(condition_name.to_owned()),
-                                            DeployerTypes::Condition,
+                                            GrpcDeployerType::Condition,
                                             *event_id,
                                             Some(virtual_machine_id),
                                         ),
@@ -173,7 +173,7 @@ impl Handler<DeployConditions> for ConditionAggregator {
                                 match addressor
                                     .distributor
                                     .send(Deploy(
-                                        DeployerTypes::Condition,
+                                        GrpcDeployerType::Condition,
                                         condition_request,
                                         deployers.to_owned(),
                                     ))
@@ -184,7 +184,7 @@ impl Handler<DeployConditions> for ConditionAggregator {
                                             ConditionResponse::try_from(handler_response)?;
 
                                         let condition_status = match event_id {
-                                            Some(_) => ElementStatus::Ongoing,
+                                            Some(_) => ElementStatus::ConditionPolling,
                                             None => ElementStatus::Success,
                                         };
 

@@ -1,9 +1,10 @@
 use crate::{
-    schema::emails,
+    schema::{email_templates, emails},
     services::database::{All, Create, DeleteById, SelectByIdFromAll},
 };
 use chrono::NaiveDateTime;
 use diesel::{
+    helper_types::{Eq, Filter},
     insert_into, ExpressionMethods, Insertable, QueryDsl, Queryable, Selectable, SelectableHelper,
 };
 use lettre::{
@@ -185,5 +186,46 @@ impl EmailWithStatus {
             status_message: email_status.message,
             created_at: email.created_at,
         }
+    }
+}
+
+#[derive(Queryable, Selectable, Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
+#[diesel(table_name = email_templates)]
+pub struct EmailTemplate {
+    #[serde(default = "Uuid::random")]
+    pub id: Uuid,
+    pub name: String,
+    pub content: String,
+    pub created_at: NaiveDateTime,
+}
+
+impl EmailTemplate {
+    pub fn all() -> All<email_templates::table, Self> {
+        email_templates::table.select(Self::as_select())
+    }
+
+    pub fn by_id(
+        id: Uuid,
+    ) -> Filter<All<email_templates::table, Self>, Eq<email_templates::id, Uuid>> {
+        Self::all().filter(email_templates::id.eq(id))
+    }
+
+    pub fn hard_delete(&self) -> DeleteById<email_templates::id, email_templates::table> {
+        diesel::delete(email_templates::table.filter(email_templates::id.eq(self.id)))
+    }
+}
+
+#[derive(Insertable, Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
+#[diesel(table_name = email_templates)]
+pub struct NewEmailTemplate {
+    #[serde(default = "Uuid::random")]
+    pub id: Uuid,
+    pub name: String,
+    pub content: String,
+}
+
+impl NewEmailTemplate {
+    pub fn create_insert(&self) -> Create<&Self, email_templates::table> {
+        insert_into(email_templates::table).values(self)
     }
 }

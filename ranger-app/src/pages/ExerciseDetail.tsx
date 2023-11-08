@@ -12,9 +12,12 @@ import SendEmail from 'src/components/Email/SendEmail';
 import SideBar from 'src/components/Exercise/SideBar';
 import useExerciseStreaming from 'src/hooks/useExerciseStreaming';
 import {ActiveTab} from 'src/models/exercise';
+import {H2} from '@blueprintjs/core';
+import {useTranslation} from 'react-i18next';
 import EmailTable from 'src/components/Email/EmailTable';
 
 const ExerciseDetail = () => {
+  const {t} = useTranslation();
   const {exerciseId} = useParams<ExerciseDetailRouteParameters>();
   useExerciseStreaming(exerciseId);
   const {data: deployments} = useAdminGetDeploymentsQuery(exerciseId ?? skipToken);
@@ -24,15 +27,32 @@ const ExerciseDetail = () => {
     return (
       <SideBar renderMainContent={activeTab => (
         <>
-          {activeTab === ActiveTab.Dash && (<DashboardPanel
-            exercise={exercise}
-            deployments={deployments}
-          />)}
-          {activeTab === ActiveTab.Scores && (<ScoresPanel
-            deployments={deployments}
-          />)}
-          {activeTab === ActiveTab.Emails && (<SendEmail exercise={exercise}/>)}
-          {activeTab === ActiveTab.EmailLogs && (<EmailTable exercise={exercise}/>)}
+          {activeTab === ActiveTab.Dash && (
+            <>
+              <H2>{t('exercises.tabs.dashboard')}</H2>
+              <DashboardPanel
+                exercise={exercise}
+                deployments={deployments}
+              />
+            </>
+          )}
+          {activeTab === ActiveTab.Scores && (
+            <>
+              <H2>{t('exercises.tabs.scores')}</H2>
+              <ScoresPanel
+                deployments={deployments}
+              />
+            </>)}
+          {activeTab === ActiveTab.Emails && (
+            <>
+              <H2>{t('exercises.tabs.emails')}</H2>
+              <SendEmail exercise={exercise}/>
+            </>)}
+          {activeTab === ActiveTab.EmailLogs && (
+            <>
+              <H2>{t('exercises.tabs.emailLogs')}</H2>
+              <EmailTable exercise={exercise}/>
+            </>)}
         </>
       )}/>
     );

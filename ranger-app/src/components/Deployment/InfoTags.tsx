@@ -6,7 +6,7 @@ import '@blueprintjs/popover2/lib/css/blueprint-popover2.css';
 import {useTranslation} from 'react-i18next';
 
 const countNodesByType = (deploymentElements: DeploymentElement[]) => {
-  let [virtualMachines, switches, templates] = [0, 0, 0];
+  let [virtualMachines, switches, templates, conditions, features, injects] = [0, 0, 0, 0, 0, 0];
 
   for (const element of deploymentElements) {
     switch (element.deployerType) {
@@ -25,13 +25,28 @@ const countNodesByType = (deploymentElements: DeploymentElement[]) => {
         break;
       }
 
+      case (DeployerType.Condition): {
+        conditions += 1;
+        break;
+      }
+
+      case (DeployerType.Feature): {
+        features += 1;
+        break;
+      }
+
+      case (DeployerType.Inject): {
+        injects += 1;
+        break;
+      }
+
       default: {
         break;
       }
     }
   }
 
-  return [virtualMachines, switches, templates];
+  return [virtualMachines, switches, templates, conditions, features, injects];
 };
 
 const InfoTag = ({name, count}: {name: string; count: number}) => (
@@ -46,14 +61,17 @@ const InfoTags = (
     virtualMachineCount,
     switchCount,
     templateCount,
+    _conditionCount,
+    _featureCount,
+    _injectCount,
   ] = countNodesByType(deploymentElements);
   const {t} = useTranslation();
   return (
-    <>
+    <div className='flex'>
       <InfoTag name={t('common.virtualMachines')} count={virtualMachineCount}/>
       <InfoTag name={t('common.switches')} count={switchCount}/>
       <InfoTag name={t('common.templates')} count={templateCount}/>
-    </>
+    </div>
   );
 };
 

@@ -7,7 +7,7 @@ import type {
   NewDeployment,
   ParticipantDeployment,
 } from 'src/models/deployment';
-import type {Participant, NewParticipant} from 'src/models/pariticpant';
+import type {Participant, NewParticipant} from 'src/models/participant';
 import {
   type ParticipantExercise,
   type Exercise,

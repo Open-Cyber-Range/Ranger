@@ -440,7 +440,7 @@ pub fn get_event_connections(scenario: &Scenario, events: &Events) -> (Injects, 
         });
         if let Some(scenario_scripts) = scenario.scripts.clone() {
             scenario_scripts.iter().for_each(|(key, script)| {
-                if script.events.contains(event_name) {
+                if script.events.contains_key(event_name) {
                     scripts.insert(key.to_owned(), script.clone());
                 }
             })

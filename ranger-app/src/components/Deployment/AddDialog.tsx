@@ -79,6 +79,8 @@ const AddDialog = (
 
   const onHandleSubmit = (formContent: DeploymentForm) => {
     if (onSubmit) {
+      formContent.start = formContent.start.slice(0, -5);
+      formContent.end = formContent.end.slice(0, -5);
       onSubmit(formContent);
     }
   };

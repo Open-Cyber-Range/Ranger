@@ -22,7 +22,7 @@ import {MenuItem2} from '@blueprintjs/popover2';
 import {useTranslation} from 'react-i18next';
 import {toastSuccess, toastWarning} from 'src/components/Toaster';
 import {createEntityTree} from 'src/utils';
-import {type Participant} from 'src/models/pariticpant';
+import {type Participant} from 'src/models/participant';
 
 const flattenList = (
   nonFlattenedList: TreeNodeInfo[], initialList: TreeNodeInfo[] = [],
@@ -83,7 +83,7 @@ const EntityConnector = ({exerciseId, deploymentId}: {
 
     const flattenedList = flattenList(createEntityTree(clickedDelete, scenario.entities));
     return filterList(flattenedList, participants);
-  }, [exerciseId, deploymentId, deleteParticipant, scenario]);
+  }, [exerciseId, deploymentId, deleteParticipant, participants, scenario]);
 
   useEffect(() => {
     if (isSuccess) {
@@ -108,7 +108,13 @@ const EntityConnector = ({exerciseId, deploymentId}: {
             placeholder: t('deployments.entityConnector.selectEntity') ?? '',
           }}
           activeItem={selectedEntity ?? null}
-          inputValueRenderer={item => item.id.toString() ?? ''}
+          inputValueRenderer={item => {
+            if (selectedEntity === undefined) {
+              return '';
+            }
+
+            return item.id.toString() ?? '';
+          }}
           itemPredicate={(query, item) =>
             item.id.toString().toLowerCase().includes(query.toLowerCase()) ?? false}
           itemRenderer={(item, {handleClick, handleFocus}) => (
@@ -139,7 +145,13 @@ const EntityConnector = ({exerciseId, deploymentId}: {
             placeholder: t('deployments.entityConnector.selectUser') ?? '',
           }}
           activeItem={selectedUser ?? null}
-          inputValueRenderer={item => item.username ?? ''}
+          inputValueRenderer={item => {
+            if (selectedUser === undefined) {
+              return '';
+            }
+
+            return item.username ?? '';
+          }}
           itemPredicate={(query, item) =>
             item.username?.toLowerCase().includes(query.toLowerCase()) ?? false}
           itemRenderer={(item, {handleClick, handleFocus}) => (

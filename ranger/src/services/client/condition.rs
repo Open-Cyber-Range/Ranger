@@ -180,14 +180,14 @@ impl Handler<ConditionStream> for DeployerDistribution {
                     node_name = node_deployment_element.scenario_reference,
                 );
 
-                while let Some(stream_item) = stream.message().await? {
-                    let condition_id: Uuid = condition_deployment_element
-                        .clone()
-                        .handler_reference
-                        .ok_or_else(|| anyhow!("Condition id not found"))?
-                        .as_str()
-                        .try_into()?;
+                let condition_id: Uuid = condition_deployment_element
+                    .clone()
+                    .handler_reference
+                    .ok_or_else(|| anyhow!("Condition id not found"))?
+                    .as_str()
+                    .try_into()?;
 
+                while let Some(stream_item) = stream.message().await? {
                     let value = BigDecimal::from_f32(stream_item.command_return_value)
                         .ok_or_else(|| anyhow!("Error converting Condition Return value"))?;
 
@@ -196,60 +196,65 @@ impl Handler<ConditionStream> for DeployerDistribution {
                         stream_item.response,
                         stream_item.command_return_value,
                     );
-                    database_address
-                        .clone()
-                        .send(CreateConditionMessage(
-                            NewConditionMessage::new(
-                                exercise_id,
-                                condition_deployment_element.deployment_id,
-                                Uuid::try_from(virtual_machine_id.as_str())?,
-                                condition_deployment_element.scenario_reference.to_owned(),
-                                condition_id,
-                                value.clone(),
-                            ),
-                            metric.clone(),
-                            node_deployment_element.scenario_reference.clone(),
-                        ))
-                        .await??;
 
                     if let Some(event_id) = condition_deployment_element.event_id {
-                        if condition_deployment_element.status == ElementStatus::Success {
-                            let event = database_address.send(GetEvent(event_id)).await??;
-                            if event.has_triggered {
-                                debug!(
-                                    "Event '{}' has triggered, closing '{condition_name}' stream for '{node_name}'",
-                                    event.name,
-                                    condition_name =
-                                    condition_deployment_element.scenario_reference,
-                                    node_name = node_deployment_element.scenario_reference
-                                );
-                                break;
+                        let event = database_address.send(GetEvent(event_id)).await??;
+                        let condition_status = condition_deployment_element.status;
+                        let condition_is_met = value == *BIG_DECIMAL_ONE;
+                        let event_has_ended = event.end < chrono::Utc::now().naive_utc();
+
+
+                        if event_has_ended {
+                            debug!(
+                                "Event '{}' window has ended, closing '{condition_name}' stream for '{node_name}'",
+                                event.name,
+                                condition_name =
+                                condition_deployment_element.scenario_reference,
+                                node_name = node_deployment_element.scenario_reference
+                            );
+                            break;
+                        }
+                        if condition_status == ElementStatus::ConditionSuccess && event.has_triggered {
+                            debug!(
+                                "Event '{}' has triggered, closing '{condition_name}' stream for '{node_name}'",
+                                event.name,
+                                condition_name =
+                                condition_deployment_element.scenario_reference,
+                                node_name = node_deployment_element.scenario_reference
+                            );
+                            break;
+                        }
+                        if condition_is_met {
+                            if condition_status == ElementStatus::ConditionPolling {
+                                condition_deployment_element.status = ElementStatus::ConditionSuccess;
                             }
+                        } else if condition_status == ElementStatus::ConditionSuccess {
+                            condition_deployment_element.status = ElementStatus::ConditionPolling;
                         }
-                        if value == *BIG_DECIMAL_ONE && condition_deployment_element.status == ElementStatus::Ongoing {
-                                condition_deployment_element
-                                    .update(
-                                        &database_address,
-                                        exercise_id,
-                                        ElementStatus::Success,
-                                        condition_deployment_element.handler_reference.clone(),
-                                    )
-                                    .await?;
-                                condition_deployment_element.status = ElementStatus::Success;
-                        } else if value != *BIG_DECIMAL_ONE
-                            && condition_deployment_element.status == ElementStatus::Success
-                        {
-                            condition_deployment_element.status = ElementStatus::Ongoing;
-                            condition_deployment_element
-                                .update(
-                                    &database_address,
-                                    exercise_id,
-                                    ElementStatus::Ongoing,
-                                    condition_deployment_element.handler_reference.clone(),
-                                )
-                                .await?;
-                        }
+
+                        condition_deployment_element.update(
+                            &database_address,
+                            exercise_id,
+                            condition_deployment_element.status,
+                            condition_deployment_element.handler_reference.clone(),
+                        ).await?;
                     }
+
+                    database_address
+                    .clone()
+                    .send(CreateConditionMessage(
+                        NewConditionMessage::new(
+                            exercise_id,
+                            condition_deployment_element.deployment_id,
+                            Uuid::try_from(virtual_machine_id.as_str())?,
+                            condition_deployment_element.scenario_reference.to_owned(),
+                            condition_id,
+                            value.clone(),
+                        ),
+                        metric.clone(),
+                        node_deployment_element.scenario_reference.clone(),
+                    ))
+                    .await??;
                 }
                 Ok(())
             }

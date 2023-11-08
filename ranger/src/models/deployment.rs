@@ -7,10 +7,11 @@ use crate::{
         deployments,
     },
     services::database::{
-        deployment::UpdateDeploymentElement, All, Create, CreateOrIgnore, Database, FilterExisting,
-        SelectById, SoftDelete, SoftDeleteById, UpdateById,
+        deployment::UpdateDeploymentElement, participant::GetParticipants, All, Create,
+        CreateOrIgnore, Database, FilterExisting, SelectById, SoftDelete, SoftDeleteById,
+        UpdateById,
     },
-    utilities::Validation,
+    utilities::{create_database_error_handler, create_mailbox_error_handler, Validation},
 };
 use actix::Addr;
 use anyhow::{anyhow, Result};
@@ -21,7 +22,7 @@ use diesel::{
     AsChangeset, AsExpression, ExpressionMethods, FromSqlRow, Identifiable, Insertable, QueryDsl,
     Queryable, Selectable, SelectableHelper,
 };
-use ranger_grpc::capabilities::DeployerTypes;
+use ranger_grpc::capabilities::DeployerType as GrpcDeployerType;
 use serde::{Deserialize, Serialize};
 
 use super::helpers::{deployer_type::DeployerType, uuid::Uuid};
@@ -35,6 +36,8 @@ pub struct NewDeploymentResource {
     pub deployment_group: Option<String>,
     pub group_name: Option<String>,
     pub sdl_schema: String,
+    pub start: NaiveDateTime,
+    pub end: NaiveDateTime,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize, Insertable)]
@@ -47,6 +50,8 @@ pub struct NewDeployment {
     pub group_name: Option<String>,
     pub sdl_schema: String,
     pub exercise_id: Uuid,
+    pub start: NaiveDateTime,
+    pub end: NaiveDateTime,
 }
 
 impl NewDeployment {
@@ -58,6 +63,8 @@ impl NewDeployment {
             group_name: resource.group_name,
             sdl_schema: resource.sdl_schema,
             exercise_id,
+            start: resource.start,
+            end: resource.end,
         }
     }
 
@@ -85,6 +92,8 @@ pub struct Deployment {
     pub sdl_schema: String,
     pub group_name: Option<String>,
     pub exercise_id: Uuid,
+    pub start: NaiveDateTime,
+    pub end: NaiveDateTime,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
     pub deleted_at: NaiveDateTime,
@@ -110,7 +119,7 @@ impl From<Deployment> for ParticipantDeployment {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, FromSqlRow, AsExpression, Eq, Deserialize, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, FromSqlRow, AsExpression, Eq, Deserialize, Serialize)]
 #[diesel(sql_type = Text)]
 pub enum ElementStatus {
     Ongoing,
@@ -118,6 +127,9 @@ pub enum ElementStatus {
     Failed,
     Removed,
     RemoveFailed,
+    ConditionSuccess,
+    ConditionPolling,
+    ConditionClosed,
 }
 
 pub trait ScenarioReference
@@ -195,7 +207,7 @@ impl DeploymentElement {
     pub fn new_ongoing(
         deployment_id: Uuid,
         source_box: Box<dyn ScenarioReference>,
-        deployer_type: DeployerTypes,
+        deployer_type: GrpcDeployerType,
         event_id: Option<Uuid>,
         parent_node_id: Option<Uuid>,
     ) -> Self {
@@ -216,7 +228,7 @@ impl DeploymentElement {
         deployment_id: Uuid,
         source_box: Box<dyn ScenarioReference>,
         handler_reference: Option<String>,
-        deployer_type: DeployerTypes,
+        deployer_type: GrpcDeployerType,
         status: ElementStatus,
     ) -> Self {
         Self {
@@ -369,7 +381,7 @@ impl Deployment {
             .set(deployments::deleted_at.eq(diesel::dsl::now))
     }
 
-    pub async fn is_member(
+    async fn is_member(
         &self,
         user_id: String,
         keycloak_info: KeycloakInfo,
@@ -397,5 +409,42 @@ impl Deployment {
             }
         }
         Ok(false)
+    }
+
+    async fn is_assigned_entity(
+        &self,
+        user_id: String,
+        database_address: &Addr<Database>,
+    ) -> Result<bool> {
+        let participants = database_address
+            .send(GetParticipants(self.id))
+            .await
+            .map_err(create_mailbox_error_handler("Database"))?
+            .map_err(create_database_error_handler("Get participants"))?;
+
+        for participant in participants {
+            if participant.user_id == user_id {
+                return Ok(true);
+            }
+        }
+
+        Ok(false)
+    }
+
+    pub async fn is_connected(
+        &self,
+        user_id: String,
+        database_address: &Addr<Database>,
+        keycloak_info: KeycloakInfo,
+        realm_name: String,
+    ) -> Result<bool> {
+        let is_member = self
+            .is_member(user_id.clone(), keycloak_info, realm_name.clone())
+            .await?;
+        let is_connected = self
+            .is_assigned_entity(user_id.clone(), database_address)
+            .await?;
+
+        Ok(is_member && is_connected)
     }
 }

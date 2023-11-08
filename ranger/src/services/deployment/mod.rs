@@ -60,7 +60,7 @@ impl DeploymentManager {
             .await?;
 
         let node_event_condition_tuple = scenario
-            .create_events(addressor, &node_deployment_results)
+            .create_events(addressor, &node_deployment_results, deployment)
             .await?;
 
         scenario

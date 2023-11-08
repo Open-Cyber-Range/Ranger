@@ -104,24 +104,24 @@ where
 {
     type Response = ServiceResponse<B>;
     type Error = Error;
-    type Transform = AuhtenticationMiddleware<S>;
+    type Transform = AuthenticationMiddleware<S>;
     type InitError = ();
     type Future = Ready<Result<Self::Transform, Self::InitError>>;
 
     fn new_transform(&self, service: S) -> Self::Future {
-        ready(Ok(AuhtenticationMiddleware {
+        ready(Ok(AuthenticationMiddleware {
             service: Rc::new(service),
             expected_role: self.0,
         }))
     }
 }
 
-pub struct AuhtenticationMiddleware<S> {
+pub struct AuthenticationMiddleware<S> {
     service: Rc<S>,
     expected_role: RangerRole,
 }
 
-impl<S, B> Service<ServiceRequest> for AuhtenticationMiddleware<S>
+impl<S, B> Service<ServiceRequest> for AuthenticationMiddleware<S>
 where
     S: Service<ServiceRequest, Response = ServiceResponse<B>, Error = Error> + 'static,
     S::Future: 'static,
@@ -152,9 +152,7 @@ where
             let token_string: HeaderValue = match auth_header {
                 Some(value) => Ok(value),
                 _ => match auth_header_ws.clone() {
-                    Some(value) => {
-                        Ok(value)
-                    }
+                    Some(value) => Ok(value),
                     _ => Err(RangerError::TokenMissing),
                 },
             }?;
