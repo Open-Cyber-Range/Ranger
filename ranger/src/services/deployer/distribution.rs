@@ -13,7 +13,7 @@ use actix::{
 };
 use anyhow::{anyhow, Ok, Result};
 use futures::future::try_join_all;
-use ranger_grpc::capabilities::DeployerTypes;
+use ranger_grpc::capabilities::DeployerType as GrpcDeployerType;
 use std::collections::HashMap;
 
 #[derive(Clone)]
@@ -32,18 +32,18 @@ impl DeployerDistribution {
     fn book_best_deployer(
         &mut self,
         potential_deployers: Vec<String>,
-        deployer_type: DeployerTypes,
+        deployer_type: GrpcDeployerType,
     ) -> Result<String> {
         let acceptable_deployers = self.deployers.iter().filter_map(|(key, value)| {
             if potential_deployers.contains(key)
-                && (deployer_type == DeployerTypes::VirtualMachine
+                && (deployer_type == GrpcDeployerType::VirtualMachine
                     && value.virtual_machine_client.is_some()
-                    || deployer_type == DeployerTypes::Switch && value.switch_client.is_some()
-                    || deployer_type == DeployerTypes::Template && value.template_client.is_some()
-                    || deployer_type == DeployerTypes::Feature && value.feature_client.is_some()
-                    || deployer_type == DeployerTypes::Condition
+                    || deployer_type == GrpcDeployerType::Switch && value.switch_client.is_some()
+                    || deployer_type == GrpcDeployerType::Template && value.template_client.is_some()
+                    || deployer_type == GrpcDeployerType::Feature && value.feature_client.is_some()
+                    || deployer_type == GrpcDeployerType::Condition
                         && value.condition_client.is_some()
-                    || deployer_type == DeployerTypes::Inject && value.inject_client.is_some())
+                    || deployer_type == GrpcDeployerType::Inject && value.inject_client.is_some())
             {
                 return Some(key.to_string());
             }
@@ -81,7 +81,7 @@ impl DeployerDistribution {
     fn get_client(
         &mut self,
         potential_deployers: Vec<String>,
-        deployer_type: DeployerTypes,
+        deployer_type: GrpcDeployerType,
     ) -> Result<ClientTuple>
     where
         actix::Addr<VirtualMachineClient>: DeploymentClient<Box<dyn DeploymentInfo>>,
@@ -98,37 +98,37 @@ impl DeployerDistribution {
             .ok_or_else(|| anyhow!("No deployer found"))?;
         Ok((
             match deployer_type {
-                DeployerTypes::Template => Box::new(
+                GrpcDeployerType::Template => Box::new(
                     connections
                         .template_client
                         .clone()
                         .ok_or_else(|| anyhow!("No template deployer found"))?,
                 ),
-                DeployerTypes::Switch => Box::new(
+                GrpcDeployerType::Switch => Box::new(
                     connections
                         .switch_client
                         .clone()
                         .ok_or_else(|| anyhow!("No node deployer found"))?,
                 ),
-                DeployerTypes::VirtualMachine => Box::new(
+                GrpcDeployerType::VirtualMachine => Box::new(
                     connections
                         .virtual_machine_client
                         .clone()
                         .ok_or_else(|| anyhow!("No node deployer found"))?,
                 ),
-                DeployerTypes::Feature => Box::new(
+                GrpcDeployerType::Feature => Box::new(
                     connections
                         .feature_client
                         .clone()
                         .ok_or_else(|| anyhow!("No feature deployer found"))?,
                 ),
-                DeployerTypes::Inject => Box::new(
+                GrpcDeployerType::Inject => Box::new(
                     connections
                         .inject_client
                         .clone()
                         .ok_or_else(|| anyhow!("No inject deployer found"))?,
                 ),
-                DeployerTypes::Condition => Box::new(
+                GrpcDeployerType::Condition => Box::new(
                     connections
                         .condition_client
                         .clone()
@@ -158,7 +158,7 @@ impl DeployerDistribution {
 #[derive(Message)]
 #[rtype(result = "Result<DeploymentClientResponse>")]
 pub struct Deploy(
-    pub DeployerTypes,
+    pub GrpcDeployerType,
     pub Box<dyn DeploymentInfo>,
     pub Vec<String>,
 );
@@ -188,7 +188,7 @@ impl Handler<Deploy> for DeployerDistribution {
 
 #[derive(Message)]
 #[rtype(result = "Result<()>")]
-pub struct UnDeploy(pub DeployerTypes, pub String, pub Vec<String>);
+pub struct UnDeploy(pub GrpcDeployerType, pub String, pub Vec<String>);
 
 impl Handler<UnDeploy> for DeployerDistribution {
     type Result = ResponseActFuture<Self, Result<()>>;

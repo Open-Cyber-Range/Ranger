@@ -41,7 +41,7 @@ use anyhow::Result;
 use bigdecimal::BigDecimal;
 use futures::future::try_join_all;
 use log::{error, info};
-use ranger_grpc::capabilities::DeployerTypes as GrpcDeployerTypes;
+use ranger_grpc::capabilities::DeployerType as GrpcDeployerType;
 use sdl_parser::{
     entity::Flatten,
     node::{Node, NodeType},
@@ -348,7 +348,7 @@ pub async fn get_exercise_deployment_scores(
     let vm_scenario_refs_by_id = deployment_elements
         .iter()
         .filter(|element| {
-            matches!(element.deployer_type.0, GrpcDeployerTypes::VirtualMachine)
+            matches!(element.deployer_type.0, GrpcDeployerType::VirtualMachine)
                 && element.handler_reference.is_some()
         })
         .map(|element| {

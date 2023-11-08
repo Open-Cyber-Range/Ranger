@@ -8,7 +8,7 @@ use diesel::{
     sql_types::Text,
     AsExpression, FromSqlRow,
 };
-use ranger_grpc::capabilities::DeployerTypes as GrpcDeployerTypes;
+use ranger_grpc::capabilities::DeployerType as GrpcDeployerType;
 use serde::{Deserialize, Serialize};
 use std::{
     fmt,
@@ -18,7 +18,7 @@ use std::{
 
 #[derive(Debug, Clone, Copy, FromSqlRow, AsExpression, Hash, Eq, PartialEq)]
 #[diesel(sql_type = Text)]
-pub struct DeployerType(pub GrpcDeployerTypes);
+pub struct DeployerType(pub GrpcDeployerType);
 
 impl Serialize for DeployerType {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -26,12 +26,12 @@ impl Serialize for DeployerType {
         S: serde::Serializer,
     {
         let value = match self.0 {
-            GrpcDeployerTypes::Switch => "switch",
-            GrpcDeployerTypes::Template => "template",
-            GrpcDeployerTypes::VirtualMachine => "virtual_machine",
-            GrpcDeployerTypes::Feature => "feature",
-            GrpcDeployerTypes::Condition => "condition",
-            GrpcDeployerTypes::Inject => "inject",
+            GrpcDeployerType::Switch => "switch",
+            GrpcDeployerType::Template => "template",
+            GrpcDeployerType::VirtualMachine => "virtual_machine",
+            GrpcDeployerType::Feature => "feature",
+            GrpcDeployerType::Condition => "condition",
+            GrpcDeployerType::Inject => "inject",
         };
         serializer.serialize_str(value)
     }
@@ -44,12 +44,12 @@ impl<'de> Deserialize<'de> for DeployerType {
     {
         let type_string = String::deserialize(deserializer)?;
         match type_string.as_str() {
-            "switch" => Ok(DeployerType(GrpcDeployerTypes::Switch)),
-            "template" => Ok(DeployerType(GrpcDeployerTypes::Template)),
-            "virtual_machine" => Ok(DeployerType(GrpcDeployerTypes::VirtualMachine)),
-            "feature" => Ok(DeployerType(GrpcDeployerTypes::Feature)),
-            "condition" => Ok(DeployerType(GrpcDeployerTypes::Condition)),
-            "inject" => Ok(DeployerType(GrpcDeployerTypes::Inject)),
+            "switch" => Ok(DeployerType(GrpcDeployerType::Switch)),
+            "template" => Ok(DeployerType(GrpcDeployerType::Template)),
+            "virtual_machine" => Ok(DeployerType(GrpcDeployerType::VirtualMachine)),
+            "feature" => Ok(DeployerType(GrpcDeployerType::Feature)),
+            "condition" => Ok(DeployerType(GrpcDeployerType::Condition)),
+            "inject" => Ok(DeployerType(GrpcDeployerType::Inject)),
             _ => Err(serde::de::Error::custom(format!(
                 "Invalid deployer type: {type_string}"
             ))),
@@ -61,12 +61,12 @@ impl FromSql<Text, Mysql> for DeployerType {
     fn from_sql(bytes: MysqlValue) -> deserialize::Result<Self> {
         if let Ok(value) = <String>::from_sql(bytes) {
             return match value.as_str() {
-                "switch" => Ok(DeployerType(GrpcDeployerTypes::Switch)),
-                "template" => Ok(DeployerType(GrpcDeployerTypes::Template)),
-                "virtual_machine" => Ok(DeployerType(GrpcDeployerTypes::VirtualMachine)),
-                "feature" => Ok(DeployerType(GrpcDeployerTypes::Feature)),
-                "condition" => Ok(DeployerType(GrpcDeployerTypes::Condition)),
-                "inject" => Ok(DeployerType(GrpcDeployerTypes::Inject)),
+                "switch" => Ok(DeployerType(GrpcDeployerType::Switch)),
+                "template" => Ok(DeployerType(GrpcDeployerType::Template)),
+                "virtual_machine" => Ok(DeployerType(GrpcDeployerType::VirtualMachine)),
+                "feature" => Ok(DeployerType(GrpcDeployerType::Feature)),
+                "condition" => Ok(DeployerType(GrpcDeployerType::Condition)),
+                "inject" => Ok(DeployerType(GrpcDeployerType::Inject)),
                 _ => Err("Invalid deployer type".into()),
             };
         }
@@ -83,12 +83,12 @@ impl Display for DeployerType {
 impl ToSql<Text, Mysql> for DeployerType {
     fn to_sql(&self, out: &mut Output<Mysql>) -> serialize::Result {
         let value = String::from(match self {
-            DeployerType(GrpcDeployerTypes::Switch) => "switch",
-            DeployerType(GrpcDeployerTypes::Template) => "template",
-            DeployerType(GrpcDeployerTypes::VirtualMachine) => "virtual_machine",
-            DeployerType(GrpcDeployerTypes::Feature) => "feature",
-            DeployerType(GrpcDeployerTypes::Condition) => "condition",
-            DeployerType(GrpcDeployerTypes::Inject) => "inject",
+            DeployerType(GrpcDeployerType::Switch) => "switch",
+            DeployerType(GrpcDeployerType::Template) => "template",
+            DeployerType(GrpcDeployerType::VirtualMachine) => "virtual_machine",
+            DeployerType(GrpcDeployerType::Feature) => "feature",
+            DeployerType(GrpcDeployerType::Condition) => "condition",
+            DeployerType(GrpcDeployerType::Inject) => "inject",
         });
         out.write_all(value.as_bytes())?;
         Ok(IsNull::No)

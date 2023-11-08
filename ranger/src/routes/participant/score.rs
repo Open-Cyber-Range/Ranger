@@ -20,7 +20,7 @@ use actix_web::{
 use anyhow::Result;
 use bigdecimal::BigDecimal;
 use log::error;
-use ranger_grpc::capabilities::DeployerTypes as GrpcDeployerTypes;
+use ranger_grpc::capabilities::DeployerType as GrpcDeployerType;
 use sdl_parser::{entity::Flatten, parse_sdl};
 use std::collections::HashMap;
 
@@ -73,7 +73,7 @@ pub async fn get_participant_exercise_deployment_scores(
     let vm_scenario_refs_by_id = deployment_elements
         .iter()
         .filter(|element| {
-            matches!(element.deployer_type.0, GrpcDeployerTypes::VirtualMachine)
+            matches!(element.deployer_type.0, GrpcDeployerType::VirtualMachine)
                 && element.handler_reference.is_some()
                 && participant_node_keys.contains(&element.scenario_reference)
         })
