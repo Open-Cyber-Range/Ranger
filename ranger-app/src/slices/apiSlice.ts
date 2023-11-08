@@ -15,7 +15,7 @@ import {
   type UpdateExercise,
   type DeploymentEvent,
 } from 'src/models/exercise';
-import type {EmailForm} from 'src/models/email';
+import type {EmailForm, Email} from 'src/models/email';
 import {type AdGroup, type AdUser} from 'src/models/groups';
 import {type Scenario} from 'src/models/scenario';
 import {type Score} from 'src/models/score';
@@ -40,7 +40,13 @@ export const apiSlice = createApi({
       return headers;
     },
   }),
-  tagTypes: ['Deployment', 'Exercise', 'Score', 'Scenario', 'Participant', 'ManualMetric'],
+  tagTypes: ['Deployment',
+    'Exercise',
+    'Score',
+    'Scenario',
+    'Participant',
+    'ManualMetric',
+    'Email'],
   endpoints: builder => ({
     adminGetGroups: builder.query<AdGroup[], void>({
       query: () => '/admin/group',
@@ -134,6 +140,14 @@ export const apiSlice = createApi({
     }),
     adminGetDeploymentGroups: builder.query<Deployers, void>({
       query: () => '/admin/deployer',
+    }),
+    adminGetEmails: builder.query<Email[], string>({
+      query: exerciseId => `/admin/exercise/${exerciseId}/email`,
+      providesTags: (result = []) =>
+        [
+          ...result.map(({id}) => ({type: 'Email' as const, id})),
+          {type: 'Email', id: 'LIST'},
+        ],
     }),
     adminSendEmail: builder
       .mutation <EmailForm, {email: EmailForm; exerciseId: string} >({
@@ -448,9 +462,10 @@ export const {
   useAdminGetDeploymentQuery,
   useAdminGetDeploymentScoresQuery,
   useAdminGetDeploymentGroupsQuery,
+  useAdminGetEmailsQuery,
   useAdminSendEmailMutation,
-  useAdminUploadFileMutation,
   useAdminGetEmailFormQuery,
+  useAdminUploadFileMutation,
   useAdminGetDeploymentScenarioQuery,
   useAdminAddParticipantMutation,
   useAdminDeleteParticipantMutation,

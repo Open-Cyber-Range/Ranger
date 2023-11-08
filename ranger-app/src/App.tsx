@@ -17,8 +17,6 @@ import ParticipantExercises from './pages/participant/Exercises';
 import ParticipantNavBar from './components/ParticipantNavBar';
 import DeploymentDetail from './pages/DeploymentDetail';
 import ParticipantDeploymentDetail from './pages/participant/DeploymentDetail';
-import EmailLog from './pages/EmailLog';
-import SendEmail from './pages/Email';
 import {UserRole} from './models/userRoles';
 import useDefaultRoleSelect from './hooks/useDefaultRoleSelect';
 import ScoreDetail from './pages/ScoreDetail';
@@ -40,7 +38,6 @@ const App = () => {
             <Route path='/exercises' element={<Exercises/>}/>
             <Route path='/logs' element={<Logs/>}/>
             <Route path='/exercises/:exerciseId' element={<ExerciseDetail/>}/>
-            <Route path='/exercises/:exerciseId/email' element={<SendEmail/>}/>
             <Route
               path='/exercises/:exerciseId/deployments/:deploymentId'
               element={<DeploymentDetail/>}/>
@@ -50,7 +47,6 @@ const App = () => {
             <Route
               path='/exercises/:exerciseId/deployments/:deploymentId/scores/:role'
               element={<ScoreDetail/>}/>
-            <Route path='/exercises/:exerciseId/emails' element={<EmailLog/>}/>
           </Routes>
         </Router>
       </LogProvider>

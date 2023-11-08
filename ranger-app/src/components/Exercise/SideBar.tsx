@@ -29,6 +29,7 @@ const hashTabs: Record<string, ActiveTab> = {
   '#dash': ActiveTab.Dash,
   '#scores': ActiveTab.Scores,
   '#emails': ActiveTab.Emails,
+  '#emaillogs': ActiveTab.EmailLogs,
   '#sdl': ActiveTab.SDL,
   '#accounts': ActiveTab.Accounts,
   '#entities': ActiveTab.EntitySelector,
@@ -126,7 +127,7 @@ const SideBar = ({renderMainContent}: {
                 />
                 <MenuItem
                   active={!deploymentId && activeTab === ActiveTab.Emails}
-                  text={t('emails.link')}
+                  text={t('exercises.tabs.emails')}
                   icon='envelope'
                   onClick={() => {
                     if (exerciseId) {
@@ -134,6 +135,18 @@ const SideBar = ({renderMainContent}: {
                     }
 
                     setActiveTab(ActiveTab.Emails);
+                  }}
+                />
+                <MenuItem
+                  active={!deploymentId && activeTab === ActiveTab.EmailLogs}
+                  text={t('exercises.tabs.emailLogs')}
+                  icon='th-list'
+                  onClick={() => {
+                    if (exerciseId) {
+                      navigate(`/exercises/${exerciseId}#emaillogs`);
+                    }
+
+                    setActiveTab(ActiveTab.EmailLogs);
                   }}
                 />
 
