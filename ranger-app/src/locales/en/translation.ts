@@ -174,6 +174,8 @@ const language = {
       participantLastName: 'Participant\'s last name',
       participantEmail: 'Participant\'s email',
     },
+    fetchingEmails: 'Fetching emails...',
+    fetchingEmailsFail: 'Failed to fetch emails',
     noEmails: 'No emails to display',
   },
   tloTable: {
