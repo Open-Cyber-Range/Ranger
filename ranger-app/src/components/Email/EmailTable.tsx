@@ -48,8 +48,7 @@ const EmailTable = ({exercise}: {exercise: Exercise}) => {
   }
 
   if (error) {
-    toastWarning(t('emails.sendingFailWithoutMessage'));
-    return <Callout title={t('emails.errorFetchingEmails') ?? ''}/>;
+    return <Callout title={t('emails.fetchingEmailsFail') ?? ''}/>;
   }
 
   if (emails && emails.length > 0) {
