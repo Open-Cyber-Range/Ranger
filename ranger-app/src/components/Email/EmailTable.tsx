@@ -27,7 +27,7 @@ const EmailTable = ({exercise}: {exercise: Exercise}) => {
   const {t} = useTranslation();
 
   const viewEmailBodyInNewTab = (emailBodyHtml: string) => {
-    const blob = new Blob([emailBodyHtml], {type: 'text/html'});
+    const blob = new Blob([emailBodyHtml], {type: 'text/html;charset=utf-8'});
     const url = URL.createObjectURL(blob);
     window.open(url, '_blank');
     URL.revokeObjectURL(url);
