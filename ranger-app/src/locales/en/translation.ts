@@ -24,7 +24,7 @@ const language = {
       dashboard: 'Dashboard',
       scores: 'Scores',
       emails: 'Emails',
-      emailLogs: 'Email Logs',
+      emailLogs: 'Email Activity',
       accounts: 'Accounts',
       entities: 'Entity Selector',
       userSubmissions: 'User Submissions',
