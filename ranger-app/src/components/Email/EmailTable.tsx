@@ -59,7 +59,7 @@ const EmailTable = ({exercise}: {exercise: Exercise}) => {
 
     return (
       <div>
-        <table className='bp4-html-table bp4-html-table-striped'>
+        <table className='bp4-html-table bp4-html-table-striped bp4-html-table-bordered'>
           <thead>
             <tr>
               <th>{t('emails.status')}</th>
