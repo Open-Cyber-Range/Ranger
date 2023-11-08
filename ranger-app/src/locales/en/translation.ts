@@ -177,6 +177,7 @@ const language = {
     fetchingEmails: 'Fetching emails...',
     fetchingEmailsFail: 'Failed to fetch emails',
     noEmails: 'No emails to display',
+    viewBody: 'View email body',
   },
   tloTable: {
     headers: {

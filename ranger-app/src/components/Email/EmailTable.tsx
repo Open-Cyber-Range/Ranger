@@ -1,5 +1,5 @@
 import React, {useEffect} from 'react';
-import {Callout, Intent, Tag} from '@blueprintjs/core';
+import {Button, Callout, Intent, Tag} from '@blueprintjs/core';
 import {useTranslation} from 'react-i18next';
 import {type Exercise} from 'src/models/exercise';
 import {EmailStatusType} from 'src/models/email';
@@ -25,6 +25,13 @@ const emailIntent = (status: EmailStatusType): Intent => {
 const EmailTable = ({exercise}: {exercise: Exercise}) => {
   const {data: emails, error, isLoading, refetch} = useAdminGetEmailsQuery(exercise.id);
   const {t} = useTranslation();
+
+  const viewEmailBodyInNewTab = (emailBodyHtml: string) => {
+    const blob = new Blob([emailBodyHtml], {type: 'text/html'});
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+    URL.revokeObjectURL(url);
+  };
 
   useEffect(() => {
     async function fetchEmails() {
@@ -81,10 +88,21 @@ const EmailTable = ({exercise}: {exercise: Exercise}) => {
                 <td>{email.ccAddresses}</td>
                 <td>{email.bccAddresses}</td>
                 <td>{email.subject}</td>
-                <td>{email.body}</td>
+                <td>
+                  <Button
+                    small
+                    intent={Intent.PRIMARY}
+                    onClick={() => {
+                      viewEmailBodyInNewTab(email.body);
+                    }}
+                  >
+                    {t('emails.viewBody')}
+                  </Button>
+                </td>
               </tr>
             ))}
           </tbody>
+
         </table>
       </div>
     );
