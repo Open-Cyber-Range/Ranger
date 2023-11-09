@@ -432,18 +432,20 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
           }}
         />
       </div>
-      <Tooltip2
-        content={t('emails.sendButtonDisabled') ?? ''}
-        disabled={!isFetchingUsers}
-      >
-        <Button
-          large
-          type='submit'
-          intent='primary'
-          text={t('emails.send')}
-          disabled={isFetchingUsers}
-        />
-      </Tooltip2>
+      <div className='flex justify-end mt-[1rem] gap-[0.5rem]'>
+        <Tooltip2
+          content={t('emails.sendButtonDisabled') ?? ''}
+          disabled={!isFetchingUsers}
+        >
+          <Button
+            large
+            type='submit'
+            intent='primary'
+            text={t('emails.send')}
+            disabled={isFetchingUsers}
+          />
+        </Tooltip2>
+      </div>
     </form>
   );
 };

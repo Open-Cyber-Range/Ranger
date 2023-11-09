@@ -204,6 +204,9 @@ async fn main() -> Result<(), Error> {
                                                             )
                                                     ),
                                             )
+                                            .service(scope("/banner")
+                                                    .service(get_banner)
+                                            )
                                             .wrap(ExerciseMiddlewareFactory),
                                     ),
                             )
