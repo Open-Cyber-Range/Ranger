@@ -63,27 +63,36 @@ const BannerVariablesPopover = ({bannerVariables, insertVariable}: BannerVariabl
 
 const BannerView = ({exercise}: {exercise: Exercise}) => {
   const {t} = useTranslation();
-  let {data: existingBanner} = useAdminGetBannerQuery(exercise?.id ?? skipToken);
-  const [addBanner, {isSuccess: isAddSuccess, error: addError}] = useAdminAddBannerMutation();
-  const [updateBanner, {isSuccess: isUpdateSuccess, error: updateError}]
-    = useAdminUpdateBannerMutation();
-  const [deleteBanner, {isSuccess: isDeleteSuccess, error: deleteError}]
-    = useAdminDeleteBannerMutation();
+  const {data} = useAdminGetBannerQuery(exercise?.id ?? skipToken);
+  const [addBanner, {error: addError}] = useAdminAddBannerMutation();
+  const [updateBanner, {error: updateError}] = useAdminUpdateBannerMutation();
+  const [deleteBanner, {error: deleteError}] = useAdminDeleteBannerMutation();
 
   const [editorInstance, setEditorInstance]
     = useState<editor.IStandaloneCodeEditor | undefined>(undefined);
+  const [existingBanner, setExistingBanner] = useState<Banner | undefined>(undefined);
+  const [addSuccess, setAddSuccess] = useState<boolean>(false);
+  const [updateSuccess, setUpdateSuccess] = useState<boolean>(false);
+  const [deleteSuccess, setDeleteSuccess] = useState<boolean>(false);
   const {bannerVariables, insertVariable} = useBannerVariablesInEditor(editorInstance);
   const {handleSubmit, control, setValue} = useForm<Banner>();
 
   useEffect(() => {
-    if (isAddSuccess) {
+    setExistingBanner(data);
+  }, [data]);
+
+  useEffect(() => {
+    if (addSuccess) {
       toastSuccess(t('banners.createSuccess'));
-    } else if (isUpdateSuccess) {
+      setAddSuccess(false);
+    } else if (updateSuccess) {
       toastSuccess(t('banners.updateSuccess'));
-    } else if (isDeleteSuccess) {
+      setUpdateSuccess(false);
+    } else if (deleteSuccess) {
       toastSuccess(t('banners.deleteSuccess'));
+      setDeleteSuccess(false);
     }
-  }, [isAddSuccess, isUpdateSuccess, isDeleteSuccess, t]);
+  }, [addSuccess, updateSuccess, deleteSuccess, t]);
 
   useEffect(() => {
     if (addError) {
@@ -115,24 +124,29 @@ const BannerView = ({exercise}: {exercise: Exercise}) => {
 
   useEffect(() => {
     if (existingBanner) {
-      setValue('name', existingBanner.name || '');
-      setValue('content', existingBanner.content || '');
+      setValue('name', existingBanner.name);
+      setValue('content', existingBanner.content);
     }
   }, [existingBanner, setValue]);
 
   const onCreate: SubmitHandler<Banner> = async newBanner => {
     await addBanner({newBanner, exerciseId: exercise.id});
+    setExistingBanner(newBanner);
+    setAddSuccess(true);
   };
 
   const onUpdate: SubmitHandler<Banner> = async updatedBanner => {
     await updateBanner({updatedBanner, exerciseId: exercise.id});
+    setExistingBanner(updatedBanner);
+    setUpdateSuccess(true);
   };
 
   const onDelete: SubmitHandler<Banner> = async () => {
     await deleteBanner({exerciseId: exercise.id});
     setValue('name', '');
     setValue('content', '');
-    existingBanner = undefined;
+    setExistingBanner(undefined);
+    setDeleteSuccess(true);
   };
 
   return (
