@@ -250,7 +250,7 @@ const ExerciseForm = ({exercise, onContentChange, children}:
           );
         }}
       />
-      <div className='flex justify-end mt-[2rem] gap-[2rem]'>
+      <div className='flex justify-end mt-[1rem] gap-[0.5rem]'>
         {children}
         <Button
           large

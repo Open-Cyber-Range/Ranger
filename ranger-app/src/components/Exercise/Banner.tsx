@@ -217,7 +217,7 @@ const BannerView = ({exercise}: {exercise: Exercise}) => {
             </FormGroup>
           )}
         />
-        <div className='flex justify-end mt-[2rem] gap-[2rem]'>
+        <div className='flex justify-end mt-[1rem] gap-[0.5rem]'>
           <Button
             large
             className='gap-[2rem]'

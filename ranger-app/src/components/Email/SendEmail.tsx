@@ -432,7 +432,7 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
           }}
         />
       </div>
-      <div className='flex justify-end mt-[2rem] gap-[2rem]'>
+      <div className='flex justify-end mt-[1rem] gap-[0.5rem]'>
         <Tooltip2
           content={t('emails.sendButtonDisabled') ?? ''}
           disabled={!isFetchingUsers}
