@@ -181,7 +181,6 @@ const BannerView = ({exercise}: {exercise: Exercise}) => {
                 <div className='flex justify-between items-end'>
                   <Label>
                     {t('banners.content')}
-                    <span className='bp4-text-muted'> {t('banners.required')}</span>
                   </Label>
                   <BannerVariablesPopover
                     bannerVariables={bannerVariables}
@@ -204,18 +203,22 @@ const BannerView = ({exercise}: {exercise: Exercise}) => {
             </FormGroup>
           )}
         />
-        <Button
-          large
-          type='submit'
-          intent='primary'
-          text={existingBanner ? t('update') : t('create')}
-        />
-        <Button
-          large
-          type='reset'
-          intent='danger'
-          text={t('delete')}
-        />
+        <div className='flex justify-end mt-[1rem] gap-[1rem]'>
+          <Button
+            large
+            className='gap-[2rem]'
+            type='submit'
+            intent='primary'
+            text={existingBanner ? t('update') : t('create')}
+          />
+          <Button
+            large
+            className='gap-[2rem]'
+            type='reset'
+            intent='danger'
+            text={t('delete')}
+          />
+        </div>
       </form>
     </div>
   );

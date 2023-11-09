@@ -1,55 +1,48 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/restrict-template-expressions */
-/* eslint-disable react/iframe-missing-sandbox */
-/* eslint-disable react/prop-types */
-import React from 'react';
+import type React from 'react';
+import {useEffect, useRef} from 'react';
 import ReactDOM from 'react-dom';
 import ReactMarkdown from 'react-markdown';
 import gfm from 'remark-gfm';
 
-class MarkdownFrame extends React.Component {
-  iframeRef = React.createRef();
+const MarkdownFrame: React.FC<{content: string}> = ({content}) => {
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
-  componentDidMount() {
-    // @ts-expect-error iframeRef unknown
-    this.iframeRef.current.addEventListener('load', this.renderMarkdown);
-  }
+  useEffect(() => {
+    const renderMarkdown = () => {
+      const iframe = iframeRef.current;
+      const cssLink = document.createElement('link');
+      cssLink.href = '/gfm.min.css';
+      cssLink.rel = 'stylesheet';
+      cssLink.type = 'text/css';
+      const doc = iframe?.contentDocument;
+      const div = doc?.createElement('div');
+      if (doc && div) {
+        doc.body.innerHTML = '';
+        doc.body.append(div);
+        doc.head.append(cssLink);
+        ReactDOM.render(
+          <ReactMarkdown remarkPlugins={[gfm]}>{content}</ReactMarkdown>,
+          div,
+        );
+        iframe.style.height = `${doc.body.scrollHeight}px`;
+      }
+    };
 
-  componentWillUnmount() {
-    // @ts-expect-error iframeRef unknown
-    this.iframeRef.current.removeEventListener('load', this.renderMarkdown);
-  }
+    const iframe = iframeRef.current;
+    iframe?.addEventListener('load', renderMarkdown);
 
-  componentDidUpdate(previousProps: {content: any}) {
-    // @ts-expect-error content unknown
-    if (this.props.content !== previousProps.content) {
-      this.renderMarkdown();
-    }
-  }
+    return () => {
+      iframe?.removeEventListener('load', renderMarkdown);
+    };
+  }, [content]);
 
-  renderMarkdown = () => {
-    const iframe = this.iframeRef.current;
-    // @ts-expect-error contentDocument unknown
-    const doc = iframe.contentDocument;
-    const div = doc.createElement('div');
-    doc.body.innerHTML = '';
-    doc.body.append(div);
-
-    ReactDOM.render(
-      // @ts-expect-error content unknown
-      <ReactMarkdown remarkPlugins={[gfm]}>{this.props.content}</ReactMarkdown>,
-      div,
-    );
-    // @ts-expect-error iframe unknown
-    iframe.style.height = `${doc.body.scrollHeight}px`;
-  };
-
-  render() {
-    // @ts-expect-error iframeRef unknown
-    return <iframe ref={this.iframeRef} style={{width: '100%'}}/>;
-  }
-}
+  return (
+    <iframe
+      ref={iframeRef}
+      style={{width: '100%'}}
+      sandbox='allow-same-origin'
+    />
+  );
+};
 
 export default MarkdownFrame;
