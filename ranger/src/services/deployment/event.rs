@@ -19,6 +19,7 @@ use chrono::Utc;
 use futures::future::try_join_all;
 use log::debug;
 use sdl_parser::inject::Inject;
+use sdl_parser::node::NodeType;
 use sdl_parser::{node::Node, node::Role, Scenario};
 use std::collections::HashMap;
 use tokio::time::sleep;
@@ -76,8 +77,16 @@ impl DeployableEvents for Scenario {
             |(node, deployment_element, template_id)| async move {
                 let mut node_event_conditions: Vec<ConditionProperties> = vec![];
 
-                let node_roles = node.roles.clone().unwrap_or_default();
-                let node_condition_roles = node.conditions.clone().unwrap_or_default();
+                let potential_vm_node = if let NodeType::VM(vm_node) = &node.type_field {
+                    Some(vm_node)
+                } else {
+                    None
+                };
+
+                let vm_node = try_some(potential_vm_node, "Node is not a VM")?;
+
+                let node_roles = try_some(vm_node.roles.clone(), "VM Node missing Roles")?;
+                let node_condition_roles = vm_node.conditions.clone();
                 let node_conditions = conditions
                     .iter()
                     .filter_map(
