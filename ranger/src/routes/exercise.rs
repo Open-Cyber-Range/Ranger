@@ -44,7 +44,7 @@ use log::{error, info};
 use ranger_grpc::capabilities::DeployerType as GrpcDeployerType;
 use sdl_parser::{
     entity::Flatten,
-    node::{Node, NodeType},
+    node::{NodeType, VM},
     parse_sdl, Scenario,
 };
 use std::collections::HashMap;
@@ -414,8 +414,14 @@ pub async fn get_exercise_deployment_users(
     {
         let vm_nodes = scenario_nodes
             .into_iter()
-            .filter(|node| matches!(node.1.type_field, NodeType::VM))
-            .collect::<HashMap<String, Node>>();
+            .filter_map(|node| {
+                if let NodeType::VM(vm_node) = node.1.type_field {
+                    Some((node.0, vm_node))
+                } else {
+                    None
+                }
+            })
+            .collect::<HashMap<String, VM>>();
 
         let requesters_nodes = match user_details.role {
             RangerRole::Admin => vm_nodes,

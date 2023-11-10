@@ -15,7 +15,11 @@ use actix_web::{
 };
 use futures_util::future::join_all;
 use log::error;
-use sdl_parser::parse_sdl;
+use sdl_parser::{
+    node::{NodeType, VM},
+    parse_sdl,
+};
+use std::collections::HashMap;
 
 #[get("")]
 pub async fn get_participant_deployments(
@@ -92,22 +96,32 @@ pub async fn get_participant_node_deployment_elements(
         RangerError::ScenarioParsingFailed
     })?;
 
+    let vm_nodes: HashMap<String, VM> = scenario
+        .nodes
+        .into_iter()
+        .flat_map(|nodes| nodes.into_iter())
+        .filter_map(|(node_key, node)| {
+            if let NodeType::VM(vm_node) = node.type_field {
+                Some((node_key, vm_node))
+            } else {
+                None
+            }
+        })
+        .collect();
+
     let node_keys_filtered_by_entity: Vec<String> =
-        scenario
-            .nodes
+        vm_nodes
             .into_iter()
-            .fold(Vec::new(), |mut accumulator, nodes| {
-                nodes.into_iter().for_each(|(node_key, node)| {
-                    if let Some(roles) = node.roles {
-                        roles.iter().for_each(|(_role_key, role)| {
-                            if let Some(entities) = &role.entities {
-                                if entities.contains(&entity_selector) {
-                                    accumulator.push(node_key.clone());
-                                }
+            .fold(Vec::new(), |mut accumulator, (vm_key, vm_node)| {
+                if let Some(roles) = vm_node.roles {
+                    roles.iter().for_each(|(_role_key, role)| {
+                        if let Some(entities) = &role.entities {
+                            if entities.contains(&entity_selector) {
+                                accumulator.push(vm_key.clone());
                             }
-                        })
-                    }
-                });
+                        }
+                    })
+                };
                 accumulator
             });
 
