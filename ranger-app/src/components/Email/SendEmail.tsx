@@ -170,7 +170,7 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
     await Promise.all(emailPromises);
   };
 
-  const {handleSubmit, control} = useForm<EmailForm>({
+  const {handleSubmit, control, watch} = useForm<EmailForm>({
     defaultValues: {
       toAddresses: [],
       replyToAddresses: [],
@@ -200,8 +200,15 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
     }
   };
 
+  const emailSubject = watch('subject');
+
   const previewHtmlContent = () => {
-    const blob = new Blob([editorContent], {type: 'text/html;charset=utf-8'});
+    const combinedContent = `
+      <h2>${emailSubject}</h2> 
+      ${editorContent}
+    `;
+
+    const blob = new Blob([combinedContent], {type: 'text/html;charset=utf-8'});
     const url = URL.createObjectURL(blob);
     window.open(url, '_blank');
     URL.revokeObjectURL(url);
