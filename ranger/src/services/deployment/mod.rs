@@ -51,24 +51,24 @@ impl DeploymentManager {
         scenario
             .deploy_templates(addressor, deployers, deployment, exercise)
             .await?;
-        let node_deployment_results = scenario
+        let deployed_nodes = scenario
             .deploy_nodes(addressor, exercise, deployment, deployers)
             .await?;
 
         scenario
-            .deploy_scenario_features(addressor, exercise, deployers, &node_deployment_results)
+            .deploy_scenario_features(addressor, exercise, deployers, &deployed_nodes)
             .await?;
 
-        let node_event_condition_tuple = scenario
-            .create_events(addressor, &node_deployment_results, deployment)
-            .await?;
-
-        scenario
-            .deploy_scenario_conditions(addressor, exercise, deployers, &node_event_condition_tuple)
+        let nodes_with_conditions = scenario
+            .create_events(addressor, &deployed_nodes, deployment)
             .await?;
 
         scenario
-            .deploy_event_pollers(addressor, exercise, deployers, &node_event_condition_tuple)
+            .deploy_scenario_conditions(addressor, exercise, deployers, &nodes_with_conditions)
+            .await?;
+
+        scenario
+            .deploy_event_pollers(addressor, exercise, deployers, &nodes_with_conditions)
             .await?;
 
         info!("Deployment {} successful", deployment.name);

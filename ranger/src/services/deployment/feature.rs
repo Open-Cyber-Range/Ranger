@@ -1,3 +1,4 @@
+use super::node::DeployedNode;
 use crate::models::helpers::uuid::Uuid;
 use crate::models::{DeploymentElement, ElementStatus, Exercise};
 use crate::services::database::account::GetAccount;
@@ -14,8 +15,7 @@ use ranger_grpc::{
     Account as GrpcAccount, ExecutorResponse, Feature as GrpcFeature,
     FeatureType as GrpcFeatureType, Source as GrpcSource,
 };
-use sdl_parser::feature::FeatureType;
-use sdl_parser::{node::Node, Scenario};
+use sdl_parser::{feature::FeatureType, Scenario};
 
 #[async_trait]
 pub trait DeployableFeatures {
@@ -24,7 +24,7 @@ pub trait DeployableFeatures {
         addressor: &Addressor,
         exercise: &Exercise,
         deployers: &[String],
-        deployed_nodes: &[(Node, DeploymentElement, Uuid)],
+        deployed_nodes: &[DeployedNode],
     ) -> Result<()>;
 }
 #[async_trait]
@@ -34,25 +34,21 @@ impl DeployableFeatures for Scenario {
         addressor: &Addressor,
         exercise: &Exercise,
         deployers: &[String],
-        deployed_nodes: &[(Node, DeploymentElement, Uuid)],
+        deployed_nodes: &[DeployedNode],
     ) -> Result<()> {
         if self.features.is_some() {
-            try_join_all(deployed_nodes.iter().map(
-                |(node, deployment_element, template_id)| async move {
-                    (
-                        addressor.clone(),
-                        deployers.to_owned(),
-                        self.clone(),
-                        node.clone(),
-                        deployment_element.clone(),
-                        exercise.id,
-                        *template_id,
-                    )
-                        .deploy_node_features()
-                        .await?;
-                    Ok(())
-                },
-            ))
+            try_join_all(deployed_nodes.iter().map(|deployed_node| async move {
+                (
+                    addressor.clone(),
+                    deployers.to_owned(),
+                    self.clone(),
+                    exercise.id,
+                    deployed_node,
+                )
+                    .deploy_node_features()
+                    .await?;
+                Ok(())
+            }))
             .await?;
         }
         Ok(())
@@ -65,20 +61,14 @@ pub trait DeployableNodeFeatures {
 }
 
 #[async_trait]
-impl DeployableNodeFeatures
-    for (
-        Addressor,
-        Vec<String>,
-        Scenario,
-        Node,
-        DeploymentElement,
-        Uuid,
-        Uuid,
-    )
-{
+impl DeployableNodeFeatures for (Addressor, Vec<String>, Scenario, Uuid, &DeployedNode) {
     async fn deploy_node_features(&self) -> Result<()> {
-        let (addressor, deployers, scenario, node, deployment_element, exercise_id, template_id) =
-            self;
+        let (addressor, deployers, scenario, exercise_id, deployed_node) = self;
+        let DeployedNode {
+            node,
+            deployment_element,
+            template_id,
+        } = deployed_node;
 
         let deployment_schedule = addressor
             .scheduler

@@ -1,3 +1,4 @@
+use super::node::DeployedNode;
 use super::Database;
 use crate::models::helpers::uuid::Uuid;
 use crate::models::{DeploymentElement, ElementStatus, Exercise};
@@ -18,7 +19,7 @@ use ranger_grpc::{Account as GrpcAccount, Condition as GrpcCondition, Source as 
 use sdl_parser::condition::Condition;
 use sdl_parser::inject::Inject;
 use sdl_parser::metric::Metrics;
-use sdl_parser::{node::Node, node::Role, Scenario};
+use sdl_parser::{node::Role, Scenario};
 use serde::{Deserialize, Serialize};
 
 #[async_trait]
@@ -28,7 +29,7 @@ pub trait DeployableConditions {
         addressor: &Addressor,
         exercise: &Exercise,
         deployers: &[String],
-        deployed_nodes: &[(Node, DeploymentElement, Uuid, Vec<ConditionProperties>)],
+        deployed_nodes: &[(DeployedNode, Vec<ConditionProperties>)],
     ) -> Result<()>;
 }
 #[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
@@ -48,28 +49,35 @@ impl DeployableConditions for Scenario {
         addressor: &Addressor,
         exercise: &Exercise,
         deployers: &[String],
-        deployed_nodes: &[(Node, DeploymentElement, Uuid, Vec<ConditionProperties>)],
+        deployed_nodes: &[(DeployedNode, Vec<ConditionProperties>)],
     ) -> Result<()> {
         if self.conditions.is_some() {
-            try_join_all(deployed_nodes.iter().map(
-                |(_node, deployment_element, template_id, conditions)| async move {
-                    debug!(
-                        "Deploying conditions for Node: {:?}",
-                        deployment_element.scenario_reference
-                    );
-                    addressor.condition_aggregator.do_send(DeployConditions {
-                        addressor: addressor.clone(),
-                        deployers: deployers.to_owned(),
-                        condition_properties: conditions.clone(),
-                        deployment_element: deployment_element.clone(),
-                        exercise_id: exercise.id,
-                        template_id: *template_id,
-                        metrics: self.metrics.clone(),
-                    });
+            try_join_all(
+                deployed_nodes
+                    .iter()
+                    .map(|(deployed_node, conditions)| async move {
+                        let DeployedNode {
+                            deployment_element,
+                            template_id,
+                            ..
+                        } = deployed_node;
+                        debug!(
+                            "Deploying conditions for Node: {:?}",
+                            deployment_element.scenario_reference
+                        );
+                        addressor.condition_aggregator.do_send(DeployConditions {
+                            addressor: addressor.clone(),
+                            deployers: deployers.to_owned(),
+                            condition_properties: conditions.clone(),
+                            deployment_element: deployment_element.clone(),
+                            exercise_id: exercise.id,
+                            template_id: *template_id,
+                            metrics: self.metrics.clone(),
+                        });
 
-                    Ok(())
-                },
-            ))
+                        Ok(())
+                    }),
+            )
             .await?;
         }
         Ok(())

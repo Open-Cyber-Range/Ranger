@@ -15,8 +15,8 @@ use anyhow::{anyhow, Ok, Result};
 use async_trait::async_trait;
 use futures::future::try_join_all;
 use ranger_grpc::{
-    capabilities::DeployerType as GrpcDeployerType, Configuration, DeploySwitch, DeployVirtualMachine, Identifier,
-    MetaInfo, Switch, VirtualMachine,
+    capabilities::DeployerType as GrpcDeployerType, Configuration, DeploySwitch,
+    DeployVirtualMachine, Identifier, MetaInfo, Switch, VirtualMachine,
 };
 use sdl_parser::{
     common::Source,
@@ -55,6 +55,22 @@ impl Deployable for (String, Node, Deployment, String, Vec<String>, Option<Uuid>
     }
 }
 
+pub struct DeployedNode {
+    pub node: Node,
+    pub deployment_element: DeploymentElement,
+    pub template_id: Uuid,
+}
+
+impl DeployedNode {
+    pub fn new(node: Node, deployment_element: DeploymentElement, template_id: Uuid) -> Self {
+        Self {
+            node,
+            deployment_element,
+            template_id,
+        }
+    }
+}
+
 #[async_trait]
 pub trait DeployableNodes {
     async fn deploy_nodes(
@@ -63,7 +79,7 @@ pub trait DeployableNodes {
         exercise: &Exercise,
         deployment: &Deployment,
         deployers: &[String],
-    ) -> Result<Vec<(Node, DeploymentElement, Uuid)>>;
+    ) -> Result<Vec<DeployedNode>>;
 }
 
 async fn get_template_id(
@@ -98,7 +114,7 @@ impl DeployableNodes for Scenario {
         exercise: &Exercise,
         deployment: &Deployment,
         deployers: &[String],
-    ) -> Result<Vec<(Node, DeploymentElement, Uuid)>> {
+    ) -> Result<Vec<DeployedNode>> {
         let deployment_schedule = addressor
             .scheduler
             .send(CreateDeploymentSchedule(self.clone()))
@@ -113,7 +129,6 @@ impl DeployableNodes for Scenario {
                         let deployer_type = match node.type_field {
                             NodeType::VM(_) => GrpcDeployerType::VirtualMachine,
                             NodeType::Switch(_) => GrpcDeployerType::Switch,
-
                         };
                         let mut deployment_element = addressor
                             .database
@@ -207,13 +222,14 @@ impl DeployableNodes for Scenario {
 
             deployment_results.push(tranche_results);
         }
-        let vm_nodes: Vec<(Node, DeploymentElement, Uuid)> = deployment_results
+        let vm_nodes: Vec<DeployedNode> = deployment_results
             .concat()
             .into_iter()
             .filter_map(
                 |(node, deployment_element, potential_template_id)| match node.type_field {
-                    NodeType::VM(_) => potential_template_id
-                        .map(|template_id| (node, deployment_element, template_id)),
+                    NodeType::VM(_) => potential_template_id.map(|template_id| {
+                        DeployedNode::new(node, deployment_element, template_id)
+                    }),
                     _ => None,
                 },
             )
