@@ -48,6 +48,7 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
   const {emailVariables, insertVariable}
   = useEmailVariablesInEditor(selectedDeployment, editorInstance);
   const [isFetchingUsers, setIsFetchingUsers] = useState(false);
+  const [editorContent, setEditorContent] = useState('');
   useExerciseStreaming(exercise.id);
 
   const handleDeploymentChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -197,6 +198,13 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
     } else if (selectedDeployment) {
       await processSelectedDeployment(email, selectedDeployment);
     }
+  };
+
+  const previewHtmlContent = () => {
+    const blob = new Blob([editorContent], {type: 'text/html;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+    URL.revokeObjectURL(url);
   };
 
   useEffect(() => {
@@ -396,7 +404,7 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
           name='body'
           rules={{required: t('emails.form.body.required') ?? ''}}
           render={({
-            field: {onChange, value}, fieldState: {error},
+            field: {onChange}, fieldState: {error},
           }) => {
             const intent = error ? Intent.DANGER : Intent.NONE;
             return (
@@ -417,9 +425,10 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
               >
                 <div className='h-[40vh] p-[0.5vh] rounded-sm shadow-inner'>
                   <Editor
-                    value={value}
+                    value={editorContent}
                     defaultLanguage='html'
                     onChange={value => {
+                      setEditorContent(value ?? '');
                       onChange(value ?? '');
                     }}
                     onMount={editor => {
@@ -432,18 +441,27 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
           }}
         />
       </div>
-      <Tooltip2
-        content={t('emails.sendButtonDisabled') ?? ''}
-        disabled={!isFetchingUsers}
-      >
+      <div className='flex flex-col gap-2 items-start'>
         <Button
           large
-          type='submit'
           intent='primary'
-          text={t('emails.send')}
-          disabled={isFetchingUsers}
+          text={t('emails.form.preview')}
+          type='button'
+          onClick={previewHtmlContent}
         />
-      </Tooltip2>
+        <Tooltip2
+          content={t('emails.form.sendButtonDisabled') ?? ''}
+          disabled={!isFetchingUsers}
+        >
+          <Button
+            large
+            type='submit'
+            intent='primary'
+            text={t('emails.form.send')}
+            disabled={isFetchingUsers}
+          />
+        </Tooltip2>
+      </div>
     </form>
   );
 };
