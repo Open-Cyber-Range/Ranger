@@ -1,4 +1,6 @@
 mod condition;
+mod deputy_query;
+mod event_info;
 mod feature;
 mod inject;
 mod switch;
@@ -9,10 +11,14 @@ use anyhow::anyhow;
 use anyhow::Result;
 use async_trait::async_trait;
 pub use condition::*;
+pub use deputy_query::*;
+pub use event_info::*;
 pub use feature::*;
 pub use inject::*;
-use ranger_grpc::ConditionStreamResponse;
-use ranger_grpc::{ExecutorResponse, Identifier, TemplateResponse};
+use ranger_grpc::{
+    ConditionStreamResponse, EventCreateResponse, EventStreamResponse, ExecutorResponse,
+    Identifier, TemplateResponse,
+};
 use std::any::Any;
 pub use switch::*;
 pub use template::*;
@@ -20,11 +26,15 @@ use tonic::Streaming;
 pub use virtual_machine::*;
 
 pub type ConditionResponse = (Identifier, Streaming<ConditionStreamResponse>);
+pub type EventInfoResponse = (EventCreateResponse, Streaming<EventStreamResponse>);
+pub type DeputyQueryResponse = ();
 pub enum DeploymentClientResponse {
     Identifier(Identifier),
     ExecutorResponse(ExecutorResponse),
     TemplateResponse(TemplateResponse),
     ConditionResponse(ConditionResponse),
+    EventInfoResponse(EventInfoResponse),
+    DeputyQueryResponse(DeputyQueryResponse),
 }
 
 #[async_trait]
@@ -95,6 +105,21 @@ impl TryFrom<DeploymentClientResponse> for ConditionResponse {
             DeploymentClientResponse::ConditionResponse((id, stream)) => Ok((id, stream)),
             _ => Err(anyhow!(
                 "Unable to convert ClientResponse into ConditionResponse"
+            )),
+        }
+    }
+}
+
+impl TryFrom<DeploymentClientResponse> for EventInfoResponse {
+    type Error = anyhow::Error;
+
+    fn try_from(client_response: DeploymentClientResponse) -> Result<Self> {
+        match client_response {
+            DeploymentClientResponse::EventInfoResponse((event_info, stream)) => {
+                Ok((event_info, stream))
+            }
+            _ => Err(anyhow!(
+                "Unable to convert ClientResponse into EventInfoResponse"
             )),
         }
     }
