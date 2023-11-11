@@ -1,4 +1,5 @@
 pub mod deployment;
+pub mod event_info;
 pub mod events;
 pub mod metric;
 pub mod participants;

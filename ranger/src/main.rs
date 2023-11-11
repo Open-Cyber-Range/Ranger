@@ -31,6 +31,7 @@ use ranger::routes::participant::deployment::{
     get_participant_deployment, get_participant_deployments,
     get_participant_node_deployment_elements,
 };
+use ranger::routes::participant::event_info::get_event_info_data;
 use ranger::routes::participant::events::get_participant_events;
 use ranger::routes::participant::metric::{
     add_metric, get_participant_metric, get_participant_metrics, update_participant_metric,
@@ -186,6 +187,10 @@ async fn main() -> Result<(), Error> {
                                                                             .service(
                                                                                 scope("/event")
                                                                                 .service(get_participant_events)
+                                                                                .service(
+                                                                                    scope("/{event_info_id}")
+                                                                                        .service(get_event_info_data)
+                                                                            )
                                                                             )
                                                                             .service(
                                                                                 scope("/deployment_element")
