@@ -140,6 +140,18 @@ diesel::table! {
 }
 
 diesel::table! {
+    event_info_data (checksum) {
+        #[max_length = 32]
+        checksum -> Char,
+        name -> Tinytext,
+        file_name -> Tinytext,
+        file_size -> Unsigned<Bigint>,
+        content -> Mediumblob,
+        created_at -> Timestamp,
+    }
+}
+
+diesel::table! {
     events (id) {
         #[max_length = 16]
         id -> Binary,
@@ -153,6 +165,8 @@ diesel::table! {
         description -> Nullable<Mediumtext>,
         has_triggered -> Bool,
         triggered_at -> Timestamp,
+        #[max_length = 32]
+        event_info_data_checksum -> Nullable<Char>,
         created_at -> Timestamp,
         updated_at -> Timestamp,
         deleted_at -> Timestamp,
@@ -229,6 +243,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     email_statuses,
     email_templates,
     emails,
+    event_info_data,
     events,
     exercises,
     metrics,

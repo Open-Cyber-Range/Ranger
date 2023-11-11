@@ -32,6 +32,8 @@ impl Serialize for DeployerType {
             GrpcDeployerType::Feature => "feature",
             GrpcDeployerType::Condition => "condition",
             GrpcDeployerType::Inject => "inject",
+            GrpcDeployerType::EventInfo => "event_info",
+            GrpcDeployerType::DeputyQuery => "deputy_query",
         };
         serializer.serialize_str(value)
     }
@@ -50,6 +52,8 @@ impl<'de> Deserialize<'de> for DeployerType {
             "feature" => Ok(DeployerType(GrpcDeployerType::Feature)),
             "condition" => Ok(DeployerType(GrpcDeployerType::Condition)),
             "inject" => Ok(DeployerType(GrpcDeployerType::Inject)),
+            "event_info" => Ok(DeployerType(GrpcDeployerType::EventInfo)),
+            "deputy_query" => Ok(DeployerType(GrpcDeployerType::DeputyQuery)),
             _ => Err(serde::de::Error::custom(format!(
                 "Invalid deployer type: {type_string}"
             ))),
@@ -67,6 +71,8 @@ impl FromSql<Text, Mysql> for DeployerType {
                 "feature" => Ok(DeployerType(GrpcDeployerType::Feature)),
                 "condition" => Ok(DeployerType(GrpcDeployerType::Condition)),
                 "inject" => Ok(DeployerType(GrpcDeployerType::Inject)),
+                "event_info" => Ok(DeployerType(GrpcDeployerType::EventInfo)),
+                "deputy_query" => Ok(DeployerType(GrpcDeployerType::DeputyQuery)),
                 _ => Err("Invalid deployer type".into()),
             };
         }
@@ -89,6 +95,8 @@ impl ToSql<Text, Mysql> for DeployerType {
             DeployerType(GrpcDeployerType::Feature) => "feature",
             DeployerType(GrpcDeployerType::Condition) => "condition",
             DeployerType(GrpcDeployerType::Inject) => "inject",
+            DeployerType(GrpcDeployerType::EventInfo) => "event_info",
+            DeployerType(GrpcDeployerType::DeputyQuery) => "deputy_query",
         });
         out.write_all(value.as_bytes())?;
         Ok(IsNull::No)

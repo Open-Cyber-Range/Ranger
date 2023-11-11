@@ -5,6 +5,7 @@ use crate::services::database::deployment::{
     CreateDeploymentElement, GetDeploymentElementByDeploymentIdByScenarioReference,
     UpdateDeploymentElement,
 };
+use crate::services::database::event::UpdateEventChecksum;
 use crate::services::database::Database;
 use crate::services::deployer::{Deploy, UnDeploy};
 use crate::services::scheduler::CreateDeploymentSchedule;
@@ -23,6 +24,8 @@ use sdl_parser::{
     node::{Node, NodeType},
     Scenario,
 };
+
+use super::condition::ConditionProperties;
 
 impl Deployable for (String, Node, Deployment, String, Vec<String>, Option<Uuid>) {
     fn try_to_deployment_command(&self) -> Result<Box<dyn DeploymentInfo>> {
@@ -68,6 +71,28 @@ impl DeployedNode {
             deployment_element,
             template_id,
         }
+    }
+
+    pub async fn update_node_events(
+        database_address: &Addr<Database>,
+        deployed_nodes: &[(DeployedNode, Vec<ConditionProperties>)],
+        event_info_checksum: String,
+    ) -> Result<()> {
+        for (_, condition_properties) in deployed_nodes.iter() {
+            for condition_property in condition_properties.iter() {
+                if let Some(event_id) = condition_property.event_id {
+                    database_address
+                        .send(UpdateEventChecksum(
+                            event_id,
+                            crate::models::UpdateEventChecksum {
+                                event_info_data_checksum: Some(event_info_checksum.clone()),
+                            },
+                        ))
+                        .await??;
+                }
+            }
+        }
+        Ok(())
     }
 }
 

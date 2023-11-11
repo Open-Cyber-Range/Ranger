@@ -1,5 +1,6 @@
 use sdl_parser::{
     capability::Capabilities,
+    common::Source,
     condition::Conditions,
     entity::{Entities, Entity, ExerciseRole, Flatten},
     evaluation::Evaluations,
@@ -709,4 +710,18 @@ pub fn get_role_from_string(role: &str) -> Option<ExerciseRole> {
         "Green" => Some(ExerciseRole::Green),
         _ => None,
     }
+}
+
+pub fn get_event_sources(events: &Option<HashMap<String, Event>>) -> HashMap<String, Source> {
+    events
+        .iter()
+        .flat_map(|event| {
+            event.iter().filter_map(|(event_name, event)| {
+                event
+                    .source
+                    .as_ref()
+                    .map(|source| (event_name.clone(), source.clone()))
+            })
+        })
+        .collect::<HashMap<String, Source>>()
 }

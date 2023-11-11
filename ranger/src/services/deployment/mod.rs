@@ -1,5 +1,7 @@
 pub(crate) mod condition;
+pub(crate) mod deputy;
 pub(crate) mod event;
+pub mod event_info;
 mod feature;
 mod inject;
 mod node;
@@ -10,7 +12,8 @@ use super::database::{deployment::GetDeploymentElementByDeploymentId, Database};
 use crate::{
     models::{helpers::uuid::Uuid, Deployment, Exercise},
     services::deployment::{
-        condition::DeployableConditions, feature::DeployableFeatures, node::DeployableNodes,
+        condition::DeployableConditions, event_info::EventInfoUnpacker,
+        feature::DeployableFeatures, node::DeployableNodes,
     },
     services::deployment::{event::DeployableEvents, template::DeployableTemplates},
     Addressor,
@@ -65,6 +68,10 @@ impl DeploymentManager {
 
         scenario
             .deploy_scenario_conditions(addressor, exercise, deployers, &nodes_with_conditions)
+            .await?;
+
+        scenario
+            .create_event_info_pages(addressor, deployers, &nodes_with_conditions)
             .await?;
 
         scenario

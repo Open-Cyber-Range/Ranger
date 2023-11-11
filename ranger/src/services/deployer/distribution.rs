@@ -5,7 +5,10 @@ use super::{
     factory::{CreateDeployer, DeployerFactory},
 };
 use crate::services::{
-    client::{ConditionClient, DeploymentClientResponse, FeatureClient, InjectClient},
+    client::{
+        ConditionClient, DeploymentClientResponse, DeputyQueryClient, EventInfoClient,
+        FeatureClient, InjectClient,
+    },
     deployer::DeployerConnections,
 };
 use actix::{
@@ -39,11 +42,16 @@ impl DeployerDistribution {
                 && (deployer_type == GrpcDeployerType::VirtualMachine
                     && value.virtual_machine_client.is_some()
                     || deployer_type == GrpcDeployerType::Switch && value.switch_client.is_some()
-                    || deployer_type == GrpcDeployerType::Template && value.template_client.is_some()
+                    || deployer_type == GrpcDeployerType::Template
+                        && value.template_client.is_some()
                     || deployer_type == GrpcDeployerType::Feature && value.feature_client.is_some()
                     || deployer_type == GrpcDeployerType::Condition
                         && value.condition_client.is_some()
-                    || deployer_type == GrpcDeployerType::Inject && value.inject_client.is_some())
+                    || deployer_type == GrpcDeployerType::Inject && value.inject_client.is_some()
+                    || deployer_type == GrpcDeployerType::EventInfo
+                        && value.event_info_client.is_some()
+                    || deployer_type == GrpcDeployerType::DeputyQuery
+                        && value.deputy_query_client.is_some())
             {
                 return Some(key.to_string());
             }
@@ -90,6 +98,8 @@ impl DeployerDistribution {
         actix::Addr<FeatureClient>: DeploymentClient<Box<dyn DeploymentInfo>>,
         actix::Addr<ConditionClient>: DeploymentClient<Box<dyn DeploymentInfo>>,
         actix::Addr<InjectClient>: DeploymentClient<Box<dyn DeploymentInfo>>,
+        actix::Addr<EventInfoClient>: DeploymentClient<Box<dyn DeploymentInfo>>,
+        actix::Addr<DeputyQueryClient>: DeploymentClient<Box<dyn DeploymentInfo>>,
     {
         let best_deployer = self.book_best_deployer(potential_deployers, deployer_type)?;
         let connections = self
@@ -133,6 +143,18 @@ impl DeployerDistribution {
                         .condition_client
                         .clone()
                         .ok_or_else(|| anyhow!("No condition deployer found"))?,
+                ),
+                GrpcDeployerType::EventInfo => Box::new(
+                    connections
+                        .event_info_client
+                        .clone()
+                        .ok_or_else(|| anyhow!("No event info deployer found"))?,
+                ),
+                GrpcDeployerType::DeputyQuery => Box::new(
+                    connections
+                        .deputy_query_client
+                        .clone()
+                        .ok_or_else(|| anyhow!("No deputy query deployer found"))?,
                 ),
             },
             best_deployer,
