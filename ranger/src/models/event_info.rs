@@ -76,6 +76,6 @@ impl EventInfo {
 
 #[derive(Debug, QueryableByName, Deserialize)]
 pub struct ExistsCheckResult {
-    #[sql_type = "diesel::sql_types::Bool"]
+    #[diesel(sql_type = diesel::sql_types::Bool)]
     pub exists: bool,
 }
