@@ -345,9 +345,8 @@ export const apiSlice = createApi({
       eventInfoDataChecksum: string;
     }>({
       query({exerciseId, deploymentId, entitySelector, eventInfoDataChecksum}) {
-        return `/participant/exercise/${
-          // eslint-disable-next-line max-len
-          exerciseId}/deployment/${deploymentId}/entity/${entitySelector}/event/${eventInfoDataChecksum}`;
+        // eslint-disable-next-line max-len
+        return `/participant/exercise/${exerciseId}/deployment/${deploymentId}/entity/${entitySelector}/event/${eventInfoDataChecksum}`;
       },
     }),
     participantGetBanner: builder.query<Banner, string>({
