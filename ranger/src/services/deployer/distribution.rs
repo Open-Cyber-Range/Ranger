@@ -6,8 +6,8 @@ use super::{
 };
 use crate::services::{
     client::{
-        ConditionClient, DeploymentClientResponse, DeputyQueryClient, EventInfoClient,
-        FeatureClient, InjectClient,
+        ConditionClient, DeploymentClientResponse, DeputyQueryClient, DeputyQueryDeploymentClient,
+        EventInfoClient, FeatureClient, InjectClient,
     },
     deployer::DeployerConnections,
 };
@@ -16,7 +16,7 @@ use actix::{
 };
 use anyhow::{anyhow, Ok, Result};
 use futures::future::try_join_all;
-use ranger_grpc::capabilities::DeployerType as GrpcDeployerType;
+use ranger_grpc::{capabilities::DeployerType as GrpcDeployerType, Package, Source};
 use std::collections::HashMap;
 
 #[derive(Clone)]
@@ -30,6 +30,7 @@ impl Actor for DeployerDistribution {
 }
 
 type ClientTuple = (Box<dyn DeploymentClient<Box<dyn DeploymentInfo>>>, String);
+type DeputyClientTuple = (Box<Addr<DeputyQueryClient>>, String);
 
 impl DeployerDistribution {
     fn book_best_deployer(
@@ -99,7 +100,6 @@ impl DeployerDistribution {
         actix::Addr<ConditionClient>: DeploymentClient<Box<dyn DeploymentInfo>>,
         actix::Addr<InjectClient>: DeploymentClient<Box<dyn DeploymentInfo>>,
         actix::Addr<EventInfoClient>: DeploymentClient<Box<dyn DeploymentInfo>>,
-        actix::Addr<DeputyQueryClient>: DeploymentClient<Box<dyn DeploymentInfo>>,
     {
         let best_deployer = self.book_best_deployer(potential_deployers, deployer_type)?;
         let connections = self
@@ -150,13 +150,32 @@ impl DeployerDistribution {
                         .clone()
                         .ok_or_else(|| anyhow!("No event info deployer found"))?,
                 ),
-                GrpcDeployerType::DeputyQuery => Box::new(
-                    connections
-                        .deputy_query_client
-                        .clone()
-                        .ok_or_else(|| anyhow!("No deputy query deployer found"))?,
-                ),
+                _ => return Err(anyhow!("Deployer type {:?} not supported", deployer_type)),
             },
+            best_deployer,
+        ))
+    }
+
+    fn get_deputy_query_client(
+        &mut self,
+        potential_deployers: Vec<String>,
+    ) -> Result<DeputyClientTuple>
+    where
+        actix::Addr<DeputyQueryClient>: DeputyQueryDeploymentClient,
+    {
+        let best_deployer =
+            self.book_best_deployer(potential_deployers, GrpcDeployerType::DeputyQuery)?;
+        let connections = self
+            .deployers
+            .get(&best_deployer)
+            .ok_or_else(|| anyhow!("No deployer found"))?;
+        Ok((
+            Box::new(
+                connections
+                    .deputy_query_client
+                    .clone()
+                    .ok_or_else(|| anyhow!("No deputy query deployer found"))?,
+            ),
             best_deployer,
         ))
     }
@@ -228,6 +247,64 @@ impl Handler<UnDeploy> for DeployerDistribution {
                 deployment_client.undeploy(handler_reference_id).await?;
 
                 Ok(((), best_deployer))
+            }
+            .into_actor(self)
+            .map(Self::release_deployer_closure),
+        )
+    }
+}
+
+#[derive(Message)]
+#[rtype(result = "Result<Vec<Package>>")]
+pub struct DeputyPackageQueryByType(pub String, pub Vec<String>);
+
+impl Handler<DeputyPackageQueryByType> for DeployerDistribution {
+    type Result = ResponseActFuture<Self, Result<Vec<Package>>>;
+
+    fn handle(&mut self, msg: DeputyPackageQueryByType, _ctx: &mut Self::Context) -> Self::Result {
+        let package_type = msg.0;
+        let potential_deployers = msg.1;
+
+        let client_result = self.get_deputy_query_client(potential_deployers);
+
+        Box::pin(
+            async move {
+                let (mut deployment_client, best_deployer) = client_result?;
+                let query_result = deployment_client
+                    .packages_query_by_type(package_type)
+                    .await?;
+
+                Ok((query_result, best_deployer))
+            }
+            .into_actor(self)
+            .map(Self::release_deployer_closure),
+        )
+    }
+}
+
+#[derive(Message)]
+#[rtype(result = "Result<String>")]
+pub struct DeputyPackageQueryGetExercise(pub Source, pub Vec<String>);
+
+impl Handler<DeputyPackageQueryGetExercise> for DeployerDistribution {
+    type Result = ResponseActFuture<Self, Result<String>>;
+
+    fn handle(
+        &mut self,
+        msg: DeputyPackageQueryGetExercise,
+        _ctx: &mut Self::Context,
+    ) -> Self::Result {
+        let source = msg.0;
+        let potential_deployers = msg.1;
+
+        let client_result = self.get_deputy_query_client(potential_deployers);
+
+        Box::pin(
+            async move {
+                let (mut deployment_client, best_deployer) = client_result?;
+                let sdl = deployment_client.get_exercise(source).await?;
+
+                Ok((sdl, best_deployer))
             }
             .into_actor(self)
             .map(Self::release_deployer_closure),

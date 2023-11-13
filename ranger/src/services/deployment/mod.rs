@@ -174,3 +174,28 @@ impl Handler<RemoveDeployment> for DeploymentManager {
         )
     }
 }
+
+#[derive(Message, Debug)]
+#[rtype(result = "Result<Vec<String>>")]
+pub struct GetDefaultDeployers();
+
+impl Handler<GetDefaultDeployers> for DeploymentManager {
+    type Result = ResponseActFuture<Self, Result<Vec<String>>>;
+
+    fn handle(&mut self, _msg: GetDefaultDeployers, _: &mut Context<Self>) -> Self::Result {
+        let deployment_groups = self
+            .deployment_group
+            .get(&self.default_deployment_group)
+            .cloned();
+
+        Box::pin(
+            async move {
+                let default_deployment_group = deployment_groups
+                    .ok_or_else(|| anyhow!("No default deployment group found"))?;
+
+                Ok(default_deployment_group)
+            }
+            .into_actor(self),
+        )
+    }
+}

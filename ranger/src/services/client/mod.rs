@@ -19,6 +19,7 @@ use ranger_grpc::{
     ConditionStreamResponse, EventCreateResponse, EventStreamResponse, ExecutorResponse,
     Identifier, TemplateResponse,
 };
+use ranger_grpc::{Package, Source};
 use std::any::Any;
 pub use switch::*;
 pub use template::*;
@@ -27,14 +28,18 @@ pub use virtual_machine::*;
 
 pub type ConditionResponse = (Identifier, Streaming<ConditionStreamResponse>);
 pub type EventInfoResponse = (EventCreateResponse, Streaming<EventStreamResponse>);
-pub type DeputyQueryResponse = ();
 pub enum DeploymentClientResponse {
     Identifier(Identifier),
     ExecutorResponse(ExecutorResponse),
     TemplateResponse(TemplateResponse),
     ConditionResponse(ConditionResponse),
     EventInfoResponse(EventInfoResponse),
-    DeputyQueryResponse(DeputyQueryResponse),
+}
+
+#[async_trait]
+pub trait DeputyQueryDeploymentClient {
+    async fn packages_query_by_type(&mut self, package_type: String) -> Result<Vec<Package>>;
+    async fn get_exercise(&mut self, source: Source) -> Result<String>;
 }
 
 #[async_trait]

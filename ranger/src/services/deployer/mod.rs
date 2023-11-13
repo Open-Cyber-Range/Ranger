@@ -59,7 +59,7 @@ impl DeployerConnections {
         if capabilities.contains(&GrpcDeployerType::EventInfo) {
             event_info_client = Some(EventInfoClient::new(address.to_string()).await?.start());
         }
-        if capabilities.contains(&GrpcDeployerType::Inject) {
+        if capabilities.contains(&GrpcDeployerType::DeputyQuery) {
             deputy_query_client = Some(DeputyQueryClient::new(address.to_string()).await?.start());
         }
         Ok(Self {
