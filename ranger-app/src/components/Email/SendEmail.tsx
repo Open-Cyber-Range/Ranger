@@ -30,6 +30,9 @@ import {
   prepareEmail,
   removeUnnecessaryEmailAddresses,
   validateEmailForm,
+  prepareForPreviewWithoutUserOrDeployment,
+  prepareForPreview,
+  openNewBlobWindow,
 } from 'src/utils/email';
 import {useEmailVariablesInEditor} from 'src/hooks/useEmailVariablesInEditor';
 import {Tooltip2} from '@blueprintjs/popover2';
@@ -203,15 +206,45 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
   const emailSubject = watch('subject');
 
   const previewHtmlContent = () => {
+    let preparedEmailSubject
+     = prepareForPreviewWithoutUserOrDeployment(emailSubject, exercise.name);
+    let preparedEditorContent
+     = prepareForPreviewWithoutUserOrDeployment(editorContent, exercise.name);
+
+    if (selectedDeployment === 'wholeExercise') {
+      const deployment: Deployment | undefined = deployments?.[0];
+      preparePreviews(deployment);
+    } else if (selectedDeployment) {
+      const deployment = deployments?.find(d => d.id === selectedDeployment);
+      preparePreviews(deployment);
+    }
+
     const combinedContent = `
-      <h2>${emailSubject}</h2> 
-      ${editorContent}
+      <h2>${preparedEmailSubject}</h2> 
+      ${preparedEditorContent}
     `;
 
-    const blob = new Blob([combinedContent], {type: 'text/html;charset=utf-8'});
-    const url = URL.createObjectURL(blob);
-    window.open(url, '_blank');
-    URL.revokeObjectURL(url);
+    openNewBlobWindow(combinedContent);
+
+    function preparePreviews(deployment: Deployment | undefined) {
+      if (deployment) {
+        const user = deploymentUsers?.[deployment.id]?.[0];
+        if (user) {
+          preparedEmailSubject = prepareForPreview(
+            emailSubject,
+            exercise.name,
+            deployment.name,
+            user,
+          );
+          preparedEditorContent = prepareForPreview(
+            editorContent,
+            exercise.name,
+            deployment.name,
+            user,
+          );
+        }
+      }
+    }
   };
 
   useEffect(() => {
