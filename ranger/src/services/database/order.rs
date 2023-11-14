@@ -1,5 +1,9 @@
+use std::collections::HashMap;
+
 use super::Database;
-use crate::models::{helpers::uuid::Uuid, NewOrder, Order};
+use crate::models::{
+    helpers::uuid::Uuid, NewOrder, Order, Threat, TrainingObjective, TrainingObjectiveRest,
+};
 use actix::{Handler, Message, ResponseActFuture, WrapFuture};
 use actix_web::web::block;
 use anyhow::{Ok, Result};
@@ -83,6 +87,84 @@ impl Handler<GetOrders> for Database {
                 .await??;
 
                 Ok(order)
+            }
+            .into_actor(self),
+        )
+    }
+}
+
+#[derive(Message)]
+#[rtype(result = "Result<()>")]
+pub struct UpsertTrainingObjective(pub Uuid, pub TrainingObjectiveRest);
+
+impl Handler<UpsertTrainingObjective> for Database {
+    type Result = ResponseActFuture<Self, Result<()>>;
+
+    fn handle(&mut self, msg: UpsertTrainingObjective, _ctx: &mut Self::Context) -> Self::Result {
+        let UpsertTrainingObjective(order_uuid, training_objective_rest) = msg;
+        let training_objective =
+            TrainingObjective::new(order_uuid, training_objective_rest.objective.clone());
+        let connection_result = self.get_connection();
+
+        Box::pin(
+            async move {
+                let mut connection = connection_result?;
+                block(move || {
+                    TrainingObjective::hard_delete_by_order_id(order_uuid)
+                        .execute(&mut connection)?;
+                    let threats = training_objective_rest
+                        .threats
+                        .into_iter()
+                        .map(|threat| Threat::new(training_objective.id, threat))
+                        .collect::<Vec<Threat>>();
+                    Threat::batch_insert(threats).execute(&mut connection)?;
+
+                    Ok(())
+                })
+                .await??;
+
+                Ok(())
+            }
+            .into_actor(self),
+        )
+    }
+}
+
+#[derive(Message)]
+#[rtype(result = "Result<HashMap<TrainingObjective, Vec<Threat>>>")]
+pub struct GetTrainingObjectivesByOrder(pub Order);
+
+impl Handler<GetTrainingObjectivesByOrder> for Database {
+    type Result = ResponseActFuture<Self, Result<HashMap<TrainingObjective, Vec<Threat>>>>;
+
+    fn handle(
+        &mut self,
+        get_objectives: GetTrainingObjectivesByOrder,
+        _ctx: &mut Self::Context,
+    ) -> Self::Result {
+        let connection_result = self.get_connection();
+        let GetTrainingObjectivesByOrder(order) = get_objectives;
+
+        Box::pin(
+            async move {
+                let mut connection = connection_result?;
+                let objectives = block(move || {
+                    let training_objectives =
+                        TrainingObjective::by_order(&order).load(&mut connection)?;
+
+                    let mut threats_by_objectives: HashMap<TrainingObjective, Vec<Threat>> =
+                        HashMap::new();
+                    for trainining_objective in &training_objectives {
+                        let threats =
+                            Threat::by_objective(trainining_objective).load(&mut connection)?;
+                        threats_by_objectives.insert(trainining_objective.clone(), threats);
+                    }
+
+                    Ok(threats_by_objectives)
+                })
+                .await??;
+
+                Ok(objectives)
             }
             .into_actor(self),
         )

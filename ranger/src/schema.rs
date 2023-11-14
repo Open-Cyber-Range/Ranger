@@ -236,6 +236,28 @@ diesel::table! {
     }
 }
 
+diesel::table! {
+    threats (id) {
+        #[max_length = 16]
+        id -> Binary,
+        #[max_length = 16]
+        training_objective_id -> Binary,
+        #[max_length = 16]
+        order_id -> Binary,
+        threat -> Tinytext,
+    }
+}
+
+diesel::table! {
+    training_objectives (id) {
+        #[max_length = 16]
+        id -> Binary,
+        #[max_length = 16]
+        order_id -> Binary,
+        objective -> Tinytext,
+    }
+}
+
 diesel::joinable!(accounts -> exercises (exercise_id));
 diesel::joinable!(banners -> exercises (exercise_id));
 diesel::joinable!(condition_messages -> deployments (deployment_id));
@@ -246,6 +268,8 @@ diesel::joinable!(email_statuses -> emails (email_id));
 diesel::joinable!(emails -> exercises (exercise_id));
 diesel::joinable!(metrics -> deployments (deployment_id));
 diesel::joinable!(participants -> deployments (deployment_id));
+diesel::joinable!(threats -> training_objectives (training_objective_id));
+diesel::joinable!(training_objectives -> orders (order_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     accounts,
@@ -263,4 +287,6 @@ diesel::allow_tables_to_appear_in_same_query!(
     metrics,
     orders,
     participants,
+    threats,
+    training_objectives,
 );
