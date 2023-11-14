@@ -177,6 +177,9 @@ export const apiSlice = createApi({
     adminGetDeploymentGroups: builder.query<Deployers, void>({
       query: () => '/admin/deployer',
     }),
+    adminGetDefaultDeploymentGroup: builder.query<string, void>({
+      query: () => '/admin/deployer/default',
+    }),
     adminGetEmails: builder.query<Email[], string>({
       query: exerciseId => `/admin/exercise/${exerciseId}/email`,
       providesTags: (result = []) =>
@@ -506,6 +509,7 @@ export const {
   useAdminGetDeploymentQuery,
   useAdminGetDeploymentScoresQuery,
   useAdminGetDeploymentGroupsQuery,
+  useAdminGetDefaultDeploymentGroupQuery,
   useAdminGetEmailsQuery,
   useAdminSendEmailMutation,
   useAdminGetEmailFormQuery,
