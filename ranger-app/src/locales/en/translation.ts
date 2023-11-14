@@ -420,6 +420,38 @@ const language = {
     noOrdersCallout: 'No orders have been created yet. Start by creating a new order.',
     createOrder: 'Create order',
     newOrder: 'New order',
+    trainingObjectives: 'Training objectives',
+    objectives: 'Objectives',
+    organization: 'Organization',
+    structure: 'Structure',
+    environment: 'Environment',
+    customElements: 'Custom elements',
+    plot: 'Plot',
+    order: 'Order',
+    loadingOrders: 'Loading orders...',
+    loadingOrder: 'Loading order...',
+    next: 'Next',
+    back: 'Back',
+    submit: 'Submit',
+    trainingObjective: {
+      add: 'Add Training Objective',
+      explenation: `Start by creating training objectives for your order.
+      Training objectives describe, what the participants are supposed to learn during the exercise.
+      Every objective is connected to list of the metrics, which are used to evaluate the objective.
+      End goal should be to have a list of training objectives, which covers all important threats
+      that the participants should be able to handle.
+      `,
+      objective: 'Objective',
+      objectiveRequired: 'Objective is required',
+      objectiveMaxLength: 'Objective must be equal or less than 56 characters',
+      threats: 'Threats',
+      threat: 'Threat',
+      threatMaxLength: 'Threat must be equal or less than 56 characters',
+      threatRequired: 'Threat is required',
+      addNewThreat: 'Add new threat',
+      removeLastThreat: 'Remove last threat',
+      failedtoAdd: 'Failed to add training objective',
+    },
   },
 };
 

@@ -29,6 +29,7 @@ import ManagerNavbarLinks from './components/Navbar/ManagerLinks';
 import ParticipantNavbarLinks from './components/Navbar/ParticipantLinks';
 import NotFoundFallback from './pages/NotFoundFallback';
 import ClientNavBar from './components/ClientNavBar';
+import OrderDetail from './pages/client/OrderDetail';
 
 const App = () => {
   const {keycloak, keycloak: {authenticated, token}} = useKeycloak();
@@ -125,6 +126,8 @@ const App = () => {
         <Routes>
           <Route path='/' element={<HomeClient/>}/>
           <Route path='/*' element={<NotFoundFallback/>}/>
+          <Route path='/orders/:orderId' element={<OrderDetail/>}/>
+          <Route path='/orders/:orderId/:stage' element={<OrderDetail/>}/>
         </Routes>
       </Router>
     );

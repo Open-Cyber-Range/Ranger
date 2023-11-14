@@ -34,7 +34,11 @@ import {
   type NewManualMetric,
 } from 'src/models/manualMetric';
 import {type Package} from 'src/models/package';
-import {type NewOrder, type Order} from 'src/models/order';
+import {
+  type NewOrder,
+  type Order,
+  type TrainingObjective,
+} from 'src/models/order';
 
 export const apiSlice = createApi({
   reducerPath: 'api',
@@ -66,6 +70,19 @@ export const apiSlice = createApi({
         url: '/client/order', method: 'POST', body: newOrder,
       }),
       invalidatesTags: [{type: 'Order', id: 'LIST'}],
+    }),
+    clientAddTrainingObjective: builder
+      .mutation<TrainingObjective,
+    {
+      newTrainingObjective: TrainingObjective; orderId: string;
+    }>({
+      query: ({newTrainingObjective, orderId}) => ({
+        url: `/client/order/${orderId}/training_objective`,
+        method: 'POST',
+        body: newTrainingObjective,
+      }),
+      invalidatesTags: (result, error, {orderId}) =>
+        [{type: 'Order', id: orderId}],
     }),
     clientGetOrders: builder.query<Order[], void>({
       query: () => '/client/order',
@@ -586,6 +603,7 @@ export const apiSlice = createApi({
 });
 
 export const {
+  useClientAddTrainingObjectiveMutation,
   useClientAddOrderMutation,
   useClientGetOrdersQuery,
   useClientGetOrderQuery,
