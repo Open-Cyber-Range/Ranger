@@ -1,5 +1,4 @@
 pub(crate) mod condition;
-pub(crate) mod deputy;
 pub(crate) mod event;
 pub mod event_info;
 mod feature;
