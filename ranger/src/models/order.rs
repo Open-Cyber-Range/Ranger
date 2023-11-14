@@ -96,10 +96,14 @@ impl TrainingObjective {
         }
     }
 
-    pub fn hard_delete_by_order_id(
+    pub fn create_insert(&self) -> Create<&Self, training_objectives::table> {
+        insert_into(training_objectives::table).values(self)
+    }
+
+    pub fn hard_delete_by_id(
         id: Uuid,
-    ) -> DeleteById<training_objectives::order_id, training_objectives::table> {
-        diesel::delete(training_objectives::table.filter(training_objectives::order_id.eq(id)))
+    ) -> DeleteById<training_objectives::id, training_objectives::table> {
+        diesel::delete(training_objectives::table.filter(training_objectives::id.eq(id)))
     }
 
     fn all() -> All<training_objectives::table, Self> {

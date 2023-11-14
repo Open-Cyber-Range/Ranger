@@ -1,4 +1,3 @@
-SET FOREIGN_KEY_CHECKS = 0;
 CREATE TABLE training_objectives (
     id BINARY(16) NOT NULL,
     order_id BINARY(16) NOT NULL,

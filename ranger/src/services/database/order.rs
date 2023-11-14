@@ -95,13 +95,17 @@ impl Handler<GetOrders> for Database {
 
 #[derive(Message)]
 #[rtype(result = "Result<()>")]
-pub struct UpsertTrainingObjective(pub Uuid, pub TrainingObjectiveRest);
+pub struct UpsertTrainingObjective(pub Uuid, pub Option<Uuid>, pub TrainingObjectiveRest);
 
 impl Handler<UpsertTrainingObjective> for Database {
     type Result = ResponseActFuture<Self, Result<()>>;
 
     fn handle(&mut self, msg: UpsertTrainingObjective, _ctx: &mut Self::Context) -> Self::Result {
-        let UpsertTrainingObjective(order_uuid, training_objective_rest) = msg;
+        let UpsertTrainingObjective(
+            order_uuid,
+            existing_training_objective_uuid,
+            training_objective_rest,
+        ) = msg;
         let training_objective =
             TrainingObjective::new(order_uuid, training_objective_rest.objective.clone());
         let connection_result = self.get_connection();
@@ -110,7 +114,13 @@ impl Handler<UpsertTrainingObjective> for Database {
             async move {
                 let mut connection = connection_result?;
                 block(move || {
-                    TrainingObjective::hard_delete_by_order_id(order_uuid)
+                    if let Some(existing_training_objective_uuid) = existing_training_objective_uuid
+                    {
+                        TrainingObjective::hard_delete_by_id(existing_training_objective_uuid)
+                            .execute(&mut connection)?;
+                    }
+                    training_objective
+                        .create_insert()
                         .execute(&mut connection)?;
                     let threats = training_objective_rest
                         .threats

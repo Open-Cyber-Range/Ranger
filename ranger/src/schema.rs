@@ -242,8 +242,6 @@ diesel::table! {
         id -> Binary,
         #[max_length = 16]
         training_objective_id -> Binary,
-        #[max_length = 16]
-        order_id -> Binary,
         threat -> Tinytext,
     }
 }

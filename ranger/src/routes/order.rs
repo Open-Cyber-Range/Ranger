@@ -39,11 +39,12 @@ pub async fn create_training_objective(
         .database_address
         .send(UpsertTrainingObjective(
             order.id,
+            None,
             new_training_objectives.clone(),
         ))
         .await
         .map_err(create_mailbox_error_handler("Database for orders"))?
-        .map_err(create_database_error_handler("Create order"))?;
+        .map_err(create_database_error_handler("Upsert training objective"))?;
 
     Ok(Json(new_training_objectives.into_inner()))
 }
