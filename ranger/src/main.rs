@@ -25,7 +25,8 @@ use ranger::routes::deputy_query::{
     check_package_exists, get_deputy_banner_file, get_deputy_packages_by_type,
     get_exercise_by_source,
 };
-use ranger::routes::client::order::get_orders_client;
+use ranger::routes::client::order::{get_orders_client, update_training_objective, create_training_objective, delete_training_objective};
+use ranger::routes::deployers::get_deployers;
 use ranger::routes::exercise::{
     add_banner, add_exercise, add_exercise_deployment, add_participant, delete_banner,
     delete_exercise, delete_exercise_deployment, delete_participant, get_admin_participants,
@@ -34,7 +35,7 @@ use ranger::routes::exercise::{
     get_exercises, subscribe_to_exercise, update_banner, update_exercise,
 };
 use ranger::routes::logger::subscribe_to_logs_with_level;
-use ranger::routes::order::{create_order, get_order, create_training_objective, delete_training_objective};
+use ranger::routes::order::{create_order, get_order};
 use ranger::routes::participant::deployment::{
     get_participant_deployment, get_participant_deployments,
     get_participant_node_deployment_elements, subscribe_participant_to_deployment,
@@ -200,6 +201,7 @@ async fn main() -> Result<(), Error> {
                                     .service(get_order)
                                     .service(create_training_objective)
                                     .service(delete_training_objective)
+                                    .service(update_training_objective)
                                 )
                         )
                       .wrap(client_auth_middleware)

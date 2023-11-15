@@ -174,6 +174,7 @@ impl Threat {
 #[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ThreatRest {
+    #[serde(default = "Uuid::random")]
     pub id: Uuid,
     pub threat: String,
 }
@@ -190,6 +191,7 @@ impl From<Threat> for ThreatRest {
 #[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TrainingObjectiveRest {
+    #[serde(default = "Uuid::random")]
     pub id: Uuid,
     pub objective: String,
     pub threats: Vec<ThreatRest>,
