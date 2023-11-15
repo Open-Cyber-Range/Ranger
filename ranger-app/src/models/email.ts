@@ -20,8 +20,14 @@ type EmailForm = {
   ccAddresses?: string[];
   bccAddresses?: string[];
   subject: string;
+  template: string;
   body: string;
   userId?: string;
+};
+
+type EmailTemplate = {
+  name: string;
+  content: string;
 };
 
 type EmailVariable = {
@@ -38,5 +44,6 @@ export enum EmailStatusType {
 export type {
   Email,
   EmailForm,
+  EmailTemplate,
   EmailVariable,
 };

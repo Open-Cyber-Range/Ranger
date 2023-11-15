@@ -1,7 +1,7 @@
 import type React from 'react';
 import {useEffect, useState} from 'react';
 import type {Exercise} from 'src/models/exercise';
-import type {EmailForm} from 'src/models/email';
+import type {EmailForm, EmailTemplate} from 'src/models/email';
 import {
   Button,
   FormGroup,
@@ -15,7 +15,7 @@ import {useTranslation} from 'react-i18next';
 import {Controller, type SubmitHandler, useForm} from 'react-hook-form';
 import {
   useAdminGetDeploymentsQuery,
-  useAdminGetEmailFormQuery,
+  useAdminGetEmailFormQuery, useAdminGetEmailTemplatesQuery,
   useAdminSendEmailMutation,
 } from 'src/slices/apiSlice';
 import {toastSuccess, toastWarning} from 'src/components/Toaster';
@@ -41,10 +41,13 @@ import EmailVariablesInfo from './EmailVariablesInfo';
 
 const SendEmail = ({exercise}: {exercise: Exercise}) => {
   const {t} = useTranslation();
+  const {data: emailTemplates} = useAdminGetEmailTemplatesQuery();
   const {data: deployments} = useAdminGetDeploymentsQuery(exercise.id);
   const {data: fromAddress} = useAdminGetEmailFormQuery(exercise.id);
   const [sendMail, {isSuccess, error}] = useAdminSendEmailMutation();
   const [selectedDeployment, setSelectedDeployment] = useState<string | undefined>(undefined);
+  const [selectedEmailTemplate, setSelectedEmailTemplate] = useState<string | undefined>(undefined);
+  const [emailTemplateContent, setEmailTemplateContent] = useState<string | undefined>(undefined);
   const {deploymentUsers, fetchDeploymentUsers} = useGetDeploymentUsers();
   const [editorInstance, setEditorInstance]
   = useState<editor.IStandaloneCodeEditor | undefined>(undefined);
@@ -86,6 +89,17 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
       setIsFetchingUsers(false);
     }
   };
+
+  const handleEmailTemplateChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedTemplate = event.target.value;
+    setSelectedEmailTemplate(selectedTemplate)
+    if (selectedTemplate !== '') {
+      const selectedEmailTemplate = emailTemplates?.find((template: EmailTemplate) => template.name === selectedTemplate);
+      if (selectedEmailTemplate) {
+        setEmailTemplateContent(selectedEmailTemplate.content || '');
+      }
+    }
+  }
 
   const processWholeExercise = async (email: EmailForm) => {
     if (!deployments || deployments.length === 0) {
@@ -180,6 +194,7 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
       ccAddresses: [],
       bccAddresses: [],
       subject: '',
+      template: '',
       body: '',
     },
   });
@@ -439,6 +454,24 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
             );
           }}
         />
+        <FormGroup label={t('emails.form.template.title')}>
+          <HTMLSelect
+            autoFocus
+            large
+            fill
+            value={selectedEmailTemplate ?? ''}
+            onChange={handleEmailTemplateChange}
+          >
+            <option value=''>
+              {t('emails.form.template.placeholder')}
+            </option>
+            {emailTemplates?.map((emailTemplate: EmailTemplate) => (
+              <option key={emailTemplate.name} value={emailTemplate.name}>
+                {emailTemplate.name}
+              </option>
+            ))}
+          </HTMLSelect>
+        </FormGroup>
         <Controller
           control={control}
           name='body'
@@ -465,7 +498,7 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
               >
                 <div className='h-[40vh] p-[0.5vh] rounded-sm shadow-inner'>
                   <Editor
-                    value={editorContent}
+                    value={editorContent || emailTemplateContent}
                     defaultLanguage='html'
                     onChange={value => {
                       setEditorContent(value ?? '');

@@ -164,6 +164,10 @@ const language = {
         title: 'Email subject',
         required: 'Email subject is required',
       },
+      template: {
+        title: 'Email template',
+        placeholder: 'Select existing email template',
+      },
       body: {
         title: 'Email body (HTML text editor)',
         required: 'Email body is required',
