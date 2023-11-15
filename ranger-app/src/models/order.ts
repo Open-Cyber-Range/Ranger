@@ -4,6 +4,24 @@ type NewOrder = {
   clientId: string;
 };
 
+type NewThreat = {
+  threat: string;
+};
+
+type Threat = NewThreat & {
+  id: string;
+};
+
+type NewTrainingObjective = {
+  objective: string;
+  threats: NewThreat[];
+};
+
+type TrainingObjective = Omit<NewTrainingObjective, 'threats'> & {
+  id: string;
+  threats: Threat[];
+};
+
 type Order = {
   id: string;
   trainingObjectives?: TrainingObjective[];
@@ -11,16 +29,9 @@ type Order = {
   updatedAt: string;
 } & NewOrder;
 
-type TrainingObjective = {
-  objective: string;
-  threats: string[];
-};
-
-type TrainingObjectiveForm = TrainingObjective;
-
 export type {
-  TrainingObjective,
+  NewTrainingObjective,
   NewOrder,
   Order,
-  TrainingObjectiveForm,
+  TrainingObjective,
 };

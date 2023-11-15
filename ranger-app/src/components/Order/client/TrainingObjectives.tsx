@@ -1,26 +1,38 @@
 import {
   Button,
   Callout,
-  Classes,
-  Dialog,
-  DialogBody,
-  DialogFooter,
-  H2,
+  Card,
+  Elevation,
+  H4,
+  Tag,
 } from '@blueprintjs/core';
 import React, {useEffect, useState} from 'react';
-import {useForm} from 'react-hook-form';
 import {useTranslation} from 'react-i18next';
-import DialogTextInput from 'src/components/Form/DialogTextInput';
 import {toastWarning} from 'src/components/Toaster';
-import {type Order, type TrainingObjectiveForm} from 'src/models/order';
-import {useClientAddTrainingObjectiveMutation} from 'src/slices/apiSlice';
+import {
+  type Order,
+  type NewTrainingObjective,
+  type TrainingObjective,
+} from 'src/models/order';
+import {
+  useClientAddTrainingObjectiveMutation,
+  useClientDeleteTrainingOrderMutation,
+  useClientUpdateTrainingObjectiveMutation,
+} from 'src/slices/apiSlice';
+import {sortByProperty} from 'sort-by-property';
+import TrainingObjectiveDialog from './TrainingObjectiveDialog';
 
 const TrainingObjectives = ({order}: {order: Order}) => {
   const {t} = useTranslation();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [threatNumber, setThreatNumber] = useState<number>(1);
-  const threatArray = Array.from(Array.from({length: threatNumber}).keys());
   const [addTrainingObjective, {error}] = useClientAddTrainingObjectiveMutation();
+  const [deleteTrainingObjective, {error: deleteError}] = useClientDeleteTrainingOrderMutation();
+  const [updateTrainingObjective, {error: updateError}]
+    = useClientUpdateTrainingObjectiveMutation();
+  const trainingObjectives = order.trainingObjectives?.slice()
+    .sort(sortByProperty('objective', 'asc')) ?? [];
+  const [editedTrainingObjective, setEditedTrainingObjective]
+    = useState<TrainingObjective | undefined>();
 
   useEffect(() => {
     if (error) {
@@ -30,110 +42,108 @@ const TrainingObjectives = ({order}: {order: Order}) => {
     }
   }, [error, t]);
 
-  const {handleSubmit, control} = useForm<TrainingObjectiveForm>({
-    defaultValues: {
-      objective: '',
-      threats: [],
-    },
-  });
+  useEffect(() => {
+    if (deleteError) {
+      toastWarning(t(
+        'order.trainingObjective.failedToDelete',
+      ));
+    }
+  }, [deleteError, t]);
 
-  const onHandleSubmit = async (formContent: TrainingObjectiveForm) => {
-    await addTrainingObjective({newTrainingObjective: formContent, orderId: order.id});
+  useEffect(() => {
+    if (updateError) {
+      toastWarning(t(
+        'order.trainingObjective.failedToUpadate',
+      ));
+    }
+  }, [updateError, t]);
+
+  const onHandleSubmit = async (formContent: NewTrainingObjective) => {
+    if (editedTrainingObjective) {
+      await updateTrainingObjective({
+        newTrainingObjective: formContent,
+        orderId: order.id,
+        trainingObjectiveId: editedTrainingObjective.id,
+      });
+    } else {
+      await addTrainingObjective({newTrainingObjective: formContent, orderId: order.id});
+    }
+
     setIsDialogOpen(false);
+    setEditedTrainingObjective(undefined);
   };
 
   return (
     <>
-      <Dialog
+      <TrainingObjectiveDialog
+        crossClicked={() => {
+          setIsDialogOpen(false);
+        }}
         isOpen={isDialogOpen}
-      >
-        <div className={Classes.DIALOG_HEADER}>
-          <H2>{t('orders.trainingObjective.add')}</H2>
-          <Button
-            small
-            minimal
-            icon='cross'
-            onClick={() => {
-              setIsDialogOpen(false);
-            }}/>
-        </div>
-        <form onSubmit={handleSubmit(onHandleSubmit)}>
-          <DialogBody>
-            <DialogTextInput<TrainingObjectiveForm>
-              controllerProps={{
-                control,
-                name: 'objective',
-                rules: {
-                  required: t('orders.trainingObjective.objectiveRequired') ?? '',
-                  maxLength: {
-                    value: 56,
-                    message: t('orders.trainingObjective.objectiveMaxLength'),
-                  },
-                },
-              }}
-              id='objective'
-              label={t('orders.trainingObjective.objective')}
-            />
-            <div className='flex justify-end'>
-              <div className='flex gap-2'>
-                {threatNumber > 1 && (
-                  <Button
-                    minimal
-                    intent='danger'
-                    icon='minus'
-                    onClick={() => {
-                      setThreatNumber(threatNumber - 1);
-                    }}
-                  >
-                    {t('orders.trainingObjective.removeLastThreat')}
-                  </Button>
-                )}
-                <Button
-                  minimal
-                  intent='primary'
-                  icon='plus'
-                  onClick={() => {
-                    setThreatNumber(threatNumber + 1);
-                  }}
-                >
-                  {t('orders.trainingObjective.addNewThreat')}
-                </Button>
-              </div>
-            </div>
-            {threatArray.map((threatNumber, index) => (
-              <DialogTextInput<TrainingObjectiveForm>
-                key={threatNumber}
-                controllerProps={{
-                  control,
-                  name: `threats.${index}`,
-                  rules: {
-                    required: t('orders.trainingObjective.threatRequired') ?? '',
-                    maxLength: {
-                      value: 56,
-                      message: t('orders.threatMaxLength.maxLength'),
-                    },
-                  },
-                  defaultValue: '',
-                }}
-                id={`threats.${index}`}
-                label={t('orders.trainingObjective.threat')}
-              />
-            ))}
-          </DialogBody>
-          <DialogFooter
-            actions={<Button intent='primary' type='submit' text={t('orders.submit')}/>}
-          />
-        </form>
-      </Dialog>
+        editableTrainingObjective={editedTrainingObjective}
+        onSubmit={onHandleSubmit}
+      />
       <Callout intent='primary' icon='info-sign'>
         {t('orders.trainingObjective.explenation')}
       </Callout>
-      <div className='mt-4 flex gap-2 justify-between'>
-        <div/>
+      <div className='mt-4 flex gap-4 justify-between items-start'>
+        <div className='flex flex-col gap-4 grow'>
+          {trainingObjectives.map(trainingObjective => {
+            const threats = trainingObjective.threats.slice()
+              .sort(sortByProperty('threat', 'asc')) ?? [];
+
+            return (
+              <Card key={trainingObjective.id} className='min-w-0' elevation={Elevation.TWO}>
+                <H4
+                  className='truncate max-w-xl'
+                >
+                  {trainingObjective.objective}
+                </H4>
+                <div className='flex flex-wrap gap-4'>
+                  {threats.map(threat => (
+                    <Tag
+                      key={threat.id}
+                      large
+                      minimal
+                      className='truncate max-w-xl'
+                      intent='primary'
+                    >
+                      {threat.threat}
+                    </Tag>
+                  ))}
+                </div>
+                <div className='flex mt-4 gap-2 justify-end'>
+                  <Button
+                    intent='danger'
+                    onClick={async () => {
+                      await deleteTrainingObjective({
+                        orderId: order.id,
+                        trainingObjectiveId: trainingObjective.id,
+                      });
+                    }}
+                  >
+                    {t('common.delete')}
+                  </Button>
+                  <Button
+                    intent='warning'
+                    onClick={() => {
+                      setEditedTrainingObjective(trainingObjective);
+                      setIsDialogOpen(true);
+                    }}
+                  >
+                    {t('common.edit')}
+                  </Button>
+                </div>
+              </Card>
+            );
+          })}
+        </div>
         <Button
           large
+          className='shrink-0'
           intent='primary'
           onClick={() => {
+            setEditedTrainingObjective(undefined);
             setIsDialogOpen(true);
           }}
         >

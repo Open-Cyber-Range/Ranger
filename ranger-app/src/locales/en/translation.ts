@@ -196,6 +196,7 @@ const language = {
     required: '(required)',
     submit: 'Submit',
     delete: 'Delete',
+    edit: 'Edit',
     back: 'Back',
     deleting: 'Deleting',
     add: 'Add',
@@ -437,7 +438,8 @@ const language = {
       add: 'Add Training Objective',
       explenation: `Start by creating training objectives for your order.
       Training objectives describe, what the participants are supposed to learn during the exercise.
-      Every objective is connected to list of the metrics, which are used to evaluate the objective.
+      Every objective is connected to a list of performance metrics, which are used to evaluate
+      trainees progression on achieving training objectives.
       End goal should be to have a list of training objectives, which covers all important threats
       that the participants should be able to handle.
       `,
@@ -451,6 +453,8 @@ const language = {
       addNewThreat: 'Add new threat',
       removeLastThreat: 'Remove last threat',
       failedtoAdd: 'Failed to add training objective',
+      failedToDelete: 'Failed to delete training objective',
+      failedToUpadate: 'Failed to update training objective',
     },
   },
 };
