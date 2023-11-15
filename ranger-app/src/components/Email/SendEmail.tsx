@@ -1,7 +1,12 @@
 import type React from 'react';
 import {useEffect, useState} from 'react';
 import type {Exercise} from 'src/models/exercise';
-import type {EmailForm, EmailTemplate} from 'src/models/email';
+import type {
+  EmailForm,
+  EmailTemplate,
+  EmailTemplateForm,
+  NewEmailTemplate,
+} from 'src/models/email';
 import {
   Button,
   FormGroup,
@@ -14,8 +19,10 @@ import {
 import {useTranslation} from 'react-i18next';
 import {Controller, type SubmitHandler, useForm} from 'react-hook-form';
 import {
+  useAdminAddEmailTemplateMutation,
   useAdminGetDeploymentsQuery,
-  useAdminGetEmailFormQuery, useAdminGetEmailTemplatesQuery,
+  useAdminGetEmailFormQuery,
+  useAdminGetEmailTemplatesQuery,
   useAdminSendEmailMutation,
 } from 'src/slices/apiSlice';
 import {toastSuccess, toastWarning} from 'src/components/Toaster';
@@ -38,16 +45,20 @@ import {useEmailVariablesInEditor} from 'src/hooks/useEmailVariablesInEditor';
 import {Tooltip2} from '@blueprintjs/popover2';
 import EmailVariablesPopover from './EmailVariablesPopover';
 import EmailVariablesInfo from './EmailVariablesInfo';
+import TemplateSaveDialog from './TemplateSaveDialog';
 
 const SendEmail = ({exercise}: {exercise: Exercise}) => {
   const {t} = useTranslation();
   const {data: emailTemplates} = useAdminGetEmailTemplatesQuery();
   const {data: deployments} = useAdminGetDeploymentsQuery(exercise.id);
   const {data: fromAddress} = useAdminGetEmailFormQuery(exercise.id);
-  const [sendMail, {isSuccess, error}] = useAdminSendEmailMutation();
+  const [sendMail, {isSuccess: sendSuccess, error: sendError}] = useAdminSendEmailMutation();
+  const [addEmailTemplate, {isSuccess: emailTemplateSuccess, error: emailTemplateError}]
+    = useAdminAddEmailTemplateMutation();
   const [selectedDeployment, setSelectedDeployment] = useState<string | undefined>(undefined);
   const [selectedEmailTemplate, setSelectedEmailTemplate] = useState<string | undefined>(undefined);
   const [emailTemplateContent, setEmailTemplateContent] = useState<string | undefined>(undefined);
+  const [isAddEmailTemplateDialogOpen, setIsAddEmailTemplateDialogOpen] = useState(false);
   const {deploymentUsers, fetchDeploymentUsers} = useGetDeploymentUsers();
   const [editorInstance, setEditorInstance]
   = useState<editor.IStandaloneCodeEditor | undefined>(undefined);
@@ -92,14 +103,37 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
 
   const handleEmailTemplateChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedTemplate = event.target.value;
-    setSelectedEmailTemplate(selectedTemplate)
-    if (selectedTemplate !== '') {
-      const selectedEmailTemplate = emailTemplates?.find((template: EmailTemplate) => template.name === selectedTemplate);
+    setSelectedEmailTemplate(selectedTemplate);
+    if (selectedTemplate !== '' && emailTemplates) {
+      const selectedEmailTemplate = emailTemplates.find((template: EmailTemplate) => template.name === selectedTemplate);
       if (selectedEmailTemplate) {
-        setEmailTemplateContent(selectedEmailTemplate.content || '');
+        setEmailTemplateContent(selectedEmailTemplate.content);
       }
+    } else {
+      setEmailTemplateContent('');
     }
-  }
+  };
+
+  const handleAddEmailTemplate = async (templateForm: EmailTemplateForm) => {
+    if (editorInstance?.getValue() === '') {
+      toastWarning(t('emails.template.required'));
+      return;
+    }
+
+    const templateData: NewEmailTemplate = {
+      name: templateForm.name,
+      content: editorInstance?.getValue() ?? '',
+    };
+    const response = await addEmailTemplate(templateData);
+    setSelectedEmailTemplate(templateData.name);
+    setEmailTemplateContent(templateData.content);
+    if (response && emailTemplates) {
+      // @ts-expect-error
+      emailTemplates.push(response.data);
+    }
+
+    setIsAddEmailTemplateDialogOpen(false);
+  };
 
   const processWholeExercise = async (email: EmailForm) => {
     if (!deployments || deployments.length === 0) {
@@ -263,22 +297,36 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
   };
 
   useEffect(() => {
-    if (isSuccess) {
+    if (sendSuccess) {
       toastSuccess(t('emails.sendingSuccess'));
     }
-  }, [isSuccess, t]);
+
+    if (emailTemplateSuccess) {
+      toastSuccess(t('emails.addingTemplateSuccess'));
+    }
+  }, [emailTemplateSuccess, sendSuccess, t]);
 
   useEffect(() => {
-    if (error) {
-      if ('data' in error) {
+    if (sendError) {
+      if ('data' in sendError) {
         toastWarning(t('emails.sendingFail', {
-          errorMessage: JSON.stringify(error.data),
+          errorMessage: JSON.stringify(sendError.data),
         }));
       } else {
         toastWarning(t('emails.sendingFailWithoutMessage'));
       }
     }
-  }, [error, t]);
+
+    if (emailTemplateError) {
+      if ('data' in emailTemplateError) {
+        toastWarning(t('emails.addingTemplateFail', {
+          errorMessage: JSON.stringify(emailTemplateError.data),
+        }));
+      } else {
+        toastWarning(t('emails.addingTemplateFailWithoutMessage'));
+      }
+    }
+  }, [emailTemplateError, sendError, t]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} onKeyDown={preventDefaultOnEnter}>
@@ -523,6 +571,14 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
           type='button'
           onClick={previewHtmlContent}
         />
+        <Button
+          large
+          intent='success'
+          text={t('emails.form.template.save')}
+          onClick={() => {
+            setIsAddEmailTemplateDialogOpen(true);
+          }}
+        />
         <Tooltip2
           content={t('emails.form.sendButtonDisabled') ?? ''}
           disabled={!isFetchingUsers}
@@ -536,6 +592,14 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
           />
         </Tooltip2>
       </div>
+      <TemplateSaveDialog
+        isOpen={isAddEmailTemplateDialogOpen}
+        title={t('emails.form.template.title')}
+        onCancel={() => {
+          setIsAddEmailTemplateDialogOpen(false);
+        }}
+        onSubmit={handleAddEmailTemplate}
+      />
     </form>
   );
 };

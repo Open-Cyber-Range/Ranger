@@ -26,8 +26,19 @@ type EmailForm = {
 };
 
 type EmailTemplate = {
+  id: string;
   name: string;
   content: string;
+  createdAt: string;
+};
+
+type NewEmailTemplate = {
+  name: string;
+  content: string;
+};
+
+type EmailTemplateForm = {
+  name: string;
 };
 
 type EmailVariable = {
@@ -45,5 +56,7 @@ export type {
   Email,
   EmailForm,
   EmailTemplate,
+  EmailTemplateForm,
   EmailVariable,
+  NewEmailTemplate,
 };

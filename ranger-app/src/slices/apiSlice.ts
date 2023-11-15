@@ -16,7 +16,12 @@ import {
   type UpdateExercise,
   type DeploymentEvent,
 } from 'src/models/exercise';
-import type {EmailForm, Email, EmailTemplate} from 'src/models/email';
+import type {
+  EmailForm,
+  Email,
+  EmailTemplate,
+  NewEmailTemplate,
+} from 'src/models/email';
 import {type AdGroup, type AdUser} from 'src/models/groups';
 import {type Scenario} from 'src/models/scenario';
 import {type Score} from 'src/models/score';
@@ -265,6 +270,11 @@ export const apiSlice = createApi({
     }),
     adminGetEmailTemplates: builder.query<EmailTemplate[], void>({
       query: () => '/admin/email_template',
+    }),
+    adminAddEmailTemplate: builder.mutation<EmailTemplate, NewEmailTemplate>({
+      query: newEmailTemplate => ({
+        url: '/admin/email_template', method: 'POST', body: newEmailTemplate,
+      }),
     }),
     participantGetExercises: builder.query<ParticipantExercise[], void>({
       query: () => '/participant/exercise',
@@ -526,6 +536,7 @@ export const {
   useAdminUpdateMetricMutation,
   useAdminDeleteMetricMutation,
   useAdminGetEmailTemplatesQuery,
+  useAdminAddEmailTemplateMutation,
   useLazyAdminGetManualMetricArtifactQuery,
   useParticipantGetExercisesQuery,
   useParticipantGetExerciseQuery,

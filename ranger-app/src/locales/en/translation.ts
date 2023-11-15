@@ -138,6 +138,9 @@ const language = {
     noDeployments: 'Cannot find any deployments for this exercise',
     fetchingUsersFail: 'Failed to fetch users',
     creatingEmailsFail: 'Failed to create emails',
+    addingTemplateSuccess: 'Email template added',
+    addingTemplateFail: 'Failed to add email template {{errorMessage}}',
+    addingTemplateFailWithoutMessage: 'Failed to add email template',
     form: {
       from: {
         title: 'From',
@@ -165,8 +168,11 @@ const language = {
         required: 'Email subject is required',
       },
       template: {
+        name: 'Email template name',
         title: 'Email template',
         placeholder: 'Select existing email template',
+        required: 'Email template is required',
+        save: 'Save body as template',
       },
       body: {
         title: 'Email body (HTML text editor)',
