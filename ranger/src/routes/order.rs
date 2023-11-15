@@ -1,16 +1,16 @@
 use crate::{
     errors::RangerError,
     middleware::order::OrderInfo,
-    models::{NewOrder, Order, OrderRest, TrainingObjectiveRest},
+    models::{helpers::uuid::Uuid, NewOrder, Order, OrderRest, TrainingObjectiveRest},
     services::database::order::{
-        CreateOrder, GetTrainingObjectivesByOrder, UpsertTrainingObjective,
+        CreateOrder, DeleteTrainingObjective, GetTrainingObjectivesByOrder, UpsertTrainingObjective,
     },
     utilities::{create_database_error_handler, create_mailbox_error_handler},
     AppState,
 };
 use actix_web::{
-    get, post,
-    web::{Data, Json},
+    delete, get, post,
+    web::{Data, Json, Path},
 };
 use anyhow::Result;
 
@@ -43,10 +43,29 @@ pub async fn create_training_objective(
             new_training_objectives.clone(),
         ))
         .await
-        .map_err(create_mailbox_error_handler("Database for orders"))?
+        .map_err(create_mailbox_error_handler(
+            "Database for training objectives",
+        ))?
         .map_err(create_database_error_handler("Upsert training objective"))?;
 
     Ok(Json(new_training_objectives.into_inner()))
+}
+
+#[delete("/training_objective/{training_objective_uuid}")]
+pub async fn delete_training_objective(
+    _order: OrderInfo,
+    path_variable: Path<(Uuid, Uuid)>,
+    app_state: Data<AppState>,
+) -> Result<Json<Uuid>, RangerError> {
+    let (_, training_objective_uuid) = path_variable.into_inner();
+    app_state
+        .database_address
+        .send(DeleteTrainingObjective(training_objective_uuid))
+        .await
+        .map_err(create_mailbox_error_handler("Database for orders"))?
+        .map_err(create_database_error_handler("Delete training objective"))?;
+
+    Ok(Json(training_objective_uuid))
 }
 
 #[get("")]

@@ -2,7 +2,8 @@ use std::collections::HashMap;
 
 use super::Database;
 use crate::models::{
-    helpers::uuid::Uuid, NewOrder, Order, Threat, TrainingObjective, TrainingObjectiveRest,
+    helpers::uuid::Uuid, NewOrder, Order, Threat, ThreatRest, TrainingObjective,
+    TrainingObjectiveRest,
 };
 use actix::{Handler, Message, ResponseActFuture, WrapFuture};
 use actix_web::web::block;
@@ -125,7 +126,7 @@ impl Handler<UpsertTrainingObjective> for Database {
                     let threats = training_objective_rest
                         .threats
                         .into_iter()
-                        .map(|threat| Threat::new(training_objective.id, threat))
+                        .map(|threat| Threat::new(training_objective.id, threat.threat))
                         .collect::<Vec<Threat>>();
                     Threat::batch_insert(threats).execute(&mut connection)?;
 
@@ -141,11 +142,11 @@ impl Handler<UpsertTrainingObjective> for Database {
 }
 
 #[derive(Message)]
-#[rtype(result = "Result<HashMap<TrainingObjective, Vec<Threat>>>")]
+#[rtype(result = "Result<HashMap<TrainingObjective, Vec<ThreatRest>>>")]
 pub struct GetTrainingObjectivesByOrder(pub Order);
 
 impl Handler<GetTrainingObjectivesByOrder> for Database {
-    type Result = ResponseActFuture<Self, Result<HashMap<TrainingObjective, Vec<Threat>>>>;
+    type Result = ResponseActFuture<Self, Result<HashMap<TrainingObjective, Vec<ThreatRest>>>>;
 
     fn handle(
         &mut self,
@@ -162,11 +163,14 @@ impl Handler<GetTrainingObjectivesByOrder> for Database {
                     let training_objectives =
                         TrainingObjective::by_order(&order).load(&mut connection)?;
 
-                    let mut threats_by_objectives: HashMap<TrainingObjective, Vec<Threat>> =
+                    let mut threats_by_objectives: HashMap<TrainingObjective, Vec<ThreatRest>> =
                         HashMap::new();
                     for trainining_objective in &training_objectives {
-                        let threats =
-                            Threat::by_objective(trainining_objective).load(&mut connection)?;
+                        let threats = Threat::by_objective(trainining_objective)
+                            .load(&mut connection)?
+                            .into_iter()
+                            .map(|threat| threat.into())
+                            .collect::<Vec<ThreatRest>>();
                         threats_by_objectives.insert(trainining_objective.clone(), threats);
                     }
 
@@ -175,6 +179,36 @@ impl Handler<GetTrainingObjectivesByOrder> for Database {
                 .await??;
 
                 Ok(objectives)
+            }
+            .into_actor(self),
+        )
+    }
+}
+
+#[derive(Message)]
+#[rtype(result = "Result<()>")]
+pub struct DeleteTrainingObjective(pub Uuid);
+
+impl Handler<DeleteTrainingObjective> for Database {
+    type Result = ResponseActFuture<Self, Result<()>>;
+
+    fn handle(&mut self, msg: DeleteTrainingObjective, _ctx: &mut Self::Context) -> Self::Result {
+        let DeleteTrainingObjective(training_objective_uuid) = msg;
+        let connection_result = self.get_connection();
+
+        Box::pin(
+            async move {
+                let mut connection = connection_result?;
+                block(move || {
+                    let training_objective =
+                        TrainingObjective::by_id(training_objective_uuid).first(&mut connection)?;
+                    training_objective.hard_delete().execute(&mut connection)?;
+
+                    Ok(())
+                })
+                .await??;
+
+                Ok(())
             }
             .into_actor(self),
         )

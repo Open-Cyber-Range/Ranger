@@ -106,6 +106,10 @@ impl TrainingObjective {
         diesel::delete(training_objectives::table.filter(training_objectives::id.eq(id)))
     }
 
+    pub fn hard_delete(&self) -> DeleteById<training_objectives::id, training_objectives::table> {
+        Self::hard_delete_by_id(self.id)
+    }
+
     fn all() -> All<training_objectives::table, Self> {
         training_objectives::table.select(Self::as_select())
     }
@@ -169,16 +173,34 @@ impl Threat {
 
 #[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct TrainingObjectiveRest {
-    pub objective: String,
-    pub threats: Vec<String>,
+pub struct ThreatRest {
+    pub id: Uuid,
+    pub threat: String,
 }
 
-impl From<(TrainingObjective, Vec<Threat>)> for TrainingObjectiveRest {
-    fn from((objective, threats): (TrainingObjective, Vec<Threat>)) -> Self {
+impl From<Threat> for ThreatRest {
+    fn from(threat: Threat) -> Self {
         Self {
+            id: threat.id,
+            threat: threat.threat,
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TrainingObjectiveRest {
+    pub id: Uuid,
+    pub objective: String,
+    pub threats: Vec<ThreatRest>,
+}
+
+impl From<(TrainingObjective, Vec<ThreatRest>)> for TrainingObjectiveRest {
+    fn from((objective, threats): (TrainingObjective, Vec<ThreatRest>)) -> Self {
+        Self {
+            id: objective.id,
             objective: objective.objective,
-            threats: threats.into_iter().map(|t| t.threat).collect(),
+            threats,
         }
     }
 }
