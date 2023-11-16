@@ -59,7 +59,6 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
     = useAdminAddEmailTemplateMutation();
   const [selectedDeployment, setSelectedDeployment] = useState<string | undefined>(undefined);
   const [selectedEmailTemplate, setSelectedEmailTemplate] = useState<string | undefined>(undefined);
-  const [emailTemplateContent, setEmailTemplateContent] = useState<string | undefined>(undefined);
   const [isAddEmailTemplateDialogOpen, setIsAddEmailTemplateDialogOpen] = useState(false);
   const {deploymentUsers, fetchDeploymentUsers} = useGetDeploymentUsers();
   const [editorInstance, setEditorInstance]
@@ -114,10 +113,10 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
         (template: EmailTemplate) => template.name === selectedTemplate,
       );
       if (selectedEmailTemplate) {
-        setEmailTemplateContent(selectedEmailTemplate.content);
+        setEditorContent(selectedEmailTemplate.content);
       }
     } else {
-      setEmailTemplateContent('');
+      setEditorContent('');
     }
   };
 
@@ -133,7 +132,7 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
     };
     setIsAddEmailTemplateDialogOpen(false);
     setSelectedEmailTemplate(templateData.name);
-    setEmailTemplateContent(templateData.content);
+    setEditorContent(templateData.content);
     await addEmailTemplate(templateData);
     await refetchEmailTemplates();
   };
@@ -549,7 +548,7 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
               >
                 <div className='h-[40vh] p-[0.5vh] rounded-sm shadow-inner'>
                   <Editor
-                    value={editorContent || emailTemplateContent}
+                    value={editorContent}
                     defaultLanguage='html'
                     onChange={value => {
                       setEditorContent(value ?? '');
