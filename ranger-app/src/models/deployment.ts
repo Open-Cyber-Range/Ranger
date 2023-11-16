@@ -36,7 +36,7 @@ type Deployment = {
 } & NewDeployment;
 
 type Deployers = Record<string, string[]>;
-
+type DefaultDeployer = string;
 export enum DeployerType {
   Switch = 'switch',
   Template = 'template',
@@ -73,4 +73,5 @@ export type {
   DeploymentElement,
   Deployers,
   DeploymentForm,
+  DefaultDeployer,
 };

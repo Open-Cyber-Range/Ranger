@@ -14,7 +14,10 @@ use actix_web::{
 };
 use anyhow::Result;
 use log::error;
-use sdl_parser::parse_sdl;
+use sdl_parser::{
+    node::{NodeType, VM},
+    parse_sdl,
+};
 use std::collections::HashMap;
 
 #[get("")]
@@ -28,23 +31,32 @@ pub async fn get_participant_events(
         error!("Failed to parse sdl: {error}");
         RangerError::ScenarioParsingFailed
     })?;
+    let vm_nodes: HashMap<String, VM> = scenario
+        .nodes
+        .into_iter()
+        .flat_map(|nodes| nodes.into_iter())
+        .filter_map(|(node_key, node)| {
+            if let NodeType::VM(vm_node) = node.type_field {
+                Some((node_key, vm_node))
+            } else {
+                None
+            }
+        })
+        .collect();
 
     let nodes_by_entity =
-        scenario
-            .nodes
+        vm_nodes
             .into_iter()
-            .fold(HashMap::new(), |mut accumulator, nodes| {
-                nodes.into_iter().for_each(|(node_key, node)| {
-                    if let Some(roles) = node.roles.clone() {
-                        roles.iter().for_each(|(_role_key, role)| {
-                            if let Some(entities) = &role.entities {
-                                if entities.contains(&entity_selector) {
-                                    accumulator.insert(node_key.clone(), node.clone());
-                                }
+            .fold(HashMap::new(), |mut accumulator, (vm_key, vm_node)| {
+                if let Some(roles) = vm_node.roles.clone() {
+                    roles.iter().for_each(|(_role_key, role)| {
+                        if let Some(entities) = &role.entities {
+                            if entities.contains(&entity_selector) {
+                                accumulator.insert(vm_key.clone(), vm_node.clone());
                             }
-                        })
-                    }
-                });
+                        }
+                    })
+                };
                 accumulator
             });
 

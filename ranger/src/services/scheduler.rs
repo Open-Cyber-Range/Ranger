@@ -3,7 +3,7 @@ use anyhow::{anyhow, Ok, Result};
 use sdl_parser::{
     feature::Feature,
     infrastructure::InfraNode,
-    node::{Node, Role},
+    node::{Node, NodeType, Role},
     Scenario,
 };
 use std::collections::HashMap;
@@ -81,10 +81,12 @@ impl CreateFeatureDeploymentSchedule {
         let scenario = &self.0;
         let node = &self.1;
         let mut tranches_with_roles: HashMap<&String, Vec<Vec<String>>> = HashMap::new();
+        let vm_node = match &node.type_field {
+            NodeType::VM(vm_node) => vm_node,
+            _ => return Ok(vec![vec![]]),
+        };
 
-        let node_features = node.clone().features.unwrap_or_default();
-
-        for (node_feature_name, node_feature_role) in node_features.iter() {
+        for (node_feature_name, node_feature_role) in vm_node.features.iter() {
             let dependencies = scenario.get_a_node_features_dependencies(node_feature_name)?;
             let mut tranches = dependencies.generate_tranches()?;
 
@@ -94,7 +96,7 @@ impl CreateFeatureDeploymentSchedule {
 
             tranches_with_roles.insert(node_feature_role, tranches);
         }
-        let roles = node.roles.clone().unwrap_or_default();
+        let roles = vm_node.roles.clone().unwrap_or_default();
 
         if let Some(features) = &scenario.features {
             let mut feature_schedule: Vec<Vec<(String, Feature, Role)>> = Vec::new();

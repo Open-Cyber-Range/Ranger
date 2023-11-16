@@ -33,21 +33,21 @@ impl Deployable for (String, Node, Deployment, String, Vec<String>, Option<Uuid>
         });
         let name = name.to_string();
         let links = links.to_vec();
-        Ok(match node.type_field {
-            NodeType::VM => Box::new(DeployVirtualMachine {
+        Ok(match &node.type_field {
+            NodeType::VM(vm_node) => Box::new(DeployVirtualMachine {
                 virtual_machine: Some(VirtualMachine {
                     name,
                     links,
-                    configuration: node.resources.as_ref().map(|resource| Configuration {
-                        cpu: resource.cpu,
-                        ram: resource.ram,
+                    configuration: Some(Configuration {
+                        cpu: vm_node.resources.cpu,
+                        ram: vm_node.resources.ram,
                     }),
                     template_id: try_some(template_id.to_owned(), "Template Id not found")?
                         .to_string(),
                 }),
                 meta_info,
             }),
-            NodeType::Switch => Box::new(DeploySwitch {
+            NodeType::Switch(_) => Box::new(DeploySwitch {
                 switch: Some(Switch { name, links }),
                 meta_info,
             }),
@@ -111,8 +111,9 @@ impl DeployableNodes for Scenario {
                     .iter()
                     .map(|(unique_name, node, infra_node)| async move {
                         let deployer_type = match node.type_field {
-                            sdl_parser::node::NodeType::VM => GrpcDeployerType::VirtualMachine,
-                            sdl_parser::node::NodeType::Switch => GrpcDeployerType::Switch,
+                            NodeType::VM(_) => GrpcDeployerType::VirtualMachine,
+                            NodeType::Switch(_) => GrpcDeployerType::Switch,
+
                         };
                         let mut deployment_element = addressor
                             .database
@@ -147,9 +148,14 @@ impl DeployableNodes for Scenario {
                                 },
                             ))
                             .await?;
+
+                        let source = match &node.type_field {
+                            NodeType::VM(vm_node) => vm_node.source.clone(),
+                            NodeType::Switch(_) => None,
+                        };
+
                         let template_id =
-                            get_template_id(deployment.id, &node.source, &addressor.database)
-                                .await?;
+                            get_template_id(deployment.id, &source, &addressor.database).await?;
                         let command = (
                             unique_name.clone(),
                             node.clone(),
@@ -204,13 +210,13 @@ impl DeployableNodes for Scenario {
         let vm_nodes: Vec<(Node, DeploymentElement, Uuid)> = deployment_results
             .concat()
             .into_iter()
-            .filter_map(|(node, deployment_element, potential_template_id)| {
-                if node.type_field == NodeType::VM {
-                    potential_template_id.map(|template_id| (node, deployment_element, template_id))
-                } else {
-                    None
-                }
-            })
+            .filter_map(
+                |(node, deployment_element, potential_template_id)| match node.type_field {
+                    NodeType::VM(_) => potential_template_id
+                        .map(|template_id| (node, deployment_element, template_id)),
+                    _ => None,
+                },
+            )
             .collect();
 
         Ok(vm_nodes)

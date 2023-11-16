@@ -18,7 +18,7 @@ use ranger::routes::admin::metric::{
     update_admin_metric,
 };
 use ranger::routes::admin::scenario::get_admin_exercise_deployment_scenario;
-use ranger::routes::deployers::get_deployers;
+use ranger::routes::deployers::{default_deployer, get_deployers};
 use ranger::routes::exercise::{
     add_banner, add_exercise, add_exercise_deployment, add_participant, delete_banner,
     delete_exercise, delete_exercise_deployment, delete_participant, get_admin_participants,
@@ -129,7 +129,11 @@ async fn main() -> Result<(), Error> {
                                             )
                                     ),
                             )
-                            .service(get_deployers)
+                            .service(
+                                scope("/deployer")
+                                    .service(get_deployers)
+                                    .service(default_deployer),
+                            )
                             .service(
                                 scope("/group")
                                     .service(get_participant_groups)
@@ -203,6 +207,9 @@ async fn main() -> Result<(), Error> {
                                                                 )
                                                             )
                                                     ),
+                                            )
+                                            .service(scope("/banner")
+                                                    .service(get_banner)
                                             )
                                             .wrap(ExerciseMiddlewareFactory),
                                     ),
