@@ -130,8 +130,6 @@ const language = {
     replyTo: 'Reply to',
     subject: 'Subject',
     body: 'Body',
-    send: 'Send',
-    sendButtonDisabled: 'Fetching users to send emails to...',
     sendingSuccess: 'Email sent',
     sendingFail: 'Error trying to send the email: {{errorMessage}}',
     sendingFailWithoutMessage: 'Failed to send the email',
@@ -170,6 +168,9 @@ const language = {
         title: 'Email body (HTML text editor)',
         required: 'Email body is required',
       },
+      preview: 'Preview',
+      send: 'Send',
+      sendButtonDisabled: 'Fetching users to send emails to...',
       emailPlaceholder:
       '...multiple addresses separated by comma or enter',
       required: ' (required)',

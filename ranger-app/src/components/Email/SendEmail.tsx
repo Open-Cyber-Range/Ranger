@@ -30,6 +30,9 @@ import {
   prepareEmail,
   removeUnnecessaryEmailAddresses,
   validateEmailForm,
+  prepareForPreviewWithoutUserOrDeployment,
+  prepareForPreview,
+  openNewBlobWindow,
 } from 'src/utils/email';
 import {useEmailVariablesInEditor} from 'src/hooks/useEmailVariablesInEditor';
 import {Tooltip2} from '@blueprintjs/popover2';
@@ -48,6 +51,7 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
   const {emailVariables, insertVariable}
   = useEmailVariablesInEditor(selectedDeployment, editorInstance);
   const [isFetchingUsers, setIsFetchingUsers] = useState(false);
+  const [editorContent, setEditorContent] = useState('');
   useExerciseStreaming(exercise.id);
 
   const handleDeploymentChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -169,7 +173,7 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
     await Promise.all(emailPromises);
   };
 
-  const {handleSubmit, control} = useForm<EmailForm>({
+  const {handleSubmit, control, watch} = useForm<EmailForm>({
     defaultValues: {
       toAddresses: [],
       replyToAddresses: [],
@@ -196,6 +200,50 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
       await processWholeExercise(email);
     } else if (selectedDeployment) {
       await processSelectedDeployment(email, selectedDeployment);
+    }
+  };
+
+  const emailSubject = watch('subject');
+
+  const previewHtmlContent = () => {
+    let preparedEmailSubject
+     = prepareForPreviewWithoutUserOrDeployment(emailSubject, exercise.name);
+    let preparedEditorContent
+     = prepareForPreviewWithoutUserOrDeployment(editorContent, exercise.name);
+
+    if (selectedDeployment === 'wholeExercise') {
+      const deployment: Deployment | undefined = deployments?.[0];
+      preparePreviews(deployment);
+    } else if (selectedDeployment) {
+      const deployment = deployments?.find(d => d.id === selectedDeployment);
+      preparePreviews(deployment);
+    }
+
+    const combinedContent = `
+      <h2>${preparedEmailSubject}</h2> 
+      ${preparedEditorContent}
+    `;
+
+    openNewBlobWindow(combinedContent);
+
+    function preparePreviews(deployment: Deployment | undefined) {
+      if (deployment) {
+        const user = deploymentUsers?.[deployment.id]?.[0];
+        if (user) {
+          preparedEmailSubject = prepareForPreview(
+            emailSubject,
+            exercise.name,
+            deployment.name,
+            user,
+          );
+          preparedEditorContent = prepareForPreview(
+            editorContent,
+            exercise.name,
+            deployment.name,
+            user,
+          );
+        }
+      }
     }
   };
 
@@ -396,7 +444,7 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
           name='body'
           rules={{required: t('emails.form.body.required') ?? ''}}
           render={({
-            field: {onChange, value}, fieldState: {error},
+            field: {onChange}, fieldState: {error},
           }) => {
             const intent = error ? Intent.DANGER : Intent.NONE;
             return (
@@ -417,9 +465,10 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
               >
                 <div className='h-[40vh] p-[0.5vh] rounded-sm shadow-inner'>
                   <Editor
-                    value={value}
+                    value={editorContent}
                     defaultLanguage='html'
                     onChange={value => {
+                      setEditorContent(value ?? '');
                       onChange(value ?? '');
                     }}
                     onMount={editor => {
@@ -432,16 +481,24 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
           }}
         />
       </div>
-      <div className='flex justify-end mt-[1rem] gap-[0.5rem]'>
+      <div className='flex justify-end mt-[1rem] mb-[1rem] gap-[0.5rem] '>
+        <Button
+          large
+          outlined
+          intent='primary'
+          text={t('emails.form.preview')}
+          type='button'
+          onClick={previewHtmlContent}
+        />
         <Tooltip2
-          content={t('emails.sendButtonDisabled') ?? ''}
+          content={t('emails.form.sendButtonDisabled') ?? ''}
           disabled={!isFetchingUsers}
         >
           <Button
             large
             type='submit'
             intent='primary'
-            text={t('emails.send')}
+            text={t('emails.form.send')}
             disabled={isFetchingUsers}
           />
         </Tooltip2>
