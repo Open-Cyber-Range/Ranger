@@ -481,9 +481,10 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
           }}
         />
       </div>
-      <div className='flex flex-col gap-2 items-start'>
+      <div className='flex justify-end mt-[1rem] mb-[1rem] gap-[0.5rem] '>
         <Button
           large
+          outlined
           intent='primary'
           text={t('emails.form.preview')}
           type='button'
