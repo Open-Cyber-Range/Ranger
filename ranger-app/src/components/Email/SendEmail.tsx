@@ -43,13 +43,15 @@ import {
 } from 'src/utils/email';
 import {useEmailVariablesInEditor} from 'src/hooks/useEmailVariablesInEditor';
 import {Tooltip2} from '@blueprintjs/popover2';
+import {sortByProperty} from 'sort-by-property';
 import EmailVariablesPopover from './EmailVariablesPopover';
 import EmailVariablesInfo from './EmailVariablesInfo';
 import TemplateSaveDialog from './TemplateSaveDialog';
 
 const SendEmail = ({exercise}: {exercise: Exercise}) => {
   const {t} = useTranslation();
-  const {data: emailTemplates} = useAdminGetEmailTemplatesQuery();
+  const {data: potentialEmailTemplates, refetch: refetchEmailTemplates}
+    = useAdminGetEmailTemplatesQuery();
   const {data: deployments} = useAdminGetDeploymentsQuery(exercise.id);
   const {data: fromAddress} = useAdminGetEmailFormQuery(exercise.id);
   const [sendMail, {isSuccess: sendSuccess, error: sendError}] = useAdminSendEmailMutation();
@@ -67,6 +69,9 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
   const [isFetchingUsers, setIsFetchingUsers] = useState(false);
   const [editorContent, setEditorContent] = useState('');
   useExerciseStreaming(exercise.id);
+
+  let emailTemplates = potentialEmailTemplates ?? [];
+  emailTemplates = emailTemplates.slice().sort(sortByProperty('name', 'desc'));
 
   const handleDeploymentChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedValue = event.target.value;
@@ -105,7 +110,9 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
     const selectedTemplate = event.target.value;
     setSelectedEmailTemplate(selectedTemplate);
     if (selectedTemplate !== '' && emailTemplates) {
-      const selectedEmailTemplate = emailTemplates.find((template: EmailTemplate) => template.name === selectedTemplate);
+      const selectedEmailTemplate = emailTemplates.find(
+        (template: EmailTemplate) => template.name === selectedTemplate,
+      );
       if (selectedEmailTemplate) {
         setEmailTemplateContent(selectedEmailTemplate.content);
       }
@@ -124,15 +131,11 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
       name: templateForm.name,
       content: editorInstance?.getValue() ?? '',
     };
-    const response = await addEmailTemplate(templateData);
+    setIsAddEmailTemplateDialogOpen(false);
     setSelectedEmailTemplate(templateData.name);
     setEmailTemplateContent(templateData.content);
-    if (response && emailTemplates) {
-      // @ts-expect-error
-      emailTemplates.push(response.data);
-    }
-
-    setIsAddEmailTemplateDialogOpen(false);
+    await addEmailTemplate(templateData);
+    await refetchEmailTemplates();
   };
 
   const processWholeExercise = async (email: EmailForm) => {
