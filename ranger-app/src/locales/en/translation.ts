@@ -168,7 +168,7 @@ const language = {
         title: 'Email body (HTML text editor)',
         required: 'Email body is required',
       },
-      preview: 'Preview email',
+      preview: 'Preview',
       send: 'Send',
       sendButtonDisabled: 'Fetching users to send emails to...',
       emailPlaceholder:
