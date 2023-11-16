@@ -1,46 +1,26 @@
 import React from 'react';
 import '@blueprintjs/popover2/lib/css/blueprint-popover2.css';
-import {useAdminGetDeploymentScenarioQuery} from 'src/slices/apiSlice';
-import {ExerciseRoleOrder} from 'src/models/scenario';
-import {flattenEntities, getTloKeysByRole, getUniqueRoles} from 'src/utils';
+import {type ExerciseRole} from 'src/models/scenario';
 import ScoreTag from './ScoreTag';
 
-const ScoreTagGroup = ({exerciseId, deploymentId}:
+const ScoreTagGroup = ({exerciseId, deploymentId, roles}:
 {exerciseId: string;
   deploymentId: string;
+  roles: ExerciseRole[];
 }) => {
-  const queryParameters = {exerciseId, deploymentId};
-  const {data: scenario} = useAdminGetDeploymentScenarioQuery(queryParameters);
-  const entities = scenario?.entities;
-
-  if (entities) {
-    const flattenedEntities = flattenEntities(entities);
-    const roles = getUniqueRoles(flattenedEntities);
-    roles.sort((a, b) => ExerciseRoleOrder[a] - ExerciseRoleOrder[b]);
-
+  if (roles) {
     return (
       <div className='flex m-1 mt-auto mb-auto'>
-        {roles.map(role => {
-          const roleTloNames
-          = getTloKeysByRole(flattenedEntities, role);
-
-          const roleHasTlos = roleTloNames && roleTloNames.length > 0;
-
-          if (roleHasTlos) {
-            return (
-              <div key={role} className='flex mr-1'>
-                <ScoreTag
-                  key={role}
-                  exerciseId={exerciseId}
-                  deploymentId={deploymentId}
-                  role={role}
-                />
-              </div>
-            );
-          }
-
-          return null;
-        },
+        {roles.map((role: ExerciseRole) => (
+          <div key={role} className='flex mr-1'>
+            <ScoreTag
+              key={role}
+              exerciseId={exerciseId}
+              deploymentId={deploymentId}
+              role={role}
+            />
+          </div>
+        ),
         )}
       </div>
     );
