@@ -54,7 +54,7 @@ const TemplateSaveDialog = (
             }}
           />
         </div>
-        <form onSubmit={handleSubmit(onHandleSubmit)}>
+        <form>
           <div className={Classes.DIALOG_BODY}>
             <Controller
               control={control}
@@ -90,9 +90,10 @@ const TemplateSaveDialog = (
             <div className={Classes.DIALOG_FOOTER_ACTIONS}>
               <Button
                 large
-                type='submit'
+                type='button'
                 intent='primary'
                 text={t('common.add')}
+                onClick={handleSubmit(onHandleSubmit)}
               />
             </div>
           </div>
