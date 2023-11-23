@@ -276,6 +276,14 @@ export const apiSlice = createApi({
         url: '/admin/email_template', method: 'POST', body: newEmailTemplate,
       }),
     }),
+    adminDeleteEmailTemplate: builder
+      .mutation<string, {templateId: string}>({
+      query: ({templateId}) => ({
+        url: `/admin/email_template/${templateId}`,
+        method: 'DELETE',
+        responseHandler: 'text',
+      }),
+    }),
     participantGetExercises: builder.query<ParticipantExercise[], void>({
       query: () => '/participant/exercise',
       providesTags: (result = []) =>
@@ -537,6 +545,7 @@ export const {
   useAdminDeleteMetricMutation,
   useAdminGetEmailTemplatesQuery,
   useAdminAddEmailTemplateMutation,
+  useAdminDeleteEmailTemplateMutation,
   useLazyAdminGetManualMetricArtifactQuery,
   useParticipantGetExercisesQuery,
   useParticipantGetExerciseQuery,

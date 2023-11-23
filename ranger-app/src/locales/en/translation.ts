@@ -141,6 +141,9 @@ const language = {
     addingTemplateSuccess: 'Email template added',
     addingTemplateFail: 'Failed to add email template {{errorMessage}}',
     addingTemplateFailWithoutMessage: 'Failed to add email template',
+    deletingTemplateSuccess: 'Email template deleted',
+    deletingTemplateFail: 'Failed to delete email template {{errorMessage}}',
+    deletingTemplateFailWithoutMessage: 'Failed to delete email template',
     form: {
       from: {
         title: 'From',
@@ -173,6 +176,7 @@ const language = {
         placeholder: 'Select existing email template',
         required: 'Email template is required',
         save: 'Save body as template',
+        delete: 'Delete selected template',
       },
       body: {
         title: 'Email body (HTML text editor)',

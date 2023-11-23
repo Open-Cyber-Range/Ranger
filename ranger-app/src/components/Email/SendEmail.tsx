@@ -20,6 +20,7 @@ import {useTranslation} from 'react-i18next';
 import {Controller, type SubmitHandler, useForm} from 'react-hook-form';
 import {
   useAdminAddEmailTemplateMutation,
+  useAdminDeleteEmailTemplateMutation,
   useAdminGetDeploymentsQuery,
   useAdminGetEmailFormQuery,
   useAdminGetEmailTemplatesQuery,
@@ -55,9 +56,12 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
   const {data: deployments} = useAdminGetDeploymentsQuery(exercise.id);
   const {data: fromAddress} = useAdminGetEmailFormQuery(exercise.id);
   const [sendMail, {isSuccess: sendSuccess, error: sendError}] = useAdminSendEmailMutation();
-  const [addEmailTemplate, {isSuccess: emailTemplateSuccess, error: emailTemplateError}]
+  const [addEmailTemplate, {isSuccess: templateAddSuccess, error: templateAddError}]
     = useAdminAddEmailTemplateMutation();
+  const [deleteEmailTemplate, {isSuccess: templateDeleteSuccess, error: templateDeleteError}]
+    = useAdminDeleteEmailTemplateMutation();
   const [selectedDeployment, setSelectedDeployment] = useState<string | undefined>(undefined);
+  const [emailTemplates, setEmailTemplates] = useState<EmailTemplate[] | undefined>(undefined);
   const [selectedEmailTemplate, setSelectedEmailTemplate] = useState<string | undefined>(undefined);
   const [isAddEmailTemplateDialogOpen, setIsAddEmailTemplateDialogOpen] = useState(false);
   const {deploymentUsers, fetchDeploymentUsers} = useGetDeploymentUsers();
@@ -68,9 +72,6 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
   const [isFetchingUsers, setIsFetchingUsers] = useState(false);
   const [editorContent, setEditorContent] = useState('');
   useExerciseStreaming(exercise.id);
-
-  let emailTemplates = potentialEmailTemplates ?? [];
-  emailTemplates = emailTemplates.slice().sort(sortByProperty('name', 'desc'));
 
   const handleDeploymentChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedValue = event.target.value;
@@ -122,7 +123,7 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
 
   const handleAddEmailTemplate = async (templateForm: EmailTemplateForm) => {
     if (editorInstance?.getValue() === '') {
-      toastWarning(t('emails.template.required'));
+      toastWarning(t('emails.form.template.required'));
       return;
     }
 
@@ -135,6 +136,21 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
     setEditorContent(templateData.content);
     await addEmailTemplate(templateData);
     await refetchEmailTemplates();
+  };
+
+  const handleDeleteEmailTemplate = async (templateName: string) => {
+    setSelectedEmailTemplate(undefined);
+    setEditorContent('');
+
+    if (emailTemplates) {
+      const selectedEmailTemplate = emailTemplates.find(
+        (template: EmailTemplate) => template.name === templateName,
+      );
+      if (selectedEmailTemplate) {
+        await deleteEmailTemplate({templateId: selectedEmailTemplate.id});
+        await refetchEmailTemplates();
+      }
+    }
   };
 
   const processWholeExercise = async (email: EmailForm) => {
@@ -299,14 +315,27 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
   };
 
   useEffect(() => {
+    const emailTemplates = potentialEmailTemplates ?? [];
+    setEmailTemplates(emailTemplates.slice().sort(sortByProperty('name', 'desc')));
+  }, [potentialEmailTemplates]);
+
+  useEffect(() => {
     if (sendSuccess) {
       toastSuccess(t('emails.sendingSuccess'));
     }
+  }, [sendSuccess, t]);
 
-    if (emailTemplateSuccess) {
+  useEffect(() => {
+    if (templateAddSuccess) {
       toastSuccess(t('emails.addingTemplateSuccess'));
     }
-  }, [emailTemplateSuccess, sendSuccess, t]);
+  }, [templateAddSuccess, t]);
+
+  useEffect(() => {
+    if (templateDeleteSuccess) {
+      toastSuccess(t('emails.deletingTemplateSuccess'));
+    }
+  }, [templateDeleteSuccess, t]);
 
   useEffect(() => {
     if (sendError) {
@@ -318,17 +347,31 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
         toastWarning(t('emails.sendingFailWithoutMessage'));
       }
     }
+  }, [sendError, t]);
 
-    if (emailTemplateError) {
-      if ('data' in emailTemplateError) {
+  useEffect(() => {
+    if (templateAddError) {
+      if ('data' in templateAddError) {
         toastWarning(t('emails.addingTemplateFail', {
-          errorMessage: JSON.stringify(emailTemplateError.data),
+          errorMessage: JSON.stringify(templateAddError.data),
         }));
       } else {
         toastWarning(t('emails.addingTemplateFailWithoutMessage'));
       }
     }
-  }, [emailTemplateError, sendError, t]);
+  }, [templateAddError, t]);
+
+  useEffect(() => {
+    if (templateDeleteError) {
+      if ('data' in templateDeleteError) {
+        toastWarning(t('emails.deletingTemplateFail', {
+          errorMessage: JSON.stringify(templateDeleteError.data),
+        }));
+      } else {
+        toastWarning(t('emails.deletingTemplateFailWithoutMessage'));
+      }
+    }
+  }, [templateDeleteError, t]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} onKeyDown={preventDefaultOnEnter}>
@@ -522,6 +565,26 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
             ))}
           </HTMLSelect>
         </FormGroup>
+        <div className='flex justify-end mt-[1rem] mb-[1rem] gap-[0.5rem] '>
+          {selectedEmailTemplate && (
+            <Button
+              large
+              intent='danger'
+              text={t('emails.form.template.delete')}
+              onClick={() => {
+                void handleDeleteEmailTemplate(selectedEmailTemplate);
+              }}
+            />
+          )}
+          <Button
+            large
+            intent='success'
+            text={t('emails.form.template.save')}
+            onClick={() => {
+              setIsAddEmailTemplateDialogOpen(true);
+            }}
+          />
+        </div>
         <Controller
           control={control}
           name='body'
@@ -572,14 +635,6 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
           text={t('emails.form.preview')}
           type='button'
           onClick={previewHtmlContent}
-        />
-        <Button
-          large
-          intent='success'
-          text={t('emails.form.template.save')}
-          onClick={() => {
-            setIsAddEmailTemplateDialogOpen(true);
-          }}
         />
         <Tooltip2
           content={t('emails.form.sendButtonDisabled') ?? ''}
