@@ -170,11 +170,11 @@ const language = {
         title: 'Email subject',
         required: 'Email subject is required',
       },
-      template: {
+      templateName: {
         name: 'Email template name',
         title: 'Email template',
         placeholder: 'Select existing email template',
-        required: 'Email template is required',
+        required: 'Email template name is required',
         save: 'Save body as template',
         delete: 'Delete selected template',
       },

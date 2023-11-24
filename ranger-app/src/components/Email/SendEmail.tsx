@@ -125,7 +125,7 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
 
   const handleAddEmailTemplate = async (templateForm: EmailTemplateForm) => {
     if (editorInstance?.getValue() === '') {
-      toastWarning(t('emails.form.template.required'));
+      toastWarning(t('emails.form.body.required'));
       return;
     }
 
@@ -552,7 +552,7 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
             );
           }}
         />
-        <FormGroup label={t('emails.form.template.title')}>
+        <FormGroup label={t('emails.form.templateName.title')}>
           <HTMLSelect
             autoFocus
             large
@@ -561,7 +561,7 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
             onChange={handleEmailTemplateChange}
           >
             <option value=''>
-              {t('emails.form.template.placeholder')}
+              {t('emails.form.templateName.placeholder')}
             </option>
             {emailTemplates?.map((emailTemplate: EmailTemplate) => (
               <option key={emailTemplate.name} value={emailTemplate.name}>
@@ -575,7 +575,7 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
             <Button
               large
               intent='danger'
-              text={t('emails.form.template.delete')}
+              text={t('emails.form.templateName.delete')}
               onClick={() => {
                 void handleDeleteEmailTemplate(selectedEmailTemplate);
               }}
@@ -584,7 +584,7 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
           <Button
             large
             intent='success'
-            text={t('emails.form.template.save')}
+            text={t('emails.form.templateName.save')}
             onClick={() => {
               setIsAddEmailTemplateDialogOpen(true);
             }}
@@ -655,7 +655,7 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
       </div>
       <TemplateSaveDialog
         isOpen={isAddEmailTemplateDialogOpen}
-        title={t('emails.form.template.title')}
+        title={t('emails.form.templateName.title')}
         onCancel={() => {
           setIsAddEmailTemplateDialogOpen(false);
         }}

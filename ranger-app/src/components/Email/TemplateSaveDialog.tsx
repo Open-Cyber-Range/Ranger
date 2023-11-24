@@ -37,7 +37,7 @@ const TemplateSaveDialog = (
   };
 
   useEffect(() => {
-    register('name', {required: t('emails.form.template.required') ?? ''});
+    register('name', {required: t('emails.form.templateName.required') ?? ''});
   }, [register, t]);
 
   if (isOpen !== undefined) {
@@ -59,7 +59,7 @@ const TemplateSaveDialog = (
             <Controller
               control={control}
               name='name'
-              rules={{required: t('emails.form.template.required') ?? ''}}
+              rules={{required: t('emails.form.templateName.required') ?? ''}}
               render={({
                 field: {onChange, onBlur, ref, value}, fieldState: {error},
               }) => {
@@ -70,7 +70,7 @@ const TemplateSaveDialog = (
                     labelInfo='(required)'
                     helperText={error?.message}
                     intent={intent}
-                    label={t('emails.form.template.name')}
+                    label={t('emails.form.templateName.name')}
                   >
                     <InputGroup
                       large
