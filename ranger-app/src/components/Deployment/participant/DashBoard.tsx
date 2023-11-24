@@ -35,7 +35,7 @@ const ParticipantDashBoard = ({exerciseId, deploymentId, existingBanner}:
   );
 
   return (
-    <div>
+    <div className='flex flex-col h-full min-h-screen'>
       <H2>{parsedBanner.name}</H2>
       <MarkdownFrame content={parsedBanner.content}/>
     </div>

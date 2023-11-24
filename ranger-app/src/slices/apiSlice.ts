@@ -15,6 +15,7 @@ import {
   type NewExercise,
   type UpdateExercise,
   type DeploymentEvent,
+  type EventInfo,
 } from 'src/models/exercise';
 import type {
   EmailForm,
@@ -357,6 +358,18 @@ export const apiSlice = createApi({
           exerciseId}/deployment/${deploymentId}/entity/${entitySelector}/event`;
       },
     }),
+    participantGetEventInfo: builder.query<EventInfo | undefined,
+    {
+      exerciseId: string;
+      deploymentId: string;
+      entitySelector: string;
+      eventInfoDataChecksum: string;
+    }>({
+      query({exerciseId, deploymentId, entitySelector, eventInfoDataChecksum}) {
+        // eslint-disable-next-line max-len
+        return `/participant/exercise/${exerciseId}/deployment/${deploymentId}/entity/${entitySelector}/event/${eventInfoDataChecksum}`;
+      },
+    }),
     participantGetBanner: builder.query<Banner, string>({
       query: exerciseId =>
         `/participant/exercise/${exerciseId}/banner`,
@@ -556,6 +569,7 @@ export const {
   useParticipantGetDeploymentScenarioQuery,
   useParticipantGetOwnParticipantsQuery,
   useParticipantGetTriggeredEventsQuery,
+  useParticipantGetEventInfoQuery,
   useParticipantGetBannerQuery,
   useParticipantGetMetricQuery,
   useParticipantGetMetricsQuery,

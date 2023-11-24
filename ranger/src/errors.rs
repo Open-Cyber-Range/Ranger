@@ -67,6 +67,8 @@ pub enum RangerError {
     PayloadTooLarge,
     #[error("Unsupported media type")]
     UnsupportedMediaType,
+    #[error("Missing query parameter \"{0}\"")]
+    MissingParameter(String),
 }
 
 impl ResponseError for RangerError {
@@ -92,6 +94,7 @@ impl ResponseError for RangerError {
             RangerError::MetricAlreadyScored => StatusCode::FORBIDDEN,
             RangerError::PayloadTooLarge => StatusCode::PAYLOAD_TOO_LARGE,
             RangerError::UnsupportedMediaType => StatusCode::UNSUPPORTED_MEDIA_TYPE,
+            RangerError::MissingParameter(_) => StatusCode::BAD_REQUEST,
             _ => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
