@@ -70,7 +70,6 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
   const {emailVariables, insertVariable}
   = useEmailVariablesInEditor(selectedDeployment, editorInstance);
   const [isFetchingUsers, setIsFetchingUsers] = useState(false);
-  const [editorContent, setEditorContent] = useState('');
   useExerciseStreaming(exercise.id);
 
   const handleDeploymentChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -109,16 +108,19 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
   const handleEmailTemplateChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedTemplate = event.target.value;
     setSelectedEmailTemplate(selectedTemplate);
+    const editor = editorInstance;
     if (selectedTemplate !== '' && emailTemplates) {
       const selectedEmailTemplate = emailTemplates.find(
         (template: EmailTemplate) => template.name === selectedTemplate,
       );
-      if (selectedEmailTemplate) {
-        setEditorContent(selectedEmailTemplate.content);
+      if (selectedEmailTemplate && editor) {
+        editor.setValue(selectedEmailTemplate.content);
       }
-    } else {
-      setEditorContent('');
+    } else if (editor) {
+      editor.setValue('');
     }
+
+    setEditorInstance(editor);
   };
 
   const handleAddEmailTemplate = async (templateForm: EmailTemplateForm) => {
@@ -133,14 +135,17 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
     };
     setIsAddEmailTemplateDialogOpen(false);
     setSelectedEmailTemplate(templateData.name);
-    setEditorContent(templateData.content);
     await addEmailTemplate(templateData);
     await refetchEmailTemplates();
   };
 
   const handleDeleteEmailTemplate = async (templateName: string) => {
     setSelectedEmailTemplate(undefined);
-    setEditorContent('');
+    const editor = editorInstance;
+    if (editor) {
+      editor.setValue('');
+      setEditorInstance(editor);
+    }
 
     if (emailTemplates) {
       const selectedEmailTemplate = emailTemplates.find(
@@ -276,7 +281,7 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
     let preparedEmailSubject
      = prepareForPreviewWithoutUserOrDeployment(emailSubject, exercise.name);
     let preparedEditorContent
-     = prepareForPreviewWithoutUserOrDeployment(editorContent, exercise.name);
+     = prepareForPreviewWithoutUserOrDeployment(editorInstance?.getValue() ?? '', exercise.name);
 
     if (selectedDeployment === 'wholeExercise') {
       const deployment: Deployment | undefined = deployments?.[0];
@@ -304,7 +309,7 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
             user,
           );
           preparedEditorContent = prepareForPreview(
-            editorContent,
+            editorInstance?.getValue() ?? '',
             exercise.name,
             deployment.name,
             user,
@@ -611,10 +616,9 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
               >
                 <div className='h-[40vh] p-[0.5vh] rounded-sm shadow-inner'>
                   <Editor
-                    value={editorContent}
+                    value={editorInstance?.getValue() ?? ''}
                     defaultLanguage='html'
                     onChange={value => {
-                      setEditorContent(value ?? '');
                       onChange(value ?? '');
                     }}
                     onMount={editor => {
