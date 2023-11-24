@@ -3,13 +3,19 @@ import {Link} from 'react-router-dom';
 import {Alignment, Navbar} from '@blueprintjs/core';
 import {useTranslation} from 'react-i18next';
 import LoginInfo from './LoginInfo';
+import NavbarSponsors from './NavbarSponsors';
 
 const ParticipantNavBar = () => {
   const {t} = useTranslation();
   return (
-    <Navbar fixedToTop>
+    <Navbar fixedToTop className='h-16 flex items-center'>
       <Navbar.Group align={Alignment.LEFT}>
-        <Navbar.Heading>{t('appName')}</Navbar.Heading>
+        <Navbar.Heading
+          className='text-m font-bold uppercase tracking-wider text-gray-600'
+        >{t('appName')}
+        </Navbar.Heading>
+        <Navbar.Divider/>
+        <NavbarSponsors/>
         <Navbar.Divider/>
         <Link
           role='button'
@@ -26,7 +32,9 @@ const ParticipantNavBar = () => {
           {t('menu.exercises')}
         </Link>
       </Navbar.Group>
-      <LoginInfo/>
+      <a className='flex-grow'>
+        <LoginInfo/>
+      </a>
     </Navbar>
   );
 };

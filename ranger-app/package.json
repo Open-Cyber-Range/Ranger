@@ -116,7 +116,8 @@
         "error",
         "never",
         {
-          "svg": "always"
+          "svg": "always",
+          "png": "always"
         }
       ],
       "n/prefer-global/process": [
