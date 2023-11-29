@@ -141,7 +141,7 @@ diesel::table! {
 
 diesel::table! {
     event_info_data (checksum) {
-        #[max_length = 32]
+        #[max_length = 64]
         checksum -> Char,
         name -> Tinytext,
         file_name -> Tinytext,
@@ -165,7 +165,7 @@ diesel::table! {
         description -> Nullable<Mediumtext>,
         has_triggered -> Bool,
         triggered_at -> Timestamp,
-        #[max_length = 32]
+        #[max_length = 64]
         event_info_data_checksum -> Nullable<Char>,
         created_at -> Timestamp,
         updated_at -> Timestamp,
