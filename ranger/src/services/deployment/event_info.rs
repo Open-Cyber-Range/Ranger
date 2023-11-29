@@ -14,6 +14,7 @@ use log::{debug, error};
 use ranger_grpc::capabilities::DeployerType as GrpcDeployerType;
 use ranger_grpc::Source as GrpcSource;
 use sdl_parser::Scenario;
+use sha3::{Digest, Sha3_256};
 
 use super::{condition::ConditionProperties, node::DeployedNode};
 
@@ -75,7 +76,9 @@ impl EventInfoUnpacker for Scenario {
                         event_file_buffer.extend_from_slice(&stream_response.chunk);
                     }
 
-                    let computed_checksum = format!("{:x}", md5::compute(&event_file_buffer));
+                    let mut hasher = Sha3_256::new();
+                    hasher.update(&event_file_buffer);
+                    let computed_checksum = format!("{:x}", hasher.finalize());
                     if computed_checksum == event_create_response.checksum {
                         debug!(
                             "Event {event_name} info file Checksum verification passed",
