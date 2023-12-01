@@ -1,6 +1,6 @@
 [package]
 name = "ranger"
-version = "2.0.0"
+version = "2.0.1"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -47,7 +47,7 @@ actix-http = { version = "3", features = ["http2", "ws"] }
 actix-web-httpauth = "0.8"
 anyhow = "1"
 async-trait = "0.1"
-bigdecimal = { version = "0.3", features = ["serde"] }
+bigdecimal = { version = "0.4", features = ["serde"] }
 chrono = { version = "0.4", features = ["serde"] }
 diesel = { version = "2.1", features = ["mysql", "r2d2", "chrono", "numeric"] }
 diesel_migrations = "2.1"
