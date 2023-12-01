@@ -180,14 +180,17 @@ const EntityConnector = ({exerciseId, deploymentId}: {
           intent='primary'
           onClick={async () => {
             if (selectedUser && selectedEntity) {
-              await addParticipant({
-                exerciseId,
-                deploymentId,
-                newParticipant: {
-                  userId: selectedUser.id,
-                  selector: selectedEntity.id.toString(),
-                },
-              });
+              if (selectedUser.id) {
+                await addParticipant({
+                  exerciseId,
+                  deploymentId,
+                  newParticipant: {
+                    userId: selectedUser.id,
+                    selector: selectedEntity.id.toString(),
+                  },
+                });
+              }
+
               setSelectedEntity(undefined);
               setSelectedUser(undefined);
             }
