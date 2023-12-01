@@ -1,14 +1,14 @@
-import React from 'react';
-import {useTranslation} from 'react-i18next';
+import {useEffect} from 'react';
+import {useNavigate} from 'react-router-dom';
 
 const Home = () => {
-  const {t} = useTranslation();
+  const navigate = useNavigate();
 
-  return (
-    <div style={{padding: 20}}>
-      <h2>{t('homepage')}</h2>
-    </div>
-  );
+  useEffect(() => {
+    navigate('/exercises');
+  }, [navigate]);
+
+  return null;
 };
 
 export default Home;

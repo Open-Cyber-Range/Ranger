@@ -1,16 +1,17 @@
 type Email = {
   id: string;
   exerciseId: string;
+  userId?: string;
   fromAddress: string;
-  toEntity: string;
-  to?: string;
-  replyTo?: string;
+  toAddresses: string[];
+  replyToAddresses?: string[];
+  ccAddresses?: string[];
+  bccAddresses?: string[];
   subject: string;
-  cc?: string;
-  bcc?: string;
   body: string;
-  sentAt: string;
-  status: EmailStatus;
+  statusType: EmailStatusType;
+  statusMessage?: string;
+  createdAt: string;
 };
 
 type EmailForm = {
@@ -19,7 +20,25 @@ type EmailForm = {
   ccAddresses?: string[];
   bccAddresses?: string[];
   subject: string;
+  template: string;
   body: string;
+  userId?: string;
+};
+
+type EmailTemplate = {
+  id: string;
+  name: string;
+  content: string;
+  createdAt: string;
+};
+
+type NewEmailTemplate = {
+  name: string;
+  content: string;
+};
+
+type EmailTemplateForm = {
+  name: string;
 };
 
 type EmailVariable = {
@@ -27,14 +46,17 @@ type EmailVariable = {
   description: string;
 };
 
-export enum EmailStatus {
-  Delivered = 'delivered',
-  BeingSent = 'being sent',
-  Bounced = 'bounced',
+export enum EmailStatusType {
+  Pending = 'Pending',
+  Sent = 'Sent',
+  Failed = 'Failed',
 }
 
 export type {
   Email,
   EmailForm,
+  EmailTemplate,
+  EmailTemplateForm,
   EmailVariable,
+  NewEmailTemplate,
 };

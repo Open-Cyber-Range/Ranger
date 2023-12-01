@@ -8,26 +8,31 @@ use ranger::middleware::keycloak::KeycloakAccessMiddlewareFactory;
 use ranger::middleware::metric::MetricMiddlewareFactory;
 use ranger::middleware::participant_authentication::ParticipantAccessMiddlewareFactory;
 use ranger::roles::RangerRole;
+use ranger::routes::admin::email::{
+    add_email_template, delete_email, delete_email_template, get_email, get_email_form,
+    get_email_template, get_email_templates, get_emails, send_email,
+};
 use ranger::routes::admin::groups::get_participant_groups_users;
 use ranger::routes::admin::metric::{
     delete_metric, download_metric_artifact, get_admin_metric, get_admin_metrics,
     update_admin_metric,
 };
 use ranger::routes::admin::scenario::get_admin_exercise_deployment_scenario;
-use ranger::routes::deployers::get_deployers;
-use ranger::routes::email::{get_email_form, send_email};
+use ranger::routes::deployers::{default_deployer, get_deployers};
+use ranger::routes::deputy_query::{get_deputy_packages_by_type, get_exercise_by_source};
 use ranger::routes::exercise::{
-    add_banner, add_participant, delete_banner, delete_exercise_deployment, delete_participant,
-    get_admin_participants, get_banner, get_exercise, get_exercise_deployment,
-    get_exercise_deployment_elements, get_exercise_deployment_scores,
-    get_exercise_deployment_users, get_exercise_deployments, get_exercises, subscribe_to_exercise,
-    update_banner, update_exercise,
+    add_banner, add_exercise, add_exercise_deployment, add_participant, delete_banner,
+    delete_exercise, delete_exercise_deployment, delete_participant, get_admin_participants,
+    get_banner, get_exercise, get_exercise_deployment, get_exercise_deployment_elements,
+    get_exercise_deployment_scores, get_exercise_deployment_users, get_exercise_deployments,
+    get_exercises, subscribe_to_exercise, update_banner, update_exercise,
 };
 use ranger::routes::logger::subscribe_to_logs_with_level;
 use ranger::routes::participant::deployment::{
     get_participant_deployment, get_participant_deployments,
     get_participant_node_deployment_elements,
 };
+use ranger::routes::participant::event_info::get_event_info_data;
 use ranger::routes::participant::events::get_participant_events;
 use ranger::routes::participant::metric::{
     add_metric, get_participant_metric, get_participant_metrics, update_participant_metric,
@@ -40,7 +45,6 @@ use ranger::routes::participant::{get_participant_exercise, get_participant_exer
 use ranger::routes::{
     admin::groups::get_participant_groups,
     basic::{status, version},
-    exercise::{add_exercise, add_exercise_deployment, delete_exercise},
     upload::upload_participant_artifact,
 };
 
@@ -62,6 +66,17 @@ async fn main() -> Result<(), Error> {
                     .wrap(KeycloakAccessMiddlewareFactory)
                     .service(
                         scope("/admin")
+                        .service(
+                            scope("/query")
+                                .service(
+                                    scope("/package")
+                                        .service(get_deputy_packages_by_type)
+                                        .service(
+                                            scope("/exercise")
+                                                .service(get_exercise_by_source)
+                                        )
+                                )
+                            )
                             .service(
                                 scope("/exercise")
                                     .service(get_exercises)
@@ -73,8 +88,6 @@ async fn main() -> Result<(), Error> {
                                             .service(update_exercise)
                                             .service(delete_exercise)
                                             .service(subscribe_to_exercise)
-                                            .service(get_email_form)
-                                            .service(send_email)
                                             .service(
                                                 scope("/deployment")
                                                     .service(get_exercise_deployments)
@@ -111,14 +124,29 @@ async fn main() -> Result<(), Error> {
                                             )
                                             .service(
                                                 scope("/banner")
-                                                    .service(add_banner)
-                                                    .service(get_banner)
-                                                    .service(update_banner)
-                                                    .service(delete_banner)
-                                            ),
+                                                .service(add_banner)
+                                                .service(get_banner)
+                                                .service(update_banner)
+                                                .service(delete_banner)
+                                            )
+                                            .service(
+                                                scope("/email")
+                                                .service(get_emails)
+                                                .service(get_email)
+                                                .service(send_email)
+                                                .service(delete_email)
+                                            )
+                                            .service(
+                                                scope("/email-form")
+                                                .service(get_email_form)
+                                            )
                                     ),
                             )
-                            .service(get_deployers)
+                            .service(
+                                scope("/deployer")
+                                    .service(get_deployers)
+                                    .service(default_deployer),
+                            )
                             .service(
                                 scope("/group")
                                     .service(get_participant_groups)
@@ -127,6 +155,13 @@ async fn main() -> Result<(), Error> {
                             .service(
                                 scope("/log")
                                     .service(subscribe_to_logs_with_level)
+                            )
+                            .service(
+                                scope("/email_template")
+                                    .service(add_email_template)
+                                    .service(get_email_templates)
+                                    .service(get_email_template)
+                                    .service(delete_email_template)
                             )
                             .wrap(admin_auth_middleware),
                     )
@@ -164,6 +199,10 @@ async fn main() -> Result<(), Error> {
                                                                             .service(
                                                                                 scope("/event")
                                                                                 .service(get_participant_events)
+                                                                                .service(
+                                                                                    scope("/{event_info_id}")
+                                                                                        .service(get_event_info_data)
+                                                                            )
                                                                             )
                                                                             .service(
                                                                                 scope("/deployment_element")
@@ -185,6 +224,9 @@ async fn main() -> Result<(), Error> {
                                                                 )
                                                             )
                                                     ),
+                                            )
+                                            .service(scope("/banner")
+                                                    .service(get_banner)
                                             )
                                             .wrap(ExerciseMiddlewareFactory),
                                     ),

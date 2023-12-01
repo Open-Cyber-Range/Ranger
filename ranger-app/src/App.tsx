@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {
   BrowserRouter as Router,
   Routes,
@@ -13,21 +13,49 @@ import Logs from 'src/pages/Logs';
 import HomeParticipant from 'src/pages/participant/Home';
 import {useKeycloak} from '@react-keycloak/web';
 import {LogProvider} from 'src/contexts/LogContext';
+import {useDispatch} from 'react-redux';
 import ParticipantExercises from './pages/participant/Exercises';
 import ParticipantNavBar from './components/ParticipantNavBar';
 import DeploymentDetail from './pages/DeploymentDetail';
 import ParticipantDeploymentDetail from './pages/participant/DeploymentDetail';
-import EmailLog from './pages/EmailLog';
-import SendEmail from './pages/Email';
 import {UserRole} from './models/userRoles';
 import useDefaultRoleSelect from './hooks/useDefaultRoleSelect';
 import ScoreDetail from './pages/ScoreDetail';
 import DeploymentFocus from './pages/DeploymentFocus';
 import MinimalNavBar from './components/MinimalNavBar';
 import RolesFallback from './pages/RolesFallback';
+import {setToken} from './slices/userSlice';
 
 const App = () => {
-  const {keycloak: {authenticated}} = useKeycloak();
+  const {keycloak, keycloak: {authenticated, token}} = useKeycloak();
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (token !== undefined) {
+      dispatch(setToken(token));
+    }
+  }, [token, dispatch]);
+
+  useEffect(() => {
+    keycloak.onTokenExpired = () => {
+      keycloak.updateToken(180).then(refreshed => {
+        if (refreshed && keycloak.token) {
+          dispatch(setToken(keycloak.token));
+        }
+      }).catch(() => {
+        keycloak.clearToken();
+      });
+    };
+
+    keycloak.onAuthRefreshError = async () => {
+      keycloak.clearToken();
+    };
+  }, [
+    keycloak,
+    keycloak.token,
+    dispatch,
+  ]);
+
   const currentRole = useDefaultRoleSelect();
 
   if (authenticated && (currentRole === UserRole.MANAGER)) {
@@ -40,7 +68,6 @@ const App = () => {
             <Route path='/exercises' element={<Exercises/>}/>
             <Route path='/logs' element={<Logs/>}/>
             <Route path='/exercises/:exerciseId' element={<ExerciseDetail/>}/>
-            <Route path='/exercises/:exerciseId/email' element={<SendEmail/>}/>
             <Route
               path='/exercises/:exerciseId/deployments/:deploymentId'
               element={<DeploymentDetail/>}/>
@@ -50,7 +77,6 @@ const App = () => {
             <Route
               path='/exercises/:exerciseId/deployments/:deploymentId/scores/:role'
               element={<ScoreDetail/>}/>
-            <Route path='/exercises/:exerciseId/emails' element={<EmailLog/>}/>
           </Routes>
         </Router>
       </LogProvider>

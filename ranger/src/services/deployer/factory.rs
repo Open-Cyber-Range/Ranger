@@ -4,7 +4,7 @@ use super::DeployerConnections;
 use actix::{Actor, Context, Handler, Message, ResponseActFuture, WrapFuture};
 use anyhow::{anyhow, Ok, Result};
 use futures::future::try_join_all;
-use ranger_grpc::{capabilities::DeployerTypes, capability_client::CapabilityClient, Capabilities};
+use ranger_grpc::{capabilities::DeployerType as GrpcDeployerType, capability_client::CapabilityClient, Capabilities};
 use std::collections::HashMap;
 use tonic::transport::Channel;
 type CapabilityClients = HashMap<String, CapabilityClient<Channel>>;
@@ -30,7 +30,7 @@ impl DeployerFactory {
         Ok(client)
     }
 
-    async fn get_capabilities(mut client: CapabilityClient<Channel>) -> Result<Vec<DeployerTypes>> {
+    async fn get_capabilities(mut client: CapabilityClient<Channel>) -> Result<Vec<GrpcDeployerType>> {
         let result = client.get_capabilities(tonic::Request::new(())).await;
         if let Err(status) = result {
             return Err(anyhow!("{:?}", status));
@@ -44,7 +44,7 @@ impl DeployerFactory {
             ));
         }
         let capabilities: Capabilities = result?.into_inner();
-        let deployment_types: Vec<DeployerTypes> = capabilities.values().collect();
+        let deployment_types: Vec<GrpcDeployerType> = capabilities.values().collect();
         Ok(deployment_types)
     }
 

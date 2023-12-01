@@ -51,6 +51,7 @@ pub struct Event {
     pub description: Option<String>,
     pub has_triggered: bool,
     pub triggered_at: NaiveDateTime,
+    pub event_info_data_checksum: Option<String>,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
     pub deleted_at: NaiveDateTime,
@@ -92,6 +93,25 @@ pub struct UpdateEvent {
 }
 
 impl UpdateEvent {
+    pub fn create_update(
+        &self,
+        id: Uuid,
+    ) -> UpdateById<events::id, events::deleted_at, events::table, &Self> {
+        diesel::update(events::table)
+            .filter(events::id.eq(id))
+            .filter(events::deleted_at.eq(*NAIVEDATETIME_DEFAULT_VALUE))
+            .set(self)
+    }
+}
+
+#[derive(AsChangeset, Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+#[diesel(table_name = events)]
+pub struct UpdateEventChecksum {
+    pub event_info_data_checksum: Option<String>,
+}
+
+impl UpdateEventChecksum {
     pub fn create_update(
         &self,
         id: Uuid,

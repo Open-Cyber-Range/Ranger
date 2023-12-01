@@ -1,7 +1,7 @@
 import type React from 'react';
 import {useEffect, type ChangeEvent} from 'react';
 import {useTranslation} from 'react-i18next';
-import {type Participant} from 'src/models/pariticpant';
+import {type Participant} from 'src/models/participant';
 
 type EntitySelectProps = {
   participants: Participant[];

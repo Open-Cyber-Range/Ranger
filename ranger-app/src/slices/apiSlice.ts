@@ -7,15 +7,22 @@ import type {
   NewDeployment,
   ParticipantDeployment,
 } from 'src/models/deployment';
-import type {Participant, NewParticipant} from 'src/models/pariticpant';
+import type {Participant, NewParticipant} from 'src/models/participant';
 import {
+  type Banner,
   type ParticipantExercise,
   type Exercise,
   type NewExercise,
   type UpdateExercise,
   type DeploymentEvent,
+  type EventInfo,
 } from 'src/models/exercise';
-import type {EmailForm} from 'src/models/email';
+import type {
+  EmailForm,
+  Email,
+  EmailTemplate,
+  NewEmailTemplate,
+} from 'src/models/email';
 import {type AdGroup, type AdUser} from 'src/models/groups';
 import {type Scenario} from 'src/models/scenario';
 import {type Score} from 'src/models/score';
@@ -40,7 +47,13 @@ export const apiSlice = createApi({
       return headers;
     },
   }),
-  tagTypes: ['Deployment', 'Exercise', 'Score', 'Scenario', 'Participant', 'ManualMetric'],
+  tagTypes: ['Deployment',
+    'Exercise',
+    'Score',
+    'Scenario',
+    'Participant',
+    'ManualMetric',
+    'Email'],
   endpoints: builder => ({
     adminGetGroups: builder.query<AdGroup[], void>({
       query: () => '/admin/group',
@@ -52,6 +65,41 @@ export const apiSlice = createApi({
       query: ({deploymentId, exerciseId}) => ({
         url: `/admin/exercise/${exerciseId}/deployment/${deploymentId}/users`,
       }),
+    }),
+    adminGetBanner: builder.query<Banner, string>({
+      query: exerciseId => `/admin/exercise/${exerciseId}/banner`,
+      providesTags: (result, error, id) => [{type: 'Exercise', id}],
+    }),
+    adminAddBanner: builder
+      .mutation<Banner,
+    {newBanner: Banner; exerciseId: string}>({
+      query: ({newBanner, exerciseId}) => ({
+        url: `/admin/exercise/${exerciseId}/banner`,
+        method: 'POST',
+        body: newBanner,
+      }),
+      invalidatesTags: [{type: 'Exercise', id: 'LIST'}],
+    }),
+    adminDeleteBanner: builder
+      .mutation<string, {exerciseId: string}>({
+      query: ({exerciseId}) => ({
+        url: `/admin/exercise/${exerciseId}/banner`,
+        method: 'DELETE',
+        responseHandler: 'text',
+      }),
+      invalidatesTags: (result, error, {exerciseId}) =>
+        [{type: 'Exercise', id: exerciseId}],
+    }),
+    adminUpdateBanner: builder
+      .mutation<Banner,
+    {updatedBanner: Banner; exerciseId: string}>({
+      query: ({updatedBanner, exerciseId}) => ({
+        url: `/admin/exercise/${exerciseId}/banner`,
+        method: 'PUT',
+        body: updatedBanner,
+      }),
+      invalidatesTags: (result, error, {exerciseId}) =>
+        [{type: 'Exercise', id: exerciseId}],
     }),
     adminGetExercises: builder.query<Exercise[], void>({
       query: () => '/admin/exercise',
@@ -135,6 +183,17 @@ export const apiSlice = createApi({
     adminGetDeploymentGroups: builder.query<Deployers, void>({
       query: () => '/admin/deployer',
     }),
+    adminGetDefaultDeploymentGroup: builder.query<string, void>({
+      query: () => '/admin/deployer/default',
+    }),
+    adminGetEmails: builder.query<Email[], string>({
+      query: exerciseId => `/admin/exercise/${exerciseId}/email`,
+      providesTags: (result = []) =>
+        [
+          ...result.map(({id}) => ({type: 'Email' as const, id})),
+          {type: 'Email', id: 'LIST'},
+        ],
+    }),
     adminSendEmail: builder
       .mutation <EmailForm, {email: EmailForm; exerciseId: string} >({
       query: ({email, exerciseId}) => ({
@@ -144,7 +203,7 @@ export const apiSlice = createApi({
       }),
     }),
     adminGetEmailForm: builder.query <string, string>({
-      query: exerciseId => `/admin/exercise/${exerciseId}/email`,
+      query: exerciseId => `/admin/exercise/${exerciseId}/email-form`,
     }),
     adminUploadFile: builder.mutation<string, FormData>({
       query: formData => ({
@@ -209,6 +268,22 @@ export const apiSlice = createApi({
           ...result.map(({id}) => ({type: 'Exercise' as const, id})),
           {type: 'Participant', id: 'LIST'},
         ],
+    }),
+    adminGetEmailTemplates: builder.query<EmailTemplate[], void>({
+      query: () => '/admin/email_template',
+    }),
+    adminAddEmailTemplate: builder.mutation<EmailTemplate, NewEmailTemplate>({
+      query: newEmailTemplate => ({
+        url: '/admin/email_template', method: 'POST', body: newEmailTemplate,
+      }),
+    }),
+    adminDeleteEmailTemplate: builder
+      .mutation<string, {templateId: string}>({
+      query: ({templateId}) => ({
+        url: `/admin/email_template/${templateId}`,
+        method: 'DELETE',
+        responseHandler: 'text',
+      }),
     }),
     participantGetExercises: builder.query<ParticipantExercise[], void>({
       query: () => '/participant/exercise',
@@ -282,6 +357,22 @@ export const apiSlice = createApi({
         return `/participant/exercise/${
           exerciseId}/deployment/${deploymentId}/entity/${entitySelector}/event`;
       },
+    }),
+    participantGetEventInfo: builder.query<EventInfo | undefined,
+    {
+      exerciseId: string;
+      deploymentId: string;
+      entitySelector: string;
+      eventInfoDataChecksum: string;
+    }>({
+      query({exerciseId, deploymentId, entitySelector, eventInfoDataChecksum}) {
+        // eslint-disable-next-line max-len
+        return `/participant/exercise/${exerciseId}/deployment/${deploymentId}/entity/${entitySelector}/event/${eventInfoDataChecksum}`;
+      },
+    }),
+    participantGetBanner: builder.query<Banner, string>({
+      query: exerciseId =>
+        `/participant/exercise/${exerciseId}/banner`,
     }),
     adminGetManualMetrics: builder.query<ManualMetric[] | undefined,
     {
@@ -436,6 +527,10 @@ export const {
   useAdminGetGroupsQuery,
   useAdminGetGroupUsersQuery,
   useAdminGetDeploymentUsersQuery,
+  useAdminGetBannerQuery,
+  useAdminAddBannerMutation,
+  useAdminDeleteBannerMutation,
+  useAdminUpdateBannerMutation,
   useAdminGetExerciseQuery,
   useAdminGetExercisesQuery,
   useAdminAddExerciseMutation,
@@ -448,9 +543,11 @@ export const {
   useAdminGetDeploymentQuery,
   useAdminGetDeploymentScoresQuery,
   useAdminGetDeploymentGroupsQuery,
+  useAdminGetDefaultDeploymentGroupQuery,
+  useAdminGetEmailsQuery,
   useAdminSendEmailMutation,
-  useAdminUploadFileMutation,
   useAdminGetEmailFormQuery,
+  useAdminUploadFileMutation,
   useAdminGetDeploymentScenarioQuery,
   useAdminAddParticipantMutation,
   useAdminDeleteParticipantMutation,
@@ -459,6 +556,9 @@ export const {
   useAdminGetMetricQuery,
   useAdminUpdateMetricMutation,
   useAdminDeleteMetricMutation,
+  useAdminGetEmailTemplatesQuery,
+  useAdminAddEmailTemplateMutation,
+  useAdminDeleteEmailTemplateMutation,
   useLazyAdminGetManualMetricArtifactQuery,
   useParticipantGetExercisesQuery,
   useParticipantGetExerciseQuery,
@@ -469,6 +569,8 @@ export const {
   useParticipantGetDeploymentScenarioQuery,
   useParticipantGetOwnParticipantsQuery,
   useParticipantGetTriggeredEventsQuery,
+  useParticipantGetEventInfoQuery,
+  useParticipantGetBannerQuery,
   useParticipantGetMetricQuery,
   useParticipantGetMetricsQuery,
   useParticipantUpdateMetricMutation,

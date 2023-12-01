@@ -2,7 +2,10 @@ pub(crate) mod account;
 pub(crate) mod banner;
 pub(crate) mod condition;
 pub(crate) mod deployment;
+pub(crate) mod email;
+pub(crate) mod email_status;
 pub(crate) mod event;
+pub(crate) mod event_info;
 pub(crate) mod exercise;
 pub(crate) mod metric;
 pub(crate) mod participant;
@@ -16,7 +19,10 @@ use diesel::{
     dsl::now,
     helper_types::{AsSelect, Eq, Filter, Select, Update},
     mysql::{Mysql, MysqlConnection},
-    query_builder::{InsertOrIgnoreStatement, InsertStatement, ReplaceStatement},
+    query_builder::{
+        DeleteStatement, InsertOrIgnoreStatement, InsertStatement, IntoUpdateTarget,
+        ReplaceStatement,
+    },
     r2d2::{ConnectionManager, Pool, PooledConnection},
     sql_function, Insertable,
 };
@@ -34,6 +40,7 @@ pub type ByName<Name, R> = Filter<R, Eq<Name, String>>;
 pub type ByTemplateId<TemplateId, R> = Filter<R, Eq<TemplateId, Uuid>>;
 pub type ByDeploymentId<DeploymentId, R> = Filter<R, Eq<DeploymentId, Uuid>>;
 pub type ByUsername<Username, R> = Filter<R, Eq<Username, String>>;
+pub type SelectByIdFromAll<Table, Id, T> = ById<Id, All<Table, T>>;
 pub type SelectById<Table, Id, DeletedAtColumn, T> =
     ById<Id, FilterExisting<All<Table, T>, DeletedAtColumn>>;
 pub type SelectByName<Table, Name, DeletedAtColumn, T> =
@@ -44,6 +51,7 @@ pub type SelectByDeploymentId<Table, DeploymentId, DeletedAtColumn, T> =
     ByDeploymentId<DeploymentId, FilterExisting<All<Table, T>, DeletedAtColumn>>;
 pub type SelectByTemplateIdAndUsername<Table, TemplateId, Username, DeletedAtColumn, T> =
     ByUsername<Username, ByTemplateId<TemplateId, FilterExisting<All<Table, T>, DeletedAtColumn>>>;
+pub type SelectByEmailId<Table, EmailId, T> = ById<EmailId, All<Table, T>>;
 type UpdateDeletedAt<DeletedAtColumn> = Eq<DeletedAtColumn, now>;
 pub type SoftDelete<L, DeletedAtColumn> = Update<L, UpdateDeletedAt<DeletedAtColumn>>;
 pub type SoftDeleteById<Id, DeleteAtColumn, Table> = SoftDelete<ById<Id, Table>, DeleteAtColumn>;
@@ -55,6 +63,8 @@ pub type CreateOrReplace<Type, Table> =
     ReplaceStatement<Table, <Type as Insertable<Table>>::Values>;
 pub type CreateOrIgnore<Type, Table> =
     InsertOrIgnoreStatement<Table, <Type as Insertable<Table>>::Values>;
+pub type DeleteById<Id, Table> =
+    Filter<DeleteStatement<Table, <Table as IntoUpdateTarget>::WhereClause>, Eq<Id, Uuid>>;
 
 pub type ArcDatabaseConnection = Arc<Mutex<PooledConnection<ConnectionManager<MysqlConnection>>>>;
 pub struct Database {

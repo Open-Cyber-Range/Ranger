@@ -1,5 +1,6 @@
 use sdl_parser::{
     capability::Capabilities,
+    common::Source,
     condition::Conditions,
     entity::{Entities, Entity, ExerciseRole, Flatten},
     evaluation::Evaluations,
@@ -9,7 +10,7 @@ use sdl_parser::{
     infrastructure::Infrastructure,
     inject::{Inject, Injects},
     metric::{Metric, Metrics},
-    node::{Nodes, Role},
+    node::{NodeType, Nodes, Role},
     script::Scripts,
     story::Stories,
     training_learning_objective::TrainingLearningObjectives,
@@ -152,12 +153,12 @@ pub fn get_vulnerability_connections(
         }
         if let Some(scenario_nodes) = scenario.nodes.clone() {
             scenario_nodes.into_iter().for_each(|(key, node)| {
-                if let Some(vulnerabilities) = node.vulnerabilities.clone() {
-                    if vulnerabilities.contains(vulnerability_name) {
+                if let NodeType::VM(vm_node) = &node.type_field {
+                    if vm_node.vulnerabilities.contains(vulnerability_name) {
                         nodes.insert(key, node);
                     }
                 }
-            })
+            });
         }
     });
 
@@ -324,13 +325,13 @@ pub fn get_nodes_by_conditions(scenario: &Scenario, conditions: &Conditions) -> 
         .keys()
         .fold(HashMap::new(), |mut accumulator, condition_name| {
             if let Some(scenario_nodes) = &scenario.nodes {
-                scenario_nodes.iter().for_each(|(node_name, node)| {
-                    if let Some(node_conditions) = &node.conditions {
-                        if node_conditions.contains_key(condition_name) {
+                for (node_name, node) in scenario_nodes {
+                    if let NodeType::VM(vm_node) = &node.type_field {
+                        if vm_node.conditions.contains_key(condition_name) {
                             accumulator.insert(node_name.to_owned(), node.clone());
                         }
                     }
-                });
+                }
             }
             accumulator
         });
@@ -347,34 +348,30 @@ pub fn get_node_connections(
     let mut infrastructure = HashMap::new();
 
     nodes.iter().for_each(|(node_name, node)| {
-        if let Some(node_features) = node.features.clone() {
-            node_features.keys().for_each(|key| {
+        if let NodeType::VM(vm_node) = &node.type_field {
+            vm_node.features.keys().for_each(|key| {
                 if let Some(scenario_features) = scenario.features.clone() {
                     if scenario_features.contains_key(key) {
                         features.insert(key.to_owned(), scenario_features[key].clone());
                     }
                 }
-            })
-        }
-        if let Some(node_conditions) = node.conditions.clone() {
-            node_conditions.keys().for_each(|key| {
+            });
+            vm_node.conditions.keys().for_each(|key| {
                 if let Some(scenario_conditions) = scenario.conditions.clone() {
                     if scenario_conditions.contains_key(key) {
                         conditions.insert(key.to_owned(), scenario_conditions[key].clone());
                     }
                 }
-            })
-        }
+            });
 
-        if let Some(node_vulnerabilities) = node.vulnerabilities.clone() {
-            node_vulnerabilities.iter().for_each(|key| {
+            vm_node.vulnerabilities.iter().for_each(|key| {
                 if let Some(scenario_vulnerabilities) = scenario.vulnerabilities.clone() {
                     if scenario_vulnerabilities.contains_key(key) {
                         vulnerabilities
                             .insert(key.to_owned(), scenario_vulnerabilities[key].clone());
                     }
                 }
-            })
+            });
         }
 
         if let Some(scenario_infrastructure) = scenario.infrastructure.clone() {
@@ -520,22 +517,26 @@ pub fn get_injects_and_roles_by_node_event(
                     scenario_capabilities.get(&inject_executive_capability)
                 {
                     if let Some(node) = scenario.nodes.clone().unwrap_or_default().get(node_name) {
-                        if let Some(condition_role) = node
-                            .conditions
-                            .clone()
-                            .unwrap_or_default()
-                            .get(&executive_capability.condition)
-                        {
-                            if let Some(role) =
-                                node.roles.clone().unwrap_or_default().get(condition_role)
+                        if let NodeType::VM(vm_node) = &node.type_field {
+                            if let Some(condition_role) = vm_node
+                                .conditions
+                                .clone()
+                                .get(&executive_capability.condition)
                             {
-                                accumulator.push((
-                                    inject_name.to_owned(),
-                                    inject.clone(),
-                                    role.clone(),
-                                ));
-                            }
-                        };
+                                if let Some(role) = vm_node
+                                    .roles
+                                    .clone()
+                                    .unwrap_or_default()
+                                    .get(condition_role)
+                                {
+                                    accumulator.push((
+                                        inject_name.to_owned(),
+                                        inject.clone(),
+                                        role.clone(),
+                                    ));
+                                }
+                            };
+                        }
                     };
                 }
                 accumulator
@@ -709,4 +710,18 @@ pub fn get_role_from_string(role: &str) -> Option<ExerciseRole> {
         "Green" => Some(ExerciseRole::Green),
         _ => None,
     }
+}
+
+pub fn get_event_sources(events: &Option<HashMap<String, Event>>) -> HashMap<String, Source> {
+    events
+        .iter()
+        .flat_map(|event| {
+            event.iter().filter_map(|(event_name, event)| {
+                event
+                    .source
+                    .as_ref()
+                    .map(|source| (event_name.clone(), source.clone()))
+            })
+        })
+        .collect::<HashMap<String, Source>>()
 }

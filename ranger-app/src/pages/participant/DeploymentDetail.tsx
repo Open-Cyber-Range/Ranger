@@ -8,6 +8,7 @@ import PariticpantEvents from 'src/components/Deployment/participant/Events';
 import ManualMetrics from 'src/components/Deployment/participant/ManualMetrics';
 import AccountList from 'src/components/Deployment/AccountList';
 import {
+  useParticipantGetBannerQuery,
   useParticipantGetDeploymentScenarioQuery,
   useParticipantGetDeploymentScoresQuery,
   useParticipantGetDeploymentUsersQuery,
@@ -29,7 +30,8 @@ const ParticipantDeploymentDetail = () => {
   const {data: users} = useParticipantGetDeploymentUsersQuery(generalQueryArgs);
   const {data: scores} = useParticipantGetDeploymentScoresQuery(participantQueryArgs);
   const {data: scenario} = useParticipantGetDeploymentScenarioQuery(participantQueryArgs);
-  const {data: deplyomentEvents} = useParticipantGetTriggeredEventsQuery(participantQueryArgs);
+  const {data: existingBanner} = useParticipantGetBannerQuery(exerciseId ?? skipToken);
+  const {data: deploymentEvents} = useParticipantGetTriggeredEventsQuery(participantQueryArgs);
   const {data: nodeDeploymentElements}
   = useParticipantGetNodeDeploymentElementsQuery(participantQueryArgs);
 
@@ -38,7 +40,10 @@ const ParticipantDeploymentDetail = () => {
       <PariticpantSidebar renderMainContent={activeTab => (
         <>
           {activeTab === 'Dash'
-            && <ParticipantDashboard/>}
+            && <ParticipantDashboard
+              exerciseId={exerciseId}
+              deploymentId={deploymentId}
+              existingBanner={existingBanner}/>}
           {activeTab === 'Score'
             && <ParticipantScore
               scoringData={tryIntoScoringMetadata(scenario)}
@@ -50,7 +55,7 @@ const ParticipantDeploymentDetail = () => {
           {activeTab === 'Events'
             && <PariticpantEvents
               scenarioEvents={scenario?.events}
-              deploymentEvents={deplyomentEvents}/>}
+              deploymentEvents={deploymentEvents}/>}
           {activeTab === 'User Submissions'
             && <ManualMetrics
               exerciseId={exerciseId}

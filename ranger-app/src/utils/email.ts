@@ -62,10 +62,42 @@ export const prepareEmailForDeploymentUser = (
     participantLastName: user.lastName,
     participantEmail: user.email,
   }),
+  userId: user.id,
+});
+
+export const prepareForPreview = (
+  textWithVariables: string,
+  exerciseName: string,
+  deploymentName: string,
+  user: AdUser,
+) => nunjucks.renderString(textWithVariables, {
+  exerciseName,
+  deploymentName,
+  participantFirstName: user.firstName,
+  participantLastName: user.lastName,
+  participantEmail: user.email,
+});
+
+export const prepareForPreviewWithoutUserOrDeployment = (
+  textWithVariables: string,
+  exerciseName: string,
+) => nunjucks.renderString(textWithVariables, {
+  exerciseName,
+  deploymentName: 'Deployment Name',
+  participantFirstName: 'John',
+  participantLastName: 'Doe',
+  participantEmail: 'john.doe@email.com',
 });
 
 export const preventDefaultOnEnter = (event: React.KeyboardEvent<HTMLFormElement>) => {
   if (event.key === 'Enter' && event.target instanceof HTMLInputElement) {
     event.preventDefault();
   }
+};
+
+export const openNewBlobWindow = (content: string) => {
+  const blob = new Blob([content], {type: 'text/html;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  window.open(url, '_blank');
+  URL.revokeObjectURL(url);
 };

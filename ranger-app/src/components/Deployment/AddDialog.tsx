@@ -14,8 +14,8 @@ import {
   MenuItem,
 } from '@blueprintjs/core';
 import {
-  useAdminGetDeploymentGroupsQuery,
   useAdminGetGroupsQuery,
+  useAdminGetDeploymentGroupsQuery,
 } from 'src/slices/apiSlice';
 import {useTranslation} from 'react-i18next';
 import {Controller, useFieldArray, useForm, useWatch} from 'react-hook-form';
@@ -26,10 +26,11 @@ import DatePicker from 'react-datepicker';
 import {useEffect, useState} from 'react';
 
 const AddDialog = (
-  {isOpen, title, onSubmit, onCancel}:
+  {isOpen, title, defaultDeploymentGroup, onSubmit, onCancel}:
   {
     title: string;
     isOpen: boolean;
+    defaultDeploymentGroup: string;
     onSubmit: ({
       count,
       name,
@@ -46,12 +47,12 @@ const AddDialog = (
   const {data: groups} = useAdminGetGroupsQuery();
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
-
   const {handleSubmit, control, register, formState: {errors}}
+
   = useForm<DeploymentForm>({
     defaultValues: {
       name: '',
-      deploymentGroup: undefined,
+      deploymentGroup: defaultDeploymentGroup || '',
       groupNames: [],
       count: 1,
       start: undefined,
@@ -124,7 +125,6 @@ const AddDialog = (
                         fill
                         id='deployment-group'
                         value={value}
-                        defaultValue=''
                         onBlur={onBlur}
                         onChange={onChange}
                       >
@@ -133,6 +133,7 @@ const AddDialog = (
                         </option>
                         {Object.keys((deployers ?? {})).map(groupName =>
                           <option key={groupName}>{groupName}</option>)}
+
                       </HTMLSelect>
                       {errors.deploymentGroup && (
                         <span className='text-xs text-red-800'>

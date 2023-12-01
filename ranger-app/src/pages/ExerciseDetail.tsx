@@ -6,6 +6,7 @@ import {
   useAdminGetExerciseQuery,
 } from 'src/slices/apiSlice';
 import {skipToken} from '@reduxjs/toolkit/dist/query';
+import BannerView from 'src/components/Exercise/Banner';
 import ScoresPanel from 'src/components/Scoring/ExerciseScores';
 import DashboardPanel from 'src/components/Exercise/Dashboard';
 import SendEmail from 'src/components/Email/SendEmail';
@@ -14,6 +15,7 @@ import useExerciseStreaming from 'src/hooks/useExerciseStreaming';
 import {ActiveTab} from 'src/models/exercise';
 import {H2} from '@blueprintjs/core';
 import {useTranslation} from 'react-i18next';
+import EmailTable from 'src/components/Email/EmailTable';
 
 const ExerciseDetail = () => {
   const {t} = useTranslation();
@@ -35,6 +37,12 @@ const ExerciseDetail = () => {
               />
             </>
           )}
+          {activeTab === ActiveTab.Banner && (
+            <>
+              <H2>{t('exercises.tabs.banner')}</H2>
+              <BannerView exercise={exercise}/>
+            </>
+          )}
           {activeTab === ActiveTab.Scores && (
             <>
               <H2>{t('exercises.tabs.scores')}</H2>
@@ -46,6 +54,11 @@ const ExerciseDetail = () => {
             <>
               <H2>{t('exercises.tabs.emails')}</H2>
               <SendEmail exercise={exercise}/>
+            </>)}
+          {activeTab === ActiveTab.EmailLogs && (
+            <>
+              <H2>{t('exercises.tabs.emailLogs')}</H2>
+              <EmailTable exercise={exercise}/>
             </>)}
         </>
       )}/>

@@ -22,7 +22,7 @@ use diesel::{
     AsChangeset, AsExpression, ExpressionMethods, FromSqlRow, Identifiable, Insertable, QueryDsl,
     Queryable, Selectable, SelectableHelper,
 };
-use ranger_grpc::capabilities::DeployerTypes;
+use ranger_grpc::capabilities::DeployerType as GrpcDeployerType;
 use serde::{Deserialize, Serialize};
 
 use super::helpers::{deployer_type::DeployerType, uuid::Uuid};
@@ -207,7 +207,7 @@ impl DeploymentElement {
     pub fn new_ongoing(
         deployment_id: Uuid,
         source_box: Box<dyn ScenarioReference>,
-        deployer_type: DeployerTypes,
+        deployer_type: GrpcDeployerType,
         event_id: Option<Uuid>,
         parent_node_id: Option<Uuid>,
     ) -> Self {
@@ -228,7 +228,7 @@ impl DeploymentElement {
         deployment_id: Uuid,
         source_box: Box<dyn ScenarioReference>,
         handler_reference: Option<String>,
-        deployer_type: DeployerTypes,
+        deployer_type: GrpcDeployerType,
         status: ElementStatus,
     ) -> Self {
         Self {

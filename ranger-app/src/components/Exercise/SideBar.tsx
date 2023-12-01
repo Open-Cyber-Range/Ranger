@@ -2,6 +2,7 @@ import type React from 'react';
 import {useLocation, useNavigate, useParams} from 'react-router-dom';
 import type {DeploymentDetailRouteParameters} from 'src/models/routes';
 import {
+  useAdminGetDeploymentElementsQuery,
   useAdminGetDeploymentsQuery,
   useAdminGetExerciseQuery,
 } from 'src/slices/apiSlice';
@@ -10,6 +11,8 @@ import {useTranslation} from 'react-i18next';
 import {
   H2,
   H6,
+  Icon,
+  type Intent,
   Menu,
   MenuDivider,
   MenuItem,
@@ -19,15 +22,55 @@ import {MENU_HEADER} from '@blueprintjs/core/lib/esm/common/classes';
 import {sortByProperty} from 'sort-by-property';
 import {ActiveTab} from 'src/models/exercise';
 import {Resizable} from 're-resizable';
+import {type Deployment} from 'src/models/deployment';
+import {getProgressionAndStatus} from 'src/utils/deploymentStatus';
 
 const hashTabs: Record<string, ActiveTab> = {
   '#dash': ActiveTab.Dash,
   '#scores': ActiveTab.Scores,
   '#emails': ActiveTab.Emails,
+  '#emaillogs': ActiveTab.EmailLogs,
   '#sdl': ActiveTab.SDL,
   '#accounts': ActiveTab.Accounts,
   '#entities': ActiveTab.EntitySelector,
   '#submissions': ActiveTab.UserSubmissions,
+};
+
+const intentToIcon = (intent: Intent) => {
+  switch (intent) {
+    case 'danger': {
+      return 'error';
+    }
+
+    case 'warning': {
+      return 'full-circle';
+    }
+
+    case 'success': {
+      return 'tick-circle';
+    }
+
+    default: {
+      return 'full-circle';
+    }
+  }
+};
+
+const DeploymentText = ({deployment}: {deployment: Deployment}) => {
+  const {data: deploymentElements} = useAdminGetDeploymentElementsQuery({
+    exerciseId: deployment.exerciseId,
+    deploymentId: deployment.id,
+  });
+
+  const [_, intent] = getProgressionAndStatus(deploymentElements ?? []);
+  return (
+    <div className={deploymentElements ? '' : 'bp4-skeleton'}>
+      <div className='flex items-center'>
+        <Icon icon={intentToIcon(intent)} intent={intent}/>
+        <h5 className='ml-2'>{deployment.name}</h5>
+      </div>
+    </div>
+  );
 };
 
 const SideBar = ({renderMainContent}: {
@@ -36,6 +79,7 @@ const SideBar = ({renderMainContent}: {
   const navigate = useNavigate();
   const {exerciseId, deploymentId}
     = useParams<DeploymentDetailRouteParameters>();
+
   const {hash} = useLocation();
   const {data: deployments} = useAdminGetDeploymentsQuery(exerciseId ?? skipToken);
   const {data: exercise} = useAdminGetExerciseQuery(exerciseId ?? skipToken);
@@ -69,6 +113,18 @@ const SideBar = ({renderMainContent}: {
                   }}
                 />
                 <MenuItem
+                  active={!deploymentId && activeTab === ActiveTab.Banner}
+                  text={t('exercises.tabs.banner')}
+                  icon='new-text-box'
+                  onClick={() => {
+                    if (exerciseId) {
+                      navigate(`/exercises/${exerciseId}#banner`);
+                    }
+
+                    setActiveTab(ActiveTab.Banner);
+                  }}
+                />
+                <MenuItem
                   disabled={!hasDeployments}
                   active={!deploymentId && activeTab === ActiveTab.Scores}
                   text={t('exercises.tabs.scores')}
@@ -83,7 +139,7 @@ const SideBar = ({renderMainContent}: {
                 />
                 <MenuItem
                   active={!deploymentId && activeTab === ActiveTab.Emails}
-                  text={t('emails.link')}
+                  text={t('exercises.tabs.emails')}
                   icon='envelope'
                   onClick={() => {
                     if (exerciseId) {
@@ -91,6 +147,18 @@ const SideBar = ({renderMainContent}: {
                     }
 
                     setActiveTab(ActiveTab.Emails);
+                  }}
+                />
+                <MenuItem
+                  active={!deploymentId && activeTab === ActiveTab.EmailLogs}
+                  text={t('exercises.tabs.emailLogs')}
+                  icon='th-list'
+                  onClick={() => {
+                    if (exerciseId) {
+                      navigate(`/exercises/${exerciseId}#emaillogs`);
+                    }
+
+                    setActiveTab(ActiveTab.EmailLogs);
                   }}
                 />
 
@@ -104,8 +172,7 @@ const SideBar = ({renderMainContent}: {
                       key={deployment.id}
                       popoverProps={{hoverCloseDelay: 200}}
                       active={deploymentId === deployment.id}
-                      text={deployment.name}
-                      icon='cloud-upload'
+                      text={<DeploymentText deployment={deployment}/>}
                       onClick={() => {
                         navigate(
                           `/exercises/${deployment.exerciseId}/deployments/${deployment.id}`);

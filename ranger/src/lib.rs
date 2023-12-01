@@ -54,6 +54,7 @@ impl Addressor {
 pub struct AppState {
     pub database_address: Addr<Database>,
     pub configuration: Configuration,
+    pub deployer_distributor_address: Addr<DeployerDistribution>,
     pub deployment_manager_address: Addr<DeploymentManager>,
     pub websocket_manager_address: Addr<WebSocketManager>,
 }
@@ -66,6 +67,7 @@ impl AppState {
     ) -> Self {
         AppState {
             database_address: addressor.database.clone(),
+            deployer_distributor_address: addressor.distributor.clone(),
             deployment_manager_address: DeploymentManager::new(
                 addressor.clone(),
                 configuration.deployment_groups.clone(),

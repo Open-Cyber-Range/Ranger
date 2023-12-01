@@ -1,5 +1,8 @@
 import type React from 'react';
-import {useAdminAddDeploymentMutation} from 'src/slices/apiSlice';
+import {
+  useAdminAddDeploymentMutation,
+  useAdminGetDefaultDeploymentGroupQuery,
+} from 'src/slices/apiSlice';
 import {useTranslation} from 'react-i18next';
 import ExerciseForm from 'src/components/Exercise/Form';
 import type {
@@ -12,7 +15,6 @@ import AddDialog from 'src/components/Deployment/AddDialog';
 import {type Exercise} from 'src/models/exercise';
 import {useState} from 'react';
 import {Alert, Button} from '@blueprintjs/core';
-import DeploymentList from 'src/components/Deployment/List';
 
 const DashboardPanel = ({exercise, deployments}:
 {exercise: Exercise | undefined;
@@ -22,6 +24,7 @@ const DashboardPanel = ({exercise, deployments}:
   const [addDeployment, _newDeployment] = useAdminAddDeploymentMutation();
   const [isModified, setIsModified] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const {data: defaultDeployerGroup} = useAdminGetDefaultDeploymentGroupQuery();
 
   const createNewDeployments = (
     deploymentForm: DeploymentForm,
@@ -89,7 +92,7 @@ const DashboardPanel = ({exercise, deployments}:
     }
   };
 
-  if (exercise && deployments) {
+  if (exercise && deployments && defaultDeployerGroup) {
     return (
       <>
         <ExerciseForm
@@ -116,16 +119,10 @@ const DashboardPanel = ({exercise, deployments}:
         >
           <p>{t('exercises.sdlNotSaved')}</p>
         </Alert>
-        <div className='justify-end items-center pb-4 mt-[2rem]'>
-          {deployments === null ? (
-            <span className='text-lg text-gray-400'>{t('deployment.empty')}</span>
-          ) : (
-            <DeploymentList deployments={deployments}/>
-          )}
-        </div>
         <AddDialog
           isOpen={!isModified && isAddDialogOpen}
           title={t('deployments.title')}
+          defaultDeploymentGroup={defaultDeployerGroup}
           onCancel={() => {
             setIsAddDialogOpen(false);
           }}

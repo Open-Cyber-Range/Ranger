@@ -19,18 +19,40 @@ type Exercise = {
 
 type UpdateExercise = NewExercise;
 
+type Banner = {
+  name: string;
+  content: string;
+};
+
+type BannerVariable = {
+  name: string;
+  content: string;
+};
+
 type DeploymentEvent = {
   id: string;
   name: string;
   description?: string;
   deploymentId: string;
   triggeredAt: string;
+  eventInfoDataChecksum?: string;
+};
+
+type EventInfo = {
+  checksum: string;
+  name: string;
+  fileName: string;
+  fileSize: number;
+  content: Uint8Array;
+  createdAt: string;
 };
 
 export enum ActiveTab {
   Dash,
+  Banner,
   Scores,
   Emails,
+  EmailLogs,
   SDL,
   Accounts,
   EntitySelector,
@@ -38,9 +60,12 @@ export enum ActiveTab {
 }
 
 export type {
+  Banner,
+  BannerVariable,
   ParticipantExercise,
   NewExercise,
   Exercise,
   UpdateExercise,
   DeploymentEvent,
+  EventInfo,
 };

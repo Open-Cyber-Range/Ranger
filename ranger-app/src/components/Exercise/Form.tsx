@@ -223,32 +223,34 @@ const ExerciseForm = ({exercise, onContentChange, children}:
                   onChange={onChange}
                 />
               </div>
-              {resourceEstimationError && (
-                <Callout
-                  intent='danger'
-                  title={t('exercises.estimatedResourcesFail') ?? ''}
-                >
-                  <span>{resourceEstimationError}</span>
-                </Callout>
-              )}
-              {typeof totalRam === 'string' && typeof totalCpu === 'number'
-              && !resourceEstimationError && (
-                <Callout
-                  title={t('exercises.estimatedResourcesTitle') ?? ''}
-                >
-                  <span>
-                    {t('exercises.estimatedResources', {
-                      totalRam,
-                      totalCpu,
-                    })}
-                  </span>
-                </Callout>
-              )}
+              <div className='mt-4'>
+                {resourceEstimationError && (
+                  <Callout
+                    intent='danger'
+                    title={t('exercises.estimatedResourcesFail') ?? ''}
+                  >
+                    <span>{resourceEstimationError}</span>
+                  </Callout>
+                )}
+                {typeof totalRam === 'string' && typeof totalCpu === 'number'
+                && !resourceEstimationError && (
+                  <Callout
+                    title={t('exercises.estimatedResourcesTitle') ?? ''}
+                  >
+                    <span>
+                      {t('exercises.estimatedResources', {
+                        totalRam,
+                        totalCpu,
+                      })}
+                    </span>
+                  </Callout>
+                )}
+              </div>
             </FormGroup>
           );
         }}
       />
-      <div className='flex justify-end mt-[2rem] gap-[2rem]'>
+      <div className='flex justify-end mt-[1rem] gap-[0.5rem]'>
         {children}
         <Button
           large
