@@ -91,8 +91,6 @@ diesel::table! {
         sdl_schema -> Longtext,
         #[max_length = 16]
         exercise_id -> Binary,
-        start -> Timestamp,
-        end -> Timestamp,
         created_at -> Timestamp,
         updated_at -> Timestamp,
         deleted_at -> Timestamp,
@@ -211,6 +209,18 @@ diesel::table! {
 }
 
 diesel::table! {
+    orders (id) {
+        #[max_length = 16]
+        id -> Binary,
+        name -> Tinytext,
+        client_id -> Text,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
+        deleted_at -> Timestamp,
+    }
+}
+
+diesel::table! {
     participants (id) {
         #[max_length = 16]
         id -> Binary,
@@ -224,6 +234,39 @@ diesel::table! {
     }
 }
 
+diesel::table! {
+    structures (id) {
+        #[max_length = 16]
+        id -> Binary,
+        #[max_length = 16]
+        order_id -> Binary,
+        #[max_length = 16]
+        parent_id -> Nullable<Binary>,
+        name -> Tinytext,
+        description -> Nullable<Text>,
+    }
+}
+
+diesel::table! {
+    threats (id) {
+        #[max_length = 16]
+        id -> Binary,
+        #[max_length = 16]
+        training_objective_id -> Binary,
+        threat -> Tinytext,
+    }
+}
+
+diesel::table! {
+    training_objectives (id) {
+        #[max_length = 16]
+        id -> Binary,
+        #[max_length = 16]
+        order_id -> Binary,
+        objective -> Tinytext,
+    }
+}
+
 diesel::joinable!(accounts -> exercises (exercise_id));
 diesel::joinable!(banners -> exercises (exercise_id));
 diesel::joinable!(condition_messages -> deployments (deployment_id));
@@ -234,6 +277,9 @@ diesel::joinable!(email_statuses -> emails (email_id));
 diesel::joinable!(emails -> exercises (exercise_id));
 diesel::joinable!(metrics -> deployments (deployment_id));
 diesel::joinable!(participants -> deployments (deployment_id));
+diesel::joinable!(structures -> orders (order_id));
+diesel::joinable!(threats -> training_objectives (training_objective_id));
+diesel::joinable!(training_objectives -> orders (order_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     accounts,
@@ -249,5 +295,9 @@ diesel::allow_tables_to_appear_in_same_query!(
     events,
     exercises,
     metrics,
+    orders,
     participants,
+    structures,
+    threats,
+    training_objectives,
 );
