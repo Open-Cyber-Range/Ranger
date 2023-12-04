@@ -5,6 +5,7 @@ pub(crate) mod deployment;
 pub(crate) mod email;
 pub(crate) mod email_status;
 pub(crate) mod event;
+pub(crate) mod event_info;
 pub(crate) mod exercise;
 pub(crate) mod metric;
 pub(crate) mod participant;

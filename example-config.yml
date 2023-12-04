@@ -5,6 +5,7 @@ deployers:
   my-switch-deployer: http://ranger-vmware-switcher:9998
   my-template-deployer: http://ranger-vmware-templater:9997
   my-executor-deployer: http://ranger-vmware-executor:9996
+  my-general-deployer: http://ranger-vmware-general:9995
 
 default_deployment_group: my-cool-group
 deployment_groups:
@@ -13,6 +14,7 @@ deployment_groups:
     - my-switch-deployer
     - my-template-deployer
     - my-executor-deployer
+    - my-general-deployer
 database_url: mysql://mysql_user:mysql_pass@mariadb:3306/ranger
 keycloak:
   base_url: http://development-keycloak:8080

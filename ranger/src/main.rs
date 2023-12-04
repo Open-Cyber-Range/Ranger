@@ -18,7 +18,8 @@ use ranger::routes::admin::metric::{
     update_admin_metric,
 };
 use ranger::routes::admin::scenario::get_admin_exercise_deployment_scenario;
-use ranger::routes::deployers::get_deployers;
+use ranger::routes::deployers::{default_deployer, get_deployers};
+use ranger::routes::deputy_query::{get_deputy_packages_by_type, get_exercise_by_source};
 use ranger::routes::exercise::{
     add_banner, add_exercise, add_exercise_deployment, add_participant, delete_banner,
     delete_exercise, delete_exercise_deployment, delete_participant, get_admin_participants,
@@ -31,6 +32,7 @@ use ranger::routes::participant::deployment::{
     get_participant_deployment, get_participant_deployments,
     get_participant_node_deployment_elements,
 };
+use ranger::routes::participant::event_info::get_event_info_data;
 use ranger::routes::participant::events::get_participant_events;
 use ranger::routes::participant::metric::{
     add_metric, get_participant_metric, get_participant_metrics, update_participant_metric,
@@ -64,6 +66,17 @@ async fn main() -> Result<(), Error> {
                     .wrap(KeycloakAccessMiddlewareFactory)
                     .service(
                         scope("/admin")
+                        .service(
+                            scope("/query")
+                                .service(
+                                    scope("/package")
+                                        .service(get_deputy_packages_by_type)
+                                        .service(
+                                            scope("/exercise")
+                                                .service(get_exercise_by_source)
+                                        )
+                                )
+                            )
                             .service(
                                 scope("/exercise")
                                     .service(get_exercises)
@@ -129,7 +142,11 @@ async fn main() -> Result<(), Error> {
                                             )
                                     ),
                             )
-                            .service(get_deployers)
+                            .service(
+                                scope("/deployer")
+                                    .service(get_deployers)
+                                    .service(default_deployer),
+                            )
                             .service(
                                 scope("/group")
                                     .service(get_participant_groups)
@@ -182,6 +199,10 @@ async fn main() -> Result<(), Error> {
                                                                             .service(
                                                                                 scope("/event")
                                                                                 .service(get_participant_events)
+                                                                                .service(
+                                                                                    scope("/{event_info_id}")
+                                                                                        .service(get_event_info_data)
+                                                                            )
                                                                             )
                                                                             .service(
                                                                                 scope("/deployment_element")

@@ -35,6 +35,16 @@ type DeploymentEvent = {
   description?: string;
   deploymentId: string;
   triggeredAt: string;
+  eventInfoDataChecksum?: string;
+};
+
+type EventInfo = {
+  checksum: string;
+  name: string;
+  fileName: string;
+  fileSize: number;
+  content: Uint8Array;
+  createdAt: string;
 };
 
 export enum ActiveTab {
@@ -57,4 +67,5 @@ export type {
   Exercise,
   UpdateExercise,
   DeploymentEvent,
+  EventInfo,
 };

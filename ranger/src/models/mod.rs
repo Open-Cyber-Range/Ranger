@@ -5,6 +5,7 @@ mod deployment;
 mod email;
 mod email_status;
 mod event;
+pub mod event_info;
 mod exercise;
 pub(crate) mod helpers;
 pub mod metric;

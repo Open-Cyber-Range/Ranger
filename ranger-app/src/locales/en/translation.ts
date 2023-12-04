@@ -130,8 +130,6 @@ const language = {
     replyTo: 'Reply to',
     subject: 'Subject',
     body: 'Body',
-    send: 'Send',
-    sendButtonDisabled: 'Fetching users to send emails to...',
     sendingSuccess: 'Email sent',
     sendingFail: 'Error trying to send the email: {{errorMessage}}',
     sendingFailWithoutMessage: 'Failed to send the email',
@@ -140,6 +138,12 @@ const language = {
     noDeployments: 'Cannot find any deployments for this exercise',
     fetchingUsersFail: 'Failed to fetch users',
     creatingEmailsFail: 'Failed to create emails',
+    addingTemplateSuccess: 'Email template added',
+    addingTemplateFail: 'Failed to add email template {{errorMessage}}',
+    addingTemplateFailWithoutMessage: 'Failed to add email template',
+    deletingTemplateSuccess: 'Email template deleted',
+    deletingTemplateFail: 'Failed to delete email template {{errorMessage}}',
+    deletingTemplateFailWithoutMessage: 'Failed to delete email template',
     form: {
       from: {
         title: 'From',
@@ -166,10 +170,21 @@ const language = {
         title: 'Email subject',
         required: 'Email subject is required',
       },
+      templateName: {
+        name: 'Email template name',
+        title: 'Email template',
+        placeholder: 'Select existing email template',
+        required: 'Email template name is required',
+        save: 'Save body as template',
+        delete: 'Delete selected template',
+      },
       body: {
         title: 'Email body (HTML text editor)',
         required: 'Email body is required',
       },
+      preview: 'Preview',
+      send: 'Send',
+      sendButtonDisabled: 'Fetching users to send emails to...',
       emailPlaceholder:
       '...multiple addresses separated by comma or enter',
       required: ' (required)',

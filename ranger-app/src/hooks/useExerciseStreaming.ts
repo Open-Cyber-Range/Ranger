@@ -94,6 +94,7 @@ const useExerciseStreaming = (exerciseId?: string) => {
   const websocket = useRef<WebSocket | undefined>();
   const [trigger, setTrigger] = useState<boolean>(true);
   const token = useSelector((state: RootState) => state.user.token);
+
   useEffect(() => {
     if (!token || !exerciseId) {
       return;

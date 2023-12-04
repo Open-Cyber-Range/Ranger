@@ -1,3 +1,24 @@
+ranger-server (2.0.2) stretch; urgency=medium
+
+  * Fix front-end linting
+
+ -- Kaarel Allemann <kaarel.allemann@cr14.ee>  Fri, 01 Dec 2023 18:12:52 +0200
+
+ranger-server (2.0.1) stretch; urgency=medium
+
+  * Fix diesel compilations error
+
+ -- Kaarel Allemann <kaarel.allemann@cr14.ee>  Fri, 01 Dec 2023 17:51:50 +0200
+
+ranger-server (2.0.0) stretch; urgency=medium
+
+  * Email improvements
+  * Handle unexpected logouts
+  * Improved Event handling
+  * Exercise banner functionality
+
+ -- Kaarel Allemann <kaarel.allemann@cr14.ee>  Fri, 01 Dec 2023 17:19:16 +0200
+
 ranger-server (1.3.0) stretch; urgency=medium
 
   * Event timing improvements

@@ -39,6 +39,7 @@ const MarkdownFrame: React.FC<{content: string}> = ({content}) => {
   return (
     <iframe
       ref={iframeRef}
+      className='flex-grow'
       style={{width: '100%'}}
       sandbox='allow-same-origin'
     />

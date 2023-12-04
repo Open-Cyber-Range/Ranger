@@ -1,5 +1,6 @@
 pub(crate) mod condition;
 pub(crate) mod event;
+pub mod event_info;
 mod feature;
 mod inject;
 mod node;
@@ -10,7 +11,8 @@ use super::database::{deployment::GetDeploymentElementByDeploymentId, Database};
 use crate::{
     models::{helpers::uuid::Uuid, Deployment, Exercise},
     services::deployment::{
-        condition::DeployableConditions, feature::DeployableFeatures, node::DeployableNodes,
+        condition::DeployableConditions, event_info::EventInfoUnpacker,
+        feature::DeployableFeatures, node::DeployableNodes,
     },
     services::deployment::{event::DeployableEvents, template::DeployableTemplates},
     Addressor,
@@ -51,24 +53,28 @@ impl DeploymentManager {
         scenario
             .deploy_templates(addressor, deployers, deployment, exercise)
             .await?;
-        let node_deployment_results = scenario
+        let deployed_nodes = scenario
             .deploy_nodes(addressor, exercise, deployment, deployers)
             .await?;
 
         scenario
-            .deploy_scenario_features(addressor, exercise, deployers, &node_deployment_results)
+            .deploy_scenario_features(addressor, exercise, deployers, &deployed_nodes)
             .await?;
 
-        let node_event_condition_tuple = scenario
-            .create_events(addressor, &node_deployment_results, deployment)
-            .await?;
-
-        scenario
-            .deploy_scenario_conditions(addressor, exercise, deployers, &node_event_condition_tuple)
+        let nodes_with_conditions = scenario
+            .create_events(addressor, &deployed_nodes, deployment)
             .await?;
 
         scenario
-            .deploy_event_pollers(addressor, exercise, deployers, &node_event_condition_tuple)
+            .deploy_scenario_conditions(addressor, exercise, deployers, &nodes_with_conditions)
+            .await?;
+
+        scenario
+            .create_event_info_pages(addressor, deployers, &nodes_with_conditions)
+            .await?;
+
+        scenario
+            .deploy_event_pollers(addressor, exercise, deployers, &nodes_with_conditions)
             .await?;
 
         info!("Deployment {} successful", deployment.name);
@@ -164,6 +170,31 @@ impl Handler<RemoveDeployment> for DeploymentManager {
                 }
                 Ok(())
             }),
+        )
+    }
+}
+
+#[derive(Message, Debug)]
+#[rtype(result = "Result<Vec<String>>")]
+pub struct GetDefaultDeployers();
+
+impl Handler<GetDefaultDeployers> for DeploymentManager {
+    type Result = ResponseActFuture<Self, Result<Vec<String>>>;
+
+    fn handle(&mut self, _msg: GetDefaultDeployers, _: &mut Context<Self>) -> Self::Result {
+        let deployment_groups = self
+            .deployment_group
+            .get(&self.default_deployment_group)
+            .cloned();
+
+        Box::pin(
+            async move {
+                let default_deployment_group = deployment_groups
+                    .ok_or_else(|| anyhow!("No default deployment group found"))?;
+
+                Ok(default_deployment_group)
+            }
+            .into_actor(self),
         )
     }
 }

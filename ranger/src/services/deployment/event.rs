@@ -1,4 +1,5 @@
 use super::condition::ConditionProperties;
+use super::node::DeployedNode;
 use super::Database;
 use crate::constants::{EVENT_POLLER_RETRY_DURATION, NAIVEDATETIME_DEFAULT_VALUE};
 use crate::models::helpers::uuid::Uuid;
@@ -20,7 +21,7 @@ use futures::future::try_join_all;
 use log::debug;
 use sdl_parser::inject::Inject;
 use sdl_parser::node::NodeType;
-use sdl_parser::{node::Node, node::Role, Scenario};
+use sdl_parser::{node::Role, Scenario};
 use std::collections::HashMap;
 use tokio::time::sleep;
 
@@ -29,16 +30,16 @@ pub trait DeployableEvents {
     async fn create_events(
         &self,
         addressor: &Addressor,
-        deployed_nodes: &[(Node, DeploymentElement, Uuid)],
+        deployed_nodes: &[DeployedNode],
         deployment: &Deployment,
-    ) -> Result<Vec<(Node, DeploymentElement, Uuid, Vec<ConditionProperties>)>>;
+    ) -> Result<Vec<(DeployedNode, Vec<ConditionProperties>)>>;
 
     async fn deploy_event_pollers(
         &self,
         addressor: &Addressor,
         exercise: &Exercise,
         deployers: &[String],
-        deployed_nodes: &[(Node, DeploymentElement, Uuid, Vec<ConditionProperties>)],
+        deployed_nodes_with_conditions: &[(DeployedNode, Vec<ConditionProperties>)],
     ) -> Result<()>;
 }
 
@@ -47,9 +48,9 @@ impl DeployableEvents for Scenario {
     async fn create_events(
         &self,
         addressor: &Addressor,
-        deployed_nodes: &[(Node, DeploymentElement, Uuid)],
+        deployed_nodes: &[DeployedNode],
         deployment: &Deployment,
-    ) -> Result<Vec<(Node, DeploymentElement, Uuid, Vec<ConditionProperties>)>> {
+    ) -> Result<Vec<(DeployedNode, Vec<ConditionProperties>)>> {
         let sdl_events = self.events.clone().unwrap_or_default();
         let conditions = &self.conditions.clone().unwrap_or_default();
         let referenced_event_keys = self
@@ -73,115 +74,118 @@ impl DeployableEvents for Scenario {
             )
             .collect::<Vec<_>>();
 
-        let output = try_join_all(deployed_nodes.iter().map(
-            |(node, deployment_element, template_id)| async move {
-                let mut node_event_conditions: Vec<ConditionProperties> = vec![];
+        let output = try_join_all(deployed_nodes.iter().map(|deployed_node| async move {
+            let DeployedNode {
+                node,
+                deployment_element,
+                template_id,
+            } = deployed_node;
+            let mut node_event_conditions: Vec<ConditionProperties> = vec![];
 
-                let potential_vm_node = if let NodeType::VM(vm_node) = &node.type_field {
-                    Some(vm_node)
-                } else {
-                    None
-                };
+            let potential_vm_node = if let NodeType::VM(vm_node) = &node.type_field {
+                Some(vm_node)
+            } else {
+                None
+            };
 
-                let vm_node = try_some(potential_vm_node, "Node is not a VM")?;
+            let vm_node = try_some(potential_vm_node, "Node is not a VM")?;
 
-                let node_roles = try_some(vm_node.roles.clone(), "VM Node missing Roles")?;
-                let node_condition_roles = vm_node.conditions.clone();
-                let node_conditions = conditions
+            let node_roles = try_some(vm_node.roles.clone(), "VM Node missing Roles")?;
+            let node_condition_roles = vm_node.conditions.clone();
+            let node_conditions = conditions
+                .iter()
+                .filter_map(
+                    |(name, condition)| match node_condition_roles.contains_key(name) {
+                        true => Some((name.to_owned(), condition.clone())),
+                        false => None,
+                    },
+                )
+                .collect::<HashMap<_, _>>();
+
+            for (condition_name, condition) in node_conditions.clone().iter() {
+                let condition_role_name = try_some(
+                    node_condition_roles.get(condition_name),
+                    "Condition RoleName not found under Node Conditions",
+                )?;
+                let condition_role = try_some(
+                    node_roles.get(condition_role_name),
+                    "Condition Role not found under Node Roles",
+                )?;
+
+                if let Some((event_key, event, event_conditions)) = event_conditions_tuple
                     .iter()
-                    .filter_map(
-                        |(name, condition)| match node_condition_roles.contains_key(name) {
-                            true => Some((name.to_owned(), condition.clone())),
-                            false => None,
-                        },
-                    )
-                    .collect::<HashMap<_, _>>();
+                    .find(|(_, _, event_conditions)| event_conditions.contains_key(condition_name))
+                {
+                    if node_condition_roles.contains_key(condition_name)
+                        && event_conditions.contains_key(condition_name)
+                    {
+                        let (event_start, event_end) = calculate_event_start_end_times(
+                            self,
+                            event_key,
+                            deployment.start,
+                            deployment.end,
+                        )?;
+                        let injects = get_injects_and_roles_by_node_event(
+                            self,
+                            event,
+                            &deployment_element.scenario_reference,
+                        );
+                        let parent_node_id_string = try_some(
+                            deployment_element.handler_reference.clone(),
+                            "DeploymentElement missing HandlerReference",
+                        )?;
+                        let event_id =
+                            match node_event_conditions.iter().find(|condition_properties| {
+                                condition_properties.event_name == Some(event_key.clone())
+                            }) {
+                                Some(event) => try_some(event.event_id, "Event missing Id")?,
+                                None => Uuid::random(),
+                            };
 
-                for (condition_name, condition) in node_conditions.clone().iter() {
-                    let condition_role_name = try_some(
-                        node_condition_roles.get(condition_name),
-                        "Condition RoleName not found under Node Conditions",
-                    )?;
-                    let condition_role = try_some(
-                        node_roles.get(condition_role_name),
-                        "Condition Role not found under Node Roles",
-                    )?;
+                        let new_event = addressor
+                            .database
+                            .send(CreateEvent {
+                                event_id,
+                                event_name: event_key.to_owned(),
+                                deployment_id: deployment_element.deployment_id,
+                                description: event.description.clone(),
+                                parent_node_id: Uuid::try_from(parent_node_id_string.as_str())?,
+                                start: event_start,
+                                end: event_end,
+                                use_shared_connection: true,
+                            })
+                            .await??;
 
-                    if !event_conditions_tuple.is_empty() {
-                        for (event_key, event, event_conditions) in event_conditions_tuple {
-                            if node_condition_roles.contains_key(condition_name)
-                                && event_conditions.contains_key(condition_name)
-                            {
-                                let (event_start, event_end) = calculate_event_start_end_times(
-                                    self,
-                                    event_key,
-                                    deployment.start,
-                                    deployment.end,
-                                )?;
-                                let injects = get_injects_and_roles_by_node_event(
-                                    self,
-                                    event,
-                                    &deployment_element.scenario_reference,
-                                );
-                                let parent_node_id_string = try_some(
-                                    deployment_element.handler_reference.clone(),
-                                    "DeploymentElement missing HandlerReference",
-                                )?;
-                                let event_id = match node_event_conditions.iter().find(
-                                    |condition_properties| {
-                                        condition_properties.event_name == Some(event_key.clone())
-                                    },
-                                ) {
-                                    Some(event) => try_some(event.event_id, "Event missing Id")?,
-                                    None => Uuid::random(),
-                                };
-
-                                let new_event = addressor
-                                    .database
-                                    .send(CreateEvent {
-                                        event_id,
-                                        event_name: event_key.to_owned(),
-                                        deployment_id: deployment_element.deployment_id,
-                                        description: event.description.clone(),
-                                        parent_node_id: Uuid::try_from(
-                                            parent_node_id_string.as_str(),
-                                        )?,
-                                        start: event_start,
-                                        end: event_end,
-                                        use_shared_connection: true,
-                                    })
-                                    .await??;
-
-                                node_event_conditions.push(ConditionProperties {
-                                    name: condition_name.to_owned(),
-                                    condition: condition.clone(),
-                                    role: condition_role.clone(),
-                                    event_id: Some(new_event.id),
-                                    event_name: Some(event_key.to_owned()),
-                                    injects: Some(injects),
-                                });
-                            }
-                        }
-                    } else {
                         node_event_conditions.push(ConditionProperties {
                             name: condition_name.to_owned(),
                             condition: condition.clone(),
                             role: condition_role.clone(),
-                            event_id: None,
-                            event_name: None,
-                            injects: None,
+                            event_id: Some(new_event.id),
+                            event_name: Some(event_key.to_owned()),
+                            injects: Some(injects),
                         });
                     }
+                } else {
+                    node_event_conditions.push(ConditionProperties {
+                        name: condition_name.to_owned(),
+                        condition: condition.clone(),
+                        role: condition_role.clone(),
+                        event_id: None,
+                        event_name: None,
+                        injects: None,
+                    });
                 }
+            }
 
-                Ok((
-                    node.clone(),
-                    deployment_element.clone(),
-                    *template_id,
-                    node_event_conditions,
-                ))
-            },
-        ))
+            Ok((
+                DeployedNode {
+                    node: node.clone(),
+                    deployment_element: deployment_element.clone(),
+                    template_id: *template_id,
+                },
+                node_event_conditions,
+            ))
+        }))
         .await?;
 
         Ok(output)
@@ -192,11 +196,16 @@ impl DeployableEvents for Scenario {
         addressor: &Addressor,
         exercise: &Exercise,
         deployers: &[String],
-        deployed_nodes: &[(Node, DeploymentElement, Uuid, Vec<ConditionProperties>)],
+        deployed_nodes: &[(DeployedNode, Vec<ConditionProperties>)],
     ) -> Result<()> {
         if self.scripts.is_some() && self.events.is_some() {
             try_join_all(deployed_nodes.iter().map(
-                |(_, deployment_element, template_id, node_conditions)| async move {
+                |(deployed_node, node_conditions)| async move {
+                    let DeployedNode {
+                        deployment_element,
+                        template_id,
+                        ..
+                    } = deployed_node;
                     let event_conditions: HashMap<Uuid, Vec<(String, Role)>> = node_conditions
                         .iter()
                         .fold(HashMap::new(), |mut event_conditions, properties| {

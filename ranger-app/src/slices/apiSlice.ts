@@ -15,8 +15,14 @@ import {
   type NewExercise,
   type UpdateExercise,
   type DeploymentEvent,
+  type EventInfo,
 } from 'src/models/exercise';
-import type {EmailForm, Email} from 'src/models/email';
+import type {
+  EmailForm,
+  Email,
+  EmailTemplate,
+  NewEmailTemplate,
+} from 'src/models/email';
 import {type AdGroup, type AdUser} from 'src/models/groups';
 import {type Scenario} from 'src/models/scenario';
 import {type Score} from 'src/models/score';
@@ -177,6 +183,9 @@ export const apiSlice = createApi({
     adminGetDeploymentGroups: builder.query<Deployers, void>({
       query: () => '/admin/deployer',
     }),
+    adminGetDefaultDeploymentGroup: builder.query<string, void>({
+      query: () => '/admin/deployer/default',
+    }),
     adminGetEmails: builder.query<Email[], string>({
       query: exerciseId => `/admin/exercise/${exerciseId}/email`,
       providesTags: (result = []) =>
@@ -260,6 +269,22 @@ export const apiSlice = createApi({
           {type: 'Participant', id: 'LIST'},
         ],
     }),
+    adminGetEmailTemplates: builder.query<EmailTemplate[], void>({
+      query: () => '/admin/email_template',
+    }),
+    adminAddEmailTemplate: builder.mutation<EmailTemplate, NewEmailTemplate>({
+      query: newEmailTemplate => ({
+        url: '/admin/email_template', method: 'POST', body: newEmailTemplate,
+      }),
+    }),
+    adminDeleteEmailTemplate: builder
+      .mutation<string, {templateId: string}>({
+      query: ({templateId}) => ({
+        url: `/admin/email_template/${templateId}`,
+        method: 'DELETE',
+        responseHandler: 'text',
+      }),
+    }),
     participantGetExercises: builder.query<ParticipantExercise[], void>({
       query: () => '/participant/exercise',
       providesTags: (result = []) =>
@@ -331,6 +356,18 @@ export const apiSlice = createApi({
       query({exerciseId, deploymentId, entitySelector}) {
         return `/participant/exercise/${
           exerciseId}/deployment/${deploymentId}/entity/${entitySelector}/event`;
+      },
+    }),
+    participantGetEventInfo: builder.query<EventInfo | undefined,
+    {
+      exerciseId: string;
+      deploymentId: string;
+      entitySelector: string;
+      eventInfoDataChecksum: string;
+    }>({
+      query({exerciseId, deploymentId, entitySelector, eventInfoDataChecksum}) {
+        // eslint-disable-next-line max-len
+        return `/participant/exercise/${exerciseId}/deployment/${deploymentId}/entity/${entitySelector}/event/${eventInfoDataChecksum}`;
       },
     }),
     participantGetBanner: builder.query<Banner, string>({
@@ -506,6 +543,7 @@ export const {
   useAdminGetDeploymentQuery,
   useAdminGetDeploymentScoresQuery,
   useAdminGetDeploymentGroupsQuery,
+  useAdminGetDefaultDeploymentGroupQuery,
   useAdminGetEmailsQuery,
   useAdminSendEmailMutation,
   useAdminGetEmailFormQuery,
@@ -518,6 +556,9 @@ export const {
   useAdminGetMetricQuery,
   useAdminUpdateMetricMutation,
   useAdminDeleteMetricMutation,
+  useAdminGetEmailTemplatesQuery,
+  useAdminAddEmailTemplateMutation,
+  useAdminDeleteEmailTemplateMutation,
   useLazyAdminGetManualMetricArtifactQuery,
   useParticipantGetExercisesQuery,
   useParticipantGetExerciseQuery,
@@ -528,6 +569,7 @@ export const {
   useParticipantGetDeploymentScenarioQuery,
   useParticipantGetOwnParticipantsQuery,
   useParticipantGetTriggeredEventsQuery,
+  useParticipantGetEventInfoQuery,
   useParticipantGetBannerQuery,
   useParticipantGetMetricQuery,
   useParticipantGetMetricsQuery,
