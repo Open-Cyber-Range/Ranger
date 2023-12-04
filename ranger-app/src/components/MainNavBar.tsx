@@ -10,9 +10,14 @@ const MainNavbar = () => {
   return (
     <Navbar fixedToTop className='h-16 flex items-center'>
       <Navbar.Group align={Alignment.LEFT}>
-        <Navbar.Heading
-          className='text-m font-bold uppercase tracking-wider text-gray-600'
-        >{t('appName')}
+        <Navbar.Heading>
+          <Link
+            to='/'
+            className='py-4 text-m font-bold uppercase tracking-wider text-gray-600'
+            style={{textDecoration: 'none'}}
+          >
+            {t('appName')}
+          </Link>
         </Navbar.Heading>
         <Navbar.Divider/>
         <NavbarSponsors/>
