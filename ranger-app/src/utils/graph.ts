@@ -180,3 +180,8 @@ export function scoresIntoGraphData(
 
   return graphData;
 }
+
+export function getExerciseRoleFromString(role: string): ExerciseRole | undefined {
+  const roles = Object.keys(ExerciseRole) as ExerciseRole[];
+  return roles.find(r => r.toLowerCase() === role.toLowerCase());
+}

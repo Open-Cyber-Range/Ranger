@@ -258,7 +258,6 @@ const language = {
       addMetricFailedWithMessage: 'Adding a new submission failed: {{errorMessage}}',
       addMetricFailed: 'An error occurred while creating a new submission',
       scoreNotSet: 'Score is not set',
-      errorFetchingRoles: 'Error fetching roles',
     },
   },
   log: {
@@ -296,6 +295,10 @@ const language = {
   },
   fallback: {
     role: 'You do not have any roles assigned to you. Please contact your Ranger administrator.',
+  },
+  roles: {
+    allRoles: 'All roles',
+    errorFetchingRoles: 'Error fetching roles',
   },
 
 };

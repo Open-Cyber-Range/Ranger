@@ -2,7 +2,7 @@ import type React from 'react';
 import PageHolder from 'src/components/PageHolder';
 import {useTranslation} from 'react-i18next';
 import type {Deployment} from 'src/models/deployment';
-import {Callout, H4} from '@blueprintjs/core';
+import {Callout, H4, HTMLSelect} from '@blueprintjs/core';
 import {useNavigate} from 'react-router-dom';
 import {sortByProperty} from 'sort-by-property';
 import ScoreTagGroup from 'src/components/Scoring/ScoreTagGroup';
@@ -11,6 +11,7 @@ import useFetchRolesForDeployment from 'src/hooks/useFetchRolesForDeployment';
 import {type ExerciseRole} from 'src/models/scenario';
 import useGetAllRoles from 'src/hooks/useGetAllRoles';
 import {toastWarning} from 'src/components/Toaster';
+import {getExerciseRoleFromString} from 'src/utils/graph';
 
 const ScoresPanel = ({deployments}:
 {
@@ -21,35 +22,45 @@ const ScoresPanel = ({deployments}:
   const {fetchedRoles, fetchRolesForDeployment} = useFetchRolesForDeployment();
   const {roles, isError} = useGetAllRoles(deployments, fetchedRoles, fetchRolesForDeployment);
   const [selectedRole, setSelectedRole] = useState('all');
+  const [deploymentRoles, setDeploymentRoles] = useState<ExerciseRole[]>(roles);
 
   const handleClick = (deploymentId: string) => {
     navigate(`deployments/${deploymentId}`);
   };
 
+  const handleRoleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedRole(event.target.value);
+  };
+
   useEffect(() => {
+    if (selectedRole === 'all') {
+      setDeploymentRoles(roles);
+    } else {
+      const selectedExerciseRole = getExerciseRoleFromString(selectedRole);
+      setDeploymentRoles(roles.filter(role => role === selectedExerciseRole));
+    }
+
     if (isError) {
-      toastWarning(t('metricScoring.errors.errorFetchingRoles'));
+      toastWarning(t('roles.errorFetchingRoles'));
     }
   }
-  , [isError, t]);
+  , [selectedRole, roles, isError, t]);
 
   if (deployments) {
     deployments = deployments.slice().sort(sortByProperty('updatedAt', 'desc'));
 
     return (
       <PageHolder>
-        <div>
-          <select
+        <div className='flex flex-row items-end mb-2'>
+          <HTMLSelect
             value={selectedRole}
-            onChange={event => {
-              setSelectedRole(event.target.value);
-            }}
+            onChange={handleRoleChange}
           >
-            <option value='all'>All Roles</option>
+            <option value='all'>{t('roles.allRoles')}</option>
             {roles.map((role: ExerciseRole) => (
               <option key={role} value={role}>{role}</option>
             ))}
-          </select>
+          </HTMLSelect>
         </div>
         <div className='flex flex-col'>
           <table className='
@@ -70,7 +81,7 @@ const ScoresPanel = ({deployments}:
                     <ScoreTagGroup
                       exerciseId={deployment.exerciseId}
                       deploymentId={deployment.id}
-                      roles={roles}/>
+                      roles={deploymentRoles}/>
                   </td>
                 </tr>
               ))}
