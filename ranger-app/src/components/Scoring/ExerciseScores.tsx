@@ -6,12 +6,13 @@ import {Callout, H4, HTMLSelect} from '@blueprintjs/core';
 import {useNavigate} from 'react-router-dom';
 import {sortByProperty} from 'sort-by-property';
 import ScoreTagGroup from 'src/components/Scoring/ScoreTagGroup';
-import {useEffect, useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import useFetchRolesForDeployment from 'src/hooks/useFetchRolesForDeployment';
 import {type ExerciseRole} from 'src/models/scenario';
 import useGetAllRoles from 'src/hooks/useGetAllRoles';
 import {toastWarning} from 'src/components/Toaster';
-import {getExerciseRoleFromString} from 'src/utils/graph';
+import {getExerciseRoleFromString} from 'src/utils/score';
+import {type DeploymentScore, type RoleScore} from 'src/models/score';
 
 const ScoresPanel = ({deployments}:
 {
@@ -21,8 +22,26 @@ const ScoresPanel = ({deployments}:
   const navigate = useNavigate();
   const {fetchedRoles, fetchRolesForDeployment} = useFetchRolesForDeployment();
   const {roles, isError} = useGetAllRoles(deployments, fetchedRoles, fetchRolesForDeployment);
-  const [selectedRole, setSelectedRole] = useState('all');
+  const [selectedRole, setSelectedRole] = useState<string>('all');
   const [deploymentRoles, setDeploymentRoles] = useState<ExerciseRole[]>(roles);
+  const [deploymentScores, setDeploymentScores] = useState<DeploymentScore[]>([]);
+  const [sortedDeployments, setSortedDeployments] = useState<Deployment[]>([]);
+  const [sortOrder, setSortOrder] = useState<string>('scoreDesc');
+
+  const handleScoresChange = (deploymentId: string, roleScores: RoleScore[]) => {
+    setDeploymentScores(previousScores => {
+      const newScores = [...previousScores];
+      const index = newScores.findIndex(r => r.deploymentId === deploymentId);
+
+      if (index > -1) {
+        newScores[index] = {deploymentId, roleScores};
+      } else {
+        newScores.push({deploymentId, roleScores});
+      }
+
+      return newScores;
+    });
+  };
 
   const handleClick = (deploymentId: string) => {
     navigate(`deployments/${deploymentId}`);
@@ -30,6 +49,48 @@ const ScoresPanel = ({deployments}:
 
   const handleRoleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedRole(event.target.value);
+  };
+
+  const handleSortOrderChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSortOrder(event.target.value);
+  };
+
+  const sortDeployments = useCallback((role: string,
+    deployments: Deployment[], deploymentScores: DeploymentScore[]) => {
+    if (sortOrder.includes('update')) {
+      const order = sortOrder === 'updateDesc' ? 'desc' : 'asc';
+      return deployments.slice().sort(sortByProperty('updatedAt', order));
+    }
+
+    if (sortOrder.includes('score')) {
+      const isDescending = sortOrder === 'scoreDesc';
+
+      return deployments.slice().sort((a, b) => {
+        let scoreA;
+        let scoreB;
+
+        if (role === 'all') {
+          scoreA = calculateTotalScore(deploymentScores, a.id);
+          scoreB = calculateTotalScore(deploymentScores, b.id);
+        } else {
+          const deploymentScoreA = deploymentScores.find(ds => ds.deploymentId === a.id);
+          const deploymentScoreB = deploymentScores.find(ds => ds.deploymentId === b.id);
+
+          scoreA = deploymentScoreA?.roleScores.find(rs => rs.role === role)?.score ?? 0;
+          scoreB = deploymentScoreB?.roleScores.find(rs => rs.role === role)?.score ?? 0;
+        }
+
+        return isDescending ? scoreB - scoreA : scoreA - scoreB;
+      });
+    }
+
+    return deployments.slice().sort(sortByProperty('updatedAt', 'desc'));
+  }, [sortOrder]);
+
+  const calculateTotalScore = (deploymentScores: DeploymentScore[], deploymentId: string) => {
+    const deploymentScore = deploymentScores.find(ds => ds.deploymentId === deploymentId);
+    return deploymentScore
+      ? deploymentScore.roleScores.reduce((total, rs) => total + rs.score, 0) : 0;
   };
 
   useEffect(() => {
@@ -40,26 +101,38 @@ const ScoresPanel = ({deployments}:
       setDeploymentRoles(roles.filter(role => role === selectedExerciseRole));
     }
 
+    if (deployments) {
+      setSortedDeployments(sortDeployments(selectedRole, deployments, deploymentScores));
+    }
+
     if (isError) {
-      toastWarning(t('roles.errorFetchingRoles'));
+      toastWarning(t('scoreTable.errorFetchingRoles'));
     }
   }
-  , [selectedRole, roles, isError, t]);
+  , [selectedRole, roles, sortDeployments, deployments, deploymentScores, isError, t]);
 
   if (deployments) {
-    deployments = deployments.slice().sort(sortByProperty('updatedAt', 'desc'));
-
     return (
       <PageHolder>
-        <div className='flex flex-row items-end mb-2'>
+        <div className='flex flex-row justify-between  mb-2'>
           <HTMLSelect
             value={selectedRole}
             onChange={handleRoleChange}
           >
-            <option value='all'>{t('roles.allRoles')}</option>
+            <option value='all'>{t('scoreTable.allRoles')}</option>
             {roles.map((role: ExerciseRole) => (
               <option key={role} value={role}>{role}</option>
             ))}
+          </HTMLSelect>
+
+          <HTMLSelect
+            value={sortOrder}
+            onChange={handleSortOrderChange}
+          >
+            <option value='scoreDesc'>{t('scoreTable.scoreDescending')}</option>
+            <option value='scoreAsc'>{t('scoreTable.scoreAscending')}</option>
+            <option value='updateDesc'>{t('scoreTable.updatedAtDescending')}</option>
+            <option value='updateAsc'>{t('scoreTable.updatedAtAscending')}</option>
           </HTMLSelect>
         </div>
         <div className='flex flex-col'>
@@ -69,7 +142,7 @@ const ScoresPanel = ({deployments}:
               bp4-interactive'
           >
             <tbody>
-              {deployments.map(deployment => (
+              {sortedDeployments.map(deployment => (
                 <tr
                   key={deployment.id}
                   onClick={() => {
@@ -81,7 +154,11 @@ const ScoresPanel = ({deployments}:
                     <ScoreTagGroup
                       exerciseId={deployment.exerciseId}
                       deploymentId={deployment.id}
-                      roles={deploymentRoles}/>
+                      roles={deploymentRoles}
+                      onScoresChange={(roleScores: RoleScore[]) => {
+                        handleScoresChange(deployment.id, roleScores);
+                      }}
+                    />
                   </td>
                 </tr>
               ))}

@@ -311,7 +311,11 @@ const language = {
   fallback: {
     role: 'You do not have any roles assigned to you. Please contact your Ranger administrator.',
   },
-  roles: {
+  scoreTable: {
+    scoreDescending: 'Score (descending)',
+    scoreAscending: 'Score (ascending)',
+    updatedAtDescending: 'Updated at (descending)',
+    updatedAtAscending: 'Updated at (ascending)',
     allRoles: 'All roles',
     errorFetchingRoles: 'Error fetching roles',
   },

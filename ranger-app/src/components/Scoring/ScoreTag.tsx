@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {Tag} from '@blueprintjs/core';
 import '@blueprintjs/popover2/lib/css/blueprint-popover2.css';
 import {
@@ -14,11 +14,12 @@ import {
 import {skipToken} from '@reduxjs/toolkit/dist/query';
 import {type ExerciseRole} from 'src/models/scenario';
 
-const ScoreTag = ({exerciseId, deploymentId, role, large = false}:
+const ScoreTag = ({exerciseId, deploymentId, role, large = false, onTagScoreChange}:
 {exerciseId: string;
   deploymentId: string;
   role: ExerciseRole;
   large?: boolean;
+  onTagScoreChange?: (tagScore: number) => void;
 }) => {
   const queryArguments = exerciseId && deploymentId
     ? {exerciseId, deploymentId} : skipToken;
@@ -27,8 +28,16 @@ const ScoreTag = ({exerciseId, deploymentId, role, large = false}:
   const {t} = useTranslation();
   const backgroundColor = getRoleColor(role);
 
+  useEffect(() => {
+    if (scenario && scores) {
+      const tagScore = roundToDecimalPlaces(calculateTotalScoreForRole({scenario, scores, role}));
+      onTagScoreChange?.(tagScore);
+    }
+  }
+  , [scenario, scores, role, onTagScoreChange]);
+
   if (scenario && scores) {
-    const tagScore = calculateTotalScoreForRole({scenario, scores, role});
+    const tagScore = roundToDecimalPlaces(calculateTotalScoreForRole({scenario, scores, role}));
 
     return (
       <Tag
@@ -37,7 +46,7 @@ const ScoreTag = ({exerciseId, deploymentId, role, large = false}:
         large={large}
         style={{background: backgroundColor}}
       >
-        {role} {t('common.team')}: {roundToDecimalPlaces(tagScore) }
+        {role} {t('common.team')}: {tagScore}
       </Tag>
     );
   }
