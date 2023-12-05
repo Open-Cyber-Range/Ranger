@@ -60,16 +60,22 @@ const ScoresPanel = ({deployments}:
       const selectedExerciseRole = getExerciseRoleFromString(selectedRole);
       setDeploymentRoles(roles.filter(role => role === selectedExerciseRole));
     }
+  }
+  , [selectedRole, roles]);
 
+  useEffect(() => {
     if (deployments) {
       setSortedDeployments(sortDeployments(selectedRole, deployments, deploymentScores, sortOrder));
     }
+  }
+  , [selectedRole, deployments, deploymentScores, sortOrder]);
 
+  useEffect(() => {
     if (isError) {
       toastWarning(t('scoreTable.errorFetchingRoles'));
     }
   }
-  , [selectedRole, roles, deployments, deploymentScores, sortOrder, isError, t]);
+  , [isError, t]);
 
   if (deployments) {
     return (
