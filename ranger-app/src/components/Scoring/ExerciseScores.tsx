@@ -80,7 +80,7 @@ const ScoresPanel = ({deployments}:
   if (deployments) {
     return (
       <PageHolder>
-        <div className='flex flex-row justify-between  mb-2'>
+        <div className='flex justify-end space-x-2 mb-2'>
           <HTMLSelect
             value={selectedRole}
             onChange={handleRoleChange}
