@@ -117,7 +117,8 @@
         "never",
         {
           "svg": "always",
-          "png": "always"
+          "png": "always",
+          "jpg": "always"
         }
       ],
       "n/prefer-global/process": [
