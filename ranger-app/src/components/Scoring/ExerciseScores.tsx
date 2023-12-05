@@ -21,11 +21,11 @@ const ScoresPanel = ({deployments}:
   const navigate = useNavigate();
   const {fetchedRoles, fetchRolesForDeployment} = useFetchRolesForDeployment();
   const {roles, isError} = useGetAllRoles(deployments, fetchedRoles, fetchRolesForDeployment);
-  const [selectedRole, setSelectedRole] = useState<string>('all');
+  const [selectedRole, setSelectedRole] = useState<string>('');
   const [deploymentRoles, setDeploymentRoles] = useState<ExerciseRole[]>(roles);
   const [deploymentScores, setDeploymentScores] = useState<DeploymentScore[]>([]);
   const [sortedDeployments, setSortedDeployments] = useState<Deployment[]>([]);
-  const [sortOrder, setSortOrder] = useState<string>('scoreDesc');
+  const [sortOrder, setSortOrder] = useState<string>('');
 
   const handleScoresChange = useCallback((deploymentId: string, roleScores: RoleScore[]) => {
     setDeploymentScores(previousScores => {
@@ -54,7 +54,7 @@ const ScoresPanel = ({deployments}:
   }, []);
 
   useEffect(() => {
-    if (selectedRole === 'all') {
+    if (selectedRole === 'all' || selectedRole === '') {
       setDeploymentRoles(roles);
     } else {
       const selectedExerciseRole = getExerciseRoleFromString(selectedRole);
@@ -85,6 +85,7 @@ const ScoresPanel = ({deployments}:
             value={selectedRole}
             onChange={handleRoleChange}
           >
+            <option value=''>{t('scoreTable.rolePlaceholder')}</option>
             <option value='all'>{t('scoreTable.allRoles')}</option>
             {roles.map((role: ExerciseRole) => (
               <option key={role} value={role}>{role}</option>
@@ -95,8 +96,11 @@ const ScoresPanel = ({deployments}:
             value={sortOrder}
             onChange={handleSortOrderChange}
           >
+            <option value=''>{t('scoreTable.orderPlaceholder')}</option>
             <option value='scoreDesc'>{t('scoreTable.scoreDescending')}</option>
             <option value='scoreAsc'>{t('scoreTable.scoreAscending')}</option>
+            <option value='nameDesc'>{t('scoreTable.nameDescending')}</option>
+            <option value='nameAsc'>{t('scoreTable.nameAscending')}</option>
             <option value='createdDesc'>{t('scoreTable.createdAtDescending')}</option>
             <option value='createdAsc'>{t('scoreTable.createdAtAscending')}</option>
           </HTMLSelect>

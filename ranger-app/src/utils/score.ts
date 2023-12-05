@@ -26,6 +26,11 @@ export const sortDeployments = (
     return deployments.slice().sort(sortByProperty('createdAt', order));
   }
 
+  if (sortOrder.includes('name')) {
+    const order = sortOrder === 'nameDesc' ? 'desc' : 'asc';
+    return deployments.slice().sort(sortByProperty('name', order));
+  }
+
   if (sortOrder.includes('score')) {
     const isDescending = sortOrder === 'scoreDesc';
 
@@ -33,7 +38,7 @@ export const sortDeployments = (
       let scoreA;
       let scoreB;
 
-      if (selectedRole === 'all') {
+      if (selectedRole === 'all' || selectedRole === '') {
         scoreA = calculateTotalScore(deploymentScores, a.id);
         scoreB = calculateTotalScore(deploymentScores, b.id);
       } else {
@@ -48,6 +53,6 @@ export const sortDeployments = (
     });
   }
 
-  return deployments.slice().sort(sortByProperty('createdAt', 'desc'));
+  return deployments;
 };
 
