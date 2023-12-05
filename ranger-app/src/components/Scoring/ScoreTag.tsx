@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Tag} from '@blueprintjs/core';
 import '@blueprintjs/popover2/lib/css/blueprint-popover2.css';
 import {
@@ -27,18 +27,17 @@ const ScoreTag = ({exerciseId, deploymentId, role, large = false, onTagScoreChan
   const {data: scenario} = useAdminGetDeploymentScenarioQuery(queryArguments);
   const {t} = useTranslation();
   const backgroundColor = getRoleColor(role);
+  const [tagScore, setTagScore] = useState<number>(0);
 
   useEffect(() => {
     if (scenario && scores) {
-      const tagScore = roundToDecimalPlaces(calculateTotalScoreForRole({scenario, scores, role}));
+      setTagScore(roundToDecimalPlaces(calculateTotalScoreForRole({scenario, scores, role})));
       onTagScoreChange?.(tagScore);
     }
   }
-  , [scenario, scores, role, onTagScoreChange]);
+  , [scenario, scores, role, onTagScoreChange, tagScore]);
 
   if (scenario && scores) {
-    const tagScore = roundToDecimalPlaces(calculateTotalScoreForRole({scenario, scores, role}));
-
     return (
       <Tag
         key={role}
