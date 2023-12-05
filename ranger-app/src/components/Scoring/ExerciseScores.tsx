@@ -4,14 +4,13 @@ import {useTranslation} from 'react-i18next';
 import type {Deployment} from 'src/models/deployment';
 import {Callout, H4, HTMLSelect} from '@blueprintjs/core';
 import {useNavigate} from 'react-router-dom';
-import {sortByProperty} from 'sort-by-property';
 import ScoreTagGroup from 'src/components/Scoring/ScoreTagGroup';
 import {useCallback, useEffect, useState} from 'react';
 import useFetchRolesForDeployment from 'src/hooks/useFetchRolesForDeployment';
 import {type ExerciseRole} from 'src/models/scenario';
 import useGetAllRoles from 'src/hooks/useGetAllRoles';
 import {toastWarning} from 'src/components/Toaster';
-import {getExerciseRoleFromString} from 'src/utils/score';
+import {getExerciseRoleFromString, sortDeployments} from 'src/utils/score';
 import {type DeploymentScore, type RoleScore} from 'src/models/score';
 
 const ScoresPanel = ({deployments}:
@@ -28,70 +27,31 @@ const ScoresPanel = ({deployments}:
   const [sortedDeployments, setSortedDeployments] = useState<Deployment[]>([]);
   const [sortOrder, setSortOrder] = useState<string>('scoreDesc');
 
-  const handleScoresChange = (deploymentId: string, roleScores: RoleScore[]) => {
+  const handleScoresChange = useCallback((deploymentId: string, roleScores: RoleScore[]) => {
     setDeploymentScores(previousScores => {
-      const newScores = [...previousScores];
-      const index = newScores.findIndex(r => r.deploymentId === deploymentId);
+      const existingScore = previousScores.find(score => score.deploymentId === deploymentId);
 
-      if (index > -1) {
-        newScores[index] = {deploymentId, roleScores};
-      } else {
-        newScores.push({deploymentId, roleScores});
+      if (existingScore) {
+        return previousScores.map(score =>
+          score.deploymentId === deploymentId ? {...score, roleScores} : score,
+        );
       }
 
-      return newScores;
+      return [...previousScores, {deploymentId, roleScores}];
     });
-  };
+  }, []);
 
   const handleClick = (deploymentId: string) => {
     navigate(`deployments/${deploymentId}`);
   };
 
-  const handleRoleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleRoleChange = useCallback((event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedRole(event.target.value);
-  };
+  }, []);
 
-  const handleSortOrderChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleSortOrderChange = useCallback((event: React.ChangeEvent<HTMLSelectElement>) => {
     setSortOrder(event.target.value);
-  };
-
-  const sortDeployments = useCallback((role: string,
-    deployments: Deployment[], deploymentScores: DeploymentScore[]) => {
-    if (sortOrder.includes('update')) {
-      const order = sortOrder === 'updateDesc' ? 'desc' : 'asc';
-      return deployments.slice().sort(sortByProperty('updatedAt', order));
-    }
-
-    if (sortOrder.includes('score')) {
-      const isDescending = sortOrder === 'scoreDesc';
-
-      return deployments.slice().sort((a, b) => {
-        let scoreA;
-        let scoreB;
-
-        if (role === 'all') {
-          scoreA = calculateTotalScore(deploymentScores, a.id);
-          scoreB = calculateTotalScore(deploymentScores, b.id);
-        } else {
-          const deploymentScoreA = deploymentScores.find(ds => ds.deploymentId === a.id);
-          const deploymentScoreB = deploymentScores.find(ds => ds.deploymentId === b.id);
-
-          scoreA = deploymentScoreA?.roleScores.find(rs => rs.role === role)?.score ?? 0;
-          scoreB = deploymentScoreB?.roleScores.find(rs => rs.role === role)?.score ?? 0;
-        }
-
-        return isDescending ? scoreB - scoreA : scoreA - scoreB;
-      });
-    }
-
-    return deployments.slice().sort(sortByProperty('updatedAt', 'desc'));
-  }, [sortOrder]);
-
-  const calculateTotalScore = (deploymentScores: DeploymentScore[], deploymentId: string) => {
-    const deploymentScore = deploymentScores.find(ds => ds.deploymentId === deploymentId);
-    return deploymentScore
-      ? deploymentScore.roleScores.reduce((total, rs) => total + rs.score, 0) : 0;
-  };
+  }, []);
 
   useEffect(() => {
     if (selectedRole === 'all') {
@@ -102,14 +62,14 @@ const ScoresPanel = ({deployments}:
     }
 
     if (deployments) {
-      setSortedDeployments(sortDeployments(selectedRole, deployments, deploymentScores));
+      setSortedDeployments(sortDeployments(selectedRole, deployments, deploymentScores, sortOrder));
     }
 
     if (isError) {
       toastWarning(t('scoreTable.errorFetchingRoles'));
     }
   }
-  , [selectedRole, roles, sortDeployments, deployments, deploymentScores, isError, t]);
+  , [selectedRole, roles, deployments, deploymentScores, sortOrder, isError, t]);
 
   if (deployments) {
     return (

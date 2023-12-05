@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useCallback, useState} from 'react';
 import '@blueprintjs/popover2/lib/css/blueprint-popover2.css';
 import {type ExerciseRole} from 'src/models/scenario';
 import {type RoleScore} from 'src/models/score';
@@ -12,22 +12,21 @@ const ScoreTagGroup = ({exerciseId, deploymentId, roles, onScoresChange}:
 }) => {
   const [roleScores, setRoleScores] = useState<RoleScore[]>([]);
 
-  const handleScoreChange = (role: ExerciseRole, score: number) => {
+  const handleRoleScoreChange = useCallback((role: ExerciseRole, score: number) => {
     setRoleScores(previousScores => {
-      const newScores = [...previousScores];
-      const index = newScores.findIndex(r => r.role === role);
+      const existingScore = previousScores.find(roleScore => roleScore.role === role);
 
-      if (index > -1) {
-        newScores[index] = {role, score};
-      } else {
-        newScores.push({role, score});
+      if (existingScore) {
+        return previousScores.map(roleScore =>
+          roleScore.role === role ? {...roleScore, score} : roleScore,
+        );
       }
 
-      return newScores;
+      return [...previousScores, {role, score}];
     });
 
     onScoresChange?.(roleScores);
-  };
+  }, [onScoresChange, roleScores]);
 
   if (roles) {
     return (
@@ -40,7 +39,7 @@ const ScoreTagGroup = ({exerciseId, deploymentId, roles, onScoresChange}:
               deploymentId={deploymentId}
               role={role}
               onTagScoreChange={score => {
-                handleScoreChange(role, score);
+                handleRoleScoreChange(role, score);
               }}
             />
           </div>
