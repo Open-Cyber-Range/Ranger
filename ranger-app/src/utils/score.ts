@@ -21,9 +21,9 @@ export const sortDeployments = (
   deployments: Deployment[],
   deploymentScores: DeploymentScore[],
   sortOrder: string) => {
-  if (sortOrder.includes('update')) {
-    const order = sortOrder === 'updateDesc' ? 'desc' : 'asc';
-    return deployments.slice().sort(sortByProperty('updatedAt', order));
+  if (sortOrder.includes('created')) {
+    const order = sortOrder === 'createdDesc' ? 'desc' : 'asc';
+    return deployments.slice().sort(sortByProperty('createdAt', order));
   }
 
   if (sortOrder.includes('score')) {
@@ -48,6 +48,6 @@ export const sortDeployments = (
     });
   }
 
-  return deployments.slice().sort(sortByProperty('updatedAt', 'desc'));
+  return deployments.slice().sort(sortByProperty('createdAt', 'desc'));
 };
 

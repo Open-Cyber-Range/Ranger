@@ -97,8 +97,8 @@ const ScoresPanel = ({deployments}:
           >
             <option value='scoreDesc'>{t('scoreTable.scoreDescending')}</option>
             <option value='scoreAsc'>{t('scoreTable.scoreAscending')}</option>
-            <option value='updateDesc'>{t('scoreTable.updatedAtDescending')}</option>
-            <option value='updateAsc'>{t('scoreTable.updatedAtAscending')}</option>
+            <option value='createdDesc'>{t('scoreTable.createdAtDescending')}</option>
+            <option value='createdAsc'>{t('scoreTable.createdAtAscending')}</option>
           </HTMLSelect>
         </div>
         <div className='flex flex-col'>

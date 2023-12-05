@@ -314,8 +314,8 @@ const language = {
   scoreTable: {
     scoreDescending: 'Score (descending)',
     scoreAscending: 'Score (ascending)',
-    updatedAtDescending: 'Updated at (descending)',
-    updatedAtAscending: 'Updated at (ascending)',
+    createdAtDescending: 'Deployment time (descending)',
+    createdAtAscending: 'Deployment time (ascending)',
     allRoles: 'All roles',
     errorFetchingRoles: 'Error fetching roles',
   },
