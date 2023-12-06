@@ -36,7 +36,7 @@ impl Handler<CreateConditionMessage> for Database {
                     let condition_message =
                         ConditionMessage::by_id(new_condition_message.id).first(&mut connection)?;
 
-                    if metric.is_some() {
+                    if let Some(metric) = metric {
                         let score: Score = Score::from_conditionmessage_and_metric(
                             condition_message.clone(),
                             metric,

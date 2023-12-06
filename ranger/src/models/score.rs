@@ -12,7 +12,8 @@ pub struct Score {
     pub id: Uuid,
     pub exercise_id: Uuid,
     pub deployment_id: Uuid,
-    pub metric_name: String,
+    pub metric_name: Option<String>,
+    pub metric_key: String,
     pub vm_name: String,
     pub value: BigDecimal,
     pub timestamp: NaiveDateTime,
@@ -22,7 +23,8 @@ impl Score {
     pub fn new(
         exercise_id: Uuid,
         deployment_id: Uuid,
-        metric_name: String,
+        metric_name: Option<String>,
+        metric_key: String,
         vm_name: String,
         value: BigDecimal,
         timestamp: NaiveDateTime,
@@ -32,6 +34,7 @@ impl Score {
             exercise_id,
             deployment_id,
             metric_name,
+            metric_key,
             vm_name,
             value,
             timestamp,
@@ -40,27 +43,17 @@ impl Score {
 
     pub fn from_conditionmessage_and_metric(
         condition_message: ConditionMessage,
-        metric: Option<(String, Metric)>,
+        sdl_metric: (String, Metric),
         vm_name: String,
     ) -> Self {
-        let mut metric_name = Default::default();
-        let mut max_score: BigDecimal = Default::default();
-
-        if let Some((metric_key, metric)) = metric {
-            metric_name = match &metric.name {
-                Some(metric_name) => metric_name.to_owned(),
-                None => metric_key,
-            };
-            max_score = BigDecimal::from(metric.max_score);
-        }
-
         Self {
             id: condition_message.id,
             exercise_id: condition_message.exercise_id,
             deployment_id: condition_message.deployment_id,
-            metric_name,
+            metric_name: sdl_metric.1.name,
+            metric_key: sdl_metric.0,
             vm_name,
-            value: condition_message.value * max_score,
+            value: condition_message.value * BigDecimal::from(sdl_metric.1.max_score),
             timestamp: condition_message.created_at,
         }
     }
@@ -77,6 +70,7 @@ impl From<super::Metric> for Score {
             metric.exercise_id,
             metric.deployment_id,
             metric.name,
+            metric.sdl_key,
             metric.entity_selector,
             score,
             metric.updated_at,
