@@ -1,7 +1,12 @@
 import {sortByProperty} from 'sort-by-property';
 import {type Deployment} from 'src/models/deployment';
-import {ExerciseRole} from 'src/models/scenario';
+import {
+  ExerciseRole,
+  ExerciseRoleOrder,
+  type Scenario,
+} from 'src/models/scenario';
 import {type DeploymentScore} from 'src/models/score';
+import {flattenEntities, getTloKeysByRole, getUniqueRoles} from '.';
 
 export function getExerciseRoleFromString(role: string): ExerciseRole | undefined {
   const roles = Object.keys(ExerciseRole) as ExerciseRole[];
@@ -56,3 +61,23 @@ export const sortDeployments = (
   return deployments;
 };
 
+export const getRolesFromScenario = (scenario: Scenario): ExerciseRole[] => {
+  if (!scenario.entities) {
+    return [];
+  }
+
+  const flattenedEntities = flattenEntities(scenario?.entities);
+  const fetchedRoles = getUniqueRoles(flattenedEntities);
+
+  const rolesWithTlos: ExerciseRole[] = [];
+
+  for (const role of fetchedRoles) {
+    const roleTloNames = getTloKeysByRole(flattenedEntities, role);
+    if (roleTloNames.length > 0) {
+      rolesWithTlos.push(role);
+    }
+  }
+
+  rolesWithTlos.sort((a, b) => ExerciseRoleOrder[a] - ExerciseRoleOrder[b]);
+  return rolesWithTlos;
+};

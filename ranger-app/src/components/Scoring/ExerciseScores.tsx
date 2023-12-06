@@ -6,11 +6,8 @@ import {Callout, H4, HTMLSelect} from '@blueprintjs/core';
 import {useNavigate} from 'react-router-dom';
 import ScoreTagGroup from 'src/components/Scoring/ScoreTagGroup';
 import {useCallback, useEffect, useState} from 'react';
-import useFetchRolesForDeployment from 'src/hooks/useFetchRolesForDeployment';
 import {type ExerciseRole} from 'src/models/scenario';
-import useGetAllRoles from 'src/hooks/useGetAllRoles';
-import {toastWarning} from 'src/components/Toaster';
-import {getExerciseRoleFromString, sortDeployments} from 'src/utils/score';
+import {sortDeployments} from 'src/utils/score';
 import {type DeploymentScore, type RoleScore} from 'src/models/score';
 
 const ScoresPanel = ({deployments}:
@@ -19,10 +16,8 @@ const ScoresPanel = ({deployments}:
 }) => {
   const {t} = useTranslation();
   const navigate = useNavigate();
-  const {fetchedRoles, fetchRolesForDeployment} = useFetchRolesForDeployment();
-  const {roles, isError} = useGetAllRoles(deployments, fetchedRoles, fetchRolesForDeployment);
+  const [roles, setRoles] = useState<ExerciseRole[]>([]);
   const [selectedRole, setSelectedRole] = useState<string>('');
-  const [deploymentRoles, setDeploymentRoles] = useState<ExerciseRole[]>(roles);
   const [deploymentScores, setDeploymentScores] = useState<DeploymentScore[]>([]);
   const [sortedDeployments, setSortedDeployments] = useState<Deployment[]>([]);
   const [sortOrder, setSortOrder] = useState<string>('');
@@ -54,28 +49,11 @@ const ScoresPanel = ({deployments}:
   }, []);
 
   useEffect(() => {
-    if (selectedRole === 'all' || selectedRole === '') {
-      setDeploymentRoles(roles);
-    } else {
-      const selectedExerciseRole = getExerciseRoleFromString(selectedRole);
-      setDeploymentRoles(roles.filter(role => role === selectedExerciseRole));
-    }
-  }
-  , [selectedRole, roles]);
-
-  useEffect(() => {
     if (deployments) {
       setSortedDeployments(sortDeployments(selectedRole, deployments, deploymentScores, sortOrder));
     }
   }
   , [selectedRole, deployments, deploymentScores, sortOrder]);
-
-  useEffect(() => {
-    if (isError) {
-      toastWarning(t('scoreTable.errorFetchingRoles'));
-    }
-  }
-  , [isError, t]);
 
   if (deployments) {
     return (
@@ -124,7 +102,10 @@ const ScoresPanel = ({deployments}:
                     <ScoreTagGroup
                       exerciseId={deployment.exerciseId}
                       deploymentId={deployment.id}
-                      roles={deploymentRoles}
+                      selectedRole={selectedRole}
+                      onRolesChange={(roles: ExerciseRole[]) => {
+                        setRoles(roles);
+                      }}
                       onScoresChange={(roleScores: RoleScore[]) => {
                         handleScoresChange(deployment.id, roleScores);
                       }}
