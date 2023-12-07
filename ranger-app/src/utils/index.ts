@@ -79,7 +79,8 @@ export const isDevelopment = () =>
 export function groupByMetricNameAndVmName(array: Score[]) {
   return array.reduce<Record<string, Score[]>>(
     (groupedMap, element) => {
-      const key = element.metricName.concat(' - ', element.vmName);
+      const metricReference = element.metricName ?? element.metricKey;
+      const key = metricReference.concat(' - ', element.vmName);
       if (groupedMap[key]) {
         groupedMap[key].push(element);
       } else {
@@ -183,9 +184,9 @@ export const findLatestScoresByVms = (scores: Score[]) => {
 export function sumScoresByMetrics(
   metricKeys: string[], scoresByMetric: Record<string, Score[]>): number {
   return metricKeys.reduce(
-    (metricScoreSum, metricName) => {
-      if (scoresByMetric[metricName]) {
-        const currentScore = findLatestScore(scoresByMetric[metricName]);
+    (metricScoreSum, metricKey) => {
+      if (scoresByMetric[metricKey]) {
+        const currentScore = findLatestScore(scoresByMetric[metricKey]);
         if (currentScore?.value) {
           metricScoreSum += Number(currentScore?.value);
         }
@@ -199,7 +200,7 @@ export function sumScoresByRole(uniqueVmNames: string[], roleScores: Score[]) {
   return uniqueVmNames.reduce((totalScoreSum, vmName) => {
     const vmScores = roleScores.filter(score => score.vmName === vmName);
 
-    const scoresByMetric = groupBy(vmScores, score => score.metricName);
+    const scoresByMetric = groupBy(vmScores, score => score.metricName ?? score.metricKey);
     const metricNames = Object.keys(scoresByMetric);
     const metricScoreSum = sumScoresByMetrics(metricNames, scoresByMetric);
     totalScoreSum += metricScoreSum;
@@ -344,7 +345,7 @@ export const calculateTotalScoreForRole = ({scenario, scores, role}: {
     .filter(Boolean));
 
   const roleScores = scores.filter(score =>
-    roleMetrics.has(score.metricName));
+    roleMetrics.has(score.metricName ?? score.metricKey));
 
   const uniqueVmNames = [...new Set(roleScores.map(score => score.vmName))];
   const totalRoleScore = sumScoresByRole(uniqueVmNames, roleScores);

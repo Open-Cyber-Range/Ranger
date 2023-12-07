@@ -26,8 +26,10 @@ const TloTableRow = ({scoringData, scores, tloKey, tlo}:
 
   if (tlo) {
     const evaluation = scoringData.evaluations[tlo.evaluation];
-    const scoresByMetric = groupBy(scores ?? [], score => score.metricName);
-    const scoreByEvaluation = sumScoresByMetrics(evaluation.metrics, scoresByMetric);
+    const evaluationScores = groupBy(scores ?? [], score => score.metricKey);
+    const scoresGroupedByMetrics
+    = groupBy(scores ?? [], score => score.metricName ?? score.metricKey);
+    const scoreByEvaluation = sumScoresByMetrics(evaluation.metrics, evaluationScores);
     const summedMaxScore = sumMetricMaxScores(evaluation.metrics, scoringData.metrics);
     const minScore = getEvaluationMinScore(evaluation, summedMaxScore);
     const evaluationMet = minScore === 0 ? undefined : (scoreByEvaluation >= minScore);
@@ -56,12 +58,12 @@ const TloTableRow = ({scoringData, scores, tloKey, tlo}:
             <tbody>
               <tr className='flex flex-col'>
                 {evaluation.metrics.map(metricKey => {
-                  const metric = scoringData.metrics[metricKey];
-                  const metricReference = metric.name ?? metricKey;
-                  const scores = scoresByMetric[metricReference];
+                  const currentMetric = scoringData.metrics[metricKey];
+                  const metricReference = currentMetric.name ?? metricKey;
+                  const metricScores = scoresGroupedByMetrics[metricReference];
 
-                  if (scores && scores.length > 0) {
-                    const latestScoresByVm = findLatestScoresByVms(scores);
+                  if (metricScores && metricScores.length > 0) {
+                    const latestScoresByVm = findLatestScoresByVms(metricScores);
                     latestScoresByVm.sort(sortByProperty('vmName', 'desc'));
 
                     return (
