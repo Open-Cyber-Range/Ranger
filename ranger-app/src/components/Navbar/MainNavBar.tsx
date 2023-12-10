@@ -1,14 +1,14 @@
-import React from 'react';
+import type React from 'react';
 import {Link} from 'react-router-dom';
 import {Alignment, Navbar} from '@blueprintjs/core';
 import {useTranslation} from 'react-i18next';
 import LoginInfo from './LoginInfo';
-import NavbarSponsors from './NavbarSponsors';
+import NavbarSponsors from './SponsorIcons';
 
-const MainNavbar = () => {
+const MainNavbar: React.FC<{navbarLinks?: JSX.Element}> = ({navbarLinks}) => {
   const {t} = useTranslation();
   return (
-    <Navbar fixedToTop className='h-16 flex items-center'>
+    <Navbar fixedToTop className='h-16 flex items-center justify-between'>
       <Navbar.Group align={Alignment.LEFT}>
         <Navbar.Heading>
           <Link
@@ -22,24 +22,9 @@ const MainNavbar = () => {
         <Navbar.Divider/>
         <NavbarSponsors/>
         <Navbar.Divider/>
-        <Link
-          role='button'
-          className='bp4-button bp4-minimal bp4-icon-document'
-          to='/exercises'
-        >
-          {t('menu.exercises')}
-        </Link>
-        <Link
-          role='button'
-          className='bp4-button bp4-minimal bp4-icon-label'
-          to='/logs'
-        >
-          {t('menu.logs')}
-        </Link>
+        {navbarLinks}
       </Navbar.Group>
-      <a className='flex-grow'>
-        <LoginInfo/>
-      </a>
+      <LoginInfo/>
     </Navbar>
   );
 };
