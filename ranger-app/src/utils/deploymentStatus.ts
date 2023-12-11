@@ -1,5 +1,48 @@
 import {Intent} from '@blueprintjs/core';
-import {ElementStatus, type DeploymentElement} from 'src/models/deployment';
+import {
+  ElementStatus,
+  type DeploymentElement,
+  DeployerType,
+} from 'src/models/deployment';
+import {type Scenario} from 'src/models/scenario';
+
+export const getProgressionAndStatus = (
+  deploymentElements: DeploymentElement[],
+  scenario: Scenario,
+) => {
+  let intentStatus: Intent = Intent.WARNING;
+  let successfulElements = 0;
+  const [totalDeploymentElements, injects] = countElements(scenario);
+
+  if (deploymentElements.length === 0 && totalDeploymentElements === 0) {
+    return [1, Intent.SUCCESS] as const;
+  }
+
+  for (const element of deploymentElements) {
+    const elementStatus = loadingIntent(element.status);
+
+    if (elementStatus === Intent.DANGER) {
+      return [1, Intent.DANGER] as const;
+    }
+
+    if (elementStatus === Intent.SUCCESS) {
+      successfulElements += 1;
+    }
+
+    if (element.deployerType === DeployerType.Inject
+      && element.status === ElementStatus.Ongoing) {
+      successfulElements += 1;
+    }
+  }
+
+  const progression = successfulElements / totalDeploymentElements;
+
+  if (progression === 1 || successfulElements + injects === totalDeploymentElements) {
+    intentStatus = Intent.SUCCESS;
+  }
+
+  return [progression, intentStatus] as const;
+};
 
 const loadingIntent = (status: ElementStatus): Intent => {
   switch (status) {
@@ -26,21 +69,38 @@ const loadingIntent = (status: ElementStatus): Intent => {
   }
 };
 
-export const getProgressionAndStatus = (
-  deploymentElements: DeploymentElement[],
-) => {
-  let loadingBarValue = 0;
-  let intentStatus: Intent = Intent.WARNING;
+function countElements(scenario: Scenario) {
+  let totalElements = 0;
+  let injects = 0;
+  const templates: string[] = [];
 
-  for (const element of deploymentElements) {
-    if (element.status !== ElementStatus.Ongoing) {
-      loadingBarValue += (1 / deploymentElements.length);
-    }
-
-    if (intentStatus !== Intent.DANGER) {
-      intentStatus = loadingIntent(element.status);
+  if (scenario.infrastructure && Object.keys(scenario.infrastructure).length > 0) {
+    for (const infraNode of Object.values(scenario.infrastructure)) {
+      totalElements += infraNode.count;
     }
   }
 
-  return [loadingBarValue, intentStatus] as const;
-};
+  if (scenario.nodes && Object.keys(scenario.nodes).length > 0) {
+    for (const node of Object.values(scenario.nodes)) {
+      if (node.source && !templates.includes(node.source.name)) {
+        templates.push(node.source.name);
+        totalElements += 1;
+      }
+
+      if (node.features && Object.keys(node.features).length > 0) {
+        totalElements += Object.keys(node.features).length;
+      }
+
+      if (node.conditions && Object.keys(node.conditions).length > 0) {
+        totalElements += Object.keys(node.conditions).length;
+      }
+    }
+  }
+
+  if (scenario.injects && Object.keys(scenario.injects).length > 0) {
+    totalElements += Object.keys(scenario.injects).length;
+    injects += Object.keys(scenario.injects).length;
+  }
+
+  return [totalElements, injects];
+}
