@@ -3,7 +3,7 @@ import type {UpdateExercise} from './exercise';
 import {type Score} from './score';
 import type {Log} from './log';
 
-export enum WebsocketMessageType {
+export enum WebsocketAdminMessageType {
   ExerciseUpdate = 'ExerciseUpdate',
   Deployment = 'Deployment',
   DeploymentElement = 'DeploymentElement',
@@ -12,24 +12,37 @@ export enum WebsocketMessageType {
   Log = 'Log',
 }
 
-export type WebsocketWrapper = {exerciseId: string; ownId: string} & ({
-  type: WebsocketMessageType.Deployment;
+export type WebsocketAdminWrapper = {exerciseId: string; ownId: string} & ({
+  type: WebsocketAdminMessageType.Deployment;
   content: Deployment;
 } | {
-  type: WebsocketMessageType.ExerciseUpdate;
+  type: WebsocketAdminMessageType.ExerciseUpdate;
   content: UpdateExercise;
 } | {
-  type: WebsocketMessageType.DeploymentElement;
+  type: WebsocketAdminMessageType.DeploymentElement;
   content: DeploymentElement;
 } | {
-  type: WebsocketMessageType.DeploymentElementUpdate;
+  type: WebsocketAdminMessageType.DeploymentElementUpdate;
   content: DeploymentElement;
 } | {
-  type: WebsocketMessageType.Score;
+  type: WebsocketAdminMessageType.Score;
   content: Score;
 });
 
-export type WebsocketLogWrapper = {
-  type: WebsocketMessageType.Log;
+export type WebsocketAdminLogWrapper = {
+  type: WebsocketAdminMessageType.Log;
   content: Log;
 };
+
+export enum WebsocketParticipantMessageType {
+  Score = 'Score',
+}
+
+export type WebsocketParticipantWrapper = {
+  exerciseId: string;
+  deploymentId: string;
+  entitySelector: string;
+} & ({
+  type: WebsocketParticipantMessageType.Score;
+  content: Score;
+});

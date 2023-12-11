@@ -69,6 +69,8 @@ pub enum RangerError {
     UnsupportedMediaType,
     #[error("Missing query parameter \"{0}\"")]
     MissingParameter(String),
+    #[error("Failed to create Websocket connection")]
+    WebsocketFailed,
 }
 
 impl ResponseError for RangerError {

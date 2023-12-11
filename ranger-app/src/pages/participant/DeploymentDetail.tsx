@@ -19,6 +19,7 @@ import {skipToken} from '@reduxjs/toolkit/dist/query';
 import {useSelector} from 'react-redux';
 import {selectedEntity} from 'src/slices/userSlice';
 import {tryIntoScoringMetadata} from 'src/utils';
+import useParticipantExerciseStreaming from 'src/hooks/websocket/useParticipantExerciseStreaming';
 
 const ParticipantDeploymentDetail = () => {
   const {exerciseId, deploymentId} = useParams<DeploymentDetailRouteParameters>();
@@ -26,6 +27,7 @@ const ParticipantDeploymentDetail = () => {
   const generalQueryArgs = exerciseId && deploymentId ? {exerciseId, deploymentId} : skipToken;
   const participantQueryArgs = exerciseId && deploymentId && entitySelector
     ? {exerciseId, deploymentId, entitySelector} : skipToken;
+  useParticipantExerciseStreaming(exerciseId, deploymentId, entitySelector);
 
   const {data: users} = useParticipantGetDeploymentUsersQuery(generalQueryArgs);
   const {data: scores} = useParticipantGetDeploymentScoresQuery(participantQueryArgs);

@@ -30,7 +30,7 @@ use ranger::routes::exercise::{
 use ranger::routes::logger::subscribe_to_logs_with_level;
 use ranger::routes::participant::deployment::{
     get_participant_deployment, get_participant_deployments,
-    get_participant_node_deployment_elements,
+    get_participant_node_deployment_elements, subscribe_participant_to_deployment,
 };
 use ranger::routes::participant::event_info::get_event_info_data;
 use ranger::routes::participant::events::get_participant_events;
@@ -220,7 +220,11 @@ async fn main() -> Result<(), Error> {
                                                                                         .service(update_participant_metric)
                                                                                         .service(upload_participant_artifact)
                                                                                     ),
-                                                                            ),
+                                                                            )
+                                                                            .service(
+                                                                                scope("/websocket")
+                                                                                .service(subscribe_participant_to_deployment)
+                                                                            )
                                                                 )
                                                             )
                                                     ),

@@ -10,7 +10,7 @@ import {
 } from 'src/slices/apiSlice';
 import {skipToken} from '@reduxjs/toolkit/dist/query';
 import SideBar from 'src/components/Exercise/SideBar';
-import useExerciseStreaming from 'src/hooks/useExerciseStreaming';
+import useAdminExerciseStreaming from 'src/hooks/websocket/useAdminExerciseStreaming';
 import DeploymentDetailsGraph from 'src/components/Scoring/Graph';
 import TloTable from 'src/components/Scoring/TloTable';
 import {Editor} from '@monaco-editor/react';
@@ -26,7 +26,7 @@ import {useTranslation} from 'react-i18next';
 const DeploymentFocus = () => {
   const {t} = useTranslation();
   const {exerciseId, deploymentId} = useParams<DeploymentDetailRouteParameters>();
-  useExerciseStreaming(exerciseId);
+  useAdminExerciseStreaming(exerciseId);
   const queryArguments = exerciseId && deploymentId ? {exerciseId, deploymentId} : skipToken;
   const {data: scenario} = useAdminGetDeploymentScenarioQuery(queryArguments);
   const {data: deployment} = useAdminGetDeploymentQuery(queryArguments);

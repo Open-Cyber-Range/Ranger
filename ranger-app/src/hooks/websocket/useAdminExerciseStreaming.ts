@@ -1,8 +1,8 @@
 import humanInterval from 'human-interval';
 import {useEffect, useRef, useState} from 'react';
 import {BASE_URL} from 'src/constants';
-import type {WebsocketWrapper} from 'src/models/websocket';
-import {WebsocketMessageType} from 'src/models/websocket';
+import type {WebsocketAdminWrapper} from 'src/models/websocket';
+import {WebsocketAdminMessageType} from 'src/models/websocket';
 import {apiSlice} from 'src/slices/apiSlice';
 import type {AppDispatch, RootState} from 'src/store';
 import {useAppDispatch} from 'src/store';
@@ -12,9 +12,9 @@ import {useSelector} from 'react-redux';
 const websocketHandler = (
   dispatch: AppDispatch,
 ) => (event: MessageEvent<string>) => {
-  const data: WebsocketWrapper = JSON.parse(event.data) as WebsocketWrapper;
+  const data: WebsocketAdminWrapper = JSON.parse(event.data) as WebsocketAdminWrapper;
   switch (data.type) {
-    case WebsocketMessageType.ExerciseUpdate: {
+    case WebsocketAdminMessageType.ExerciseUpdate: {
       const exerciseUpdate = data.content;
       dispatch(
         apiSlice.util.updateQueryData('adminGetExercise',
@@ -25,7 +25,7 @@ const websocketHandler = (
       break;
     }
 
-    case WebsocketMessageType.Deployment: {
+    case WebsocketAdminMessageType.Deployment: {
       const deployment = data.content;
       dispatch(
         apiSlice.util
@@ -37,7 +37,7 @@ const websocketHandler = (
       break;
     }
 
-    case WebsocketMessageType.DeploymentElement: {
+    case WebsocketAdminMessageType.DeploymentElement: {
       const deploymentElement = data.content;
       dispatch(
         apiSlice.util
@@ -50,7 +50,7 @@ const websocketHandler = (
       break;
     }
 
-    case WebsocketMessageType.DeploymentElementUpdate: {
+    case WebsocketAdminMessageType.DeploymentElementUpdate: {
       const deploymentElementUpdate = data.content;
       dispatch(
         apiSlice.util
@@ -69,7 +69,7 @@ const websocketHandler = (
       break;
     }
 
-    case WebsocketMessageType.Score: {
+    case WebsocketAdminMessageType.Score: {
       const score = data.content;
       dispatch(
         apiSlice.util
@@ -89,7 +89,7 @@ const websocketHandler = (
   }
 };
 
-const useExerciseStreaming = (exerciseId?: string) => {
+const useAdminExerciseStreaming = (exerciseId?: string) => {
   const dispatch = useAppDispatch();
   const websocket = useRef<WebSocket | undefined>();
   const [trigger, setTrigger] = useState<boolean>(true);
@@ -129,4 +129,4 @@ const useExerciseStreaming = (exerciseId?: string) => {
   }, [dispatch, exerciseId, trigger, token, setTrigger]);
 };
 
-export default useExerciseStreaming;
+export default useAdminExerciseStreaming;
