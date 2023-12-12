@@ -1,3 +1,9 @@
+ranger-server (2.1.0) stretch; urgency=medium
+
+  * Improved event handling
+
+ -- Kaarel Allemann <kaarel.allemann@cr14.ee>  Fri, 12 Dec 2023 18:12:52 +0200
+
 ranger-server (2.0.2) stretch; urgency=medium
 
   * Fix front-end linting
