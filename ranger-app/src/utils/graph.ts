@@ -161,7 +161,8 @@ export function scoresIntoGraphData(
       const baseDataset = cloneDeep(LINE_DATASET_TEMPLATE);
       baseDataset.label = metricLineLabel;
       if (colorsByRole) {
-        const metricName = scoresByMetrics[metricLineLabel][0].metricName;
+        const metricName = scoresByMetrics[metricLineLabel][0].metricName
+        ?? scoresByMetrics[metricLineLabel][0].metricKey;
         const lineColor = getLineColorByMetricReference(metricName, metricReferencesByRole);
         baseDataset.borderColor = lineColor;
         baseDataset.backgroundColor = lineColor;
