@@ -7,7 +7,6 @@ use crate::services::websocket::SocketScoring;
 use actix::{Handler, Message, ResponseActFuture, WrapFuture};
 use actix_web::web::block;
 use anyhow::{anyhow, Ok, Result};
-use bigdecimal::BigDecimal;
 use diesel::RunQueryDsl;
 
 #[derive(Message)]
@@ -63,16 +62,8 @@ impl Handler<UpdateMetric> for Database {
                         return Err(anyhow!(RECORD_NOT_FOUND));
                     }
                     let metric = Metric::by_id(uuid).first(&mut connection)?;
-
-                    if let Some(score) = metric.score {
-                        let score = Score::new(
-                            metric.exercise_id,
-                            metric.deployment_id,
-                            metric.name.clone(),
-                            metric.entity_selector.clone(),
-                            BigDecimal::from(score),
-                            metric.updated_at,
-                        );
+                    if metric.score.is_some() {
+                        let score: Score = metric.clone().into();
 
                         let scoring_msg = SocketScoring(
                             score.exercise_id,

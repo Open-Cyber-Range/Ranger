@@ -121,14 +121,11 @@ pub async fn get_participant_exercise_deployment_scores(
             if let Some(vm_scenario_reference) =
                 vm_scenario_refs_by_id.get(&condition_message.virtual_machine_id.to_string())
             {
-                let metric_reference = metric
-                    .name
-                    .as_ref()
-                    .map_or_else(|| metric_key.clone(), |name| name.clone());
                 scores.push(Score::new(
                     condition_message.exercise_id,
                     condition_message.deployment_id,
-                    metric_reference,
+                    metric.name.clone(),
+                    metric_key.to_owned(),
                     vm_scenario_reference.to_owned(),
                     condition_message.value * BigDecimal::from(metric.max_score),
                     condition_message.created_at,

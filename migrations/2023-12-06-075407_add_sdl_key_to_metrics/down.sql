@@ -1,0 +1,4 @@
+ALTER TABLE metrics DROP COLUMN sdl_key;
+ALTER TABLE metrics
+ALTER COLUMN name
+SET NOT NULL;

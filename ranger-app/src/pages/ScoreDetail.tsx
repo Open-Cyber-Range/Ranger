@@ -38,14 +38,11 @@ const ScoreDetail = () => {
     const roles = getUniqueRoles(flattenedEntities)
       .sort((a, b) => ExerciseRoleOrder[a] - ExerciseRoleOrder[b]);
     const tlosByRole = groupTloMapsByRoles(flattenedEntities, scoringData.tlos, roles);
-
-    const metricKeysByTloKeys = tloKeysByRole.map(tloKey => scoringData.tlos[tloKey])
+    const metricKeysByRole = new Set(tloKeysByRole.map(tloKey => scoringData.tlos[tloKey])
       .map(tlo => tlo.evaluation)
       .map(evaluationKey => scoringData.evaluations[evaluationKey])
-      .flatMap(evaluation => evaluation.metrics);
-    const metricReferences = new Set(metricKeysByTloKeys
-      .map(metricKey => scoringData.metrics[metricKey]?.name ?? metricKey));
-    const filteredScores = scores?.filter(score => metricReferences.has(score.metricName));
+      .flatMap(evaluation => evaluation.metrics));
+    const filteredScores = scores?.filter(score => metricKeysByRole.has(score.metricKey));
 
     return (
       <SideBar renderMainContent={() => (
