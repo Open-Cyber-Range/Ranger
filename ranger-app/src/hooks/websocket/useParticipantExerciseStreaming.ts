@@ -54,8 +54,8 @@ const useParticipantExerciseStreaming = (
       || websocket.current.readyState !== WebSocket.OPEN
     ) {
       websocket.current = new WebSocket(
-        `${getWebsocketBase()}${BASE_URL}/participant/exercise/${exerciseId}
-        /deployment/${deploymentId}/entity/${entitySelector}/websocket`,
+        // eslint-disable-next-line max-len
+        `${getWebsocketBase()}${BASE_URL}/participant/exercise/${exerciseId}/deployment/${deploymentId}/entity/${entitySelector}/websocket`,
         `${token}`,
       );
       const thisInstance = websocket.current;
