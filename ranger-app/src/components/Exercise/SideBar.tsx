@@ -3,6 +3,7 @@ import {useLocation, useNavigate, useParams} from 'react-router-dom';
 import type {DeploymentDetailRouteParameters} from 'src/models/routes';
 import {
   useAdminGetDeploymentElementsQuery,
+  useAdminGetDeploymentScenarioQuery,
   useAdminGetDeploymentsQuery,
   useAdminGetExerciseQuery,
 } from 'src/slices/apiSlice';
@@ -12,12 +13,13 @@ import {
   H2,
   H6,
   Icon,
-  type Intent,
+  Intent,
   Menu,
   MenuDivider,
   MenuItem,
+  Spinner,
 } from '@blueprintjs/core';
-import {type ReactNode, useState} from 'react';
+import {type ReactNode, useState, useEffect, useRef} from 'react';
 import {MENU_HEADER} from '@blueprintjs/core/lib/esm/common/classes';
 import {sortByProperty} from 'sort-by-property';
 import {ActiveTab} from 'src/models/exercise';
@@ -36,37 +38,54 @@ const hashTabs: Record<string, ActiveTab> = {
   '#submissions': ActiveTab.UserSubmissions,
 };
 
-const intentToIcon = (intent: Intent) => {
-  switch (intent) {
-    case 'danger': {
-      return 'error';
-    }
-
-    case 'warning': {
-      return 'full-circle';
-    }
-
-    case 'success': {
-      return 'tick-circle';
-    }
-
-    default: {
-      return 'full-circle';
-    }
-  }
-};
-
 const DeploymentText = ({deployment}: {deployment: Deployment}) => {
   const {data: deploymentElements} = useAdminGetDeploymentElementsQuery({
     exerciseId: deployment.exerciseId,
     deploymentId: deployment.id,
   });
+  const {data: scenario} = useAdminGetDeploymentScenarioQuery({
+    exerciseId: deployment.exerciseId,
+    deploymentId: deployment.id,
+  });
+  const intentRef = useRef<Intent>(null);
+  const [intent, setIntent] = useState<Intent>(Intent.WARNING);
+  const progressionRef = useRef<number>(0);
+  const [progressionValue, setProgressionValue] = useState<number>(0);
 
-  const [_, intent] = getProgressionAndStatus(deploymentElements ?? []);
+  useEffect(() => {
+    if (deploymentElements && scenario) {
+      const [progression, intentStatus] = getProgressionAndStatus(deploymentElements, scenario);
+      if (intentRef.current !== intentStatus) {
+        setIntent(intentStatus);
+      }
+
+      if (progressionRef.current !== progression) {
+        setProgressionValue(progression);
+      }
+    }
+  }
+  , [deploymentElements, scenario]);
+
+  const renderIcon = () => {
+    switch (intent) {
+      case Intent.SUCCESS: {
+        return <Icon icon='tick-circle' intent={intent}/>;
+      }
+
+      case Intent.DANGER: {
+        return <Icon icon='error' intent={intent}/>;
+      }
+
+      default: {
+        return <Spinner size={16} intent={intent} value={progressionValue}/>;
+      }
+    }
+  };
+
   return (
     <div className={deploymentElements ? '' : 'bp4-skeleton'}>
       <div className='flex items-center'>
-        <Icon icon={intentToIcon(intent)} intent={intent}/>
+        {renderIcon()}
         <h5 className='ml-2'>{deployment.name}</h5>
       </div>
     </div>
