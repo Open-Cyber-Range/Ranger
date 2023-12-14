@@ -22,14 +22,27 @@ type TrainingObjective = Omit<NewTrainingObjective, 'threats'> & {
   threats: Threat[];
 };
 
+type NewStructure = {
+  name: string;
+  description: string;
+  parentId?: string;
+};
+
+type Structure = NewStructure & {
+  id: string;
+};
+
 type Order = {
   id: string;
   trainingObjectives?: TrainingObjective[];
+  structures?: Structure[];
   createdAt: string;
   updatedAt: string;
 } & NewOrder;
 
 export type {
+  NewStructure,
+  Structure,
   NewTrainingObjective,
   NewOrder,
   Order,

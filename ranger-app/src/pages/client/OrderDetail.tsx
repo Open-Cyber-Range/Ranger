@@ -10,6 +10,7 @@ import PageLoader from 'src/components/PageLoader';
 import {getBreadcrumIntent} from 'src/utils';
 import StepFooter from 'src/components/Order/client/StepFooter';
 import TrainingObjectives from 'src/components/Order/client/TrainingObjectives';
+import Structure from 'src/components/Order/client/Structure';
 
 const OrderDetail = () => {
   const {t} = useTranslation();
@@ -29,6 +30,10 @@ const OrderDetail = () => {
       <div className='my-4'>
         {orderId && (
           <StepFooter
+            readyForNext={
+              (formType === 'training-objectives' && (order?.trainingObjectives?.length ?? 0) > 0)
+              || formType === 'structure'
+            }
             orderId={orderId}
             stage={formType}
             onSubmit={() => {
@@ -82,7 +87,8 @@ const OrderDetail = () => {
           },
         ]}/>
       <div className='mt-4 min-h-full'>
-        {order && (<TrainingObjectives order={order}/>)}
+        {order && formType === 'training-objectives' && (<TrainingObjectives order={order}/>)}
+        {order && formType === 'structure' && (<Structure order={order}/>)}
       </div>
     </PageHolder>
   );

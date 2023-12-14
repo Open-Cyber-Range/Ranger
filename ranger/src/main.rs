@@ -25,7 +25,7 @@ use ranger::routes::deputy_query::{
     check_package_exists, get_deputy_banner_file, get_deputy_packages_by_type,
     get_exercise_by_source,
 };
-use ranger::routes::client::order::{get_orders_client, update_training_objective, create_training_objective, delete_training_objective};
+use ranger::routes::client::order::{get_orders_client, update_training_objective, create_training_objective, delete_training_objective, create_structure, delete_structure, update_structure};
 use ranger::routes::deployers::get_deployers;
 use ranger::routes::exercise::{
     add_banner, add_exercise, add_exercise_deployment, add_participant, delete_banner,
@@ -202,6 +202,9 @@ async fn main() -> Result<(), Error> {
                                     .service(create_training_objective)
                                     .service(delete_training_objective)
                                     .service(update_training_objective)
+                                    .service(create_structure)
+                                    .service(delete_structure)
+                                    .service(update_structure)
                                 )
                         )
                       .wrap(client_auth_middleware)

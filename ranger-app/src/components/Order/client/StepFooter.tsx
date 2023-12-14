@@ -36,10 +36,12 @@ const StepFooter = (
     stage: formType,
     orderId,
     onSubmit,
+    readyForNext,
   }: {
     stage: FormType;
     orderId: string;
     onSubmit: () => void;
+    readyForNext: boolean;
   }) => {
   const {t} = useTranslation();
 
@@ -74,6 +76,7 @@ const StepFooter = (
         : (
           <Button
             large
+            disabled={!readyForNext}
             intent='primary'
             onClick={() => {
               const nextFormType = getNextFormType(formType);

@@ -2,7 +2,7 @@ use super::helpers::uuid::Uuid;
 use crate::{
     constants::{MAX_ORDER_NAME_LENGTH, NAIVEDATETIME_DEFAULT_VALUE},
     errors::RangerError,
-    schema::{orders, threats, training_objectives},
+    schema::{orders, structures, threats, training_objectives},
     services::database::{
         All, Create, DeleteById, FilterExisting, SelectById, SelectByIdFromAll,
         SelectByIdFromAllReference,
@@ -124,7 +124,7 @@ impl TrainingObjective {
         order: &Order,
     ) -> SelectByIdFromAllReference<training_objectives::table, training_objectives::order_id, Self>
     {
-        TrainingObjective::belonging_to(order).select(TrainingObjective::as_select())
+        Self::belonging_to(order).select(Self::as_select())
     }
 }
 
@@ -171,6 +171,79 @@ impl Threat {
     }
 }
 
+#[derive(
+    Insertable,
+    Identifiable,
+    Queryable,
+    Selectable,
+    Debug,
+    PartialEq,
+    Associations,
+    Eq,
+    Clone,
+    Hash,
+    Serialize,
+    Deserialize,
+)]
+#[diesel(belongs_to(Order, foreign_key = order_id))]
+#[diesel(table_name = structures)]
+#[serde(rename_all = "camelCase")]
+pub struct Structure {
+    pub id: Uuid,
+    pub order_id: Uuid,
+    pub parent_id: Option<Uuid>,
+    pub name: String,
+    pub description: Option<String>,
+}
+
+impl Structure {
+    pub fn new(order_id: Uuid, new_structure: StructureRest) -> Self {
+        Self {
+            id: new_structure.id,
+            order_id,
+            name: new_structure.name,
+            description: new_structure.description,
+            parent_id: new_structure.parent_id,
+        }
+    }
+
+    pub fn create_insert(&self) -> Create<&Self, structures::table> {
+        insert_into(structures::table).values(self)
+    }
+
+    pub fn hard_delete_by_id(id: Uuid) -> DeleteById<structures::id, structures::table> {
+        diesel::delete(structures::table.filter(structures::id.eq(id)))
+    }
+
+    pub fn hard_delete(&self) -> DeleteById<structures::id, structures::table> {
+        Self::hard_delete_by_id(self.id)
+    }
+
+    fn all() -> All<structures::table, Self> {
+        structures::table.select(Self::as_select())
+    }
+
+    pub fn by_id(id: Uuid) -> SelectByIdFromAll<structures::table, structures::id, Self> {
+        Self::all().filter(structures::id.eq(id))
+    }
+
+    pub fn by_order(
+        order: &Order,
+    ) -> SelectByIdFromAllReference<structures::table, structures::order_id, Self> {
+        Self::belonging_to(order).select(Self::as_select())
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StructureRest {
+    #[serde(default = "Uuid::random")]
+    pub id: Uuid,
+    pub name: String,
+    pub description: Option<String>,
+    pub parent_id: Option<Uuid>,
+}
+
 #[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ThreatRest {
@@ -214,17 +287,25 @@ pub struct OrderRest {
     pub name: String,
     pub client_id: String,
     pub training_objectives: Vec<TrainingObjectiveRest>,
+    pub structures: Vec<Structure>,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
 }
 
-impl From<(Order, Vec<TrainingObjectiveRest>)> for OrderRest {
-    fn from((order, training_objectives): (Order, Vec<TrainingObjectiveRest>)) -> Self {
+impl From<(Order, Vec<TrainingObjectiveRest>, Vec<Structure>)> for OrderRest {
+    fn from(
+        (order, training_objectives, structures): (
+            Order,
+            Vec<TrainingObjectiveRest>,
+            Vec<Structure>,
+        ),
+    ) -> Self {
         Self {
             id: order.id,
             name: order.name,
             client_id: order.client_id,
             training_objectives,
+            structures,
             created_at: order.created_at,
             updated_at: order.updated_at,
         }

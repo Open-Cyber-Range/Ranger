@@ -445,16 +445,41 @@ const language = {
       `,
       objective: 'Objective',
       objectiveRequired: 'Objective is required',
-      objectiveMaxLength: 'Objective must be equal or less than 56 characters',
+      objectiveMaxLength: 'Objective must be equal or less than 255 characters',
       threats: 'Threats',
       threat: 'Threat',
-      threatMaxLength: 'Threat must be equal or less than 56 characters',
+      threatMaxLength: 'Threat must be equal or less than 255 characters',
       threatRequired: 'Threat is required',
       addNewThreat: 'Add new threat',
       removeLastThreat: 'Remove last threat',
       failedtoAdd: 'Failed to add training objective',
       failedToDelete: 'Failed to delete training objective',
       failedToUpadate: 'Failed to update training objective',
+    },
+    structureElements: {
+      explenation: `
+      Establish the organizational structure for your cyber exercise by adding members.
+      Members are the exercise participants, each with key details like name and
+      description of their role in the structure. Each member is connected to
+      associated training objectives they should focus on, and optionally, relevant
+      skills and weaknesses that they should or might possess can be specified.
+      Use the 'parent ID' field to build hierarchy and simulate real-world organizational dynamics.
+      `,
+      add: 'Add a member',
+      name: 'Name',
+      nameRequired: 'Name is required',
+      nameMaxLength: 'Name must be equal or less than 255 characters',
+      description: 'Description',
+      descriptionRequired: 'Description is required',
+      descriptionMaxLength: 'Description must be equal or less than 3000 characters',
+      noPossibleParents: 'No possible parents',
+      noParent: 'No parent',
+      parent: 'Parent',
+      delete: 'Delete',
+      edit: 'Edit',
+      failedtoAdd: 'Failed to add member',
+      failedToDelete: 'Failed to delete member',
+      failedToUpadate: 'Failed to update member',
     },
   },
 };

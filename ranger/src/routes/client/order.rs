@@ -1,8 +1,11 @@
 use crate::{
     errors::RangerError,
     middleware::{authentication::UserInfo, order::OrderInfo},
-    models::{helpers::uuid::Uuid, Order, TrainingObjectiveRest},
-    services::database::order::{DeleteTrainingObjective, GetOrders, UpsertTrainingObjective},
+    models::{helpers::uuid::Uuid, Order, StructureRest, TrainingObjectiveRest},
+    services::database::order::{
+        DeleteStructure, DeleteTrainingObjective, GetOrders, UpsertStructure,
+        UpsertTrainingObjective,
+    },
     utilities::{create_database_error_handler, create_mailbox_error_handler},
     AppState,
 };
@@ -63,7 +66,7 @@ pub async fn update_training_objective(
     order: OrderInfo,
     path_variable: Path<(Uuid, Uuid)>,
     app_state: Data<AppState>,
-    new_training_objectives: Json<TrainingObjectiveRest>,
+    new_training_objective: Json<TrainingObjectiveRest>,
 ) -> Result<Json<TrainingObjectiveRest>, RangerError> {
     let (_, training_objective_uuid) = path_variable.into_inner();
     app_state
@@ -71,7 +74,7 @@ pub async fn update_training_objective(
         .send(UpsertTrainingObjective(
             order.id,
             Some(training_objective_uuid),
-            new_training_objectives.clone(),
+            new_training_objective.clone(),
         ))
         .await
         .map_err(create_mailbox_error_handler(
@@ -79,7 +82,7 @@ pub async fn update_training_objective(
         ))?
         .map_err(create_database_error_handler("Upsert training objective"))?;
 
-    Ok(Json(new_training_objectives.into_inner()))
+    Ok(Json(new_training_objective.into_inner()))
 }
 
 #[delete("/training_objective/{training_objective_uuid}")]
@@ -93,8 +96,67 @@ pub async fn delete_training_objective(
         .database_address
         .send(DeleteTrainingObjective(training_objective_uuid))
         .await
-        .map_err(create_mailbox_error_handler("Database for orders"))?
+        .map_err(create_mailbox_error_handler(
+            "Database for training objectives",
+        ))?
         .map_err(create_database_error_handler("Delete training objective"))?;
 
     Ok(Json(training_objective_uuid))
+}
+
+#[post("/structure")]
+pub async fn create_structure(
+    order: OrderInfo,
+    app_state: Data<AppState>,
+    new_structure: Json<StructureRest>,
+) -> Result<Json<StructureRest>, RangerError> {
+    app_state
+        .database_address
+        .send(UpsertStructure(order.id, None, new_structure.clone()))
+        .await
+        .map_err(create_mailbox_error_handler(
+            "Database for client order structures",
+        ))?
+        .map_err(create_database_error_handler("Create structure"))?;
+
+    Ok(Json(new_structure.into_inner()))
+}
+
+#[delete("/structure/{structure_uuid}")]
+pub async fn delete_structure(
+    _order: OrderInfo,
+    path_variable: Path<(Uuid, Uuid)>,
+    app_state: Data<AppState>,
+) -> Result<Json<Uuid>, RangerError> {
+    let (_, structure_uuid) = path_variable.into_inner();
+    app_state
+        .database_address
+        .send(DeleteStructure(structure_uuid))
+        .await
+        .map_err(create_mailbox_error_handler("Database for structures"))?
+        .map_err(create_database_error_handler("Delete structure"))?;
+
+    Ok(Json(structure_uuid))
+}
+
+#[put("/structure/{structure_uuid}")]
+pub async fn update_structure(
+    order: OrderInfo,
+    path_variable: Path<(Uuid, Uuid)>,
+    app_state: Data<AppState>,
+    new_structure: Json<StructureRest>,
+) -> Result<Json<StructureRest>, RangerError> {
+    let (_, structure_uuid) = path_variable.into_inner();
+    app_state
+        .database_address
+        .send(UpsertStructure(
+            order.id,
+            Some(structure_uuid),
+            new_structure.clone(),
+        ))
+        .await
+        .map_err(create_mailbox_error_handler("Database for structure"))?
+        .map_err(create_database_error_handler("Upsert structure"))?;
+
+    Ok(Json(new_structure.into_inner()))
 }

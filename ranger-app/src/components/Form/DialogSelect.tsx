@@ -1,14 +1,16 @@
-import {FormGroup, InputGroup, Intent} from '@blueprintjs/core';
+import {FormGroup, HTMLSelect, Intent} from '@blueprintjs/core';
 import type React from 'react';
 import {Controller, type FieldValues} from 'react-hook-form';
 import {useTranslation} from 'react-i18next';
 
-const DialogTextInput = <T extends FieldValues>({
+const DialogSelect = <T extends FieldValues>({
   controllerProps,
   id,
   label,
+  selectProps,
 }: {
   controllerProps: Omit<React.ComponentProps<typeof Controller<T>>, 'render'>;
+  selectProps?: Omit<React.ComponentProps<typeof HTMLSelect>, 'value' | 'onChange'>;
   id: string;
   label: string;
 }) => {
@@ -18,27 +20,35 @@ const DialogTextInput = <T extends FieldValues>({
     <Controller
       {...controllerProps}
       render={({
-        field: {onChange, onBlur, ref, value}, fieldState: {error},
+        field: {onChange, onBlur, value}, fieldState: {error},
       }) => {
         const intent = error ? Intent.DANGER : Intent.NONE;
-
-        if (typeof value !== 'string') {
+        const realValue = value ?? '';
+        if (typeof realValue !== 'string') {
           throw new TypeError('TextInput value must be a string');
         }
 
         return (
           <FormGroup
             labelFor={id}
-            labelInfo={controllerProps.rules?.required === undefined ? '' : t('common.required')}
+            labelInfo={controllerProps.rules?.required === true ? t('common.required') : ''}
             helperText={error?.message ?? ''}
             intent={intent}
             label={label}
           >
-            <InputGroup
+            {/* <InputGroup
               large
               intent={intent}
               value={value}
               inputRef={ref}
+              id={id}
+              onChange={onChange}
+              onBlur={onBlur}
+            /> */}
+            <HTMLSelect
+              {...(selectProps ?? {})}
+              large
+              value={realValue}
               id={id}
               onChange={onChange}
               onBlur={onBlur}
@@ -50,5 +60,5 @@ const DialogTextInput = <T extends FieldValues>({
   );
 };
 
-export default DialogTextInput;
+export default DialogSelect;
 

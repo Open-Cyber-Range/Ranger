@@ -2,8 +2,8 @@ use std::collections::HashMap;
 
 use super::Database;
 use crate::models::{
-    helpers::uuid::Uuid, NewOrder, Order, Threat, ThreatRest, TrainingObjective,
-    TrainingObjectiveRest,
+    helpers::uuid::Uuid, NewOrder, Order, Structure, StructureRest, Threat, ThreatRest,
+    TrainingObjective, TrainingObjectiveRest,
 };
 use actix::{Handler, Message, ResponseActFuture, WrapFuture};
 use actix_web::web::block;
@@ -203,6 +203,106 @@ impl Handler<DeleteTrainingObjective> for Database {
                     let training_objective =
                         TrainingObjective::by_id(training_objective_uuid).first(&mut connection)?;
                     training_objective.hard_delete().execute(&mut connection)?;
+
+                    Ok(())
+                })
+                .await??;
+
+                Ok(())
+            }
+            .into_actor(self),
+        )
+    }
+}
+
+#[derive(Message)]
+#[rtype(result = "Result<()>")]
+pub struct UpsertStructure(pub Uuid, pub Option<Uuid>, pub StructureRest);
+
+impl Handler<UpsertStructure> for Database {
+    type Result = ResponseActFuture<Self, Result<()>>;
+
+    fn handle(&mut self, msg: UpsertStructure, _ctx: &mut Self::Context) -> Self::Result {
+        let UpsertStructure(order_uuid, structure_uuid, new_structure) = msg;
+        let structure = Structure::new(order_uuid, new_structure);
+        let connection_result = self.get_connection();
+
+        Box::pin(
+            async move {
+                let mut connection = connection_result?;
+                block(move || {
+                    if let Some(structure_uuid) = structure_uuid {
+                        Structure::hard_delete_by_id(structure_uuid).execute(&mut connection)?;
+                    }
+                    structure.create_insert().execute(&mut connection)?;
+
+                    Ok(())
+                })
+                .await??;
+
+                Ok(())
+            }
+            .into_actor(self),
+        )
+    }
+}
+
+#[derive(Message)]
+#[rtype(result = "Result<Vec<Structure>>")]
+pub struct GetStructuresByOrder(pub Order);
+
+impl Handler<GetStructuresByOrder> for Database {
+    type Result = ResponseActFuture<Self, Result<Vec<Structure>>>;
+
+    fn handle(&mut self, msg: GetStructuresByOrder, _ctx: &mut Self::Context) -> Self::Result {
+        let connection_result = self.get_connection();
+        let GetStructuresByOrder(order) = msg;
+
+        Box::pin(
+            async move {
+                let mut connection = connection_result?;
+                let objectives = block(move || {
+                    let structures = Structure::by_order(&order).load(&mut connection)?;
+
+                    // let mut threats_by_objectives: HashMap<TrainingObjective, Vec<ThreatRest>> =
+                    //     HashMap::new();
+                    // for trainining_objective in &training_objectives {
+                    //     let threats = Threat::by_objective(trainining_objective)
+                    //         .load(&mut connection)?
+                    //         .into_iter()
+                    //         .map(|threat| threat.into())
+                    //         .collect::<Vec<ThreatRest>>();
+                    //     threats_by_objectives.insert(trainining_objective.clone(), threats);
+                    // }
+
+                    Ok(structures)
+                })
+                .await??;
+
+                Ok(objectives)
+            }
+            .into_actor(self),
+        )
+    }
+}
+
+#[derive(Message)]
+#[rtype(result = "Result<()>")]
+pub struct DeleteStructure(pub Uuid);
+
+impl Handler<DeleteStructure> for Database {
+    type Result = ResponseActFuture<Self, Result<()>>;
+
+    fn handle(&mut self, msg: DeleteStructure, _ctx: &mut Self::Context) -> Self::Result {
+        let DeleteStructure(structure_uuid) = msg;
+        let connection_result = self.get_connection();
+
+        Box::pin(
+            async move {
+                let mut connection = connection_result?;
+                block(move || {
+                    let structure = Structure::by_id(structure_uuid).first(&mut connection)?;
+                    structure.hard_delete().execute(&mut connection)?;
 
                     Ok(())
                 })

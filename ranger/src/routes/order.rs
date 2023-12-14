@@ -1,8 +1,8 @@
 use crate::{
     errors::RangerError,
     middleware::order::OrderInfo,
-    models::{NewOrder, Order, OrderRest, TrainingObjectiveRest},
-    services::database::order::{CreateOrder, GetTrainingObjectivesByOrder},
+    models::{NewOrder, Order, OrderRest, Structure, TrainingObjectiveRest},
+    services::database::order::{CreateOrder, GetStructuresByOrder, GetTrainingObjectivesByOrder},
     utilities::{create_database_error_handler, create_mailbox_error_handler},
     AppState,
 };
@@ -46,6 +46,16 @@ pub async fn get_order(
         .into_iter()
         .map(|threats_by_objective| threats_by_objective.into())
         .collect();
+    let structures: Vec<Structure> = app_state
+        .database_address
+        .send(GetStructuresByOrder(order.clone()))
+        .await
+        .map_err(create_mailbox_error_handler("Database for structures"))?
+        .map_err(create_database_error_handler("Get structures"))?;
 
-    Ok(Json(OrderRest::from((order, training_objectives))))
+    Ok(Json(OrderRest::from((
+        order,
+        training_objectives,
+        structures,
+    ))))
 }

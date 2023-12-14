@@ -237,6 +237,50 @@ diesel::table! {
 }
 
 diesel::table! {
+    skills (id) {
+        #[max_length = 16]
+        id -> Binary,
+        #[max_length = 16]
+        structure_id -> Binary,
+        skill -> Tinytext,
+    }
+}
+
+diesel::table! {
+    structure_training_objectives (id) {
+        #[max_length = 16]
+        id -> Binary,
+        #[max_length = 16]
+        structure_id -> Binary,
+        #[max_length = 16]
+        training_objective_id -> Binary,
+    }
+}
+
+diesel::table! {
+    structure_weaknesses (id) {
+        #[max_length = 16]
+        id -> Binary,
+        #[max_length = 16]
+        structure_id -> Binary,
+        weakness -> Tinytext,
+    }
+}
+
+diesel::table! {
+    structures (id) {
+        #[max_length = 16]
+        id -> Binary,
+        #[max_length = 16]
+        order_id -> Binary,
+        #[max_length = 16]
+        parent_id -> Nullable<Binary>,
+        name -> Tinytext,
+        description -> Nullable<Text>,
+    }
+}
+
+diesel::table! {
     threats (id) {
         #[max_length = 16]
         id -> Binary,
@@ -266,6 +310,11 @@ diesel::joinable!(email_statuses -> emails (email_id));
 diesel::joinable!(emails -> exercises (exercise_id));
 diesel::joinable!(metrics -> deployments (deployment_id));
 diesel::joinable!(participants -> deployments (deployment_id));
+diesel::joinable!(skills -> structures (structure_id));
+diesel::joinable!(structure_training_objectives -> structures (structure_id));
+diesel::joinable!(structure_training_objectives -> training_objectives (training_objective_id));
+diesel::joinable!(structure_weaknesses -> structures (structure_id));
+diesel::joinable!(structures -> orders (order_id));
 diesel::joinable!(threats -> training_objectives (training_objective_id));
 diesel::joinable!(training_objectives -> orders (order_id));
 
@@ -285,6 +334,10 @@ diesel::allow_tables_to_appear_in_same_query!(
     metrics,
     orders,
     participants,
+    skills,
+    structure_training_objectives,
+    structure_weaknesses,
+    structures,
     threats,
     training_objectives,
 );

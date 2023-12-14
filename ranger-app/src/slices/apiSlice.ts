@@ -38,6 +38,8 @@ import {
   type NewTrainingObjective,
   type NewOrder,
   type Order,
+  type NewStructure,
+  type Structure,
 } from 'src/models/order';
 
 export const apiSlice = createApi({
@@ -80,6 +82,42 @@ export const apiSlice = createApi({
         url: `/client/order/${orderId}/training_objective`,
         method: 'POST',
         body: newTrainingObjective,
+      }),
+      invalidatesTags: (result, error, {orderId}) =>
+        [{type: 'Order', id: orderId}],
+    }),
+    clientAddStructure: builder
+      .mutation<NewStructure,
+    {
+      newStructure: NewStructure; orderId: string;
+    }>({
+      query: ({newStructure, orderId}) => ({
+        url: `/client/order/${orderId}/structure`,
+        method: 'POST',
+        body: newStructure,
+      }),
+      invalidatesTags: (result, error, {orderId}) =>
+        [{type: 'Order', id: orderId}],
+    }),
+    clientDeleteStructure: builder
+      .mutation<string, {orderId: string; structureId: string}>({
+      query: ({orderId, structureId}) => ({
+        url: `/client/order/${orderId}/structure/${structureId}`,
+        method: 'DELETE',
+        responseHandler: 'text',
+      }),
+      invalidatesTags: (result, error, {orderId}) =>
+        [{type: 'Order', id: orderId}],
+    }),
+    clientUpdateStructure: builder
+      .mutation<Structure,
+    {
+      newStructure: Structure; orderId: string; structureId: string;
+    }>({
+      query: ({newStructure, orderId, structureId}) => ({
+        url: `/client/order/${orderId}/structure/${structureId}`,
+        method: 'PUT',
+        body: newStructure,
       }),
       invalidatesTags: (result, error, {orderId}) =>
         [{type: 'Order', id: orderId}],
@@ -626,8 +664,11 @@ export const apiSlice = createApi({
 });
 
 export const {
-  useClientAddTrainingObjectiveMutation,
+  useClientAddStructureMutation,
+  useClientDeleteStructureMutation,
+  useClientUpdateStructureMutation,
   useClientAddOrderMutation,
+  useClientAddTrainingObjectiveMutation,
   useClientDeleteTrainingOrderMutation,
   useClientUpdateTrainingObjectiveMutation,
   useClientGetOrdersQuery,

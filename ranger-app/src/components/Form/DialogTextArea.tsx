@@ -1,14 +1,16 @@
-import {FormGroup, InputGroup, Intent} from '@blueprintjs/core';
+import {FormGroup, Intent, TextArea} from '@blueprintjs/core';
 import type React from 'react';
 import {Controller, type FieldValues} from 'react-hook-form';
 import {useTranslation} from 'react-i18next';
 
-const DialogTextInput = <T extends FieldValues>({
+const DialogTextArea = <T extends FieldValues>({
   controllerProps,
+  textAreaProps,
   id,
   label,
 }: {
   controllerProps: Omit<React.ComponentProps<typeof Controller<T>>, 'render'>;
+  textAreaProps?: Omit<React.ComponentProps<typeof TextArea>, 'ref' | 'value' | 'onChange'>;
   id: string;
   label: string;
 }) => {
@@ -34,7 +36,8 @@ const DialogTextInput = <T extends FieldValues>({
             intent={intent}
             label={label}
           >
-            <InputGroup
+            <TextArea
+              {...(textAreaProps ?? {})}
               large
               intent={intent}
               value={value}
@@ -50,5 +53,5 @@ const DialogTextInput = <T extends FieldValues>({
   );
 };
 
-export default DialogTextInput;
+export default DialogTextArea;
 
