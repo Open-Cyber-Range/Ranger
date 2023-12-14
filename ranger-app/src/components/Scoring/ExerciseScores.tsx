@@ -60,7 +60,6 @@ const ScoresPanel = ({deployments}:
       <PageHolder>
         <div className='flex justify-end space-x-2 mb-2'>
           <DeploymentRoleSelect
-            deployments={sortedDeployments}
             selectedRole={selectedRole}
             handleRoleChange={handleRoleChange}
           />

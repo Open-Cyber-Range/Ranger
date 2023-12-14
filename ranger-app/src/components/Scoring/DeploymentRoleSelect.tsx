@@ -1,31 +1,14 @@
 import type React from 'react';
 import {HTMLSelect} from '@blueprintjs/core';
-import {skipToken} from '@reduxjs/toolkit/dist/query';
 import {useTranslation} from 'react-i18next';
-import {sortByProperty} from 'sort-by-property';
-import {type Deployment} from 'src/models/deployment';
-import {type ExerciseRole} from 'src/models/scenario';
-import {useAdminGetDeploymentScenarioQuery} from 'src/slices/apiSlice';
-import {getRolesFromScenario} from 'src/utils/score';
+import {ExerciseRole} from 'src/models/scenario';
 
-const DeploymentRoleSelect = ({deployments, selectedRole, handleRoleChange}:
-{deployments: Deployment[];
-  selectedRole: string;
+const DeploymentRoleSelect = ({selectedRole, handleRoleChange}:
+{selectedRole: string;
   handleRoleChange: (event: React.ChangeEvent<HTMLSelectElement>) => void;
 }) => {
   const {t} = useTranslation();
-  const deploymentsByCreatedAt = deployments.slice().sort(sortByProperty('createdAt', 'asc'));
-  const lastDeployment = deploymentsByCreatedAt[deployments.length - 1];
-  const exerciseId = lastDeployment.exerciseId;
-  const deploymentId = lastDeployment.id;
-  const queryArguments = exerciseId && deploymentId ? {exerciseId, deploymentId} : skipToken;
-  const {data: scenario} = useAdminGetDeploymentScenarioQuery(queryArguments);
-
-  if (!scenario) {
-    return null;
-  }
-
-  const roles = getRolesFromScenario(scenario);
+  const roles = Object.values(ExerciseRole);
 
   return (
     <HTMLSelect
