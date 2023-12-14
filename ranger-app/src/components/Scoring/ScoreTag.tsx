@@ -1,10 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {Tag} from '@blueprintjs/core';
 import '@blueprintjs/popover2/lib/css/blueprint-popover2.css';
-import {
-  useAdminGetDeploymentScenarioQuery,
-  useAdminGetDeploymentScoresQuery,
-} from 'src/slices/apiSlice';
+import {useAdminGetDeploymentScoresQuery} from 'src/slices/apiSlice';
 import {useTranslation} from 'react-i18next';
 import {
   calculateTotalScoreForRole,
@@ -12,19 +9,18 @@ import {
   roundToDecimalPlaces,
 } from 'src/utils';
 import {skipToken} from '@reduxjs/toolkit/dist/query';
-import {type ExerciseRole} from 'src/models/scenario';
+import {type Scenario, type ExerciseRole} from 'src/models/scenario';
 
-const ScoreTag = ({exerciseId, deploymentId, role, large = false, onTagScoreChange}:
+const ScoreTag = ({exerciseId, deploymentId, scenario, role, large = false, onTagScoreChange}:
 {exerciseId: string;
   deploymentId: string;
+  scenario: Scenario | undefined;
   role: ExerciseRole;
   large?: boolean;
   onTagScoreChange?: (tagScore: number) => void;
 }) => {
-  const queryArguments = exerciseId && deploymentId
-    ? {exerciseId, deploymentId} : skipToken;
+  const queryArguments = exerciseId && deploymentId ? {exerciseId, deploymentId} : skipToken;
   const {data: scores} = useAdminGetDeploymentScoresQuery(queryArguments);
-  const {data: scenario} = useAdminGetDeploymentScenarioQuery(queryArguments);
   const {t} = useTranslation();
   const backgroundColor = getRoleColor(role);
   const [tagScore, setTagScore] = useState<number>(0);

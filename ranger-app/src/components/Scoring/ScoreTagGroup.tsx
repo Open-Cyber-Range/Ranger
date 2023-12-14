@@ -70,6 +70,7 @@ const ScoreTagGroup = ({exerciseId, deploymentId, selectedRole, onScoresChange}:
               key={role}
               exerciseId={exerciseId}
               deploymentId={deploymentId}
+              scenario={scenario}
               role={role}
               onTagScoreChange={score => {
                 handleRoleScoreChange(role, score);
