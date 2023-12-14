@@ -1,6 +1,8 @@
 const language = {
   homepage: 'Welcome to Ranger!',
   appName: 'Ranger',
+  OCR: 'Open Cyber Range',
+  documentation: 'Documentation',
   create: 'Create',
   update: 'Update',
   delete: 'Delete',
