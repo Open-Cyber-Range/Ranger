@@ -7,8 +7,44 @@ import {useNavigate} from 'react-router-dom';
 import ScoreTagGroup from 'src/components/Scoring/ScoreTagGroup';
 import {useCallback, useEffect, useState} from 'react';
 import {type ExerciseRole} from 'src/models/scenario';
-import {sortDeployments} from 'src/utils/score';
+import {getRolesFromScenario, sortDeployments} from 'src/utils/score';
 import {type DeploymentScore, type RoleScore} from 'src/models/score';
+import {useAdminGetDeploymentScenarioQuery} from 'src/slices/apiSlice';
+import {skipToken} from '@reduxjs/toolkit/dist/query';
+import {sortByProperty} from 'sort-by-property';
+
+const RoleSelect = ({deployments, selectedRole, handleRoleChange}:
+{deployments: Deployment[];
+  selectedRole: string;
+  handleRoleChange: (event: React.ChangeEvent<HTMLSelectElement>) => void;
+}) => {
+  const {t} = useTranslation();
+  const deploymentsByCreatedAt = deployments.slice().sort(sortByProperty('createdAt', 'asc'));
+  const lastDeployment = deploymentsByCreatedAt[deployments.length - 1];
+  const exerciseId = lastDeployment.exerciseId;
+  const deploymentId = lastDeployment.id;
+  const queryArguments = exerciseId && deploymentId ? {exerciseId, deploymentId} : skipToken;
+  const {data: scenario} = useAdminGetDeploymentScenarioQuery(queryArguments);
+
+  if (!scenario) {
+    return null;
+  }
+
+  const roles = getRolesFromScenario(scenario);
+
+  return (
+    <HTMLSelect
+      value={selectedRole}
+      onChange={handleRoleChange}
+    >
+      <option value=''>{t('scoreTable.rolePlaceholder')}</option>
+      <option value='all'>{t('scoreTable.allRoles')}</option>
+      {roles.map((role: ExerciseRole) => (
+        <option key={role} value={role}>{role}</option>
+      ))}
+    </HTMLSelect>
+  );
+};
 
 const ScoresPanel = ({deployments}:
 {
@@ -16,7 +52,6 @@ const ScoresPanel = ({deployments}:
 }) => {
   const {t} = useTranslation();
   const navigate = useNavigate();
-  const [roles, setRoles] = useState<ExerciseRole[]>([]);
   const [selectedRole, setSelectedRole] = useState<string>('');
   const [deploymentScores, setDeploymentScores] = useState<DeploymentScore[]>([]);
   const [sortedDeployments, setSortedDeployments] = useState<Deployment[]>([]);
@@ -55,20 +90,15 @@ const ScoresPanel = ({deployments}:
   }
   , [selectedRole, deployments, deploymentScores, sortOrder]);
 
-  if (deployments) {
+  if (sortedDeployments && sortedDeployments.length > 0) {
     return (
       <PageHolder>
         <div className='flex justify-end space-x-2 mb-2'>
-          <HTMLSelect
-            value={selectedRole}
-            onChange={handleRoleChange}
-          >
-            <option value=''>{t('scoreTable.rolePlaceholder')}</option>
-            <option value='all'>{t('scoreTable.allRoles')}</option>
-            {roles.map((role: ExerciseRole) => (
-              <option key={role} value={role}>{role}</option>
-            ))}
-          </HTMLSelect>
+          <RoleSelect
+            deployments={sortedDeployments}
+            selectedRole={selectedRole}
+            handleRoleChange={handleRoleChange}
+          />
 
           <HTMLSelect
             value={sortOrder}
@@ -103,9 +133,6 @@ const ScoresPanel = ({deployments}:
                       exerciseId={deployment.exerciseId}
                       deploymentId={deployment.id}
                       selectedRole={selectedRole}
-                      onRolesChange={(roles: ExerciseRole[]) => {
-                        setRoles(roles);
-                      }}
                       onScoresChange={(roleScores: RoleScore[]) => {
                         handleScoresChange(deployment.id, roleScores);
                       }}

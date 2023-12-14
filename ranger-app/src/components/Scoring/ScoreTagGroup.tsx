@@ -4,17 +4,17 @@ import {type ExerciseRole} from 'src/models/scenario';
 import {type RoleScore} from 'src/models/score';
 import {useAdminGetDeploymentScenarioQuery} from 'src/slices/apiSlice';
 import {getExerciseRoleFromString, getRolesFromScenario} from 'src/utils/score';
+import {skipToken} from '@reduxjs/toolkit/dist/query';
 import ScoreTag from './ScoreTag';
 
-const ScoreTagGroup = ({exerciseId, deploymentId, selectedRole, onRolesChange, onScoresChange}:
+const ScoreTagGroup = ({exerciseId, deploymentId, selectedRole, onScoresChange}:
 {exerciseId: string;
   deploymentId: string;
   selectedRole: string;
-  onRolesChange?: (roles: ExerciseRole[]) => void;
   onScoresChange?: (roleScores: RoleScore[]) => void;
 }) => {
-  const queryParameters = {exerciseId, deploymentId};
-  const {data: scenario} = useAdminGetDeploymentScenarioQuery(queryParameters);
+  const queryArguments = exerciseId && deploymentId ? {exerciseId, deploymentId} : skipToken;
+  const {data: scenario} = useAdminGetDeploymentScenarioQuery(queryArguments);
   const [roleScores, setRoleScores] = useState<RoleScore[]>([]);
   const [roles, setRoles] = useState<ExerciseRole[]>([]);
   const [sortedRoles, setSortedRoles] = useState<ExerciseRole[]>(roles);
@@ -23,11 +23,10 @@ const ScoreTagGroup = ({exerciseId, deploymentId, selectedRole, onRolesChange, o
   useEffect(() => {
     if (scenario) {
       const scenarioRoles = getRolesFromScenario(scenario);
-      onRolesChange?.(scenarioRoles);
       setRoles(scenarioRoles);
     }
   }
-  , [scenario, onRolesChange]);
+  , [scenario]);
 
   useEffect(() => {
     if (roles && roles.length > 0) {
