@@ -20,7 +20,7 @@ import {
   H2,
 } from '@blueprintjs/core';
 import SideBar from 'src/components/Exercise/SideBar';
-import useExerciseStreaming from 'src/hooks/useExerciseStreaming';
+import useAdminExerciseStreaming from 'src/hooks/websocket/useAdminExerciseStreaming';
 import {toastSuccess, toastWarning} from 'src/components/Toaster';
 import RoleScoresButtonGroup from 'src/components/Scoring/RoleScoresButtonGroup';
 import {tryIntoScoringMetadata, isVMDeploymentOngoing} from 'src/utils';
@@ -31,7 +31,7 @@ const DeploymentDetail = () => {
   const {t} = useTranslation();
   const navigate = useNavigate();
   const {exerciseId, deploymentId} = useParams<DeploymentDetailRouteParameters>();
-  useExerciseStreaming(exerciseId);
+  useAdminExerciseStreaming(exerciseId);
   const queryArguments = exerciseId && deploymentId ? {exerciseId, deploymentId} : skipToken;
   const {data: deployment} = useAdminGetDeploymentQuery(queryArguments);
   const {data: scenario} = useAdminGetDeploymentScenarioQuery(queryArguments);

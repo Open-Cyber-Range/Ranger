@@ -11,7 +11,7 @@ import ScoresPanel from 'src/components/Scoring/ExerciseScores';
 import DashboardPanel from 'src/components/Exercise/Dashboard';
 import SendEmail from 'src/components/Email/SendEmail';
 import SideBar from 'src/components/Exercise/SideBar';
-import useExerciseStreaming from 'src/hooks/useExerciseStreaming';
+import useAdminExerciseStreaming from 'src/hooks/websocket/useAdminExerciseStreaming';
 import {ActiveTab} from 'src/models/exercise';
 import {H2} from '@blueprintjs/core';
 import {useTranslation} from 'react-i18next';
@@ -20,7 +20,7 @@ import EmailTable from 'src/components/Email/EmailTable';
 const ExerciseDetail = () => {
   const {t} = useTranslation();
   const {exerciseId} = useParams<ExerciseDetailRouteParameters>();
-  useExerciseStreaming(exerciseId);
+  useAdminExerciseStreaming(exerciseId);
   const {data: deployments} = useAdminGetDeploymentsQuery(exerciseId ?? skipToken);
   const {data: exercise} = useAdminGetExerciseQuery(exerciseId ?? skipToken);
 

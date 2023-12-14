@@ -317,7 +317,7 @@ export const apiSlice = createApi({
       query: ({deploymentId, exerciseId}) =>
         `/participant/exercise/${exerciseId}/deployment/${deploymentId}/users`,
     }),
-    participantGetDeploymentScores: builder.query<Score[], //
+    participantGetDeploymentScores: builder.query<Score[],
     {
       exerciseId: string;
       deploymentId: string;

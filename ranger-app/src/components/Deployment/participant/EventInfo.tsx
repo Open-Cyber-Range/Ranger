@@ -11,8 +11,7 @@ import DOMPurify from 'dompurify';
 
 async function fetchCSS(cssURL: string) {
   const response = await fetch(cssURL);
-  const cssText = await response.text();
-  return cssText;
+  return response.text();
 }
 
 const EventInfo = ({event_name, event}:

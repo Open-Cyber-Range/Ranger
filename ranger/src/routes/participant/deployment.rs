@@ -6,13 +6,16 @@ use crate::{
     },
     models::{helpers::uuid::Uuid, DeploymentElement, ParticipantDeployment},
     services::database::deployment::{GetDeploymentElementByDeploymentId, GetDeployments},
+    services::websocket::ExerciseWebsocket,
     utilities::{create_database_error_handler, create_mailbox_error_handler},
     AppState,
 };
 use actix_web::{
     get,
-    web::{Data, Json, Path},
+    web::{Data, Json, Path, Payload},
+    HttpRequest, HttpResponse,
 };
+use actix_web_actors::ws;
 use futures_util::future::join_all;
 use log::error;
 use sdl_parser::{
@@ -131,4 +134,27 @@ pub async fn get_participant_node_deployment_elements(
         .collect::<Vec<_>>();
 
     Ok(Json(entity_node_elements))
+}
+
+#[get("")]
+pub async fn subscribe_participant_to_deployment(
+    req: HttpRequest,
+    exercise: ExerciseInfo,
+    app_state: Data<AppState>,
+    stream: Payload,
+) -> Result<HttpResponse, RangerError> {
+    log::debug!(
+        "Subscribing participant websocket to deployment {}",
+        exercise.id
+    );
+    let manager_address = app_state.websocket_manager_address.clone();
+    let exercise_socket = ExerciseWebsocket::new(exercise.id, manager_address);
+    log::debug!(
+        "Created participant websocket for deployment {}",
+        exercise.id
+    );
+    ws::start(exercise_socket, &req, stream).map_err(|error| {
+        error!("Websocket connection error: {error}");
+        RangerError::WebsocketFailed
+    })
 }

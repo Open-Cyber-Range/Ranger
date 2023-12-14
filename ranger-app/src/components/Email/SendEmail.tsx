@@ -29,7 +29,7 @@ import {
 import {toastSuccess, toastWarning} from 'src/components/Toaster';
 import Editor from '@monaco-editor/react';
 import {type editor} from 'monaco-editor';
-import useExerciseStreaming from 'src/hooks/useExerciseStreaming';
+import useAdminExerciseStreaming from 'src/hooks/websocket/useAdminExerciseStreaming';
 import {type Deployment} from 'src/models/deployment';
 import useGetDeploymentUsers from 'src/hooks/useGetDeploymentUsers';
 import {
@@ -70,7 +70,7 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
   const {emailVariables, insertVariable}
   = useEmailVariablesInEditor(selectedDeployment, editorInstance);
   const [isFetchingUsers, setIsFetchingUsers] = useState(false);
-  useExerciseStreaming(exercise.id);
+  useAdminExerciseStreaming(exercise.id);
 
   const handleDeploymentChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedValue = event.target.value;

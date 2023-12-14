@@ -34,7 +34,7 @@ use crate::{
 use actix_web::{
     delete, get, post, put,
     web::{Data, Json, Path, Payload},
-    Error, HttpRequest, HttpResponse,
+    HttpRequest, HttpResponse,
 };
 use actix_web_actors::ws;
 use anyhow::Result;
@@ -237,12 +237,15 @@ pub async fn subscribe_to_exercise(
     exercise: ExerciseInfo,
     app_state: Data<AppState>,
     stream: Payload,
-) -> Result<HttpResponse, Error> {
+) -> Result<HttpResponse, RangerError> {
     log::debug!("Subscribing websocket to exercise {}", exercise.id);
     let manager_address = app_state.websocket_manager_address.clone();
     let exercise_socket = ExerciseWebsocket::new(exercise.id, manager_address);
     log::debug!("Created websocket for exercise {}", exercise.id);
-    ws::start(exercise_socket, &req, stream)
+    ws::start(exercise_socket, &req, stream).map_err(|error| {
+        error!("Websocket connection error: {error}");
+        RangerError::WebsocketFailed
+    })
 }
 
 #[post("participant")]
