@@ -1,7 +1,6 @@
 import type {Deployment, DeploymentElement} from './deployment';
 import type {UpdateExercise} from './exercise';
 import {type Score} from './score';
-import type {Log} from './log';
 
 export enum WebsocketAdminMessageType {
   ExerciseUpdate = 'ExerciseUpdate',
@@ -9,7 +8,6 @@ export enum WebsocketAdminMessageType {
   DeploymentElement = 'DeploymentElement',
   DeploymentElementUpdate = 'DeploymentElementUpdate',
   Score = 'Score',
-  Log = 'Log',
 }
 
 export type WebsocketAdminWrapper = {exerciseId: string; ownId: string} & ({
@@ -29,19 +27,13 @@ export type WebsocketAdminWrapper = {exerciseId: string; ownId: string} & ({
   content: Score;
 });
 
-export type WebsocketAdminLogWrapper = {
-  type: WebsocketAdminMessageType.Log;
-  content: Log;
-};
-
 export enum WebsocketParticipantMessageType {
   Score = 'Score',
 }
 
 export type WebsocketParticipantWrapper = {
   exerciseId: string;
-  deploymentId: string;
-  entitySelector: string;
+  ownId: string;
 } & ({
   type: WebsocketParticipantMessageType.Score;
   content: Score;

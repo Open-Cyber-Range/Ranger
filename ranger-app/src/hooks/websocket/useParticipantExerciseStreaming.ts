@@ -11,6 +11,7 @@ import {useSelector} from 'react-redux';
 
 const websocketHandler = (
   dispatch: AppDispatch,
+  entitySelector: string,
 ) => (event: MessageEvent<string>) => {
   const data: WebsocketParticipantWrapper = JSON.parse(event.data) as WebsocketParticipantWrapper;
   switch (data.type) {
@@ -21,7 +22,7 @@ const websocketHandler = (
           .updateQueryData('participantGetDeploymentScores', {
             exerciseId: score.exerciseId,
             deploymentId: score.deploymentId,
-            entitySelector: data.entitySelector,
+            entitySelector,
           },
           scores => {
             scores?.push(score);
@@ -59,7 +60,7 @@ const useParticipantExerciseStreaming = (
         `${token}`,
       );
       const thisInstance = websocket.current;
-      thisInstance.addEventListener('message', websocketHandler(dispatch));
+      thisInstance.addEventListener('message', websocketHandler(dispatch, entitySelector));
       let timeout: number | undefined;
       thisInstance.addEventListener('close', () => {
         timeout = setTimeout(() => {
