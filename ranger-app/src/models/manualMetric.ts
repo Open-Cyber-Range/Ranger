@@ -4,6 +4,7 @@ export type NewManualMetric = {
   exerciseId: string;
   deploymentId: string;
   entitySelector: string;
+  name?: string;
   metricKey: string;
   role: ExerciseRole;
   textSubmission?: string;
@@ -15,7 +16,8 @@ export type ManualMetric = {
   deploymentId: string;
   userId: string;
   entitySelector: string;
-  name: string;
+  name?: string;
+  sdlKey: string;
   description: string;
   role: ExerciseRole;
   textSubmission?: string;
