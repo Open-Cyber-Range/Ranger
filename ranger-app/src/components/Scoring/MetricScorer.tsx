@@ -92,7 +92,7 @@ const MetricScorer = ({exerciseId, deploymentId}:
             <Accordion
               key={metric.id}
               className='mb-4 p-2 border-2 border-slate-300 shadow-md '
-              title={`${metric.name} - ${metric.entitySelector}`}
+              title={`${metric.name ?? metric.sdlKey} - ${metric.entitySelector}`}
             >
               <MetricScoringForm
                 exerciseId={exerciseId}
