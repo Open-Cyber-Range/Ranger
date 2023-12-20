@@ -1,9 +1,5 @@
 import {Intent} from '@blueprintjs/core';
-import {
-  ElementStatus,
-  type DeploymentElement,
-  DeployerType,
-} from 'src/models/deployment';
+import {ElementStatus, type DeploymentElement} from 'src/models/deployment';
 import {type Scenario} from 'src/models/scenario';
 
 export const getProgressionAndStatus = (
@@ -12,7 +8,7 @@ export const getProgressionAndStatus = (
 ) => {
   let intentStatus: Intent = Intent.WARNING;
   let successfulElements = 0;
-  const [totalDeploymentElements, injects] = countElements(scenario);
+  const totalDeploymentElements = countElements(scenario);
 
   if (deploymentElements.length === 0 && totalDeploymentElements === 0) {
     return [1, Intent.SUCCESS] as const;
@@ -28,16 +24,11 @@ export const getProgressionAndStatus = (
     if (elementStatus === Intent.SUCCESS) {
       successfulElements += 1;
     }
-
-    if (element.deployerType === DeployerType.Inject
-      && element.status === ElementStatus.Ongoing) {
-      successfulElements += 1;
-    }
   }
 
   const progression = successfulElements / totalDeploymentElements;
 
-  if (progression === 1 || successfulElements + injects === totalDeploymentElements) {
+  if (progression >= 1) {
     intentStatus = Intent.SUCCESS;
   }
 
@@ -71,7 +62,6 @@ const loadingIntent = (status: ElementStatus): Intent => {
 
 function countElements(scenario: Scenario) {
   let totalElements = 0;
-  let injects = 0;
   const templates: string[] = [];
 
   if (scenario.infrastructure && Object.keys(scenario.infrastructure).length > 0) {
@@ -97,10 +87,5 @@ function countElements(scenario: Scenario) {
     }
   }
 
-  if (scenario.injects && Object.keys(scenario.injects).length > 0) {
-    totalElements += Object.keys(scenario.injects).length;
-    injects += Object.keys(scenario.injects).length;
-  }
-
-  return [totalElements, injects];
+  return totalElements;
 }
