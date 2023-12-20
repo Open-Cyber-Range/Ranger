@@ -3,7 +3,7 @@ mod logger;
 
 use crate::models::{
     helpers::{uuid::Uuid, websocket_wrapper::WebsocketWrapper},
-    Deployment, DeploymentElement, Score, UpdateExercise,
+    Deployment, DeploymentElement, Event, Score, UpdateExercise,
 };
 use actix::{Actor, Context, Handler, Message, Recipient};
 use anyhow::{anyhow, Result};
@@ -216,6 +216,24 @@ impl Handler<SocketScoring> for WebSocketManager {
         let targets = self.get_exercise_targets(exercise_uuid);
         for target in targets {
             target.do_send(WebsocketStringMessage(serde_json::to_string(&score)?));
+        }
+
+        Ok(())
+    }
+}
+
+#[derive(Message)]
+#[rtype(result = "Result<()>")]
+pub struct SocketEvent(pub Uuid, pub WebsocketWrapper<Event>);
+
+impl Handler<SocketEvent> for WebSocketManager {
+    type Result = Result<()>;
+
+    fn handle(&mut self, msg: SocketEvent, _: &mut Context<Self>) -> Self::Result {
+        let SocketEvent(exercise_uuid, event) = msg;
+        let targets = self.get_exercise_targets(exercise_uuid);
+        for target in targets {
+            target.do_send(WebsocketStringMessage(serde_json::to_string(&event)?));
         }
 
         Ok(())

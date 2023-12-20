@@ -145,6 +145,7 @@ impl DeployableEvents for Scenario {
                         let new_event = addressor
                             .database
                             .send(CreateEvent {
+                                exercise_id: deployment.exercise_id,
                                 event_id,
                                 event_name: event_key.to_owned(),
                                 deployment_id: deployment_element.deployment_id,
@@ -243,6 +244,7 @@ impl DeployableEvents for Scenario {
                             let event_succeeded = addressor
                                 .event_poller
                                 .send(StartPolling(
+                                    exercise.id,
                                     addressor.database.clone(),
                                     *event_id,
                                     conditions.to_vec(),
@@ -281,7 +283,13 @@ impl DeployableEvents for Scenario {
 
 #[derive(Message, Clone)]
 #[rtype(result = "Result<bool>")]
-pub struct StartPolling(Addr<Database>, Uuid, Vec<(String, Role)>, DeploymentElement);
+pub struct StartPolling(
+    Uuid,
+    Addr<Database>,
+    Uuid,
+    Vec<(String, Role)>,
+    DeploymentElement,
+);
 
 pub struct EventPoller();
 
@@ -382,7 +390,7 @@ impl Handler<StartPolling> for EventPoller {
                 }
 
                 database_address
-                    .send(UpdateEvent(event_id, updated_event))
+                    .send(UpdateEvent(exercise_id, event_id, updated_event))
                     .await??;
 
                 Ok(has_succeeded)

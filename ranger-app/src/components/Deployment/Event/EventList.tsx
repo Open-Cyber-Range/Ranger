@@ -95,8 +95,11 @@ const ManagerEvents = ({scenarioEvents, deploymentEvents, deploymentElements}:
     );
   }
 
+  const hasScenarioEvents = scenarioEvents && Object.keys(scenarioEvents).length > 0;
+  const title = hasScenarioEvents ? t('deployments.events.noEventsYet')
+    : t('deployments.events.noScenarioEvents');
   return (
-    <Callout title={t('deployments.events.noEvents') ?? ''}/>
+    <Callout title={title}/>
   );
 };
 

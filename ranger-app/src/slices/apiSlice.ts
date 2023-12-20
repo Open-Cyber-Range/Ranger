@@ -53,7 +53,8 @@ export const apiSlice = createApi({
     'Scenario',
     'Participant',
     'ManualMetric',
-    'Email'],
+    'Email',
+    'DeploymentEvent'],
   endpoints: builder => ({
     adminGetGroups: builder.query<AdGroup[], void>({
       query: () => '/admin/group',
@@ -285,15 +286,15 @@ export const apiSlice = createApi({
         responseHandler: 'text',
       }),
     }),
-    adminGetEvents: builder.query<DeploymentEvent[] | undefined,
-    {
-      exerciseId: string;
-      deploymentId: string;
-    }>({
+    adminGetEvents: builder.query<DeploymentEvent[], {exerciseId: string; deploymentId: string}>({
       query({exerciseId, deploymentId}) {
-        return `/admin/exercise/${
-          exerciseId}/deployment/${deploymentId}/event`;
+        return `/admin/exercise/${exerciseId}/deployment/${deploymentId}/event`;
       },
+      providesTags: (result = []) =>
+        [
+          ...result.map(({id}) => ({type: 'DeploymentEvent' as const, id})),
+          {type: 'DeploymentEvent', id: 'LIST'},
+        ],
     }),
     adminGetEventInfo: builder.query<EventInfo | undefined,
     {

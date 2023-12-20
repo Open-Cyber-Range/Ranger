@@ -1,5 +1,5 @@
 import type {Deployment, DeploymentElement} from './deployment';
-import type {UpdateExercise} from './exercise';
+import type {DeploymentEvent, UpdateExercise} from './exercise';
 import {type Score} from './score';
 
 export enum WebsocketAdminMessageType {
@@ -8,6 +8,7 @@ export enum WebsocketAdminMessageType {
   DeploymentElement = 'DeploymentElement',
   DeploymentElementUpdate = 'DeploymentElementUpdate',
   Score = 'Score',
+  Event = 'Event',
 }
 
 export type WebsocketAdminWrapper = {exerciseId: string; ownId: string} & ({
@@ -25,7 +26,11 @@ export type WebsocketAdminWrapper = {exerciseId: string; ownId: string} & ({
 } | {
   type: WebsocketAdminMessageType.Score;
   content: Score;
-});
+} | {
+  type: WebsocketAdminMessageType.Event;
+  content: DeploymentEvent;
+}
+);
 
 export enum WebsocketParticipantMessageType {
   Score = 'Score',
