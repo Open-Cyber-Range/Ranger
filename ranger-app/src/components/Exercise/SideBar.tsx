@@ -36,6 +36,7 @@ const hashTabs: Record<string, ActiveTab> = {
   '#accounts': ActiveTab.Accounts,
   '#entities': ActiveTab.EntitySelector,
   '#submissions': ActiveTab.UserSubmissions,
+  '#events': ActiveTab.Events,
 };
 
 const DeploymentText = ({deployment}: {deployment: Deployment}) => {
@@ -246,6 +247,16 @@ const SideBar = ({renderMainContent}: {
                           // eslint-disable-next-line max-len
                             `/exercises/${deployment.exerciseId}/deployments/${deployment.id}/focus#submissions`);
                           setActiveTab(ActiveTab.UserSubmissions);
+                        }}/>
+                      <MenuItem
+                        icon='timeline-events'
+                        text={t('exercises.tabs.events')}
+                        active={activeTab === ActiveTab.Events}
+                        onClick={() => {
+                          navigate(
+                          // eslint-disable-next-line max-len
+                            `/exercises/${deployment.exerciseId}/deployments/${deployment.id}/focus#events`);
+                          setActiveTab(ActiveTab.Events);
                         }}/>
                     </MenuItem>
                   ))

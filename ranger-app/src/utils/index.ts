@@ -357,7 +357,7 @@ export const getMetricReferencesByRole = (
 ) => {
   const flattenedEntities = flattenEntities(scoringData.entities);
   const result = Object.values(flattenedEntities)
-    .reduce<Record<ExerciseRole, Set<string>>>((acc, entity) => {
+    .reduce<Record<ExerciseRole, Set<string>>>((accumulator, entity) => {
     const role = entity.role;
     const entityTlos = entity.tlos;
     if (role && entityTlos) {
@@ -368,11 +368,11 @@ export const getMetricReferencesByRole = (
         .map(metricKey => scoringData.metrics[metricKey].name ?? metricKey);
 
       for (const metricReference of metricReferences) {
-        acc[role].add(metricReference);
+        accumulator[role].add(metricReference);
       }
     }
 
-    return acc;
+    return accumulator;
   }, {
     [ExerciseRole.Blue]: new Set(),
     [ExerciseRole.Green]: new Set(),
