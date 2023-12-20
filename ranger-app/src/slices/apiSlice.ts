@@ -285,6 +285,27 @@ export const apiSlice = createApi({
         responseHandler: 'text',
       }),
     }),
+    adminGetEvents: builder.query<DeploymentEvent[] | undefined,
+    {
+      exerciseId: string;
+      deploymentId: string;
+    }>({
+      query({exerciseId, deploymentId}) {
+        return `/admin/exercise/${
+          exerciseId}/deployment/${deploymentId}/event`;
+      },
+    }),
+    adminGetEventInfo: builder.query<EventInfo | undefined,
+    {
+      exerciseId: string;
+      deploymentId: string;
+      eventInfoDataChecksum: string;
+    }>({
+      query({exerciseId, deploymentId, eventInfoDataChecksum}) {
+        // eslint-disable-next-line max-len
+        return `/admin/exercise/${exerciseId}/deployment/${deploymentId}/event/${eventInfoDataChecksum}`;
+      },
+    }),
     participantGetExercises: builder.query<ParticipantExercise[], void>({
       query: () => '/participant/exercise',
       providesTags: (result = []) =>
@@ -559,6 +580,8 @@ export const {
   useAdminGetEmailTemplatesQuery,
   useAdminAddEmailTemplateMutation,
   useAdminDeleteEmailTemplateMutation,
+  useAdminGetEventsQuery,
+  useAdminGetEventInfoQuery,
   useLazyAdminGetManualMetricArtifactQuery,
   useParticipantGetExercisesQuery,
   useParticipantGetExerciseQuery,

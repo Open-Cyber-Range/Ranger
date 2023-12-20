@@ -34,27 +34,10 @@ impl Handler<CreateEvent> for Database {
 
         Box::pin(
             async move {
-                let CreateEvent {
-                    event_id,
-                    event_name,
-                    deployment_id,
-                    parent_node_id,
-                    description,
-                    start,
-                    end,
-                    use_shared_connection: _,
-                } = msg;
+                let exercise_id = msg.exercise_id;
+                let new_event: NewEvent = msg.into();
 
                 let mutex_connection = &connection_result?;
-                let new_event = NewEvent {
-                    id: event_id,
-                    name: event_name,
-                    deployment_id,
-                    parent_node_id,
-                    description,
-                    start,
-                    end,
-                };
                 let mut connection = mutex_connection
                     .lock()
                     .map_err(|error| anyhow!("Error locking Mutex connection: {:?}", error))?;

@@ -13,7 +13,7 @@ use crate::utilities::event::{
 use crate::utilities::scenario::get_injects_and_roles_by_node_event;
 use crate::utilities::{scenario::get_conditions_by_event, try_some};
 use crate::Addressor;
-use actix::{Actor, Addr, AsyncContext, Context, Handler, Message, ResponseActFuture, WrapFuture};
+use actix::{Actor, Addr, Context, Handler, Message, ResponseActFuture, WrapFuture};
 use anyhow::{Ok, Result};
 use async_trait::async_trait;
 use chrono::Utc;
@@ -304,10 +304,14 @@ impl Default for EventPoller {
 impl Handler<StartPolling> for EventPoller {
     type Result = ResponseActFuture<Self, Result<bool>>;
 
-    fn handle(&mut self, msg: StartPolling, ctx: &mut Context<Self>) -> Self::Result {
-        let _address = ctx.address();
-        let StartPolling(database_address, event_id, event_conditions, node_deployment_element) =
-            msg;
+    fn handle(&mut self, msg: StartPolling, _ctx: &mut Context<Self>) -> Self::Result {
+        let StartPolling(
+            exercise_id,
+            database_address,
+            event_id,
+            event_conditions,
+            node_deployment_element,
+        ) = msg;
 
         Box::pin(
             async move {

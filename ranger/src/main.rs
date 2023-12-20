@@ -12,6 +12,7 @@ use ranger::routes::admin::email::{
     add_email_template, delete_email, delete_email_template, get_email, get_email_form,
     get_email_template, get_email_templates, get_emails, send_email,
 };
+use ranger::routes::admin::event::{get_admin_event_info_data, get_exercise_deployment_events};
 use ranger::routes::admin::groups::get_participant_groups_users;
 use ranger::routes::admin::metric::{
     delete_metric, download_metric_artifact, get_admin_metric, get_admin_metrics,
@@ -32,7 +33,7 @@ use ranger::routes::participant::deployment::{
     get_participant_deployment, get_participant_deployments,
     get_participant_node_deployment_elements, subscribe_participant_to_deployment,
 };
-use ranger::routes::participant::event_info::get_event_info_data;
+use ranger::routes::participant::event_info::get_participant_event_info_data;
 use ranger::routes::participant::events::get_participant_events;
 use ranger::routes::participant::metric::{
     add_metric, get_participant_metric, get_participant_metrics, update_participant_metric,
@@ -108,6 +109,14 @@ async fn main() -> Result<(), Error> {
                                                                 get_admin_exercise_deployment_scenario,
                                                             )
                                                             .service(get_exercise_deployment_users)
+                                                            .service(
+                                                                scope("/event")
+                                                                    .service(get_exercise_deployment_events)
+                                                                    .service(
+                                                                        scope("/{event_info_id}")
+                                                                            .service(get_admin_event_info_data)
+                                                                    )
+                                                            )
                                                             .service(
                                                                 scope("/metric") 
                                                                 .service(get_admin_metrics)
@@ -201,7 +210,7 @@ async fn main() -> Result<(), Error> {
                                                                                 .service(get_participant_events)
                                                                                 .service(
                                                                                     scope("/{event_info_id}")
-                                                                                        .service(get_event_info_data)
+                                                                                        .service(get_participant_event_info_data)
                                                                             )
                                                                             )
                                                                             .service(

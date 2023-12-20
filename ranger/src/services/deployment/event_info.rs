@@ -51,7 +51,7 @@ impl EventInfoUnpacker for Scenario {
                 ))
                 .await?
             {
-                anyhow::Result::Ok(handler_response) => {
+                Result::Ok(handler_response) => {
                     let (event_create_response, mut event_file_stream) =
                         EventInfoResponse::try_from(handler_response)?;
 
@@ -106,7 +106,7 @@ impl EventInfoUnpacker for Scenario {
                     }
                     Ok(())
                 }
-                anyhow::Result::Err(error) => return Err(anyhow!("Event info error: {error}")),
+                Result::Err(error) => return Err(anyhow!("Event info error: {error}")),
             }?;
         }
 
