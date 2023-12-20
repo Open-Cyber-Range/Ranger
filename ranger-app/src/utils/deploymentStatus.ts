@@ -68,21 +68,21 @@ function countElements(scenario: Scenario) {
     for (const infraNode of Object.values(scenario.infrastructure)) {
       totalElements += infraNode.count;
     }
-  }
 
-  if (scenario.nodes && Object.keys(scenario.nodes).length > 0) {
-    for (const node of Object.values(scenario.nodes)) {
-      if (node.source && !templates.includes(node.source.name)) {
-        templates.push(node.source.name);
-        totalElements += 1;
-      }
+    if (scenario.nodes && Object.keys(scenario.nodes).length > 0) {
+      for (const node of Object.values(scenario.nodes)) {
+        if (node.source && !templates.includes(node.source.name)) {
+          templates.push(node.source.name);
+          totalElements += 1;
+        }
 
-      if (node.features && Object.keys(node.features).length > 0) {
-        totalElements += Object.keys(node.features).length;
-      }
+        if (node.features && Object.keys(node.features).length > 0) {
+          totalElements += Object.keys(node.features).length;
+        }
 
-      if (node.conditions && Object.keys(node.conditions).length > 0) {
-        totalElements += Object.keys(node.conditions).length;
+        if (node.conditions && Object.keys(node.conditions).length > 0) {
+          totalElements += Object.keys(node.conditions).length;
+        }
       }
     }
   }
