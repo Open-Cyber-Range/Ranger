@@ -71,7 +71,8 @@ diesel::table! {
         handler_reference -> Nullable<Tinytext>,
         deployer_type -> Tinytext,
         status -> Tinytext,
-        executor_log -> Nullable<Mediumtext>,
+        executor_stdout -> Nullable<Mediumtext>,
+        executor_stderr -> Nullable<Mediumtext>,
         #[max_length = 16]
         event_id -> Nullable<Binary>,
         #[max_length = 16]

@@ -102,16 +102,13 @@ impl DeployableInject
                 anyhow::Result::Ok(result) => {
                     let response = ExecutorResponse::try_from(result)?;
                     let identifier = try_some(
-                        response.identifier,
+                        response.clone().identifier,
                         "Successful Inject response did not supply Identifier",
                     )?;
 
                     inject_deployment_element.status = ElementStatus::Success;
                     inject_deployment_element.handler_reference = Some(identifier.value);
-                    inject_deployment_element.executor_log = match response.vm_log.is_empty() {
-                        true => None,
-                        false => Some(response.vm_log),
-                    };
+                    inject_deployment_element.set_stdout_and_stderr(&response);
 
                     addressor
                         .database

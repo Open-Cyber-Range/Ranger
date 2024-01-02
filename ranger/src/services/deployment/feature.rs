@@ -159,23 +159,23 @@ impl DeployableNodeFeatures for (Addressor, Vec<String>, Scenario, Uuid, &Deploy
                                     let feature_response = ExecutorResponse::try_from(result)?;
 
                                     let id = feature_response
+                                        .clone()
                                         .identifier
                                         .ok_or_else(|| {
-                                            anyhow!("Identifier in Feature Response not found")
+                                            anyhow!("Successful Feature response did not supply Identifier")
                                         })?
                                         .value;
 
-                                    if feature_type == GrpcFeatureType::Service {
-                                        debug!(
-                                            "Feature: '{feature_name}' output: {:?}",
-                                            feature_response.vm_log
-                                        );
-                                        feature_deployment_element.executor_log =
-                                            Some(feature_response.vm_log);
-                                    }
+                                    debug!(
+                                        "Feature: '{feature_name}' stdout: {:#?}. stderr: {:#?}",
+                                        feature_response.stdout, feature_response.stderr
+                                    );
 
                                     feature_deployment_element.status = ElementStatus::Success;
                                     feature_deployment_element.handler_reference = Some(id);
+                                    feature_deployment_element
+                                    .set_stdout_and_stderr(&feature_response);
+                                
                                     addressor
                                         .database
                                         .send(UpdateDeploymentElement(
