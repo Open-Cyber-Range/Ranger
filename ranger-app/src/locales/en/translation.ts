@@ -106,6 +106,8 @@ const language = {
       triggeredAt: 'Triggered at {{date}}',
       eventWindowClosed: 'Event window closed',
       eventWillOpenIn: 'Event window will open in',
+      eventWillCloseIn: 'Event window will close in ',
+      allNodesHaveTriggered: 'All nodes have triggered the event',
     },
   },
   menu: {

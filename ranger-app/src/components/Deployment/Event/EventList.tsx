@@ -40,12 +40,16 @@ const ManagerEvents = ({scenarioEvents, deploymentEvents, deploymentElements}:
         {
           Object.entries(groupedEventsByName).map(([eventName, events]) => {
             const now = DateTime.utc();
+            const start = DateTime.fromISO(events[0].start, {zone: 'UTC'});
             const end = DateTime.fromISO(events[0].end, {zone: 'UTC'});
+            const allNodesHaveTriggered = events.every(event => event.hasTriggered);
 
             return (
               <div key={eventName} className='border-2 rounded-lg p-4 mb-4 '>
                 <H3 className='text-2xl font-bold mb-4'>{eventName}</H3>
-                <ProgressBarWithTimer event={events[0]}/>
+                <ProgressBarWithTimer
+                  allNodesHaveTriggered={allNodesHaveTriggered}
+                  event={events[0]}/>
                 <div className='mb-6 text-base'>
                   <div className='mb-6'>
                     <p>
@@ -69,10 +73,15 @@ const ManagerEvents = ({scenarioEvents, deploymentEvents, deploymentElements}:
 
                 {events.sort(sortByProperty('parentNodeId', 'desc')).map(event => (
                   <div key={event.id} className='flex items-center border-2 rounded-lg p-2 mb-4'>
-                    {event.hasTriggered && <Icon icon='tick' size={30} color='green'/>}
+
+                    {event.hasTriggered
+                    && <Icon icon='tick' size={30} color='green'/>}
 
                     {now > end && !event.hasTriggered
                     && <Icon icon='cross' size={30} color='red'/>}
+
+                    {now > start && now < end && !event.hasTriggered
+                     && <Icon icon='refresh' size={15} color='orange' className='animate-spin'/>}
 
                     <span key={event.id} className='font-bold mx-2 text-lg'>
                       {deploymentElements?.find(element =>

@@ -2,8 +2,10 @@ import React, {useState, useEffect} from 'react';
 import {DateTime} from 'luxon';
 import {type DeploymentEvent} from 'src/models/exercise';
 import {useTranslation} from 'react-i18next';
+import {ProgressBar} from '@blueprintjs/core';
 
-const ProgressBarWithTimer = ({event}: {event: DeploymentEvent}) => {
+const ProgressBarWithTimer = ({event, allNodesHaveTriggered}:
+{event: DeploymentEvent; allNodesHaveTriggered: boolean}) => {
   const {t} = useTranslation();
   const [timeLeft, setTimeLeft] = useState('');
 
@@ -29,33 +31,43 @@ const ProgressBarWithTimer = ({event}: {event: DeploymentEvent}) => {
   const progress = Math.min(100, (elapsed / totalDuration) * 100);
   const futureStart = start.diff(now);
 
+  if (allNodesHaveTriggered) {
+    return (
+      <div className='items-center w-full mb-2'>
+        <div className='flex text-sm justify-center italic'>
+          {t('deployments.events.allNodesHaveTriggered')}
+        </div>
+        <ProgressBar
+          intent='success'
+          stripes={false}
+          value={1}
+        />
+      </div>
+    );
+  }
+
   return (
-    <div className='w-full mb-2 h-4 bg-gray-200 rounded-full relative'>
+    <div className='items-center w-full mb-2'>
+      {now > start && now < end && (
+        <div className='flex text-sm justify-center italic'>
+          {t('deployments.events.eventWillCloseIn')} {timeLeft}
+        </div>
+      )}
+
       {now < start ? (
-        <div
-          className='flex absolute top-0 left-0 w-full h-full items-center justify-center
-          text-sm'
-        >
+        <div className='flex text-sm justify-center italic'>
           {t('deployments.events.eventWillOpenIn')} {futureStart.toFormat('hh:mm:ss')}
         </div>
-      ) : (now < end ? (
-        <>
-          <div style={{width: `${progress}%`}} className='h-4 bg-blue-500 rounded-full'/>
-          <div
-            className={`flex absolute top-0 left-0 w-full h-full items-center justify-center 
-            text-sm font-bold ${progress > 50 ? 'text-white' : 'text-black'}`}
-          >
-            {timeLeft}
-          </div>
-        </>
-      ) : (
-        <div
-          className='flex absolute top-0 left-0 w-full h-full items-center justify-center
-          text-sm'
-        >
+      ) : (now > end && (
+        <div className='flex text-sm justify-center italic'>
           {t('deployments.events.eventWindowClosed')}
         </div>
       ))}
+      <ProgressBar
+        intent={now < end ? 'primary' : 'none'}
+        stripes={false}
+        value={progress / 100}
+      />
     </div>
   );
 };
