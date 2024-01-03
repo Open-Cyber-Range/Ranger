@@ -61,7 +61,7 @@ const ManagerEvents = ({scenarioEvents, deploymentEvents, deploymentElements}:
                       {events[0].description ?? t('deployments.events.noDescription')}
                     </p>
                   </div>
-                  <EventInfo event_name={eventName} event={events[0]}/>
+                  <EventInfo eventName={eventName} event={events[0]}/>
                 </div>
                 <H4 className='mt-6 text-xl font-semibold'>
                   {t('deployments.events.nodes')}

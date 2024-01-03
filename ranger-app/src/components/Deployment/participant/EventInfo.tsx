@@ -9,8 +9,8 @@ import {useParticipantGetEventInfoQuery} from 'src/slices/apiSlice';
 import {selectedEntity} from 'src/slices/userSlice';
 import EventIframe from 'src/components/Deployment/Event/EventIframe';
 
-const EventInfo = ({event_name, event}:
-{event_name: string | undefined; event: DeploymentEvent ;
+const EventInfo = ({eventName, event}:
+{eventName: string | undefined; event: DeploymentEvent ;
 }) => {
   const {t} = useTranslation();
   const {exerciseId, deploymentId} = useParams<DeploymentDetailRouteParameters>();
@@ -28,7 +28,7 @@ const EventInfo = ({event_name, event}:
     <div key={event.id} className='p-2'>
       <details className='p-2 border-2 border-slate-300 shadow-md '>
         <summary className='font-bold text-xl'>
-          {event_name ?? event.name}
+          {eventName ?? event.name}
         </summary>
         <div className='mt-2 text-sm'>
           <div>

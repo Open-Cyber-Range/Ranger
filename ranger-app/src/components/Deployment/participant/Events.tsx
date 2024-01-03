@@ -17,7 +17,7 @@ const Events = ({scenarioEvents, deploymentEvents}:
           deploymentEvents.map(event => (
             <EventInfo
               key={event.id}
-              event_name={scenarioEvents[event.name]?.name ?? event.name}
+              eventName={scenarioEvents[event.name]?.name ?? event.name}
               event={event}/>
           ))
         }

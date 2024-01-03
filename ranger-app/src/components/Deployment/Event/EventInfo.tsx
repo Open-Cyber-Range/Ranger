@@ -6,8 +6,8 @@ import {type DeploymentDetailRouteParameters} from 'src/models/routes';
 import {useAdminGetEventInfoQuery} from 'src/slices/apiSlice';
 import EventIframe from 'src/components/Deployment/Event/EventIframe';
 
-const EventInfo = ({event_name, event}:
-{event_name: string;
+const EventInfo = ({eventName, event}:
+{eventName: string;
   event: DeploymentEvent;
 }) => {
   const {exerciseId, deploymentId} = useParams<DeploymentDetailRouteParameters>();
@@ -24,7 +24,7 @@ const EventInfo = ({event_name, event}:
     <div key={event.id} className='p-2'>
       <details className='p-2 border-2 border-slate-300 shadow-md '>
         <summary className='font-bold text-xl'>
-          {event_name ?? event.name}
+          {eventName ?? event.name}
         </summary>
         <div className='mt-2 text-sm'>
           <div>
