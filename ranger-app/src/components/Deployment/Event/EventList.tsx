@@ -1,4 +1,4 @@
-import {Callout, H3, H4} from '@blueprintjs/core';
+import {Callout, H3, H4, Icon} from '@blueprintjs/core';
 import React from 'react';
 import {useTranslation} from 'react-i18next';
 import {type DeploymentEvent} from 'src/models/exercise';
@@ -68,13 +68,13 @@ const ManagerEvents = ({scenarioEvents, deploymentEvents, deploymentElements}:
                 </H4>
 
                 {events.sort(sortByProperty('parentNodeId', 'desc')).map(event => (
-                  <div key={event.id} className='border-2 rounded-lg p-2 mb-4'>
-                    {event.hasTriggered && <span className='text-green-500 text-xl'>✔ </span>}
+                  <div key={event.id} className='flex items-center border-2 rounded-lg p-2 mb-4'>
+                    {event.hasTriggered && <Icon icon='tick' size={30} color='green'/>}
 
                     {now > end && !event.hasTriggered
-                    && <span className='text-red-500 text-xl'>❌ </span>}
+                    && <Icon icon='cross' size={30} color='red'/>}
 
-                    <span key={event.id} className='font-bold mr-2 text-lg'>
+                    <span key={event.id} className='font-bold mx-2 text-lg'>
                       {deploymentElements?.find(element =>
                         element.handlerReference
                         === event.parentNodeId)?.scenarioReference ?? event.parentNodeId}
