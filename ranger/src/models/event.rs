@@ -40,25 +40,14 @@ impl NewEvent {
 
 impl From<CreateEvent> for NewEvent {
     fn from(event: CreateEvent) -> Self {
-        let CreateEvent {
-            event_id,
-            event_name,
-            deployment_id,
-            parent_node_id,
-            description,
-            start,
-            end,
-            ..
-        } = event;
-
         Self {
-            id: event_id,
-            name: event_name,
-            deployment_id,
-            parent_node_id,
-            description,
-            start,
-            end,
+            id: event.id,
+            name: event.name,
+            deployment_id: event.deployment_id,
+            parent_node_id: event.parent_node_id,
+            description: event.description,
+            start: event.start,
+            end: event.end,
         }
     }
 }

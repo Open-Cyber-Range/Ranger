@@ -17,9 +17,9 @@ pub struct CreateEvents;
 #[derive(Message)]
 #[rtype(result = "Result<Event>")]
 pub struct CreateEvent {
+    pub id: Uuid,
+    pub name: String,
     pub exercise_id: Uuid,
-    pub event_id: Uuid,
-    pub event_name: String,
     pub deployment_id: Uuid,
     pub description: Option<String>,
     pub parent_node_id: Uuid,

@@ -145,9 +145,9 @@ impl DeployableEvents for Scenario {
                         let new_event = addressor
                             .database
                             .send(CreateEvent {
+                                id: event_id,
+                                name: event_key.to_owned(),
                                 exercise_id: deployment.exercise_id,
-                                event_id,
-                                event_name: event_key.to_owned(),
                                 deployment_id: deployment_element.deployment_id,
                                 description: event.description.clone(),
                                 parent_node_id: Uuid::try_from(parent_node_id_string.as_str())?,
