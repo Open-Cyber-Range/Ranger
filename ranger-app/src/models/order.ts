@@ -22,14 +22,44 @@ type TrainingObjective = Omit<NewTrainingObjective, 'threats'> & {
   threats: Threat[];
 };
 
+type NewSkill = {
+  skill: string;
+};
+
+type Skill = NewSkill & {
+  id: string;
+};
+
+type NewTrainingObjectiveConnection = {
+  trainingObjectiveId: string;
+};
+
+type TrainingObjectiveConnection = NewTrainingObjectiveConnection & {
+  id: string;
+};
+
+type NewWeakness = {
+  weakness: string;
+};
+
+type Weakness = NewWeakness & {
+  id: string;
+};
+
 type NewStructure = {
   name: string;
-  description: string;
+  description?: string;
   parentId?: string;
+  skills?: NewSkill[];
+  trainingObjectiveIds?: NewTrainingObjectiveConnection[];
+  weaknesses?: NewWeakness[];
 };
 
 type Structure = NewStructure & {
   id: string;
+  skills?: Skill[];
+  trainingObjectiveIds?: TrainingObjectiveConnection[];
+  weaknesses?: Weakness[];
 };
 
 type Order = {
@@ -47,4 +77,10 @@ export type {
   NewOrder,
   Order,
   TrainingObjective,
+  Skill,
+  NewSkill,
+  Weakness,
+  NewWeakness,
+  TrainingObjectiveConnection,
+  NewTrainingObjectiveConnection,
 };

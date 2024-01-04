@@ -154,6 +154,7 @@ const StructureElement = ({order}: {order: Order}) => {
   }, [updateError, t]);
 
   const onHandleSubmit = async (formContent: NewStructure) => {
+    setIsDialogOpen(false);
     if (editedStructure) {
       await updateStructure({
         newStructure: {
@@ -170,7 +171,6 @@ const StructureElement = ({order}: {order: Order}) => {
       });
     }
 
-    setIsDialogOpen(false);
     setEditedStructure(undefined);
   };
 

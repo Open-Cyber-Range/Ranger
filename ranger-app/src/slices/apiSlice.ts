@@ -39,7 +39,6 @@ import {
   type NewOrder,
   type Order,
   type NewStructure,
-  type Structure,
 } from 'src/models/order';
 
 export const apiSlice = createApi({
@@ -110,9 +109,9 @@ export const apiSlice = createApi({
         [{type: 'Order', id: orderId}],
     }),
     clientUpdateStructure: builder
-      .mutation<Structure,
+      .mutation<NewStructure,
     {
-      newStructure: Structure; orderId: string; structureId: string;
+      newStructure: NewStructure; orderId: string; structureId: string;
     }>({
       query: ({newStructure, orderId, structureId}) => ({
         url: `/client/order/${orderId}/structure/${structureId}`,

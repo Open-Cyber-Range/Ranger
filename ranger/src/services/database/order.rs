@@ -2,8 +2,9 @@ use std::collections::HashMap;
 
 use super::Database;
 use crate::models::{
-    helpers::uuid::Uuid, NewOrder, Order, Structure, StructureRest, Threat, ThreatRest,
-    TrainingObjective, TrainingObjectiveRest,
+    helpers::uuid::Uuid, NewOrder, Order, Skill, SkillRest, Structure, StructureObjective,
+    StructureObjectiveRest, StructureRest, StructureWithElements, Threat, ThreatRest,
+    TrainingObjective, TrainingObjectiveRest, Weakness, WeaknessRest,
 };
 use actix::{Handler, Message, ResponseActFuture, WrapFuture};
 use actix_web::web::block;
@@ -224,6 +225,9 @@ impl Handler<UpsertStructure> for Database {
 
     fn handle(&mut self, msg: UpsertStructure, _ctx: &mut Self::Context) -> Self::Result {
         let UpsertStructure(order_uuid, structure_uuid, new_structure) = msg;
+        let new_skills = new_structure.skills.clone();
+        let weaknesses = new_structure.weaknesses.clone();
+        let training_objectives = new_structure.training_objective_ids.clone();
         let structure = Structure::new(order_uuid, new_structure);
         let connection_result = self.get_connection();
 
@@ -235,6 +239,30 @@ impl Handler<UpsertStructure> for Database {
                         Structure::hard_delete_by_id(structure_uuid).execute(&mut connection)?;
                     }
                     structure.create_insert().execute(&mut connection)?;
+                    if let Some(skills) = new_skills {
+                        let skills = skills
+                            .into_iter()
+                            .map(|skill| Skill::new(structure.id, skill))
+                            .collect::<Vec<Skill>>();
+                        Skill::batch_insert(skills).execute(&mut connection)?;
+                    }
+                    if let Some(weaknesses) = weaknesses {
+                        let weaknesses = weaknesses
+                            .into_iter()
+                            .map(|weakness| Weakness::new(structure.id, weakness))
+                            .collect::<Vec<Weakness>>();
+                        Weakness::batch_insert(weaknesses).execute(&mut connection)?;
+                    }
+                    if let Some(training_objectives) = training_objectives {
+                        let training_objectives = training_objectives
+                            .into_iter()
+                            .map(|training_objective| {
+                                StructureObjective::new(structure.id, training_objective)
+                            })
+                            .collect::<Vec<StructureObjective>>();
+                        StructureObjective::batch_insert(training_objectives)
+                            .execute(&mut connection)?;
+                    }
 
                     Ok(())
                 })
@@ -248,11 +276,11 @@ impl Handler<UpsertStructure> for Database {
 }
 
 #[derive(Message)]
-#[rtype(result = "Result<Vec<Structure>>")]
+#[rtype(result = "Result<StructureWithElements>")]
 pub struct GetStructuresByOrder(pub Order);
 
 impl Handler<GetStructuresByOrder> for Database {
-    type Result = ResponseActFuture<Self, Result<Vec<Structure>>>;
+    type Result = ResponseActFuture<Self, Result<StructureWithElements>>;
 
     fn handle(&mut self, msg: GetStructuresByOrder, _ctx: &mut Self::Context) -> Self::Result {
         let connection_result = self.get_connection();
@@ -264,18 +292,28 @@ impl Handler<GetStructuresByOrder> for Database {
                 let objectives = block(move || {
                     let structures = Structure::by_order(&order).load(&mut connection)?;
 
-                    // let mut threats_by_objectives: HashMap<TrainingObjective, Vec<ThreatRest>> =
-                    //     HashMap::new();
-                    // for trainining_objective in &training_objectives {
-                    //     let threats = Threat::by_objective(trainining_objective)
-                    //         .load(&mut connection)?
-                    //         .into_iter()
-                    //         .map(|threat| threat.into())
-                    //         .collect::<Vec<ThreatRest>>();
-                    //     threats_by_objectives.insert(trainining_objective.clone(), threats);
-                    // }
+                    let mut elements_by_structure: StructureWithElements = HashMap::new();
+                    for structure in &structures {
+                        let skills = Skill::by_structure(structure)
+                            .load(&mut connection)?
+                            .into_iter()
+                            .map(|skill| skill.into())
+                            .collect::<Vec<SkillRest>>();
+                        let training_objectives = StructureObjective::by_structure(structure)
+                            .load(&mut connection)?
+                            .into_iter()
+                            .map(|structure_objective| structure_objective.into())
+                            .collect::<Vec<StructureObjectiveRest>>();
+                        let weaknesses = Weakness::by_structure(structure)
+                            .load(&mut connection)?
+                            .into_iter()
+                            .map(|weakness| weakness.into())
+                            .collect::<Vec<WeaknessRest>>();
+                        elements_by_structure
+                            .insert(structure.clone(), (skills, training_objectives, weaknesses));
+                    }
 
-                    Ok(structures)
+                    Ok(elements_by_structure)
                 })
                 .await??;
 

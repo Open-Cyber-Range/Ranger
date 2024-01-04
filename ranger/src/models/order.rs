@@ -2,7 +2,10 @@ use super::helpers::uuid::Uuid;
 use crate::{
     constants::{MAX_ORDER_NAME_LENGTH, NAIVEDATETIME_DEFAULT_VALUE},
     errors::RangerError,
-    schema::{orders, structures, threats, training_objectives},
+    schema::{
+        orders, skills, structure_training_objectives, structure_weaknesses, structures, threats,
+        training_objectives,
+    },
     services::database::{
         All, Create, DeleteById, FilterExisting, SelectById, SelectByIdFromAll,
         SelectByIdFromAllReference,
@@ -17,7 +20,7 @@ use diesel::{
     BelongingToDsl, ExpressionMethods, QueryDsl, Selectable, SelectableHelper,
 };
 use serde::{Deserialize, Serialize};
-use std::result::Result as StdResult;
+use std::{collections::HashMap, result::Result as StdResult};
 
 #[derive(Insertable, Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -166,7 +169,7 @@ impl Threat {
         Self::belonging_to(objective).select(Self::as_select())
     }
 
-    pub fn batch_insert(threats: Vec<Threat>) -> Create<Vec<Threat>, threats::table> {
+    pub fn batch_insert(threats: Vec<Self>) -> Create<Vec<Self>, threats::table> {
         insert_into(threats::table).values(threats)
     }
 }
@@ -234,6 +237,196 @@ impl Structure {
     }
 }
 
+#[derive(
+    Insertable,
+    Identifiable,
+    Associations,
+    Queryable,
+    Selectable,
+    Debug,
+    PartialEq,
+    Eq,
+    Clone,
+    Serialize,
+    Deserialize,
+)]
+#[serde(rename_all = "camelCase")]
+#[diesel(belongs_to(Structure, foreign_key = structure_id))]
+#[diesel(table_name = skills)]
+pub struct Skill {
+    #[serde(default = "Uuid::random")]
+    pub id: Uuid,
+    pub structure_id: Uuid,
+    pub skill: String,
+}
+
+impl Skill {
+    pub fn new(structure_id: Uuid, skill: SkillRest) -> Self {
+        Self {
+            id: skill.id,
+            structure_id,
+            skill: skill.skill,
+        }
+    }
+
+    pub fn by_structure(
+        structure: &Structure,
+    ) -> SelectByIdFromAllReference<skills::table, skills::structure_id, Self> {
+        Self::belonging_to(structure).select(Self::as_select())
+    }
+
+    pub fn batch_insert(skills: Vec<Self>) -> Create<Vec<Self>, skills::table> {
+        insert_into(skills::table).values(skills)
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SkillRest {
+    #[serde(default = "Uuid::random")]
+    pub id: Uuid,
+    pub skill: String,
+}
+
+impl From<Skill> for SkillRest {
+    fn from(skill: Skill) -> Self {
+        Self {
+            id: skill.id,
+            skill: skill.skill,
+        }
+    }
+}
+
+#[derive(
+    Insertable,
+    Identifiable,
+    Associations,
+    Queryable,
+    Selectable,
+    Debug,
+    PartialEq,
+    Eq,
+    Clone,
+    Serialize,
+    Deserialize,
+)]
+#[serde(rename_all = "camelCase")]
+#[diesel(belongs_to(Structure, foreign_key = structure_id))]
+#[diesel(table_name = structure_training_objectives)]
+pub struct StructureObjective {
+    #[serde(default = "Uuid::random")]
+    pub id: Uuid,
+    pub structure_id: Uuid,
+    pub training_objective_id: Uuid,
+}
+
+impl StructureObjective {
+    pub fn new(structure_id: Uuid, structure_objective: StructureObjectiveRest) -> Self {
+        Self {
+            id: structure_objective.id,
+            structure_id,
+            training_objective_id: structure_objective.training_objective_id,
+        }
+    }
+
+    pub fn by_structure(
+        structure: &Structure,
+    ) -> SelectByIdFromAllReference<
+        structure_training_objectives::table,
+        structure_training_objectives::structure_id,
+        Self,
+    > {
+        Self::belonging_to(structure).select(Self::as_select())
+    }
+
+    pub fn batch_insert(
+        training_objective_ids: Vec<Self>,
+    ) -> Create<Vec<Self>, structure_training_objectives::table> {
+        insert_into(structure_training_objectives::table).values(training_objective_ids)
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StructureObjectiveRest {
+    #[serde(default = "Uuid::random")]
+    pub id: Uuid,
+    pub training_objective_id: Uuid,
+}
+
+impl From<StructureObjective> for StructureObjectiveRest {
+    fn from(structure_objective: StructureObjective) -> Self {
+        Self {
+            id: structure_objective.id,
+            training_objective_id: structure_objective.training_objective_id,
+        }
+    }
+}
+
+#[derive(
+    Insertable,
+    Identifiable,
+    Associations,
+    Queryable,
+    Selectable,
+    Debug,
+    PartialEq,
+    Eq,
+    Clone,
+    Serialize,
+    Deserialize,
+)]
+#[serde(rename_all = "camelCase")]
+#[diesel(belongs_to(Structure, foreign_key = structure_id))]
+#[diesel(table_name = structure_weaknesses)]
+pub struct Weakness {
+    #[serde(default = "Uuid::random")]
+    pub id: Uuid,
+    pub structure_id: Uuid,
+    pub weakness: String,
+}
+
+impl Weakness {
+    pub fn new(structure_id: Uuid, weakness: WeaknessRest) -> Self {
+        Self {
+            id: weakness.id,
+            structure_id,
+            weakness: weakness.weakness,
+        }
+    }
+
+    pub fn by_structure(
+        structure: &Structure,
+    ) -> SelectByIdFromAllReference<
+        structure_weaknesses::table,
+        structure_weaknesses::structure_id,
+        Self,
+    > {
+        Self::belonging_to(structure).select(Self::as_select())
+    }
+
+    pub fn batch_insert(weaknesses: Vec<Self>) -> Create<Vec<Self>, structure_weaknesses::table> {
+        insert_into(structure_weaknesses::table).values(weaknesses)
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WeaknessRest {
+    #[serde(default = "Uuid::random")]
+    pub id: Uuid,
+    pub weakness: String,
+}
+
+impl From<Weakness> for WeaknessRest {
+    fn from(weakness: Weakness) -> Self {
+        Self {
+            id: weakness.id,
+            weakness: weakness.weakness,
+        }
+    }
+}
+
 #[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct StructureRest {
@@ -242,6 +435,41 @@ pub struct StructureRest {
     pub name: String,
     pub description: Option<String>,
     pub parent_id: Option<Uuid>,
+    pub weaknesses: Option<Vec<WeaknessRest>>,
+    pub skills: Option<Vec<SkillRest>>,
+    pub training_objective_ids: Option<Vec<StructureObjectiveRest>>,
+}
+
+impl
+    From<(
+        Structure,
+        (
+            Vec<SkillRest>,
+            Vec<StructureObjectiveRest>,
+            Vec<WeaknessRest>,
+        ),
+    )> for StructureRest
+{
+    fn from(
+        (structure, (skills, structure_objectives, weaknesses)): (
+            Structure,
+            (
+                Vec<SkillRest>,
+                Vec<StructureObjectiveRest>,
+                Vec<WeaknessRest>,
+            ),
+        ),
+    ) -> Self {
+        Self {
+            id: structure.id,
+            name: structure.name,
+            description: structure.description,
+            parent_id: structure.parent_id,
+            weaknesses: Some(weaknesses),
+            skills: Some(skills),
+            training_objective_ids: Some(structure_objectives),
+        }
+    }
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
@@ -280,6 +508,15 @@ impl From<(TrainingObjective, Vec<ThreatRest>)> for TrainingObjectiveRest {
     }
 }
 
+pub type StructureWithElements = HashMap<
+    Structure,
+    (
+        Vec<SkillRest>,
+        Vec<StructureObjectiveRest>,
+        Vec<WeaknessRest>,
+    ),
+>;
+
 #[derive(Debug, PartialEq, Eq, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OrderRest {
@@ -287,19 +524,23 @@ pub struct OrderRest {
     pub name: String,
     pub client_id: String,
     pub training_objectives: Vec<TrainingObjectiveRest>,
-    pub structures: Vec<Structure>,
+    pub structures: Vec<StructureRest>,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
 }
 
-impl From<(Order, Vec<TrainingObjectiveRest>, Vec<Structure>)> for OrderRest {
+impl From<(Order, Vec<TrainingObjectiveRest>, StructureWithElements)> for OrderRest {
     fn from(
         (order, training_objectives, structures): (
             Order,
             Vec<TrainingObjectiveRest>,
-            Vec<Structure>,
+            StructureWithElements,
         ),
     ) -> Self {
+        let structures = structures
+            .into_iter()
+            .map(|(structure, elements)| (structure, elements).into())
+            .collect();
         Self {
             id: order.id,
             name: order.name,

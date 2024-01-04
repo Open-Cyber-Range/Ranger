@@ -7,11 +7,12 @@ import {
   H2,
 } from '@blueprintjs/core';
 import React, {useEffect} from 'react';
-import {useForm} from 'react-hook-form';
+import {useFieldArray, useForm} from 'react-hook-form';
 import {useTranslation} from 'react-i18next';
 import DialogSelect from 'src/components/Form/DialogSelect';
 import DialogTextArea from 'src/components/Form/DialogTextArea';
 import DialogTextInput from 'src/components/Form/DialogTextInput';
+import DialogMultiSelect from 'src/components/Form/DialogMultiSelect';
 import {type Order, type NewStructure, type Structure} from 'src/models/order';
 
 const StructureDialog = (
@@ -36,6 +37,9 @@ const StructureDialog = (
       name: '',
       description: '',
       parentId: undefined,
+      skills: [],
+      weaknesses: [],
+      trainingObjectiveIds: [],
     },
   });
 
@@ -44,6 +48,9 @@ const StructureDialog = (
       name: editableStructure?.name ?? '',
       description: editableStructure?.description ?? '',
       parentId: editableStructure?.parentId ?? '',
+      skills: editableStructure?.skills ?? [],
+      weaknesses: editableStructure?.weaknesses ?? [],
+      trainingObjectiveIds: editableStructure?.trainingObjectiveIds ?? [],
     });
   }, [editableStructure, reset]);
 
@@ -56,8 +63,16 @@ const StructureDialog = (
     reset();
   };
 
-  const structuresExist = order.structures && order.structures.length > 0;
+  const {fields: skillFields, append: appendSkill, remove: removeSkill} = useFieldArray({
+    control,
+    name: 'skills',
+  });
+  const {fields: weaknessFields, append: appendWeakness, remove: removeWeakness} = useFieldArray({
+    control,
+    name: 'weaknesses',
+  });
 
+  const structuresExist = order.structures && order.structures.length > 0;
   return (
     <Dialog
       isOpen={isOpen}
@@ -134,37 +149,37 @@ const StructureDialog = (
             label={t('orders.structureElements.parent')}
           />
           <div className='flex justify-end'>
-            {/* <div className='flex gap-2'>
+            <div className='flex gap-2'>
               <Button
                 minimal
                 intent='primary'
                 icon='plus'
                 onClick={() => {
-                  append({threat: ''});
+                  appendSkill({skill: ''});
                 }}
               >
-                {t('orders.trainingObjective.addNewThreat')}
+                {t('orders.structureElements.addNewSkill')}
               </Button>
-            </div> */}
+            </div>
           </div>
-          {/* {fields.map((field, index) => (
+          {skillFields.map((field, index) => (
             <div key={field.id} className='flex gap-6 items-end'>
               <div className='grow'>
-                <DialogTextInput<NewTrainingObjective>
+                <DialogTextInput<NewStructure>
                   controllerProps={{
                     control,
-                    name: `threats.${index}.threat`,
+                    name: `skills.${index}.skill`,
                     rules: {
-                      required: t('orders.trainingObjective.threatRequired') ?? '',
+                      required: t('orders.structureElements.skillRequired') ?? '',
                       maxLength: {
                         value: 255,
-                        message: t('orders.threatMaxLength.maxLength'),
+                        message: t('orders.structureElements.skillMaxLength'),
                       },
                     },
                     defaultValue: '',
                   }}
-                  id={`threats.${index}`}
-                  label={t('orders.trainingObjective.threat')}
+                  id={`skill.${index}`}
+                  label={t('orders.structureElements.skill')}
                 />
               </div>
               <Button
@@ -173,10 +188,73 @@ const StructureDialog = (
                 className='shrink-0 my-6'
                 icon='remove'
                 onClick={() => {
-                  remove(index);
+                  removeSkill(index);
                 }}/>
             </div>
-          ))} */}
+          ))}
+          <div className='flex justify-end'>
+            <div className='flex gap-2'>
+              <Button
+                minimal
+                intent='primary'
+                icon='plus'
+                onClick={() => {
+                  appendWeakness({weakness: ''});
+                }}
+              >
+                {t('orders.structureElements.addNewWeakness')}
+              </Button>
+            </div>
+          </div>
+          {weaknessFields.map((field, index) => (
+            <div key={field.id} className='flex gap-6 items-end'>
+              <div className='grow'>
+                <DialogTextInput<NewStructure>
+                  controllerProps={{
+                    control,
+                    name: `weaknesses.${index}.weakness`,
+                    rules: {
+                      required: t('orders.structureElements.weaknessRequired') ?? '',
+                      maxLength: {
+                        value: 255,
+                        message: t('orders.structureElements.weaknessMaxLength'),
+                      },
+                    },
+                    defaultValue: '',
+                  }}
+                  id={`weakness.${index}`}
+                  label={t('orders.structureElements.weakness')}
+                />
+              </div>
+              <Button
+                minimal
+                intent='danger'
+                className='shrink-0 my-6'
+                icon='remove'
+                onClick={() => {
+                  removeWeakness(index);
+                }}/>
+            </div>
+          ))}
+          <div>
+            <DialogMultiSelect<NewStructure>
+              control={control}
+              items={(order.trainingObjectives ?? []).map(trainingObjective => ({
+                trainingObjectiveId: trainingObjective.id,
+                id: trainingObjective.id,
+              }))}
+              name='trainingObjectiveIds'
+              keyName='trainingObjectiveId'
+              textRenderer={item => {
+                const trainingObjective = (order.trainingObjectives ?? []).find(
+                  trainingObjective => trainingObjective.id === item.id,
+                );
+                return trainingObjective?.objective ?? '';
+              }}
+              id='trainingObjectiveIds'
+              label={t('orders.structureElements.connectedTrainingObjectives')}
+            />
+          </div>
         </DialogBody>
         <DialogFooter
           actions={<Button intent='primary' type='submit' text={t('orders.submit')}/>}
