@@ -490,13 +490,14 @@ pub async fn get_exercise_deployment_users(
                 template_deployment_element.handler_reference,
                 "Deployment element missing template id",
             )?;
-            let vm_id_result = try_some(
-                vm_deployment_element.handler_reference,
-                "Deployment element missing vm id",
-            )?;
             let template_id = Uuid::try_from(template_id_result.as_str())?;
-            let vm_id = Uuid::try_from(vm_id_result.as_str())?;
-            Ok((template_id, vm_id, roles))
+
+            if let Some(vm_id_string) = vm_deployment_element.handler_reference {
+                let vm_id = Uuid::try_from(vm_id_string.as_str())?;
+                Ok((template_id, Some(vm_id), roles))
+            } else {
+                Ok((template_id, None, roles))
+            }
         }))
         .await
         .map_err(create_database_error_handler(
@@ -506,24 +507,25 @@ pub async fn get_exercise_deployment_users(
         let users = try_join_all(
             roles_by_node
                 .iter()
-                .map(|(template_id, vm_id, roles)| async {
-                    let accounts = try_join_all(roles.iter().map(|role| async {
-                        let template_account: UserAccount = app_state
-                            .database_address
-                            .clone()
-                            .send(GetAccount(*template_id, role.username.to_owned()))
-                            .await??
-                            .into();
-                        Ok(template_account)
-                    }))
-                    .await
-                    .map_err(create_database_error_handler(
-                        "Error getting account information",
-                    ))?;
-
-                    Ok(User {
-                        vm_id: *vm_id,
-                        accounts,
+                .filter_map(|(template_id, vm_id, roles)| {
+                    vm_id.as_ref().map(|vm_id| async {
+                        let accounts = try_join_all(roles.iter().map(|role| async {
+                            let template_account: UserAccount = app_state
+                                .database_address
+                                .clone()
+                                .send(GetAccount(*template_id, role.username.to_owned()))
+                                .await??
+                                .into();
+                            Ok(template_account)
+                        }))
+                        .await
+                        .map_err(create_database_error_handler(
+                            "Error getting account information",
+                        ))?;
+                        Ok(User {
+                            vm_id: *vm_id,
+                            accounts,
+                        })
                     })
                 })
                 .collect::<Vec<_>>(),

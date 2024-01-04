@@ -19,11 +19,13 @@ use ranger_grpc::{
     capabilities::DeployerType as GrpcDeployerType, Configuration, DeploySwitch,
     DeployVirtualMachine, Identifier, MetaInfo, Switch, VirtualMachine,
 };
+use sdl_parser::condition::Condition;
 use sdl_parser::{
     common::Source,
     node::{Node, NodeType},
     Scenario,
 };
+use std::collections::HashMap;
 
 use super::condition::ConditionProperties;
 
@@ -77,18 +79,21 @@ impl DeployedNode {
         database_address: &Addr<Database>,
         deployed_nodes: &[(DeployedNode, Vec<ConditionProperties>)],
         event_info_checksum: String,
+        event_conditions: HashMap<String, Condition>,
     ) -> Result<()> {
         for (_, condition_properties) in deployed_nodes.iter() {
             for condition_property in condition_properties.iter() {
-                if let Some(event_id) = condition_property.event_id {
-                    database_address
-                        .send(UpdateEventChecksum(
-                            event_id,
-                            crate::models::UpdateEventChecksum {
-                                event_info_data_checksum: Some(event_info_checksum.clone()),
-                            },
-                        ))
-                        .await??;
+                if event_conditions.contains_key(&condition_property.name) {
+                    if let Some(event_id) = condition_property.event_id {
+                        database_address
+                            .send(UpdateEventChecksum(
+                                event_id,
+                                crate::models::UpdateEventChecksum {
+                                    event_info_data_checksum: Some(event_info_checksum.clone()),
+                                },
+                            ))
+                            .await??;
+                    }
                 }
             }
         }

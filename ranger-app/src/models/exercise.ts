@@ -32,10 +32,17 @@ type BannerVariable = {
 type DeploymentEvent = {
   id: string;
   name: string;
-  description?: string;
   deploymentId: string;
+  parentNodeId: string;
+  start: string;
+  end: string;
+  description?: string;
+  hasTriggered: boolean;
   triggeredAt: string;
   eventInfoDataChecksum?: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string;
 };
 
 type EventInfo = {
@@ -57,6 +64,7 @@ export enum ActiveTab {
   Accounts,
   EntitySelector,
   UserSubmissions,
+  Events,
 }
 
 export type {

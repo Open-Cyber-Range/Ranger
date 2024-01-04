@@ -83,6 +83,30 @@ const websocketHandler = (
       break;
     }
 
+    case WebsocketAdminMessageType.Event: {
+      const eventUpdate = data.content;
+      dispatch(
+        apiSlice.util
+          .updateQueryData('adminGetEvents', {
+            exerciseId: data.exerciseId,
+            deploymentId: eventUpdate.deploymentId,
+          }, (deploymentEvents = []) => {
+            const oldEventIndex = deploymentEvents.findIndex(
+              deploymentEvent =>
+                deploymentEvent.id === eventUpdate.id,
+            );
+            if (oldEventIndex === -1) {
+              deploymentEvents.push(eventUpdate);
+            } else {
+              deploymentEvents[oldEventIndex]
+              = {...deploymentEvents[oldEventIndex], ...eventUpdate};
+            }
+
+            return deploymentEvents;
+          }));
+      break;
+    }
+
     default: {
       break;
     }

@@ -1,26 +1,22 @@
-import React from 'react';
 import {skipToken} from '@reduxjs/toolkit/dist/query';
-import {useTranslation} from 'react-i18next';
-import {useSelector} from 'react-redux';
+import React from 'react';
 import {useParams} from 'react-router-dom';
 import {type DeploymentEvent} from 'src/models/exercise';
 import {type DeploymentDetailRouteParameters} from 'src/models/routes';
-import {useParticipantGetEventInfoQuery} from 'src/slices/apiSlice';
-import {selectedEntity} from 'src/slices/userSlice';
+import {useAdminGetEventInfoQuery} from 'src/slices/apiSlice';
 import EventIframe from 'src/components/Deployment/Event/EventIframe';
 
 const EventInfo = ({eventName, event}:
-{eventName: string | undefined; event: DeploymentEvent ;
+{eventName: string;
+  event: DeploymentEvent;
 }) => {
-  const {t} = useTranslation();
   const {exerciseId, deploymentId} = useParams<DeploymentDetailRouteParameters>();
-  const entitySelector = useSelector(selectedEntity);
   const eventInfoDataChecksum = event?.eventInfoDataChecksum;
-  const {data: eventInfo} = useParticipantGetEventInfoQuery(
-    exerciseId && deploymentId && entitySelector && eventInfoDataChecksum
-      ? {exerciseId, deploymentId, entitySelector, eventInfoDataChecksum} : skipToken);
+  const {data: eventInfo} = useAdminGetEventInfoQuery(
+    exerciseId && deploymentId && eventInfoDataChecksum
+      ? {exerciseId, deploymentId, eventInfoDataChecksum} : skipToken);
 
-  if (!eventInfo?.checksum) {
+  if (!eventInfoDataChecksum) {
     return null;
   }
 
@@ -33,12 +29,6 @@ const EventInfo = ({eventName, event}:
         <div className='mt-2 text-sm'>
           <div>
             <EventIframe eventInfo={eventInfo}/>
-          </div>
-          {event.description ?? t('participant.exercise.events.noDescription')}
-          <div className='text-slate-600 italic'>
-            <br/>
-            {t('participant.exercise.events.triggeredAt',
-              {date: new Date(event.triggeredAt).toLocaleString()})}
           </div>
         </div>
       </details>

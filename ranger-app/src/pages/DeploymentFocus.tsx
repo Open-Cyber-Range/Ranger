@@ -7,6 +7,7 @@ import {
   useAdminGetDeploymentScenarioQuery,
   useAdminGetDeploymentScoresQuery,
   useAdminGetDeploymentUsersQuery,
+  useAdminGetEventsQuery,
 } from 'src/slices/apiSlice';
 import {skipToken} from '@reduxjs/toolkit/dist/query';
 import SideBar from 'src/components/Exercise/SideBar';
@@ -22,6 +23,7 @@ import {ActiveTab} from 'src/models/exercise';
 import {tryIntoScoringMetadata} from 'src/utils';
 import {H2} from '@blueprintjs/core';
 import {useTranslation} from 'react-i18next';
+import ManagerEvents from 'src/components/Deployment/Event/EventList';
 
 const DeploymentFocus = () => {
   const {t} = useTranslation();
@@ -33,6 +35,7 @@ const DeploymentFocus = () => {
   const {data: scores} = useAdminGetDeploymentScoresQuery(queryArguments);
   const {data: users} = useAdminGetDeploymentUsersQuery(queryArguments);
   const {data: deploymentElements} = useAdminGetDeploymentElementsQuery(queryArguments);
+  const {data: deploymentEvents} = useAdminGetEventsQuery(queryArguments);
 
   if (scenario && exerciseId && deploymentId) {
     return (
@@ -89,6 +92,16 @@ const DeploymentFocus = () => {
               <MetricScorer
                 exerciseId={exerciseId}
                 deploymentId={deploymentId}/>
+            </>
+          )}
+          {activeTab === ActiveTab.Events && (
+            <>
+              <H2>{t('exercises.tabs.events')}</H2>
+              <ManagerEvents
+                scenarioEvents={scenario?.events}
+                deploymentEvents={deploymentEvents}
+                deploymentElements={deploymentElements}
+              />
             </>
           )}
         </>

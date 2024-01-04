@@ -112,6 +112,7 @@
       "xo-react"
     ],
     "rules": {
+      "camelcase": "error",
       "import/extensions": [
         "error",
         "never",

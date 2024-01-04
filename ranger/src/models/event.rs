@@ -3,7 +3,8 @@ use crate::{
     constants::NAIVEDATETIME_DEFAULT_VALUE,
     schema::events,
     services::database::{
-        All, Create, CreateOrIgnore, FilterExisting, SelectById, SoftDeleteById, UpdateById,
+        event::CreateEvent, All, Create, CreateOrIgnore, FilterExisting, SelectById,
+        SoftDeleteById, UpdateById,
     },
 };
 use chrono::NaiveDateTime;
@@ -34,6 +35,20 @@ impl NewEvent {
 
     pub fn create_insert_or_ignore(&self) -> CreateOrIgnore<&Self, events::table> {
         diesel::insert_or_ignore_into(events::table).values(self)
+    }
+}
+
+impl From<CreateEvent> for NewEvent {
+    fn from(event: CreateEvent) -> Self {
+        Self {
+            id: event.id,
+            name: event.name,
+            deployment_id: event.deployment_id,
+            parent_node_id: event.parent_node_id,
+            description: event.description,
+            start: event.start,
+            end: event.end,
+        }
     }
 }
 

@@ -13,7 +13,7 @@ use crate::utilities::event::{
 use crate::utilities::scenario::get_injects_and_roles_by_node_event;
 use crate::utilities::{scenario::get_conditions_by_event, try_some};
 use crate::Addressor;
-use actix::{Actor, Addr, AsyncContext, Context, Handler, Message, ResponseActFuture, WrapFuture};
+use actix::{Actor, Addr, Context, Handler, Message, ResponseActFuture, WrapFuture};
 use anyhow::{Ok, Result};
 use async_trait::async_trait;
 use chrono::Utc;
@@ -145,8 +145,9 @@ impl DeployableEvents for Scenario {
                         let new_event = addressor
                             .database
                             .send(CreateEvent {
-                                event_id,
-                                event_name: event_key.to_owned(),
+                                id: event_id,
+                                name: event_key.to_owned(),
+                                exercise_id: deployment.exercise_id,
                                 deployment_id: deployment_element.deployment_id,
                                 description: event.description.clone(),
                                 parent_node_id: Uuid::try_from(parent_node_id_string.as_str())?,
@@ -243,6 +244,7 @@ impl DeployableEvents for Scenario {
                             let event_succeeded = addressor
                                 .event_poller
                                 .send(StartPolling(
+                                    exercise.id,
                                     addressor.database.clone(),
                                     *event_id,
                                     conditions.to_vec(),
@@ -281,7 +283,13 @@ impl DeployableEvents for Scenario {
 
 #[derive(Message, Clone)]
 #[rtype(result = "Result<bool>")]
-pub struct StartPolling(Addr<Database>, Uuid, Vec<(String, Role)>, DeploymentElement);
+pub struct StartPolling(
+    Uuid,
+    Addr<Database>,
+    Uuid,
+    Vec<(String, Role)>,
+    DeploymentElement,
+);
 
 pub struct EventPoller();
 
@@ -304,10 +312,14 @@ impl Default for EventPoller {
 impl Handler<StartPolling> for EventPoller {
     type Result = ResponseActFuture<Self, Result<bool>>;
 
-    fn handle(&mut self, msg: StartPolling, ctx: &mut Context<Self>) -> Self::Result {
-        let _address = ctx.address();
-        let StartPolling(database_address, event_id, event_conditions, node_deployment_element) =
-            msg;
+    fn handle(&mut self, msg: StartPolling, _ctx: &mut Context<Self>) -> Self::Result {
+        let StartPolling(
+            exercise_id,
+            database_address,
+            event_id,
+            event_conditions,
+            node_deployment_element,
+        ) = msg;
 
         Box::pin(
             async move {
@@ -378,7 +390,7 @@ impl Handler<StartPolling> for EventPoller {
                 }
 
                 database_address
-                    .send(UpdateEvent(event_id, updated_event))
+                    .send(UpdateEvent(exercise_id, event_id, updated_event))
                     .await??;
 
                 Ok(has_succeeded)

@@ -5,7 +5,7 @@ use crate::{
         database::event_info::{CheckEventInfo, CreateEventInfo},
         deployer::Deploy,
     },
-    utilities::scenario::get_event_sources,
+    utilities::scenario::{get_conditions_by_event, get_event_sources},
     Addressor,
 };
 use anyhow::{anyhow, Ok, Result};
@@ -15,6 +15,7 @@ use ranger_grpc::capabilities::DeployerType as GrpcDeployerType;
 use ranger_grpc::Source as GrpcSource;
 use sdl_parser::Scenario;
 use sha3::{Digest, Sha3_256};
+use std::collections::HashMap;
 
 use super::{condition::ConditionProperties, node::DeployedNode};
 
@@ -42,6 +43,18 @@ impl EventInfoUnpacker for Scenario {
                 version: event_source.version.to_owned(),
             });
 
+            let event_conditions = self
+                .events
+                .as_ref()
+                .and_then(|events| {
+                    events
+                        .iter()
+                        .find(|(_, event)| event.source == Some(event_source.clone()))
+                })
+                .map_or_else(HashMap::new, |(_, event)| {
+                    get_conditions_by_event(self, event)
+                });
+
             match addressor
                 .distributor
                 .send(Deploy(
@@ -51,7 +64,7 @@ impl EventInfoUnpacker for Scenario {
                 ))
                 .await?
             {
-                anyhow::Result::Ok(handler_response) => {
+                Result::Ok(handler_response) => {
                     let (event_create_response, mut event_file_stream) =
                         EventInfoResponse::try_from(handler_response)?;
 
@@ -59,6 +72,7 @@ impl EventInfoUnpacker for Scenario {
                         &addressor.database,
                         deployed_nodes,
                         event_create_response.checksum.clone(),
+                        event_conditions,
                     )
                     .await?;
 
@@ -106,7 +120,7 @@ impl EventInfoUnpacker for Scenario {
                     }
                     Ok(())
                 }
-                anyhow::Result::Err(error) => return Err(anyhow!("Event info error: {error}")),
+                Result::Err(error) => return Err(anyhow!("Event info error: {error}")),
             }?;
         }
 

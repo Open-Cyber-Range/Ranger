@@ -13,7 +13,7 @@ use actix_web::{
 use anyhow::Result;
 
 #[get("")]
-pub async fn get_event_info_data(
+pub async fn get_participant_event_info_data(
     app_state: Data<AppState>,
     _deployment: DeploymentInfo,
     path_variables: Path<(Uuid, Uuid, String, String)>,

@@ -3,6 +3,7 @@ use crate::constants::RECORD_NOT_FOUND;
 use crate::models::helpers::uuid::Uuid;
 use crate::models::Event;
 use crate::models::NewEvent;
+use crate::services::websocket::SocketEvent;
 use actix::{Handler, Message, ResponseActFuture, WrapFuture};
 use actix_web::web::block;
 use anyhow::{anyhow, Ok, Result};
@@ -16,8 +17,9 @@ pub struct CreateEvents;
 #[derive(Message)]
 #[rtype(result = "Result<Event>")]
 pub struct CreateEvent {
-    pub event_id: Uuid,
-    pub event_name: String,
+    pub id: Uuid,
+    pub name: String,
+    pub exercise_id: Uuid,
     pub deployment_id: Uuid,
     pub description: Option<String>,
     pub parent_node_id: Uuid,
@@ -31,30 +33,14 @@ impl Handler<CreateEvent> for Database {
 
     fn handle(&mut self, msg: CreateEvent, _ctx: &mut Self::Context) -> Self::Result {
         let connection_result = self.pick_connection(msg.use_shared_connection);
+        let websocket_manager = self.websocket_manager_address.clone();
 
         Box::pin(
             async move {
-                let CreateEvent {
-                    event_id,
-                    event_name,
-                    deployment_id,
-                    parent_node_id,
-                    description,
-                    start,
-                    end,
-                    use_shared_connection: _,
-                } = msg;
+                let exercise_id = msg.exercise_id;
+                let new_event: NewEvent = msg.into();
 
                 let mutex_connection = &connection_result?;
-                let new_event = NewEvent {
-                    id: event_id,
-                    name: event_name,
-                    deployment_id,
-                    parent_node_id,
-                    description,
-                    start,
-                    end,
-                };
                 let mut connection = mutex_connection
                     .lock()
                     .map_err(|error| anyhow!("Error locking Mutex connection: {:?}", error))?;
@@ -63,6 +49,9 @@ impl Handler<CreateEvent> for Database {
                     .execute(&mut *connection)?;
 
                 let event = Event::by_id(new_event.id).first(&mut *connection)?;
+                let event_msg =
+                    SocketEvent(exercise_id, (exercise_id, event.id, event.clone()).into());
+                websocket_manager.do_send(event_msg);
 
                 Ok(event)
             }
@@ -129,25 +118,30 @@ impl Handler<GetEventsByDeploymentId> for Database {
 
 #[derive(Message)]
 #[rtype(result = "Result<Event>")]
-pub struct UpdateEvent(pub Uuid, pub crate::models::UpdateEvent);
+pub struct UpdateEvent(pub Uuid, pub Uuid, pub crate::models::UpdateEvent);
 
 impl Handler<UpdateEvent> for Database {
     type Result = ResponseActFuture<Self, Result<Event>>;
 
     fn handle(&mut self, msg: UpdateEvent, _ctx: &mut Self::Context) -> Self::Result {
-        let uuid = msg.0;
-        let update_event = msg.1;
+        let UpdateEvent(exercise_id, event_uuid, update_event) = msg;
         let connection_result = self.get_connection();
+        let websocket_manager = self.websocket_manager_address.clone();
 
         Box::pin(
             async move {
                 let mut connection = connection_result?;
                 let event = block(move || {
-                    let updated_rows = update_event.create_update(uuid).execute(&mut connection)?;
+                    let updated_rows = update_event
+                        .create_update(event_uuid)
+                        .execute(&mut connection)?;
                     if updated_rows != 1 {
                         return Err(anyhow!(RECORD_NOT_FOUND));
                     }
-                    let event = Event::by_id(uuid).first(&mut connection)?;
+                    let event = Event::by_id(event_uuid).first(&mut connection)?;
+                    let event_msg =
+                        SocketEvent(exercise_id, (exercise_id, event.id, event.clone()).into());
+                    websocket_manager.do_send(event_msg);
 
                     Ok(event)
                 })

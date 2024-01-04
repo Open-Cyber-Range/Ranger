@@ -53,7 +53,8 @@ export const apiSlice = createApi({
     'Scenario',
     'Participant',
     'ManualMetric',
-    'Email'],
+    'Email',
+    'DeploymentEvent'],
   endpoints: builder => ({
     adminGetGroups: builder.query<AdGroup[], void>({
       query: () => '/admin/group',
@@ -284,6 +285,27 @@ export const apiSlice = createApi({
         method: 'DELETE',
         responseHandler: 'text',
       }),
+    }),
+    adminGetEvents: builder.query<DeploymentEvent[], {exerciseId: string; deploymentId: string}>({
+      query({exerciseId, deploymentId}) {
+        return `/admin/exercise/${exerciseId}/deployment/${deploymentId}/event`;
+      },
+      providesTags: (result = []) =>
+        [
+          ...result.map(({id}) => ({type: 'DeploymentEvent' as const, id})),
+          {type: 'DeploymentEvent', id: 'LIST'},
+        ],
+    }),
+    adminGetEventInfo: builder.query<EventInfo | undefined,
+    {
+      exerciseId: string;
+      deploymentId: string;
+      eventInfoDataChecksum: string;
+    }>({
+      query({exerciseId, deploymentId, eventInfoDataChecksum}) {
+        // eslint-disable-next-line max-len
+        return `/admin/exercise/${exerciseId}/deployment/${deploymentId}/event/${eventInfoDataChecksum}`;
+      },
     }),
     participantGetExercises: builder.query<ParticipantExercise[], void>({
       query: () => '/participant/exercise',
@@ -559,6 +581,8 @@ export const {
   useAdminGetEmailTemplatesQuery,
   useAdminAddEmailTemplateMutation,
   useAdminDeleteEmailTemplateMutation,
+  useAdminGetEventsQuery,
+  useAdminGetEventInfoQuery,
   useLazyAdminGetManualMetricArtifactQuery,
   useParticipantGetExercisesQuery,
   useParticipantGetExerciseQuery,
