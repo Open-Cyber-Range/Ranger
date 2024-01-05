@@ -2,6 +2,8 @@ import {
   Button,
   Callout,
   H5,
+  H6,
+  Tag,
   Tree,
   type TreeNodeInfo,
 } from '@blueprintjs/core';
@@ -15,6 +17,7 @@ import {
   useClientUpdateStructureMutation,
 } from 'src/slices/apiSlice';
 import {sortByProperty} from 'sort-by-property';
+import {type TFunction} from 'i18next';
 import StructureDialog from './StructureDialog';
 
 const numberOfParents = (structure: Structure, structures: Structure[]): number => {
@@ -31,16 +34,23 @@ const numberOfParents = (structure: Structure, structures: Structure[]): number 
 };
 
 const createStructureTree = (
-  structures: Structure[],
-  deleteFields: {
-    text: string;
-    callback: (structureId: string) => Promise<void>;
+  order: Order,
+  functions: {
+    deleteFields: {
+      text: string;
+      callback: (structureId: string) => Promise<void>;
+    };
+    editFields: {
+      text: string;
+      callback: (structure: Structure) => Promise<void>;
+    };
+    t: TFunction;
   },
-  editFields: {
-    text: string;
-    callback: (structure: Structure) => Promise<void>;
-  },
+  openNodes: string[],
 ): TreeNodeInfo[] => {
+  const {structures: exposedStructures} = order;
+  const structures = exposedStructures ?? [];
+  const {deleteFields, editFields, t} = functions;
   const {text: deleteText, callback: deleteStructureCallback} = deleteFields;
   const {text: editText, callback: editStructureCallback} = editFields;
   const initialStructure = [...structures].sort(sortByProperty('name', 'desc'));
@@ -72,51 +82,116 @@ const createStructureTree = (
     backupCounter += 1;
   }
 
-  return sortedStructure.map(structure => ({
-    id: structure.id,
-    className: 'my-3',
-    label: (
-      <div
-        className='flex'
-        style={{
-          paddingLeft: `${numberOfParents(structure, structures) * 1.1}rem`,
-        }}
-      >
-        <H5>
-          {structure.name}:
-        </H5>
-        <span className='ml-2'>
-          {structure.description}
-        </span>
-      </div>
-    ),
-    secondaryLabel: (
-      <div className='flex gap-2'>
-        <Button
-          className='pt-1'
-          intent='warning'
-          onClick={async () => {
-            await editStructureCallback(structure);
-          }}
-        >
-          {editText}
-        </Button>
-        <Button
-          className='pt-1'
-          intent='danger'
-          onClick={async () => {
-            await deleteStructureCallback(structure.id);
-          }}
-        >
-          {deleteText}
-        </Button>
-      </div>
-    ),
-    nodeData: {
-      structure,
-      numberOfParents: numberOfParents(structure, structures),
-    },
-  }));
+  return sortedStructure.map(structure => {
+    const isExpanded = openNodes.includes(structure.id);
+    const rightShift = numberOfParents(structure, structures) * 1.1;
+
+    return ({
+      id: structure.id,
+      className: 'my-3',
+      hasCaret: true,
+      isExpanded,
+      label: (
+        <div className='flex flex-col'>
+          <div
+            className='flex'
+            style={{
+              paddingLeft: `${rightShift}rem`,
+            }}
+          >
+            <H5>
+              {structure.name}:
+            </H5>
+            <span className='ml-2'>
+              {structure.description}
+            </span>
+          </div>
+          {isExpanded && (
+            <div
+              className='flex flex-col'
+              style={{
+                paddingLeft: `${rightShift}rem`,
+              }}
+            >
+              <div className='flex mb-2 items-center'>
+                <H6 className='m-0'>{t('orders.structureElements.weaknesses')}: </H6>
+                {(structure.weaknesses ?? []).map(weakness => (
+                  <Tag
+                    key={weakness.id}
+                    round
+                    minimal
+                    intent='warning'
+                    className='ml-2'
+                  >
+                    {weakness.weakness}
+                  </Tag>
+                ))}
+              </div>
+              <div className='flex mb-2 items-center'>
+                <H6 className='m-0'>{t('orders.structureElements.skills')}: </H6>
+                {(structure.skills ?? []).map(skill => (
+                  <Tag
+                    key={skill.id}
+                    round
+                    minimal
+                    intent='primary'
+                    className='ml-2'
+                  >
+                    {skill.skill}
+                  </Tag>
+                ))}
+              </div>
+              <div className='flex mb-2 items-center'>
+                <H6 className='m-0'>
+                  {t('orders.structureElements.connectedTrainingObjectives')}:
+                </H6>
+                {(structure.trainingObjectiveIds ?? []).map(connection => (
+                  <Tag
+                    key={connection.id}
+                    round
+                    minimal
+                    intent='primary'
+                    className='ml-2'
+                  >
+                    {order.trainingObjectives
+                      ?.find(
+                        objective => objective.id === connection.trainingObjectiveId,
+                      )?.objective ?? ''}
+                  </Tag>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      ),
+      secondaryLabel: (
+        <div className='flex gap-2'>
+          <Button
+            className='pt-1'
+            intent='warning'
+            onClick={async () => {
+              await editStructureCallback(structure);
+            }}
+          >
+            {editText}
+          </Button>
+          <Button
+            className='pt-1'
+            intent='danger'
+            onClick={async () => {
+              await deleteStructureCallback(structure.id);
+            }}
+          >
+            {deleteText}
+          </Button>
+        </div>
+      ),
+      nodeData: {
+        structure,
+        numberOfParents: numberOfParents(structure, structures),
+      },
+    });
+  });
 };
 
 const StructureElement = ({order}: {order: Order}) => {
@@ -128,6 +203,7 @@ const StructureElement = ({order}: {order: Order}) => {
       = useClientUpdateStructureMutation();
   const [editedStructure, setEditedStructure]
       = useState<Structure | undefined>();
+  const [openNodes, setOpenNodes] = useState<string[]>([]);
 
   useEffect(() => {
     if (error) {
@@ -192,17 +268,21 @@ const StructureElement = ({order}: {order: Order}) => {
     }
 
     return createStructureTree(
-      order.structures,
+      order,
       {
-        text: t('orders.structureElements.delete'),
-        callback: handleDeleteStructure,
+        deleteFields: {
+          text: t('orders.structureElements.delete'),
+          callback: handleDeleteStructure,
+        },
+        editFields: {
+          text: t('orders.structureElements.edit'),
+          callback: handleEditStructure,
+        },
+        t,
       },
-      {
-        text: t('orders.structureElements.edit'),
-        callback: handleEditStructure,
-      },
+      openNodes,
     );
-  }, [order.structures, t, handleDeleteStructure, handleEditStructure]);
+  }, [order, t, handleDeleteStructure, handleEditStructure, openNodes]);
 
   return (
     <>
@@ -219,9 +299,15 @@ const StructureElement = ({order}: {order: Order}) => {
         {t('orders.structureElements.explenation')}
       </Callout>
       <div className='mt-4 flex gap-4 justify-between items-start'>
-        <div className='flex flex-col gap-4 grow'>
+        <div className='flex flex-col gap-4 grow structure-tree'>
           <Tree
             contents={tree}
+            onNodeExpand={node => {
+              setOpenNodes([...openNodes, node.id.toString()]);
+            }}
+            onNodeCollapse={node => {
+              setOpenNodes(openNodes.filter(id => id !== node.id.toString()));
+            }}
           />
         </div>
         <Button

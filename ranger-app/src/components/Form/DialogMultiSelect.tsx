@@ -6,10 +6,10 @@ import {
   type FieldValues,
   type ArrayPath,
   type Control,
-  type FieldArrayWithId,
+  type FieldArray,
 } from 'react-hook-form';
 
-const DialogMultiSelect = <T extends FieldValues>({
+const DialogMultiSelect = <T extends FieldValues, B extends ArrayPath<T>, C extends string>({
   control,
   id,
   label,
@@ -19,19 +19,18 @@ const DialogMultiSelect = <T extends FieldValues>({
   items,
 }: {
   control: Control<T>;
-  name: ArrayPath<T>;
+  name: B;
   id: string;
   label: string;
-  keyName: string;
-  items: Array<FieldArrayWithId<T, ArrayPath<T>>>;
-  textRenderer: (item: FieldArrayWithId<T, ArrayPath<T>>) => string;
+  keyName: C;
+  items: Array<FieldArray<T, B> & {[K in C]?: string}>;
+  textRenderer: (item: FieldArray<T, B>) => string;
 }) => {
   const {
     fields,
     append,
     remove,
   } = useFieldArray({
-    keyName,
     control,
     name,
   });
@@ -41,22 +40,29 @@ const DialogMultiSelect = <T extends FieldValues>({
       labelFor={id}
       label={label}
     >
-      <MultiSelect<FieldArrayWithId<T, ArrayPath<T>>>
-        itemRenderer={item => (
-          <MenuItem
-            key={item.id}
-            roleStructure='listoption'
-            selected={fields.some(field => field.id === item.id)}
-            disabled={fields.some(field => field.id === item.id)}
-            shouldDismissPopover={false}
-            text={textRenderer(item)}
-            onClick={() => {
-              append(item);
-            }}
-          />
-        )}
+      <MultiSelect<FieldArray<T, B> & {[K in C]?: string}>
+        itemRenderer={item => {
+          const selected = fields
+            .some(field => field[keyName as unknown as keyof FieldArray<T, B>]
+                === item[keyName as unknown as keyof FieldArray<T, B>]);
+          return (
+            (
+              <MenuItem
+                key={item[keyName] ?? Math.random().toString(36).slice(7)}
+                roleStructure='listoption'
+                selected={selected}
+                disabled={selected}
+                shouldDismissPopover={false}
+                text={textRenderer(item)}
+                onClick={() => {
+                  append(item);
+                }}
+              />
+            )
+          );
+        }}
         items={items}
-        selectedItems={fields.map(field => ({...field, id: field.id.toString()}))}
+        selectedItems={fields}
         tagRenderer={textRenderer}
         onItemSelect={item => {
           append(item);

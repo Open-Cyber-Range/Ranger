@@ -11,6 +11,7 @@ import {getBreadcrumIntent} from 'src/utils';
 import StepFooter from 'src/components/Order/client/StepFooter';
 import TrainingObjectives from 'src/components/Order/client/TrainingObjectives';
 import Structure from 'src/components/Order/client/Structure';
+import Environment from 'src/components/Order/client/Environment';
 
 const OrderDetail = () => {
   const {t} = useTranslation();
@@ -89,6 +90,7 @@ const OrderDetail = () => {
       <div className='mt-4 min-h-full'>
         {order && formType === 'training-objectives' && (<TrainingObjectives order={order}/>)}
         {order && formType === 'structure' && (<Structure order={order}/>)}
+        {order && formType === 'environment' && (<Environment order={order}/>)}
       </div>
     </PageHolder>
   );

@@ -29,3 +29,7 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.structure-tree .bp5-tree-node-content {
+  height: inherit;
+}

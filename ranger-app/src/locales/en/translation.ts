@@ -482,13 +482,23 @@ const language = {
       failedToUpadate: 'Failed to update member',
       addNewSkill: 'Add new skill',
       skill: 'Skill',
+      skills: 'Skills',
       skillMaxLength: 'Skill must be equal or less than 255 characters',
       skillRequired: 'Skill is required',
       addNewWeakness: 'Add new weakness',
       weakness: 'Weakness',
+      weaknesses: 'Weaknesses',
       weaknessMaxLength: 'Weakness must be equal or less than 255 characters',
       weaknessRequired: 'Weakness is required',
       connectedTrainingObjectives: 'Connected training objectives',
+    },
+    environmentElements: {
+      explenation: `Design the cyber environment where your exercise will unfold and which
+      supports the organizational structure. Environment defines a broad category of the
+      cyber infrastructure with its weaknesses and strengths relevant to the scenario at hand.
+      Additionally, you can specify the size of the element with a rough number of virtual
+      machines and add additional info. This environment sets the stage for realistic
+      cyber scenarios.`,
     },
   },
 };

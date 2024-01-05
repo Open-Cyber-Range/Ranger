@@ -55,7 +55,7 @@ type NewStructure = {
   weaknesses?: NewWeakness[];
 };
 
-type Structure = NewStructure & {
+type Structure = Omit<NewStructure, 'skills' | 'weaknesses' | 'trainingObjectiveIds' > & {
   id: string;
   skills?: Skill[];
   trainingObjectiveIds?: TrainingObjectiveConnection[];

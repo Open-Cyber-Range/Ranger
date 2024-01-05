@@ -237,17 +237,16 @@ const StructureDialog = (
             </div>
           ))}
           <div>
-            <DialogMultiSelect<NewStructure>
+            <DialogMultiSelect<NewStructure, 'trainingObjectiveIds', 'trainingObjectiveId'>
               control={control}
               items={(order.trainingObjectives ?? []).map(trainingObjective => ({
                 trainingObjectiveId: trainingObjective.id,
-                id: trainingObjective.id,
               }))}
               name='trainingObjectiveIds'
               keyName='trainingObjectiveId'
               textRenderer={item => {
                 const trainingObjective = (order.trainingObjectives ?? []).find(
-                  trainingObjective => trainingObjective.id === item.id,
+                  trainingObjective => trainingObjective.id === item.trainingObjectiveId,
                 );
                 return trainingObjective?.objective ?? '';
               }}
