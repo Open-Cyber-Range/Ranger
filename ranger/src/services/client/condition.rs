@@ -18,7 +18,7 @@ use actix::{
 use anyhow::{anyhow, Ok, Result};
 use async_trait::async_trait;
 use bigdecimal::{BigDecimal, FromPrimitive};
-use log::debug;
+use log::{debug, warn};
 use ranger_grpc::{
     condition_service_client::ConditionServiceClient, Condition as GrpcCondition,
     ConditionStreamResponse, Identifier,
@@ -242,6 +242,14 @@ impl Handler<ConditionStream> for DeployerDistribution {
                             node_name = msg.node_deployment_element.scenario_reference
                         );
                         break;
+                    }
+
+                    if value > *BIG_DECIMAL_ONE {
+                        warn!(
+                            "Ignoring Condition '{condition_name}' value that is greater than 1.0: '{value}'",
+                            condition_name = msg.condition_deployment_element.scenario_reference
+                        );
+                        continue;
                     }
 
                     msg.database_address
