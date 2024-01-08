@@ -4,7 +4,7 @@ use crate::models::{ConditionMessage, NewConditionMessage, Score};
 use crate::services::websocket::SocketScoring;
 use actix::{Handler, Message, ResponseActFuture, WrapFuture};
 use actix_web::web::block;
-use anyhow::{Ok, Result};
+use anyhow::{anyhow, Ok, Result};
 use diesel::RunQueryDsl;
 use sdl_parser::metric::Metric;
 
@@ -23,18 +23,23 @@ impl Handler<CreateConditionMessage> for Database {
         let new_condition_message = msg.0;
         let metric = msg.1;
         let vm_name = msg.2;
-        let connection_result = self.get_connection();
+        let connection_result = self.get_shared_connection();
         let websocket_manager = self.websocket_manager_address.clone();
 
         Box::pin(
             async move {
-                let mut connection = connection_result?;
                 let condition_message = block(move || {
+                    let mutex_connection = connection_result?;
+                    let mut connection = mutex_connection
+                        .lock()
+                        .map_err(|error| anyhow!("Error locking Mutex connection: {:?}", error))?;
+
                     new_condition_message
                         .create_insert()
-                        .execute(&mut connection)?;
-                    let condition_message =
-                        ConditionMessage::by_id(new_condition_message.id).first(&mut connection)?;
+                        .execute(&mut *connection)?;
+
+                    let condition_message = ConditionMessage::by_id(new_condition_message.id)
+                        .first(&mut *connection)?;
 
                     if let Some(metric) = metric {
                         let score: Score = Score::from_conditionmessage_and_metric(
