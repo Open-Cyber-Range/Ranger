@@ -2,7 +2,9 @@ use crate::{
     constants::BIG_DECIMAL_ONE,
     models::{DeploymentElement, ElementStatus, NewConditionMessage},
     services::{
-        database::{condition::CreateConditionMessage, event::GetEvent, Database},
+        database::{
+            condition::CreateConditionMessage, deployment::GetDeployment, event::GetEvent, Database,
+        },
         deployer::DeployerDistribution,
     },
     utilities::try_some,
@@ -191,7 +193,7 @@ impl Handler<ConditionStream> for DeployerDistribution {
                     let value = BigDecimal::from_f32(stream_item.command_return_value)
                         .ok_or_else(|| anyhow!("Error converting Condition Return value"))?;
 
-                    log::debug!(
+                    debug!(
                         "Received Condition Id: {:?}, Value: {:?}",
                         stream_item.response,
                         stream_item.command_return_value,
@@ -240,21 +242,24 @@ impl Handler<ConditionStream> for DeployerDistribution {
                         ).await?;
                     }
 
-                    database_address
-                    .clone()
-                    .send(CreateConditionMessage(
-                        NewConditionMessage::new(
-                            exercise_id,
-                            condition_deployment_element.deployment_id,
-                            Uuid::try_from(virtual_machine_id.as_str())?,
-                            condition_deployment_element.scenario_reference.to_owned(),
-                            condition_id,
-                            value.clone(),
-                        ),
-                        metric.clone(),
-                        node_deployment_element.scenario_reference.clone(),
-                    ))
-                    .await??;
+                    let deployment = database_address.send(GetDeployment(node_deployment_element.deployment_id)).await??;
+                    if deployment.end >= chrono::Utc::now().naive_utc() {
+                        database_address
+                            .clone()
+                            .send(CreateConditionMessage(
+                                NewConditionMessage::new(
+                                    exercise_id,
+                                    condition_deployment_element.deployment_id,
+                                    Uuid::try_from(virtual_machine_id.as_str())?,
+                                    condition_deployment_element.scenario_reference.to_owned(),
+                                    condition_id,
+                                    value.clone(),
+                                ),
+                                metric.clone(),
+                                node_deployment_element.scenario_reference.clone(),
+                            ))
+                            .await??;
+                    }
                 }
                 Ok(())
             }
