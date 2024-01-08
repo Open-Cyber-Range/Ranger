@@ -21,7 +21,7 @@ const logSeverityColors = {
 };
 
 const LogView: React.FC = () => {
-  const tableRef = useRef<HTMLDivElement | undefined>(null);
+  const tableRef = useRef<HTMLDivElement>(null);
   const {t} = useTranslation();
 
   const {logs, selectedLogLevel, setSelectedLogLevel} = useLogs();
