@@ -23,7 +23,7 @@ const ScoreTag = ({exerciseId, deploymentId, scenario, role, large = false, onTa
   const {data: scores} = useAdminGetDeploymentScoresQuery(queryArguments);
   const {t} = useTranslation();
   const backgroundColor = getRoleColor(role);
-  const [tagScore, setTagScore] = useState<number>(0);
+  const [tagScore, setTagScore] = useState<number>(Number.MIN_SAFE_INTEGER);
 
   useEffect(() => {
     if (scenario && scores) {
