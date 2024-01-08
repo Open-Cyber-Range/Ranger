@@ -27,8 +27,12 @@ const ScoreTag = ({exerciseId, deploymentId, scenario, role, large = false, onTa
 
   useEffect(() => {
     if (scenario && scores) {
-      setTagScore(roundToDecimalPlaces(calculateTotalScoreForRole({scenario, scores, role})));
-      onTagScoreChange?.(tagScore);
+      const newTagScore
+      = roundToDecimalPlaces(calculateTotalScoreForRole({scenario, scores, role}));
+      if (tagScore !== newTagScore) {
+        setTagScore(newTagScore);
+        onTagScoreChange?.(newTagScore);
+      }
     }
   }
   , [scenario, scores, role, onTagScoreChange, tagScore]);
