@@ -187,7 +187,7 @@ impl Handler<DeployConditions> for ConditionAggregator {
                                     ))
                                     .await?
                                 {
-                                    anyhow::Result::Ok(handler_response) => {
+                                    Result::Ok(handler_response) => {
                                         let (condition_identifier, condition_stream) =
                                             ConditionResponse::try_from(handler_response)?;
 
@@ -213,14 +213,15 @@ impl Handler<DeployConditions> for ConditionAggregator {
                                         addressor
                                             .distributor
                                             .clone()
-                                            .send(ConditionStream(
-                                                *exercise_id,
-                                                condition_deployment_element.to_owned(),
-                                                deployment_element.clone(),
-                                                addressor.database.clone(),
+                                            .send(ConditionStream {
+                                                exercise_id: *exercise_id,
+                                                condition_deployment_element:
+                                                    condition_deployment_element.to_owned(),
+                                                node_deployment_element: deployment_element.clone(),
+                                                database_address: addressor.database.clone(),
                                                 condition_stream,
                                                 condition_metric,
-                                            ))
+                                            })
                                             .await??;
                                     }
 
