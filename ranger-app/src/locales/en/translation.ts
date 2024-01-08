@@ -331,6 +331,19 @@ const language = {
   fallback: {
     role: 'You do not have any roles assigned to you. Please contact your Ranger administrator.',
   },
+  scoreTable: {
+    orderPlaceholder: 'Order by',
+    scoreDescending: 'Score (highest first)',
+    scoreAscending: 'Score (lowest first)',
+    nameDescending: 'Name (Z-A)',
+    nameAscending: 'Name (A-Z)',
+    createdAtDescending: 'Deployment time (newest first)',
+    createdAtAscending: 'Deployment time (oldest first)',
+    rolePlaceholder: 'Sort by role',
+    allRoles: 'All roles',
+    errorFetchingRoles: 'Error fetching roles',
+  },
+
 };
 
 export default language;
