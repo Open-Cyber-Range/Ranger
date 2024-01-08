@@ -49,11 +49,18 @@ const ScoresPanel = ({deployments}:
   }, []);
 
   useEffect(() => {
-    if (deployments) {
-      setSortedDeployments(sortDeployments(selectedRole, deployments, deploymentScores, sortOrder));
+    if (deployments && sortedDeployments.length === 0) {
+      setSortedDeployments(sortDeployments(
+        selectedRole, deployments, deploymentScores, sortOrder));
     }
-  }
-  , [selectedRole, deployments, deploymentScores, sortOrder]);
+  }, [selectedRole, deployments, deploymentScores, sortOrder, sortedDeployments]);
+
+  useEffect(() => {
+    if (deployments && deploymentScores) {
+      setSortedDeployments(sortDeployments(
+        selectedRole, deployments, deploymentScores, sortOrder));
+    }
+  }, [selectedRole, deployments, deploymentScores, sortOrder]);
 
   if (sortedDeployments && sortedDeployments.length > 0) {
     return (
