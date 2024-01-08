@@ -37,7 +37,7 @@ const ScoreTag = ({exerciseId, deploymentId, scenario, role, large = false, onTa
   }
   , [scenario, scores, role, onTagScoreChange, tagScore]);
 
-  if (scenario && scores) {
+  if (scenario && scores && tagScore !== Number.MIN_SAFE_INTEGER) {
     return (
       <Tag
         key={role}
