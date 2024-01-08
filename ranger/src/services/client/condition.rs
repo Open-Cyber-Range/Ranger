@@ -197,8 +197,7 @@ impl Handler<ConditionStream> for DeployerDistribution {
                         let event = msg.database_address.send(GetEvent(event_id)).await??;
                         let condition_status = msg.condition_deployment_element.status;
                         let condition_is_met = value == *BIG_DECIMAL_ONE;
-                        let event_has_ended = event.end < chrono::Utc::now().naive_utc();
-                        if event_has_ended {
+                        if event.end < chrono::Utc::now().naive_utc() {
                             debug!(
                                 "Event '{}' window has ended, closing '{condition_name}' stream for '{node_name}'",
                                 event.name,
@@ -234,22 +233,31 @@ impl Handler<ConditionStream> for DeployerDistribution {
                     }
 
                     let deployment = msg.database_address.send(GetDeployment(msg.node_deployment_element.deployment_id)).await??;
-                    if deployment.end >= chrono::Utc::now().naive_utc() {
-                        msg.database_address
-                            .send(CreateConditionMessage(
-                                NewConditionMessage::new(
-                                    msg.exercise_id,
-                                    msg.condition_deployment_element.deployment_id,
-                                    Uuid::try_from(virtual_machine_id.as_str())?,
-                                    msg.condition_deployment_element.scenario_reference.to_owned(),
-                                    condition_id,
-                                    value,
-                                ),
-                                msg.condition_metric.clone(),
-                                msg.node_deployment_element.scenario_reference.clone(),
-                            ))
-                            .await??;
+                    if deployment.end < chrono::Utc::now().naive_utc() {
+                        debug!(
+                            "Deployment '{}' has ended, closing '{condition_name}' stream for '{node_name}'",
+                            deployment.name,
+                            condition_name =
+                            msg.condition_deployment_element.scenario_reference,
+                            node_name = msg.node_deployment_element.scenario_reference
+                        );
+                        break;
                     }
+
+                    msg.database_address
+                        .send(CreateConditionMessage(
+                            NewConditionMessage::new(
+                                msg.exercise_id,
+                                msg.condition_deployment_element.deployment_id,
+                                Uuid::try_from(virtual_machine_id.as_str())?,
+                                msg.condition_deployment_element.scenario_reference.to_owned(),
+                                condition_id,
+                                value,
+                            ),
+                            msg.condition_metric.clone(),
+                            msg.node_deployment_element.scenario_reference.clone(),
+                        ))
+                        .await??;
                 }
                 Ok(())
             }
