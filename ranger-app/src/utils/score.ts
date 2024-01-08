@@ -50,8 +50,10 @@ export const sortDeployments = (
         const deploymentScoreA = deploymentScores.find(ds => ds.deploymentId === a.id);
         const deploymentScoreB = deploymentScores.find(ds => ds.deploymentId === b.id);
 
-        scoreA = deploymentScoreA?.roleScores.find(rs => rs.role === selectedRole)?.score ?? 0;
-        scoreB = deploymentScoreB?.roleScores.find(rs => rs.role === selectedRole)?.score ?? 0;
+        scoreA = deploymentScoreA?.roleScores.find(rs => rs.role === selectedRole)?.score
+          ?? (isDescending ? Number.MIN_SAFE_INTEGER : Number.MAX_SAFE_INTEGER);
+        scoreB = deploymentScoreB?.roleScores.find(rs => rs.role === selectedRole)?.score
+          ?? (isDescending ? Number.MIN_SAFE_INTEGER : Number.MAX_SAFE_INTEGER);
       }
 
       return isDescending ? scoreB - scoreA : scoreA - scoreB;
