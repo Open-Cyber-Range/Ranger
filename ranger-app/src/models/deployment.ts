@@ -64,6 +64,11 @@ type DeploymentElement = {
   handlerReference?: string;
   deployerType: DeployerType;
   status: ElementStatus;
+  executorStdout?: string;
+  executorStderr?: string;
+  eventId?: string;
+  parentNodeId?: string;
+  errorMessage?: string;
 };
 
 export type {
