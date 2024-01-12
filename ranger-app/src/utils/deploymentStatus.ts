@@ -64,27 +64,27 @@ function countElements(scenario: Scenario) {
   let totalElements = 0;
   const templates: string[] = [];
 
-  if (scenario.infrastructure && Object.keys(scenario.infrastructure).length > 0) {
-    for (const infraNode of Object.values(scenario.infrastructure)) {
-      totalElements += infraNode.count;
+  if (!scenario.infrastructure || Object.keys(scenario.infrastructure).length === 0
+   || !scenario.nodes || Object.keys(scenario.nodes).length === 0) {
+    return totalElements;
+  }
+
+  for (const infraNode of Object.values(scenario.infrastructure)) {
+    totalElements += infraNode.count;
+  }
+
+  for (const [nodeKey, node] of Object.entries(scenario.nodes)) {
+    if (!scenario.infrastructure[nodeKey]) {
+      continue;
     }
 
-    if (scenario.nodes && Object.keys(scenario.nodes).length > 0) {
-      for (const node of Object.values(scenario.nodes)) {
-        if (node.source && !templates.includes(node.source.name)) {
-          templates.push(node.source.name);
-          totalElements += 1;
-        }
-
-        if (node.features && Object.keys(node.features).length > 0) {
-          totalElements += Object.keys(node.features).length;
-        }
-
-        if (node.conditions && Object.keys(node.conditions).length > 0) {
-          totalElements += Object.keys(node.conditions).length;
-        }
-      }
+    if (node.source && !templates.includes(node.source.name)) {
+      templates.push(node.source.name);
+      totalElements += 1;
     }
+
+    totalElements += Object.keys(node.features ?? []).length;
+    totalElements += Object.keys(node.conditions ?? []).length;
   }
 
   return totalElements;
