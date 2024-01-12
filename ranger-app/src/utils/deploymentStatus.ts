@@ -15,7 +15,7 @@ export const getProgressionAndStatus = (
   }
 
   for (const element of deploymentElements) {
-    const elementStatus = loadingIntent(element.status);
+    const elementStatus = getElementStatusIntent(element.status);
 
     if (elementStatus === Intent.DANGER) {
       return [1, Intent.DANGER] as const;
@@ -35,7 +35,7 @@ export const getProgressionAndStatus = (
   return [progression, intentStatus] as const;
 };
 
-const loadingIntent = (status: ElementStatus): Intent => {
+export const getElementStatusIntent = (status: ElementStatus): Intent => {
   switch (status) {
     case ElementStatus.ConditionSuccess:
     case ElementStatus.ConditionPolling:

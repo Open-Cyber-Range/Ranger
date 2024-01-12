@@ -20,6 +20,7 @@ import {type Score} from 'src/models/score';
 import {
   deleteEntityConnectionButton,
 } from 'src/components/Deployment/EntityTree';
+import {type TFunction} from 'i18next';
 
 export const createEntityTree = (
   clickedDelete: (participantId: string) => void,
@@ -438,3 +439,75 @@ export const isVMDeploymentOngoing = (deploymentElements: DeploymentElement[]) =
     element => element.deployerType === DeployerType.VirtualMachine
     && element.status === ElementStatus.Ongoing)
 );
+
+export const getReadableElementStatus = (t: TFunction, status: ElementStatus): string => {
+  switch (status) {
+    case ElementStatus.Success: {
+      return t('deployments.status.success');
+    }
+
+    case ElementStatus.Ongoing: {
+      return t('deployments.status.success');
+    }
+
+    case ElementStatus.Failed: {
+      return t('deployments.status.failed');
+    }
+
+    case ElementStatus.Removed: {
+      return t('deployments.status.removed');
+    }
+
+    case ElementStatus.RemoveFailed: {
+      return t('deployments.status.removeFailed');
+    }
+
+    case ElementStatus.ConditionSuccess: {
+      return t('deployments.status.conditionSuccess');
+    }
+
+    case ElementStatus.ConditionPolling: {
+      return t('deployments.status.conditionPolling');
+    }
+
+    case ElementStatus.ConditionClosed: {
+      return t('deployments.status.conditionClosed');
+    }
+
+    default: {
+      return t('deployments.status.unknown');
+    }
+  }
+};
+
+export const getReadableDeployerType = (t: TFunction, type: DeployerType): string => {
+  switch (type) {
+    case DeployerType.Switch: {
+      return t('deployments.deployerTypes.switch');
+    }
+
+    case DeployerType.Template: {
+      return t('deployments.deployerTypes.template');
+    }
+
+    case DeployerType.VirtualMachine: {
+      return t('deployments.deployerTypes.virtualMachine');
+    }
+
+    case DeployerType.Feature: {
+      return t('deployments.deployerTypes.feature');
+    }
+
+    case DeployerType.Condition: {
+      return t('deployments.deployerTypes.condition');
+    }
+
+    case DeployerType.Inject: {
+      return t('deployments.deployerTypes.inject');
+    }
+
+    default: {
+      return t('deployments.deployerTypes.unknown');
+    }
+  }
+};

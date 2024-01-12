@@ -26,6 +26,7 @@ import RoleScoresButtonGroup from 'src/components/Scoring/RoleScoresButtonGroup'
 import {tryIntoScoringMetadata, isVMDeploymentOngoing} from 'src/utils';
 import {Tooltip2} from '@blueprintjs/popover2';
 import InfoTags from 'src/components/Deployment/InfoTags';
+import StatusBox from 'src/components/Deployment/Status/StatusBox';
 
 const DeploymentDetail = () => {
   const {t} = useTranslation();
@@ -95,6 +96,9 @@ const DeploymentDetail = () => {
                 {t('common.delete')}
               </AnchorButton>
             </Tooltip2>
+          </div>
+          <div className='pt-8 pb-4'>
+            <StatusBox deploymentElements={deploymentElements ?? []}/>
           </div>
           <div className='pt-8 pb-4'>
             <RoleScoresButtonGroup
