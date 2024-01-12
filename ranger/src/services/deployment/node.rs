@@ -234,6 +234,10 @@ impl DeployableNodes for Scenario {
                             }
                             Err(error) => {
                                 deployment_element.status = ElementStatus::Failed;
+                                deployment_element.error_message = Some(format!(
+                                    "Handler returned an error while creating an inject: {}",
+                                    error
+                                ));
                                 addressor
                                     .database
                                     .send(UpdateDeploymentElement(
@@ -316,6 +320,10 @@ impl RemoveableNodes for Vec<DeploymentElement> {
                             }
                             Err(error) => {
                                 element_update.status = ElementStatus::RemoveFailed;
+                                element_update.error_message = Some(format!(
+                                    "Handler returned an error while deleting a node: {}",
+                                    error
+                                ));
                                 addressor
                                     .database
                                     .send(UpdateDeploymentElement(

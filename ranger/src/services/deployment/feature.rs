@@ -175,7 +175,7 @@ impl DeployableNodeFeatures for (Addressor, Vec<String>, Scenario, Uuid, &Deploy
                                     feature_deployment_element.handler_reference = Some(id);
                                     feature_deployment_element
                                     .set_stdout_and_stderr(&feature_response);
-                                
+
                                     addressor
                                         .database
                                         .send(UpdateDeploymentElement(
@@ -188,6 +188,10 @@ impl DeployableNodeFeatures for (Addressor, Vec<String>, Scenario, Uuid, &Deploy
                                 }
                                 Err(err) => {
                                     feature_deployment_element.status = ElementStatus::Failed;
+                                    feature_deployment_element.error_message = Some(format!(
+                                        "Handler returned an error while creating a feature: {}",
+                                        err
+                                    ));
                                     addressor
                                         .database
                                         .send(UpdateDeploymentElement(

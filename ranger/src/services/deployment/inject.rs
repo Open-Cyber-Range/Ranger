@@ -128,6 +128,10 @@ impl DeployableInject
 
                 Err(error) => {
                     inject_deployment_element.status = ElementStatus::Failed;
+                    inject_deployment_element.error_message = Some(format!(
+                        "Handler returned an error while creating an inject: {}",
+                        error
+                    ));
                     addressor
                         .database
                         .send(UpdateDeploymentElement(
