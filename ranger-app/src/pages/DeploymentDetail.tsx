@@ -113,7 +113,7 @@ const DeploymentDetail = () => {
             scoringData={tryIntoScoringMetadata(scenario)}
             scores={scores ?? []}
           />
-          <Card className='h-[40vh] p-0' elevation={Elevation.TWO}>
+          <Card className='h-[60vh] p-0 mb-4' elevation={Elevation.TWO}>
             <Editor
               value={deployment?.sdlSchema}
               defaultLanguage='yaml'
