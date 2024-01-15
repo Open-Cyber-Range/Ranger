@@ -110,7 +110,8 @@ const language = {
       allNodesHaveTriggered: 'All nodes have triggered the event',
     },
     status: {
-      button: 'Display Deployment Element Statuses',
+      showStatusBox: 'Show Deployment Element Statuses',
+      hideStatusBox: 'Hide Deployment Element Statuses',
       title: 'Deployment Status',
       success: 'Operation Successful',
       ongoing: 'Operation Ongoing',
@@ -181,6 +182,8 @@ const language = {
     adGroup: 'AD Group',
     browse: 'Browse',
     points: 'Points',
+    collapse: 'Collapse',
+    expand: 'Expand',
   },
   emails: {
     status: 'Status',
