@@ -5,6 +5,7 @@ import {
   Collapse,
   H4,
   Colors,
+  ButtonGroup,
 } from '@blueprintjs/core';
 import {sortByProperty} from 'sort-by-property';
 import {
@@ -43,24 +44,39 @@ const StatusCard = ({element, childElements, selectedElement, setSelectedElement
   return (
     <div>
       <div className='m-4'>
-        <Button
-          minimal
-          fill
-          outlined
-          active={element.id === selectedElement?.id
+        <ButtonGroup className='flex w-full'>
+          <Button
+            minimal
+            fill
+            outlined
+            active={element.id === selectedElement?.id
                 || element.handlerReference === selectedElement?.parentNodeId}
-          color={element.id === selectedElement?.id ? Colors.BLUE3 : ''}
-          className='w-full h-full rounded-xl outline-none'
-          intent={hasFailedChild ? Intent.DANGER
-            : getElementStatusIntent(element.status)}
-          icon={childElements.length > 0 ? 'maximize' : 'blank'}
-          onClick={handleToggle}
-        >
-          <span className='font-bold text-xl'>
-            {element?.scenarioReference}
-          </span>
-
-        </Button>
+            color={element.id === selectedElement?.id ? Colors.BLUE3 : ''}
+            className='w-full rounded-xl outline-none'
+            intent={hasFailedChild ? Intent.DANGER
+              : getElementStatusIntent(element.status)}
+            onClick={() => {
+              setSelectedElement(element);
+            }}
+          >
+            <span className='font-bold text-xl'>
+              {element?.scenarioReference}
+            </span>
+          </Button>
+          {childElements.length > 0
+          && (
+            <Button
+              minimal
+              outlined
+              className='flex rounded-xl outline-none'
+              intent={hasFailedChild ? Intent.DANGER
+                : getElementStatusIntent(element.status)}
+              icon={isOpen ? 'chevron-up' : 'chevron-down'}
+              onClick={handleToggle}
+            > {isOpen ? t('common.collapse') : t('common.expand')}
+            </Button>
+          )}
+        </ButtonGroup>
         {childElements.length > 0 && (
           <Collapse className='' isOpen={isOpen}>
             <div className='grid grid-cols-6 gap-3 m-4'>
