@@ -77,6 +77,7 @@ diesel::table! {
         event_id -> Nullable<Binary>,
         #[max_length = 16]
         parent_node_id -> Nullable<Binary>,
+        error_message -> Nullable<Text>,
         created_at -> Timestamp,
         deleted_at -> Timestamp,
     }

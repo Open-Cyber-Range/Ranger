@@ -158,7 +158,10 @@ impl DeployableTemplates for Scenario {
 
                 Err(error) => {
                     deployment_element.status = ElementStatus::Failed;
-
+                    deployment_element.error_message = Some(format!(
+                        "Handler returned an error while creating a template: {}",
+                        error
+                    ));
                     addressor
                         .database
                         .send(UpdateDeploymentElement(

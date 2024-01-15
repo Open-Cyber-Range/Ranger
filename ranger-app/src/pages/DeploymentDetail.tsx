@@ -26,6 +26,7 @@ import RoleScoresButtonGroup from 'src/components/Scoring/RoleScoresButtonGroup'
 import {tryIntoScoringMetadata, isVMDeploymentOngoing} from 'src/utils';
 import {Tooltip2} from '@blueprintjs/popover2';
 import InfoTags from 'src/components/Deployment/InfoTags';
+import StatusBox from 'src/components/Deployment/Status/StatusBox';
 
 const DeploymentDetail = () => {
   const {t} = useTranslation();
@@ -97,6 +98,9 @@ const DeploymentDetail = () => {
             </Tooltip2>
           </div>
           <div className='pt-8 pb-4'>
+            <StatusBox deploymentElements={deploymentElements ?? []}/>
+          </div>
+          <div className='pt-8 pb-4'>
             <RoleScoresButtonGroup
               exerciseId={exerciseId}
               deploymentId={deploymentId}
@@ -109,7 +113,7 @@ const DeploymentDetail = () => {
             scoringData={tryIntoScoringMetadata(scenario)}
             scores={scores ?? []}
           />
-          <Card className='h-[40vh] p-0' elevation={Elevation.TWO}>
+          <Card className='h-[60vh] p-0 mb-4' elevation={Elevation.TWO}>
             <Editor
               value={deployment?.sdlSchema}
               defaultLanguage='yaml'

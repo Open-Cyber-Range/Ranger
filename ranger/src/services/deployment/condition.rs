@@ -13,6 +13,7 @@ use actix::{Actor, Addr, Context, Handler, Message, ResponseActFuture, WrapFutur
 use anyhow::{anyhow, Ok, Result};
 use async_trait::async_trait;
 use futures::future::try_join_all;
+use futures_util::future::join_all;
 use log::debug;
 use ranger_grpc::capabilities::DeployerType as GrpcDeployerType;
 use ranger_grpc::{Account as GrpcAccount, Condition as GrpcCondition, Source as GrpcSource};
@@ -130,122 +131,126 @@ impl Handler<DeployConditions> for ConditionAggregator {
                     metrics,
                 } = &msg;
 
-                try_join_all(
-                    conditions
-                        .iter()
-                        .map(|condition_properties| async move {
-                            let ConditionProperties {
-                                name: condition_name,
-                                condition,
-                                role: condition_role,
-                                event_id,
-                                event_name: _,
-                                injects: _,
-                            } = condition_properties;
-                            let virtual_machine_id_string = try_some(
-                                deployment_element.clone().handler_reference,
-                                "Deployment element handler reference not found",
-                            )?;
-                            let virtual_machine_id =
-                                Uuid::try_from(virtual_machine_id_string.as_str())?;
+                let futures = conditions
+                    .iter()
+                    .map(|condition_properties| async move {
+                        let ConditionProperties {
+                            name: condition_name,
+                            condition,
+                            role: condition_role,
+                            event_id,
+                            event_name: _,
+                            injects: _,
+                        } = condition_properties;
+                        let virtual_machine_id_string = try_some(
+                            deployment_element.clone().handler_reference,
+                            "Deployment element handler reference not found",
+                        )?;
+                        let virtual_machine_id =
+                            Uuid::try_from(virtual_machine_id_string.as_str())?;
 
-                            if condition_name.eq_ignore_ascii_case(condition_name) {
-                                debug!(
-                                    "Deploying condition '{condition_name}' for VM '{node_name}'",
-                                    node_name = deployment_element.scenario_reference
-                                );
+                        if condition_name.eq_ignore_ascii_case(condition_name) {
+                            debug!(
+                                "Deploying condition '{condition_name}' for VM '{node_name}'",
+                                node_name = deployment_element.scenario_reference
+                            );
 
-                                let mut condition_deployment_element = addressor
-                                    .database
-                                    .send(CreateDeploymentElement(
-                                        *exercise_id,
-                                        DeploymentElement::new_ongoing(
-                                            deployment_element.deployment_id,
-                                            Box::new(condition_name.to_owned()),
-                                            GrpcDeployerType::Condition,
-                                            *event_id,
-                                            Some(virtual_machine_id),
-                                        ),
-                                        true,
-                                    ))
-                                    .await??;
-                                let condition_request = create_condition_request(
-                                    &addressor.database,
-                                    &virtual_machine_id_string,
-                                    template_id,
-                                    condition,
-                                    condition_name,
-                                    condition_role,
-                                )
-                                .await?;
-                                match addressor
-                                    .distributor
-                                    .send(Deploy(
+                            let mut condition_deployment_element = addressor
+                                .database
+                                .send(CreateDeploymentElement(
+                                    *exercise_id,
+                                    DeploymentElement::new_ongoing(
+                                        deployment_element.deployment_id,
+                                        Box::new(condition_name.to_owned()),
                                         GrpcDeployerType::Condition,
-                                        condition_request,
-                                        deployers.to_owned(),
-                                    ))
-                                    .await?
-                                {
-                                    Result::Ok(handler_response) => {
-                                        let (condition_identifier, condition_stream) =
-                                            ConditionResponse::try_from(handler_response)?;
+                                        *event_id,
+                                        Some(virtual_machine_id),
+                                    ),
+                                    true,
+                                ))
+                                .await??;
+                            let condition_request = create_condition_request(
+                                &addressor.database,
+                                &virtual_machine_id_string,
+                                template_id,
+                                condition,
+                                condition_name,
+                                condition_role,
+                            )
+                            .await?;
+                            match addressor
+                                .distributor
+                                .send(Deploy(
+                                    GrpcDeployerType::Condition,
+                                    condition_request,
+                                    deployers.to_owned(),
+                                ))
+                                .await?
+                            {
+                                Result::Ok(handler_response) => {
+                                    let (condition_identifier, condition_stream) =
+                                        ConditionResponse::try_from(handler_response)?;
 
-                                        let condition_status = match event_id {
-                                            Some(_) => ElementStatus::ConditionPolling,
-                                            None => ElementStatus::Success,
-                                        };
+                                    let condition_status = match event_id {
+                                        Some(_) => ElementStatus::ConditionPolling,
+                                        None => ElementStatus::Success,
+                                    };
 
-                                        condition_deployment_element
-                                            .update(
-                                                &addressor.database,
-                                                *exercise_id,
-                                                condition_status,
-                                                Some(condition_identifier.value.clone()),
-                                            )
-                                            .await?;
+                                    condition_deployment_element
+                                        .update(
+                                            &addressor.database,
+                                            *exercise_id,
+                                            condition_status,
+                                            Some(condition_identifier.value.clone()),
+                                        )
+                                        .await?;
 
-                                        let condition_metric = get_metric_by_condition(
-                                            metrics,
-                                            &condition_deployment_element.scenario_reference,
-                                        );
+                                    let condition_metric = get_metric_by_condition(
+                                        metrics,
+                                        &condition_deployment_element.scenario_reference,
+                                    );
 
-                                        addressor
-                                            .distributor
-                                            .clone()
-                                            .send(ConditionStream {
-                                                exercise_id: *exercise_id,
-                                                condition_deployment_element:
-                                                    condition_deployment_element.to_owned(),
-                                                node_deployment_element: deployment_element.clone(),
-                                                database_address: addressor.database.clone(),
-                                                condition_stream,
-                                                condition_metric,
-                                            })
-                                            .await??;
-                                    }
+                                    addressor
+                                        .distributor
+                                        .clone()
+                                        .send(ConditionStream {
+                                            exercise_id: *exercise_id,
+                                            condition_deployment_element:
+                                                condition_deployment_element.to_owned(),
+                                            node_deployment_element: deployment_element.clone(),
+                                            database_address: addressor.database.clone(),
+                                            condition_stream,
+                                            condition_metric,
+                                        })
+                                        .await??;
+                                }
 
-                                    Err(error) => {
-                                        log::error!("DeployCondition: {:#?}", error);
-                                        condition_deployment_element.status = ElementStatus::Failed;
+                                Err(error) => {
+                                    log::error!("DeployCondition: {:#?}", error);
+                                    condition_deployment_element.status = ElementStatus::Failed;
+                                    condition_deployment_element.error_message = Some(format!(
+                                        "Handler returned an error while creating a condition: {}",
+                                        error
+                                    ));
 
-                                        addressor
-                                            .database
-                                            .send(UpdateDeploymentElement(
-                                                *exercise_id,
-                                                condition_deployment_element,
-                                                true,
-                                            ))
-                                            .await??;
-                                        return Err(error);
-                                    }
+                                    addressor
+                                        .database
+                                        .send(UpdateDeploymentElement(
+                                            *exercise_id,
+                                            condition_deployment_element,
+                                            true,
+                                        ))
+                                        .await??;
+                                    return Err(error);
                                 }
                             }
-                            Ok(())
-                        })
-                        .collect::<Vec<_>>(),
-                )
-                .await?;
+                        }
+                        Ok(())
+                    })
+                    .collect::<Vec<_>>();
+
+                let results: Result<Vec<_>, _> = join_all(futures).await.into_iter().collect();
+                let _ = results?;
 
                 Ok(())
             }

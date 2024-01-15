@@ -177,6 +177,7 @@ pub struct DeploymentElement {
     pub executor_stderr: Option<String>,
     pub event_id: Option<Uuid>,
     pub parent_node_id: Option<Uuid>,
+    pub error_message: Option<String>,
 }
 
 type ByDeploymentId<T> = Filter<
@@ -223,6 +224,7 @@ impl DeploymentElement {
             event_id,
             handler_reference: None,
             parent_node_id,
+            error_message: None,
         }
     }
 
@@ -244,6 +246,7 @@ impl DeploymentElement {
             executor_stderr: None,
             event_id: None,
             parent_node_id: None,
+            error_message: None,
         }
     }
 

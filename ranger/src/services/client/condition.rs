@@ -241,6 +241,14 @@ impl Handler<ConditionStream> for DeployerDistribution {
                             msg.condition_deployment_element.scenario_reference,
                             node_name = msg.node_deployment_element.scenario_reference
                         );
+
+                        msg.condition_deployment_element.update(
+                            &msg.database_address,
+                            msg.exercise_id,
+                            ElementStatus::ConditionClosed,
+                            msg.condition_deployment_element.handler_reference.clone(),
+                        ).await?;
+
                         break;
                     }
 
