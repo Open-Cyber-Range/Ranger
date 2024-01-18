@@ -82,7 +82,7 @@ const MetricScorer = ({exerciseId, deploymentId}:
                   handleRoleButtonClick(role);
                 }}
               >
-                <span className='font-bold text-white text-'> {role} {t('common.team')} </span>
+                <span className='font-bold text-white'> {role} {t('common.team')} </span>
               </Button>
             ))}
           </ButtonGroup>
@@ -91,7 +91,7 @@ const MetricScorer = ({exerciseId, deploymentId}:
           {manualMetrics.map(metric => (
             <Accordion
               key={metric.id}
-              className='mb-4 p-2 border-2 border-slate-300 shadow-md '
+              className='mb-4 p-2 border-2 border-slate-300 shadow-md'
               title={`${metric.name ?? metric.sdlKey} - ${metric.entitySelector}`}
             >
               <MetricScoringForm
