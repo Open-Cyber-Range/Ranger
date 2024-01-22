@@ -4,19 +4,14 @@ import {
   Button,
   Dialog,
   H2,
-  HTMLSelect,
   InputGroup,
   FormGroup,
   Classes,
-  Label,
   Intent,
   NumericInput,
   MenuItem,
 } from '@blueprintjs/core';
-import {
-  useAdminGetGroupsQuery,
-  useAdminGetDeploymentGroupsQuery,
-} from 'src/slices/apiSlice';
+import {useAdminGetGroupsQuery} from 'src/slices/apiSlice';
 import {useTranslation} from 'react-i18next';
 import {Controller, useFieldArray, useForm, useWatch} from 'react-hook-form';
 import {Suggest2} from '@blueprintjs/select';
@@ -26,11 +21,11 @@ import DatePicker from 'react-datepicker';
 import {useEffect, useState} from 'react';
 
 const AddDialog = (
-  {isOpen, title, defaultDeploymentGroup, onSubmit, onCancel}:
+  {isOpen, title, deploymentGroup, onSubmit, onCancel}:
   {
     title: string;
     isOpen: boolean;
-    defaultDeploymentGroup: string;
+    deploymentGroup: string;
     onSubmit: ({
       count,
       name,
@@ -43,16 +38,13 @@ const AddDialog = (
   },
 ) => {
   const {t} = useTranslation();
-  const {data: deployers} = useAdminGetDeploymentGroupsQuery();
   const {data: groups} = useAdminGetGroupsQuery();
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
-  const {handleSubmit, control, register, formState: {errors}}
-
-  = useForm<DeploymentForm>({
+  const {handleSubmit, control} = useForm<DeploymentForm>({
     defaultValues: {
       name: '',
-      deploymentGroup: defaultDeploymentGroup || '',
+      deploymentGroup,
       groupNames: [],
       count: 1,
       start: undefined,
@@ -101,50 +93,15 @@ const AddDialog = (
         </div>
         <form onSubmit={handleSubmit(onHandleSubmit)}>
           <div className={Classes.DIALOG_BODY}>
-            <Controller
-              control={control}
-              name='deploymentGroup'
-              render={({
-                field: {onChange, onBlur, value}, fieldState: {error},
-              }) => {
-                const intent = error ? Intent.DANGER : Intent.NONE;
-                return (
-                  <FormGroup
-                    labelFor='deployment-group'
-                    labelInfo='(required)'
-                    helperText={error?.message}
-                    intent={intent}
-                    label={t('deployments.form.group.title')}
-                  >
-                    <Label>
-                      <HTMLSelect
-                        {...register('deploymentGroup',
-                          {required: true})}
-                        autoFocus
-                        large
-                        fill
-                        id='deployment-group'
-                        value={value}
-                        onBlur={onBlur}
-                        onChange={onChange}
-                      >
-                        <option disabled hidden value=''>
-                          {t('deployments.form.group.placeholder')}
-                        </option>
-                        {Object.keys((deployers ?? {})).map(groupName =>
-                          <option key={groupName}>{groupName}</option>)}
-
-                      </HTMLSelect>
-                      {errors.deploymentGroup && (
-                        <span className='text-xs text-red-800'>
-                          {t('deployments.form.group.required')}
-                        </span>
-                      ) }
-                    </Label>
-                  </FormGroup>
-                );
-              }}
-            />
+            <FormGroup
+              label={t('exercises.group.title')}
+            >
+              <InputGroup
+                large
+                disabled
+                placeholder={deploymentGroup ?? ''}
+              />
+            </FormGroup>
             <Controller
               control={control}
               name='name'

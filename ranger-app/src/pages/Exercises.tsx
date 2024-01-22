@@ -11,11 +11,8 @@ import AddDialog from 'src/components/Exercise/AddDialog';
 const Exercise = () => {
   const {t} = useTranslation();
   const [addExercise, _newExercise] = useAdminAddExerciseMutation();
-  const addNewExercise = async (name: string) => {
+  const addNewExercise = async (newExercise: NewExercise) => {
     try {
-      const newExercise: NewExercise = {
-        name,
-      };
       const exercise = await addExercise(newExercise).unwrap();
       if (exercise) {
         toastSuccess(t(
@@ -35,8 +32,8 @@ const Exercise = () => {
       <Header
         headerTitle={t('exercises.title')}
         buttonTitle={t('exercises.add')}
-        onSubmit={async (name: string) => {
-          await addNewExercise(name);
+        onSubmit={async (newExercise: NewExercise) => {
+          await addNewExercise(newExercise);
         }}
       >
         <AddDialog

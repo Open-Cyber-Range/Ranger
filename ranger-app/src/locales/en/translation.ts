@@ -26,6 +26,11 @@ const language = {
     deleteFail: 'Failed to delete the exercise {{exerciseName}}',
     easeDevelopment: 'To ease the development of the exercise open: ',
     mustHaveName: 'Exercise must have a name',
+    group: {
+      placeholder: 'Select group...',
+      title: 'Deployment group',
+      required: 'Deployment group is required',
+    },
     tabs: {
       dashboard: 'Dashboard',
       banner: 'Banner',
@@ -64,11 +69,6 @@ const language = {
     },
     entityTree: 'Entity Tree',
     form: {
-      group: {
-        placeholder: 'Select group...',
-        title: 'Deployment(s) group',
-        required: 'Deployment(s) group is required',
-      },
       name: {
         title: 'Deployment(s) name',
         required: 'Deployment(s) name is required',

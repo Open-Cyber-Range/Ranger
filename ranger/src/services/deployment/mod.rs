@@ -81,20 +81,11 @@ impl DeploymentManager {
         Ok(())
     }
 
-    fn get_deployment_group(&self, deployment: &Deployment) -> String {
-        let name = deployment
-            .deployment_group
-            .clone()
-            .unwrap_or_else(|| self.default_deployment_group.clone());
-        log::debug!("Using deployment group: {}", &name);
-        name
-    }
-
-    fn get_deployers(&self, deployment: &Deployment) -> Result<Vec<String>> {
-        let group = self.get_deployment_group(deployment);
+    fn get_deployers(&self, deployment_group_name: &String) -> Result<Vec<String>> {
+        log::debug!("Using deployment group: {}", &deployment_group_name);
         self.deployment_group
-            .get(group.as_str())
-            .ok_or_else(|| anyhow!("No deployment group found for {}", group))
+            .get(deployment_group_name.as_str())
+            .ok_or_else(|| anyhow!("No deployment group found for {}", deployment_group_name))
             .cloned()
     }
 }
@@ -117,7 +108,7 @@ impl Handler<StartDeployment> for DeploymentManager {
     fn handle(&mut self, msg: StartDeployment, _: &mut Context<Self>) -> Self::Result {
         let StartDeployment(scenario, deployment, exercise) = msg;
 
-        let deployers_result = self.get_deployers(&deployment);
+        let deployers_result = self.get_deployers(&deployment.deployment_group);
         let addressor = self.addressor.clone();
 
         info!("Starting new Deployment {:?}", deployment.name);
@@ -149,7 +140,7 @@ impl Handler<RemoveDeployment> for DeploymentManager {
     fn handle(&mut self, msg: RemoveDeployment, _: &mut Context<Self>) -> Self::Result {
         let RemoveDeployment(exercise_id, deployment) = msg;
         let addressor = self.addressor.clone();
-        let deployers_result = self.get_deployers(&deployment);
+        let deployers_result = self.get_deployers(&deployment.deployment_group);
         Box::pin(
             async move {
                 let deployers = deployers_result?;

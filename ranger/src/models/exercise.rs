@@ -23,6 +23,7 @@ pub struct NewExercise {
     #[serde(default = "Uuid::random")]
     pub id: Uuid,
     pub name: String,
+    pub deployment_group: String,
     pub sdl_schema: Option<String>,
     pub group_name: Option<String>,
 }
@@ -49,6 +50,7 @@ pub struct Exercise {
     #[serde(default = "Uuid::random")]
     pub id: Uuid,
     pub name: String,
+    pub deployment_group: String,
     pub sdl_schema: Option<String>,
     pub group_name: Option<String>,
     pub created_at: NaiveDateTime,
@@ -131,6 +133,7 @@ impl From<Exercise> for ParticipantExercise {
 #[diesel(table_name = exercises)]
 pub struct UpdateExercise {
     pub name: String,
+    pub deployment_group: String,
     pub sdl_schema: Option<String>,
     pub group_name: Option<String>,
 }
