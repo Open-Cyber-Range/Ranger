@@ -150,7 +150,7 @@ const createStructureTree = (
                     key={connection.id}
                     round
                     minimal
-                    intent='primary'
+                    intent='success'
                     className='ml-2'
                   >
                     {order.trainingObjectives
