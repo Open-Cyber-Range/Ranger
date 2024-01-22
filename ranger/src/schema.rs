@@ -62,6 +62,19 @@ diesel::table! {
 }
 
 diesel::table! {
+    custom_elements (id) {
+        #[max_length = 16]
+        id -> Binary,
+        #[max_length = 16]
+        order_id -> Binary,
+        name -> Tinytext,
+        description -> Text,
+        #[max_length = 16]
+        environment_id -> Binary,
+    }
+}
+
+diesel::table! {
     deployment_elements (id) {
         #[max_length = 16]
         id -> Binary,
@@ -138,6 +151,39 @@ diesel::table! {
         subject -> Text,
         body -> Text,
         created_at -> Timestamp,
+    }
+}
+
+diesel::table! {
+    environment_strength (id) {
+        #[max_length = 16]
+        id -> Binary,
+        #[max_length = 16]
+        environment_id -> Binary,
+        strength -> Tinytext,
+    }
+}
+
+diesel::table! {
+    environment_weakness (id) {
+        #[max_length = 16]
+        id -> Binary,
+        #[max_length = 16]
+        environment_id -> Binary,
+        weakness -> Tinytext,
+    }
+}
+
+diesel::table! {
+    environments (id) {
+        #[max_length = 16]
+        id -> Binary,
+        #[max_length = 16]
+        order_id -> Binary,
+        name -> Tinytext,
+        category -> Tinytext,
+        size -> Integer,
+        additional_information -> Nullable<Longtext>,
     }
 }
 
@@ -237,6 +283,44 @@ diesel::table! {
 }
 
 diesel::table! {
+    plot_point_structures (id) {
+        #[max_length = 16]
+        id -> Binary,
+        #[max_length = 16]
+        plot_point_id -> Binary,
+        #[max_length = 16]
+        structure_id -> Binary,
+    }
+}
+
+diesel::table! {
+    plot_points (id) {
+        #[max_length = 16]
+        id -> Binary,
+        #[max_length = 16]
+        plot_id -> Binary,
+        #[max_length = 16]
+        objective_id -> Binary,
+        name -> Tinytext,
+        description -> Text,
+        trigger_time -> Timestamp,
+    }
+}
+
+diesel::table! {
+    plots (id) {
+        #[max_length = 16]
+        id -> Binary,
+        #[max_length = 16]
+        order_id -> Binary,
+        name -> Tinytext,
+        description -> Text,
+        start_time -> Timestamp,
+        end_time -> Timestamp,
+    }
+}
+
+diesel::table! {
     skills (id) {
         #[max_length = 16]
         id -> Binary,
@@ -303,13 +387,21 @@ diesel::table! {
 diesel::joinable!(accounts -> exercises (exercise_id));
 diesel::joinable!(banners -> exercises (exercise_id));
 diesel::joinable!(condition_messages -> deployments (deployment_id));
+diesel::joinable!(custom_elements -> orders (order_id));
 diesel::joinable!(deployment_elements -> deployments (deployment_id));
 diesel::joinable!(deployment_elements -> events (event_id));
 diesel::joinable!(deployments -> exercises (exercise_id));
 diesel::joinable!(email_statuses -> emails (email_id));
 diesel::joinable!(emails -> exercises (exercise_id));
+diesel::joinable!(environment_strength -> environments (environment_id));
+diesel::joinable!(environment_weakness -> environments (environment_id));
+diesel::joinable!(environments -> orders (order_id));
 diesel::joinable!(metrics -> deployments (deployment_id));
 diesel::joinable!(participants -> deployments (deployment_id));
+diesel::joinable!(plot_point_structures -> plot_points (plot_point_id));
+diesel::joinable!(plot_point_structures -> structures (structure_id));
+diesel::joinable!(plot_points -> plots (plot_id));
+diesel::joinable!(plots -> orders (order_id));
 diesel::joinable!(skills -> structures (structure_id));
 diesel::joinable!(structure_training_objectives -> structures (structure_id));
 diesel::joinable!(structure_training_objectives -> training_objectives (training_objective_id));
@@ -323,17 +415,24 @@ diesel::allow_tables_to_appear_in_same_query!(
     artifacts,
     banners,
     condition_messages,
+    custom_elements,
     deployment_elements,
     deployments,
     email_statuses,
     email_templates,
     emails,
+    environment_strength,
+    environment_weakness,
+    environments,
     event_info_data,
     events,
     exercises,
     metrics,
     orders,
     participants,
+    plot_point_structures,
+    plot_points,
+    plots,
     skills,
     structure_training_objectives,
     structure_weaknesses,

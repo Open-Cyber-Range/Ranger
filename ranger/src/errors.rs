@@ -27,6 +27,8 @@ pub enum RangerError {
     OrderNameTooLong,
     #[error("Order not found")]
     OrderNotFound,
+    #[error("Custom element not found")]
+    CustomElementNotFound,
     #[error("Failed to parse uuid")]
     UuidParsingFailed,
     #[error("Failed to parse scenario")]
@@ -65,6 +67,8 @@ pub enum RangerError {
     NotAuthorized,
     #[error("Failed to upload file")]
     FileUploadFailed,
+    #[error("Failed to delete file")]
+    FileDeletionFailed,
     #[error("Metric has already been scored")]
     MetricAlreadyScored,
     #[error("Payload too large")]
@@ -86,6 +90,7 @@ impl ResponseError for RangerError {
         match self {
             RangerError::ScenarioNotFound => StatusCode::NOT_FOUND,
             RangerError::DeployerGroupNotfound => StatusCode::NOT_FOUND,
+            RangerError::CustomElementNotFound => StatusCode::NOT_FOUND,
             RangerError::ExerciseNameTooLong => StatusCode::UNPROCESSABLE_ENTITY,
             RangerError::OrderNameTooLong => StatusCode::UNPROCESSABLE_ENTITY,
             RangerError::OrderNotFound => StatusCode::NOT_FOUND,
