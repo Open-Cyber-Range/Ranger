@@ -62,6 +62,74 @@ type Structure = Omit<NewStructure, 'skills' | 'weaknesses' | 'trainingObjective
   weaknesses?: Weakness[];
 };
 
+type NewStrength = {
+  strength: string;
+};
+
+type Strength = NewStrength & {
+  id: string;
+};
+
+type NewEnvironment = {
+  name: string;
+  category: string;
+  size: number;
+  additionalInformation?: string;
+  weaknesses?: NewWeakness[];
+  strengths?: NewStrength[];
+};
+
+type Environment = Omit<NewEnvironment, 'weaknesses' | 'strengths'> & {
+  id: string;
+  weaknesses?: Weakness[];
+  strengths?: Strength[];
+};
+
+type NewCustomElement = {
+  name: string;
+  description: string;
+  environmentId: string;
+};
+
+type CustomElement = NewCustomElement & {
+  id: string;
+};
+
+type NewStructureConnection = {
+  structureId: string;
+};
+
+type StructureConnection = NewStructureConnection & {
+  id: string;
+};
+
+type NewPlotPoint = {
+  name: string;
+  description: string;
+  objectiveId: string;
+  triggerTime: string;
+  structureIds: NewStructureConnection[];
+};
+
+type PlotPoint = Omit<NewPlotPoint, 'structureIds'> & {
+  id: string;
+  structureIds: StructureConnection[];
+};
+
+type NewPlot = {
+  name: string;
+  description: string;
+  environmentId: string;
+  startTime: string;
+  endTime: string;
+  plotPoints: NewPlotPoint[];
+};
+
+type Plot = Omit<NewPlot, 'plotPoints'> & {
+  id: string;
+  plotPoints: PlotPoint[];
+};
+
 type Order = {
   id: string;
   trainingObjectives?: TrainingObjective[];
@@ -81,6 +149,18 @@ export type {
   NewSkill,
   Weakness,
   NewWeakness,
+  Strength,
+  NewStrength,
+  Environment,
+  NewEnvironment,
   TrainingObjectiveConnection,
   NewTrainingObjectiveConnection,
+  NewCustomElement,
+  CustomElement,
+  StructureConnection,
+  NewStructureConnection,
+  PlotPoint,
+  NewPlotPoint,
+  Plot,
+  NewPlot,
 };
