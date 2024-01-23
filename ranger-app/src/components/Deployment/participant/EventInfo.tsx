@@ -8,6 +8,7 @@ import {type DeploymentDetailRouteParameters} from 'src/models/routes';
 import {useParticipantGetEventInfoQuery} from 'src/slices/apiSlice';
 import {selectedEntity} from 'src/slices/userSlice';
 import EventIframe from 'src/components/Deployment/Event/EventIframe';
+import {Divider} from '@blueprintjs/core';
 
 const EventInfo = ({eventName, event}:
 {eventName: string | undefined; event: DeploymentEvent ;
@@ -21,7 +22,23 @@ const EventInfo = ({eventName, event}:
       ? {exerciseId, deploymentId, entitySelector, eventInfoDataChecksum} : skipToken);
 
   if (!eventInfo?.checksum) {
-    return null;
+    return (
+      <div key={event.id} className='p-2'>
+        <details className='p-2 border-2 border-slate-300 shadow-md '>
+          <summary className='font-bold text-xl'>
+            {eventName ?? event.name}
+          </summary>
+          <div className='mt-4 ml-2 text-sm'>
+            {event.description ?? t('participant.exercise.events.noDescription')}
+            <Divider className='pt-4'/>
+            <div className='pt-2 text-slate-600 italic'>
+              {t('participant.exercise.events.triggeredAt',
+                {date: new Date(event.triggeredAt).toLocaleString()})}
+            </div>
+          </div>
+        </details>
+      </div>
+    );
   }
 
   return (
@@ -30,13 +47,15 @@ const EventInfo = ({eventName, event}:
         <summary className='font-bold text-xl'>
           {eventName ?? event.name}
         </summary>
-        <div className='mt-2 text-sm'>
+        <div className='mt-4 text-sm'>
+          <div className='m-4'>
+            {event.description ?? ''}
+          </div>
           <div>
             <EventIframe eventInfo={eventInfo}/>
           </div>
-          {event.description ?? t('participant.exercise.events.noDescription')}
-          <div className='text-slate-600 italic'>
-            <br/>
+          <Divider/>
+          <div className='ml-2 pt-2 text-slate-600 italic'>
             {t('participant.exercise.events.triggeredAt',
               {date: new Date(event.triggeredAt).toLocaleString()})}
           </div>
