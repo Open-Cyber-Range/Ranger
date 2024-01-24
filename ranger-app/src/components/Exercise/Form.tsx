@@ -6,6 +6,7 @@ import {
   Button,
   Callout,
   FormGroup,
+  HTMLSelect,
   InputGroup,
   Intent,
   MenuItem,
@@ -14,6 +15,7 @@ import {toastSuccess, toastWarning} from 'src/components/Toaster';
 import type {Exercise, UpdateExercise} from 'src/models/exercise';
 import {type AdGroup} from 'src/models/groups';
 import {
+  useAdminGetDeploymentGroupsQuery,
   useAdminGetGroupsQuery,
   useAdminUpdateExerciseMutation,
 } from 'src/slices/apiSlice';
@@ -36,11 +38,13 @@ const ExerciseForm = ({exercise, onContentChange, children}:
   const {handleSubmit, control, watch} = useForm<UpdateExercise>({
     defaultValues: {
       name: exercise.name,
+      deploymentGroup: exercise.deploymentGroup,
       sdlSchema: exercise.sdlSchema ?? '',
       groupName: exercise.groupName ?? '',
     },
   });
   const {data: groups} = useAdminGetGroupsQuery();
+  const {data: deploymentGroups} = useAdminGetDeploymentGroupsQuery();
   const {sdlSchema} = watch();
   const {totalRam, totalCpu, resourceEstimationError} = useResourceEstimation(sdlSchema);
 
@@ -137,6 +141,31 @@ const ExerciseForm = ({exercise, onContentChange, children}:
             </FormGroup>
           );
         }}
+      />
+      <Controller
+        control={control}
+        name='deploymentGroup'
+        defaultValue={exercise.deploymentGroup}
+        render={({
+          field: {onChange, value},
+        }) => (
+          <FormGroup
+            labelFor='deployment-group'
+            labelInfo='(required)'
+            label={t('exercises.group.title')}
+          >
+            <HTMLSelect
+              large
+              fill
+              id='deployment-group'
+              value={value}
+              onChange={onChange}
+            >
+              {Object.keys((deploymentGroups ?? {})).map(groupName =>
+                <option key={groupName}>{groupName}</option>)}
+            </HTMLSelect>
+          </FormGroup>
+        )}
       />
       <Controller
         control={control}

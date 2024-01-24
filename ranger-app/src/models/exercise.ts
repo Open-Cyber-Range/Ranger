@@ -7,6 +7,7 @@ type ParticipantExercise = {
 
 type NewExercise = {
   name: string;
+  deploymentGroup: string;
   sdlSchema?: string;
   groupName?: string;
 };

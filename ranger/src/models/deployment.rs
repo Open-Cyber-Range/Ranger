@@ -33,7 +33,7 @@ pub struct NewDeploymentResource {
     #[serde(default = "Uuid::random")]
     pub id: Uuid,
     pub name: String,
-    pub deployment_group: Option<String>,
+    pub deployment_group: String,
     pub group_name: Option<String>,
     pub sdl_schema: String,
     pub start: NaiveDateTime,
@@ -46,7 +46,7 @@ pub struct NewDeploymentResource {
 pub struct NewDeployment {
     pub id: Uuid,
     pub name: String,
-    pub deployment_group: Option<String>,
+    pub deployment_group: String,
     pub group_name: Option<String>,
     pub sdl_schema: String,
     pub exercise_id: Uuid,
@@ -88,7 +88,7 @@ impl Validation for NewDeployment {
 pub struct Deployment {
     pub id: Uuid,
     pub name: String,
-    pub deployment_group: Option<String>,
+    pub deployment_group: String,
     pub sdl_schema: String,
     pub group_name: Option<String>,
     pub exercise_id: Uuid,

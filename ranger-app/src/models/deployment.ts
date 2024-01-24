@@ -7,7 +7,7 @@ type ParticipantDeployment = {
 
 type DeploymentForm = {
   name: string;
-  deploymentGroup?: string;
+  deploymentGroup: string;
   groupNames: Array<{
     groupName: string;
   }>;
@@ -18,7 +18,7 @@ type DeploymentForm = {
 
 type NewDeployment = {
   name: string;
-  deploymentGroup?: string;
+  deploymentGroup: string;
   groupName: string;
   sdlSchema: string;
   start: string;

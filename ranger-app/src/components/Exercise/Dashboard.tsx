@@ -1,8 +1,5 @@
 import type React from 'react';
-import {
-  useAdminAddDeploymentMutation,
-  useAdminGetDefaultDeploymentGroupQuery,
-} from 'src/slices/apiSlice';
+import {useAdminAddDeploymentMutation} from 'src/slices/apiSlice';
 import {useTranslation} from 'react-i18next';
 import ExerciseForm from 'src/components/Exercise/Form';
 import type {
@@ -24,7 +21,6 @@ const DashboardPanel = ({exercise, deployments}:
   const [addDeployment, _newDeployment] = useAdminAddDeploymentMutation();
   const [isModified, setIsModified] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const {data: defaultDeployerGroup} = useAdminGetDefaultDeploymentGroupQuery();
 
   const createNewDeployments = (
     deploymentForm: DeploymentForm,
@@ -92,7 +88,7 @@ const DashboardPanel = ({exercise, deployments}:
     }
   };
 
-  if (exercise && deployments && defaultDeployerGroup) {
+  if (exercise && deployments) {
     return (
       <>
         <ExerciseForm
@@ -122,7 +118,7 @@ const DashboardPanel = ({exercise, deployments}:
         <AddDialog
           isOpen={!isModified && isAddDialogOpen}
           title={t('deployments.title')}
-          defaultDeploymentGroup={defaultDeployerGroup}
+          deploymentGroup={exercise.deploymentGroup}
           onCancel={() => {
             setIsAddDialogOpen(false);
           }}
