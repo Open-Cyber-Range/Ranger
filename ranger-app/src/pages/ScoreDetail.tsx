@@ -54,6 +54,7 @@ const ScoreDetail = () => {
                 large
                 exerciseId={exerciseId}
                 deploymentId={deploymentId}
+                scenario={scenario}
                 role={role}
               />
             </div>
