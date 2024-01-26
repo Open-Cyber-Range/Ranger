@@ -2,6 +2,7 @@ use ranger_grpc::Package;
 use serde::Serialize;
 
 #[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct SerializableGrpcPackage {
     pub name: String,
     pub version: String,
