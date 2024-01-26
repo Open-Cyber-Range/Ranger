@@ -33,6 +33,7 @@ import {
   type FetchArtifact,
   type NewManualMetric,
 } from 'src/models/manualMetric';
+import {type Package} from 'src/models/package';
 
 export const apiSlice = createApi({
   reducerPath: 'api',
@@ -306,6 +307,12 @@ export const apiSlice = createApi({
         // eslint-disable-next-line max-len
         return `/admin/exercise/${exerciseId}/deployment/${deploymentId}/event/${eventInfoDataChecksum}`;
       },
+    }),
+    adminGetDeputyPackages: builder.query<Package[], string>({
+      query: packageType => `/admin/query/package?type=${packageType}`,
+    }),
+    adminGetExerciseSdlFromPackage: builder.query<string, {name: string; version: string}>({
+      query: ({name, version}) => `/admin/query/package/exercise?name=${name}&version=${version}`,
     }),
     participantGetExercises: builder.query<ParticipantExercise[], void>({
       query: () => '/participant/exercise',
@@ -583,6 +590,8 @@ export const {
   useAdminDeleteEmailTemplateMutation,
   useAdminGetEventsQuery,
   useAdminGetEventInfoQuery,
+  useAdminGetDeputyPackagesQuery,
+  useAdminGetExerciseSdlFromPackageQuery,
   useLazyAdminGetManualMetricArtifactQuery,
   useParticipantGetExercisesQuery,
   useParticipantGetExerciseQuery,
