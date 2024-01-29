@@ -1,5 +1,5 @@
 import type React from 'react';
-import {useEffect, useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import type {SubmitHandler} from 'react-hook-form';
 import {useForm, Controller} from 'react-hook-form';
 import {
@@ -57,16 +57,16 @@ const ExerciseForm = ({exercise, onContentChange, children}:
     name: '',
     version: '',
   });
-  const {data: fetchedSdl}
+  const {data: fetchedSdl, isError: isSdlFetchError}
   = useAdminGetExerciseSdlFromPackageQuery(selectedPackageInfo, {
     skip: !selectedPackageInfo.name || !selectedPackageInfo.version,
   });
 
-  const handlePackageSelect = (selectedPackage: Package | undefined) => {
+  const handlePackageSelect = useCallback((selectedPackage: Package | undefined) => {
     if (selectedPackage) {
       setSelectedPackageInfo({name: selectedPackage.name, version: selectedPackage.version});
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (fetchedSdl) {
@@ -74,6 +74,12 @@ const ExerciseForm = ({exercise, onContentChange, children}:
       toastSuccess(t('exercises.package.success'));
     }
   }, [fetchedSdl, setValue, t, exercise.name]);
+
+  useEffect(() => {
+    if (isSdlFetchError) {
+      toastWarning(t('exercises.package.fail'));
+    }
+  }, [isSdlFetchError, t]);
 
   useEffect(() => {
     const subscription = watch((value, {name, type}) => {

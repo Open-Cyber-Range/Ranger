@@ -21,15 +21,33 @@ const PackageDialog = (
 ) => {
   const {t} = useTranslation();
   const [selectedPackageName, setSelectedPackageName] = useState('');
+  const [selectedVersion, setSelectedVersion] = useState('');
+
+  const packagesWithVersions = exercisePackages
+    .reduce<Record<string, string[]>>((accumulator, currentPackage) => {
+    if (!accumulator[currentPackage.name]) {
+      accumulator[currentPackage.name] = [];
+    }
+
+    accumulator[currentPackage.name].push(currentPackage.version);
+
+    return accumulator;
+  }, {});
+
+  const handlePackageChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedPackageName(event.target.value);
+    setSelectedVersion('');
+  };
 
   const handleAddClick = () => {
     const selectedPackage = exercisePackages?.find(
-      exercisePackage => exercisePackage.name === selectedPackageName);
+      exercisePackage => exercisePackage.name === selectedPackageName
+      && exercisePackage.version === selectedVersion);
     onPackageSelect(selectedPackage);
     onClose();
   };
 
-  return isOpen ? (
+  return (isOpen && packagesWithVersions) ? (
     <Dialog isOpen={isOpen} onClose={onClose}>
       <div className='bp4-dialog-header'>
         <H4>{t('exercises.package.add')}</H4>
@@ -44,25 +62,44 @@ const PackageDialog = (
       <div className='bp4-dialog-body'>
         <FormGroup
           labelFor='exercise-package'
-          label={t('exercises.package.title')}
+          label={t('exercises.package.name.title')}
         >
           <HTMLSelect
             large
             fill
             id='exercise-package'
             value={selectedPackageName}
-            onChange={(event: React.ChangeEvent<HTMLSelectElement>) => {
-              setSelectedPackageName(event.target.value);
-            }}
+            onChange={handlePackageChange}
           >
-            <option className='hidden' value=''>{t('exercises.package.placeholder')}</option>
-            {exercisePackages?.map(exercisePackage => (
-              <option key={exercisePackage.name} value={exercisePackage.name}>
-                {exercisePackage.name}
+            <option className='hidden' value=''>{t('exercises.package.name.placeholder')}</option>
+            {Object.keys(packagesWithVersions).map(packageName => (
+              <option key={packageName} value={packageName}>
+                {packageName}
               </option>
             ))}
           </HTMLSelect>
         </FormGroup>
+        {selectedPackageName && (
+          <FormGroup
+            labelFor='exercise-package-version'
+            label={t('exercises.package.version.title')}
+          >
+            <HTMLSelect
+              large
+              fill
+              id='exercise-package-version'
+              value={selectedVersion}
+              onChange={(event: React.ChangeEvent<HTMLSelectElement>) => {
+                setSelectedVersion(event.target.value);
+              }}
+            >
+              <option value=''>{t('exercises.package.version.placeholder')}</option>
+              {packagesWithVersions[selectedPackageName]?.map(version => (
+                <option key={version} value={version}>{version}</option>
+              ))}
+            </HTMLSelect>
+          </FormGroup>
+        )}
       </div>
       <div className='bp4-dialog-footer'>
         <div className='bp4-dialog-footer-actions'>
