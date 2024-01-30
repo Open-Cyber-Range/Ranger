@@ -127,6 +127,7 @@ pub enum ElementStatus {
     Failed,
     Removed,
     RemoveFailed,
+    ConditionWarning,
     ConditionSuccess,
     ConditionPolling,
     ConditionClosed,

@@ -32,6 +32,7 @@ lazy_static! {
     pub static ref NAIVEDATETIME_DEFAULT_VALUE: NaiveDateTime =
         NaiveDateTime::parse_from_str(NAIVEDATETIME_DEFAULT_STRING, DATETIME_FORMAT).unwrap();
     pub static ref BIG_DECIMAL_ONE: BigDecimal = BigDecimal::from_i8(1).unwrap();
+    pub static ref BIG_DECIMAL_ZERO: BigDecimal = BigDecimal::from_i8(0).unwrap();
     pub static ref ARTIFACT_EXTENSION_MIME_TYPE_WHITELIST: HashMap<&'static str, &'static str> =
         vec![("zip", "application/zip")].into_iter().collect();
 }

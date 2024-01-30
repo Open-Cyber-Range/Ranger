@@ -134,6 +134,7 @@ const language = {
       conditionSuccess: 'Condition Met',
       conditionPolling: 'Condition Checking Ongoing',
       conditionClosed: 'Condition Checking Closed',
+      conditionWarning: 'Condition Warning',
       unknown: 'Unknown Status',
       cardFields: {
         handlerReference: 'Handler Reference:',

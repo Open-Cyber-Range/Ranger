@@ -45,7 +45,8 @@ export const getElementStatusIntent = (status: ElementStatus): Intent => {
       return Intent.SUCCESS;
     }
 
-    case ElementStatus.Ongoing: {
+    case ElementStatus.Ongoing:
+    case ElementStatus.ConditionWarning: {
       return Intent.WARNING;
     }
 
