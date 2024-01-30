@@ -148,9 +148,14 @@ impl Handler<RemoveDeployment> for DeploymentManager {
                     .database
                     .send(GetDeploymentElementByDeploymentId(deployment.id, false))
                     .await??;
-                deployment_elements
+                let undeploy_result = deployment_elements
                     .undeploy_nodes(&addressor, &deployers, &exercise_id)
-                    .await?;
+                    .await;
+
+                if let Err(error) = &undeploy_result {
+                    error!("Error deleting nodes for deployment '{deplyoment_name}': '{error}'", deplyoment_name = &deployment.name);
+                }
+
                 Ok(())
             }
             .into_actor(self)
