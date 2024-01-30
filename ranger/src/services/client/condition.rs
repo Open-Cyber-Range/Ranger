@@ -1,5 +1,5 @@
 use crate::{
-    constants::BIG_DECIMAL_ONE,
+    constants::{BIG_DECIMAL_ONE, BIG_DECIMAL_ZERO},
     models::{DeploymentElement, ElementStatus, NewConditionMessage},
     services::{
         database::{
@@ -184,6 +184,8 @@ impl Handler<ConditionStream> for DeployerDistribution {
                     .try_into()?;
 
                 while let Some(stream_item) = msg.condition_stream.message().await? {
+                    msg.condition_deployment_element.error_message = None;
+
                     let value = BigDecimal::from_f32(stream_item.command_return_value)
                         .ok_or_else(|| anyhow!("Error converting Condition Return value"))?;
 
@@ -221,7 +223,7 @@ impl Handler<ConditionStream> for DeployerDistribution {
                             if condition_status == ElementStatus::ConditionPolling {
                                 msg.condition_deployment_element.status = ElementStatus::ConditionSuccess;
                             }
-                        } else if condition_status == ElementStatus::ConditionSuccess {
+                        } else if condition_status == ElementStatus::ConditionSuccess || condition_status == ElementStatus::ConditionWarning {
                             msg.condition_deployment_element.status = ElementStatus::ConditionPolling;
                         }
                         msg.condition_deployment_element.update(
@@ -253,10 +255,38 @@ impl Handler<ConditionStream> for DeployerDistribution {
                     }
 
                     if value > *BIG_DECIMAL_ONE {
-                        warn!(
-                            "Ignoring Condition '{condition_name}' value that is greater than 1.0: '{value}'",
-                            condition_name = msg.condition_deployment_element.scenario_reference
+                        let warning_message = format!(
+                            "Ignoring Condition '{condition_name}' from VM '{vm_name}', value that is greater than 1.0: '{value}'",
+                            condition_name = msg.condition_deployment_element.scenario_reference,
+                            vm_name = msg.node_deployment_element.scenario_reference,
                         );
+                        warn!("{}", warning_message);
+
+                        msg.condition_deployment_element.error_message = Some(warning_message);
+                        msg.condition_deployment_element.update(
+                            &msg.database_address,
+                            msg.exercise_id,
+                            ElementStatus::ConditionWarning,
+                            msg.condition_deployment_element.handler_reference.clone(),
+                        ).await?;
+
+                        continue;
+                    } else if value < *BIG_DECIMAL_ZERO {
+                        let warning_message = format!(
+                            "Ignoring Condition '{condition_name}' from VM '{vm_name}', value that is less than 0.0: '{value}'",
+                            condition_name = msg.condition_deployment_element.scenario_reference,
+                            vm_name = msg.node_deployment_element.scenario_reference,
+                        );
+                        warn!("{}", warning_message);
+
+                        msg.condition_deployment_element.error_message = Some(warning_message);
+                        msg.condition_deployment_element.update(
+                            &msg.database_address,
+                            msg.exercise_id,
+                            ElementStatus::ConditionWarning,
+                            msg.condition_deployment_element.handler_reference.clone(),
+                        ).await?;
+
                         continue;
                     }
 
