@@ -474,6 +474,10 @@ export const getReadableElementStatus = (t: TFunction, status: ElementStatus): s
       return t('deployments.status.conditionClosed');
     }
 
+    case ElementStatus.ConditionWarning: {
+      return t('deployments.status.conditionWarning');
+    }
+
     default: {
       return t('deployments.status.unknown');
     }

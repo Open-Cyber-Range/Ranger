@@ -55,6 +55,7 @@ export enum ElementStatus {
   ConditionSuccess = 'ConditionSuccess',
   ConditionPolling = 'ConditionPolling',
   ConditionClosed = 'ConditionClosed',
+  ConditionWarning = 'ConditionWarning',
 }
 
 type DeploymentElement = {
