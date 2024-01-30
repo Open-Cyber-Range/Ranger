@@ -1,5 +1,5 @@
 import type React from 'react';
-import {useEffect} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import type {SubmitHandler} from 'react-hook-form';
 import {useForm, Controller} from 'react-hook-form';
 import {
@@ -16,6 +16,8 @@ import type {Exercise, UpdateExercise} from 'src/models/exercise';
 import {type AdGroup} from 'src/models/groups';
 import {
   useAdminGetDeploymentGroupsQuery,
+  useAdminGetDeputyPackagesQuery,
+  useAdminGetExerciseSdlFromPackageQuery,
   useAdminGetGroupsQuery,
   useAdminUpdateExerciseMutation,
 } from 'src/slices/apiSlice';
@@ -27,6 +29,8 @@ import init, {
 import {Suggest2} from '@blueprintjs/select';
 import {MenuItem2} from '@blueprintjs/popover2';
 import useResourceEstimation from 'src/hooks/useResourceEstimation';
+import {type Package} from 'src/models/package';
+import PackageDialog from './PackageDialog';
 
 const ExerciseForm = ({exercise, onContentChange, children}:
 {
@@ -35,7 +39,7 @@ const ExerciseForm = ({exercise, onContentChange, children}:
   children?: React.ReactNode;
 }) => {
   const {t} = useTranslation();
-  const {handleSubmit, control, watch} = useForm<UpdateExercise>({
+  const {handleSubmit, control, setValue, watch} = useForm<UpdateExercise>({
     defaultValues: {
       name: exercise.name,
       deploymentGroup: exercise.deploymentGroup,
@@ -45,8 +49,37 @@ const ExerciseForm = ({exercise, onContentChange, children}:
   });
   const {data: groups} = useAdminGetGroupsQuery();
   const {data: deploymentGroups} = useAdminGetDeploymentGroupsQuery();
+  const {data: exercisePackages} = useAdminGetDeputyPackagesQuery('exercise');
   const {sdlSchema} = watch();
   const {totalRam, totalCpu, resourceEstimationError} = useResourceEstimation(sdlSchema);
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedPackageInfo, setSelectedPackageInfo] = useState({
+    name: '',
+    version: '',
+  });
+  const {data: fetchedSdl, isError: isSdlFetchError}
+  = useAdminGetExerciseSdlFromPackageQuery(selectedPackageInfo, {
+    skip: !selectedPackageInfo.name || !selectedPackageInfo.version,
+  });
+
+  const handlePackageSelect = useCallback((selectedPackage: Package | undefined) => {
+    if (selectedPackage) {
+      setSelectedPackageInfo({name: selectedPackage.name, version: selectedPackage.version});
+    }
+  }, []);
+
+  useEffect(() => {
+    if (fetchedSdl) {
+      setValue('sdlSchema', fetchedSdl);
+      toastSuccess(t('exercises.package.success'));
+    }
+  }, [fetchedSdl, setValue, t, exercise.name]);
+
+  useEffect(() => {
+    if (isSdlFetchError) {
+      toastWarning(t('exercises.package.fail'));
+    }
+  }, [isSdlFetchError, t]);
 
   useEffect(() => {
     const subscription = watch((value, {name, type}) => {
@@ -216,6 +249,27 @@ const ExerciseForm = ({exercise, onContentChange, children}:
           );
         }}
       />
+      { exercisePackages && (
+        <>
+          <Button
+            className='mb-4'
+            icon='add'
+            intent='success'
+            text={t('exercises.package.add')}
+            onClick={() => {
+              setIsOpen(true);
+            }}
+          />
+          <PackageDialog
+            isOpen={isOpen}
+            exercisePackages={exercisePackages}
+            onClose={() => {
+              setIsOpen(false);
+            }}
+            onPackageSelect={handlePackageSelect}
+          />
+        </>
+      )}
       <Controller
         control={control}
         name='sdlSchema'

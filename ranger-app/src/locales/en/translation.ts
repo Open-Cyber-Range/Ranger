@@ -31,6 +31,19 @@ const language = {
       title: 'Deployment group',
       required: 'Deployment group is required',
     },
+    package: {
+      add: 'Get scenario SDL from Deputy package',
+      name: {
+        placeholder: 'Select package...',
+        title: 'Package name',
+      },
+      version: {
+        placeholder: 'Select package version...',
+        title: 'Package version',
+      },
+      success: 'Scenario SDL added successfully',
+      fail: 'Failed to add scenario SDL',
+    },
     tabs: {
       dashboard: 'Dashboard',
       banner: 'Banner',

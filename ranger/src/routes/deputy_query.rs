@@ -1,6 +1,3 @@
-use std::collections::HashMap;
-
-use crate::errors::RangerError;
 use crate::models::helpers::grpc_package::SerializableGrpcPackage;
 use crate::routes::get_query_param;
 use crate::services::deployer::{DeputyPackageQueryByType, DeputyPackageQueryGetExercise};
@@ -10,9 +7,8 @@ use crate::AppState;
 use actix_web::web::{Data, Query};
 use actix_web::{get, Error, HttpResponse};
 use anyhow::Result;
-use log::error;
 use ranger_grpc::Source;
-use sdl_parser::parse_sdl;
+use std::collections::HashMap;
 
 #[get("")]
 pub async fn get_deputy_packages_by_type(
@@ -33,7 +29,7 @@ pub async fn get_deputy_packages_by_type(
         .send(DeputyPackageQueryByType(package_type, deployers))
         .await
         .map_err(create_mailbox_error_handler("Database"))?
-        .map_err(create_database_error_handler("get packases"))?;
+        .map_err(create_database_error_handler("Get packages"))?;
 
     let serializable_packages: Vec<SerializableGrpcPackage> =
         query_result.into_iter().map(Into::into).collect();
@@ -52,7 +48,7 @@ pub async fn get_exercise_by_source(
         .deployment_manager_address
         .send(GetDefaultDeployers())
         .await
-        .map_err(create_mailbox_error_handler("Deptuy Query"))?
+        .map_err(create_mailbox_error_handler("Deputy Query"))?
         .map_err(create_database_error_handler("Get default deployers"))?;
 
     let source = Source {
@@ -60,18 +56,14 @@ pub async fn get_exercise_by_source(
         version: get_query_param(&params, "version")?,
     };
 
-    let query_result = app_state
+    let sdl_schema = app_state
         .deployer_distributor_address
         .send(DeputyPackageQueryGetExercise(source, deployers))
         .await
-        .map_err(create_mailbox_error_handler("Deptuy Query"))?
-        .map_err(create_database_error_handler("get exercise package"))?;
+        .map_err(create_mailbox_error_handler("Deputy Query"))?
+        .map_err(create_database_error_handler("Get exercise package"))?;
 
-    let scenario = parse_sdl(&query_result).map_err(|error| {
-        error!("Failed to parse sdl: {error}");
-        RangerError::ScenarioParsingFailed
-    })?;
     Ok(HttpResponse::Ok()
         .content_type("application/json")
-        .json(scenario))
+        .json(sdl_schema))
 }
