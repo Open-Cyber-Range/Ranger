@@ -47,72 +47,76 @@ const PackageDialog = (
     onClose();
   };
 
-  return (isOpen && packagesWithVersions) ? (
-    <Dialog isOpen={isOpen} onClose={onClose}>
-      <div className='bp4-dialog-header'>
-        <H4>{t('exercises.package.add')}</H4>
-        <Button
-          small
-          minimal
-          icon='cross'
-          onClick={() => {
-            onClose();
-          }}/>
-      </div>
-      <div className='bp4-dialog-body'>
-        <FormGroup
-          labelFor='exercise-package'
-          label={t('exercises.package.name.title')}
-        >
-          <HTMLSelect
-            large
-            fill
-            id='exercise-package'
-            value={selectedPackageName}
-            onChange={handlePackageChange}
-          >
-            <option className='hidden' value=''>{t('exercises.package.name.placeholder')}</option>
-            {Object.keys(packagesWithVersions).map(packageName => (
-              <option key={packageName} value={packageName}>
-                {packageName}
-              </option>
-            ))}
-          </HTMLSelect>
-        </FormGroup>
-        {selectedPackageName && (
+  if (isOpen && packagesWithVersions) {
+    return (
+      <Dialog isOpen={isOpen} onClose={onClose}>
+        <div className='bp4-dialog-header'>
+          <H4>{t('exercises.package.add')}</H4>
+          <Button
+            small
+            minimal
+            icon='cross'
+            onClick={() => {
+              onClose();
+            }}/>
+        </div>
+        <div className='bp4-dialog-body'>
           <FormGroup
-            labelFor='exercise-package-version'
-            label={t('exercises.package.version.title')}
+            labelFor='exercise-package'
+            label={t('exercises.package.name.title')}
           >
             <HTMLSelect
               large
               fill
-              id='exercise-package-version'
-              value={selectedVersion}
-              onChange={(event: React.ChangeEvent<HTMLSelectElement>) => {
-                setSelectedVersion(event.target.value);
-              }}
+              id='exercise-package'
+              value={selectedPackageName}
+              onChange={handlePackageChange}
             >
-              <option value=''>{t('exercises.package.version.placeholder')}</option>
-              {packagesWithVersions[selectedPackageName]?.map(version => (
-                <option key={version} value={version}>{version}</option>
+              <option className='hidden' value=''>{t('exercises.package.name.placeholder')}</option>
+              {Object.keys(packagesWithVersions).map(packageName => (
+                <option key={packageName} value={packageName}>
+                  {packageName}
+                </option>
               ))}
             </HTMLSelect>
           </FormGroup>
-        )}
-      </div>
-      <div className='bp4-dialog-footer'>
-        <div className='bp4-dialog-footer-actions'>
-          <Button
-            large
-            intent='primary'
-            text={t('common.add')}
-            onClick={handleAddClick}
-          />
+          {selectedPackageName && (
+            <FormGroup
+              labelFor='exercise-package-version'
+              label={t('exercises.package.version.title')}
+            >
+              <HTMLSelect
+                large
+                fill
+                id='exercise-package-version'
+                value={selectedVersion}
+                onChange={(event: React.ChangeEvent<HTMLSelectElement>) => {
+                  setSelectedVersion(event.target.value);
+                }}
+              >
+                <option value=''>{t('exercises.package.version.placeholder')}</option>
+                {packagesWithVersions[selectedPackageName]?.map(version => (
+                  <option key={version} value={version}>{version}</option>
+                ))}
+              </HTMLSelect>
+            </FormGroup>
+          )}
         </div>
-      </div>
-    </Dialog>
-  ) : null;
+        <div className='bp4-dialog-footer'>
+          <div className='bp4-dialog-footer-actions'>
+            <Button
+              large
+              intent='primary'
+              text={t('common.add')}
+              onClick={handleAddClick}
+            />
+          </div>
+        </div>
+      </Dialog>
+    );
+  }
+
+  return null;
 };
 
 export default PackageDialog;
