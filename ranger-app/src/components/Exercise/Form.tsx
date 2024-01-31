@@ -287,10 +287,7 @@ const ExerciseForm = ({exercise, onContentChange, children}:
                   <span>{t('exercises.easeDevelopment')}</span>
                   <a
                     className='underline text-blue-500'
-                    href={
-                      'https://documentation.opencyberrange.ee/'
-                  + 'docs/sdl-reference-guide/sdl'
-                    }
+                    href='https://documentation.opencyberrange.ee/docs/sdl/reference'
                     target='_blank'
                     rel='noopener noreferrer'
                   >
