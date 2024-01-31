@@ -3,7 +3,7 @@ use crate::models::event_info::{EventInfo, ExistsCheckResult, NewEventInfo};
 use actix::{Handler, Message, ResponseActFuture, WrapFuture};
 use actix_web::web::block;
 use anyhow::{anyhow, Ok, Result};
-use diesel::{sql_query, RunQueryDsl};
+use diesel::{sql_query, sql_types::Text, RunQueryDsl};
 
 #[derive(Message)]
 #[rtype(result = "Result<EventInfo>")]
@@ -117,17 +117,12 @@ impl Handler<CheckEventInfo> for Database {
                 let mut connection = mutex_connection
                     .lock()
                     .map_err(|error| anyhow!("Error locking Mutex connection: {:?}", error))?;
-                let query = format!(
-                    r#"
-                            SELECT EXISTS(
-                                SELECT 1
-                                FROM event_info_data
-                                WHERE checksum = '{}'
-                            ) as 'exists';
-                            "#,
-                    checksum
+
+                let query = sql_query(
+                    "SELECT EXISTS(SELECT 1 FROM event_info_data WHERE checksum = ?) as 'exists'",
                 );
-                let exists = sql_query(query).get_result::<ExistsCheckResult>(&mut *connection)?;
+                let query = query.bind::<Text, _>(checksum);
+                let exists = query.get_result::<ExistsCheckResult>(&mut *connection)?;
 
                 Ok(exists.exists)
             }
