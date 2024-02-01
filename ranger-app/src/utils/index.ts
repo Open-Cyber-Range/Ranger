@@ -447,7 +447,7 @@ export const getReadableElementStatus = (t: TFunction, status: ElementStatus): s
     }
 
     case ElementStatus.Ongoing: {
-      return t('deployments.status.success');
+      return t('deployments.status.ongoing');
     }
 
     case ElementStatus.Failed: {
