@@ -1,14 +1,17 @@
 use super::Database;
 use crate::constants::RECORD_NOT_FOUND;
 use crate::models::helpers::uuid::Uuid;
+use crate::models::Deployment;
 use crate::models::Event;
 use crate::models::NewEvent;
 use crate::services::websocket::SocketEvent;
+use crate::utilities::event::calculate_event_start_end_times;
 use actix::{Handler, Message, ResponseActFuture, WrapFuture};
 use actix_web::web::block;
 use anyhow::{anyhow, Ok, Result};
 use chrono::NaiveDateTime;
 use diesel::RunQueryDsl;
+use sdl_parser::{event::Event as SdlEvent, Scenario};
 
 #[derive(Message)]
 #[rtype(result = "Result<()>")]
@@ -22,10 +25,35 @@ pub struct CreateEvent {
     pub exercise_id: Uuid,
     pub deployment_id: Uuid,
     pub description: Option<String>,
-    pub parent_node_id: Uuid,
     pub start: NaiveDateTime,
     pub end: NaiveDateTime,
     pub use_shared_connection: bool,
+}
+
+impl CreateEvent {
+    pub fn new(
+        event_key: &str,
+        event: &SdlEvent,
+        deployment: &Deployment,
+        scenario: &Scenario,
+        deployment_id: Uuid,
+    ) -> Result<Self> {
+        let (event_start, event_end) =
+            calculate_event_start_end_times(scenario, event_key, deployment.start, deployment.end)?;
+
+        let new_event = CreateEvent {
+            id: Uuid::random(),
+            name: event_key.to_owned(),
+            exercise_id: deployment.exercise_id,
+            deployment_id,
+            description: event.description.clone(),
+            start: event_start,
+            end: event_end,
+            use_shared_connection: true,
+        };
+
+        Ok(new_event)
+    }
 }
 
 impl Handler<CreateEvent> for Database {

@@ -1,11 +1,4 @@
 
-export type Capability = {
-  name?: string;
-  description?: string;
-  condition: string;
-  vulnerabilities?: string[];
-};
-
 export type Condition = {
   name?: string;
   description?: string;
@@ -38,6 +31,7 @@ export type Entity = {
   tlos?: string[];
   facts?: Record<string, string>;
   entities?: Record<string, Entity>;
+  events?: string[];
 };
 
 export type MinScore = {
@@ -57,7 +51,7 @@ export type Event = {
   description?: string;
   time?: number;
   conditions?: string[];
-  injects: string[];
+  injects?: string[];
 };
 
 export enum FeatureType {
@@ -98,7 +92,6 @@ export type Inject = {
   from_entity?: string;
   to_entities?: string[];
   tlos?: string[];
-  capabilities?: string[];
 };
 
 export enum MetricType {
@@ -137,6 +130,7 @@ export type Node = {
   source?: Source;
   features?: Record<string, string>;
   conditions?: Record<string, string>;
+  injects?: Record<string, string>;
   vulnerabilities?: string[];
   roles?: Record<string, Role>;
 };
@@ -165,7 +159,6 @@ export type TrainingLearningObjective = {
   name?: string;
   description?: string;
   evaluation: string;
-  capabilities?: string[];
 };
 
 export type Vulnerability = {
@@ -185,7 +178,6 @@ export type Scenario = {
   infrastructure?: Record<string, InfraNode>;
   conditions?: Record<string, Condition>;
   vulnerabilities?: Record<string, Vulnerability>;
-  capabilities?: Record<string, Capability>;
   metrics?: Record<string, Metric>;
   evaluations?: Record<string, Evaluation>;
   tlos?: Record<string, TrainingLearningObjective>;

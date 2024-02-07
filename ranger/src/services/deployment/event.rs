@@ -1,46 +1,180 @@
-use super::condition::ConditionProperties;
-use super::node::DeployedNode;
+use super::inject::{DeployableInject, InjectProperties};
+use super::node::NodeDeploymentInfo;
 use super::Database;
 use crate::constants::{EVENT_POLLER_RETRY_DURATION, NAIVEDATETIME_DEFAULT_VALUE};
-use crate::models::helpers::uuid::Uuid;
-use crate::models::{Deployment, DeploymentElement, ElementStatus, Exercise};
-use crate::services::database::deployment::GetDeploymentElementByEventIdByParentNodeId;
-use crate::services::database::event::{CreateEvent, UpdateEvent};
-use crate::services::deployment::inject::DeployableInject;
-use crate::utilities::event::{
-    await_conditions_to_be_deployed, await_event_start, calculate_event_start_end_times,
+use crate::models::{helpers::uuid::Uuid, Deployment, ElementStatus, Exercise};
+use crate::services::database::{
+    deployment::GetDeploymentElementByEventId,
+    event::{CreateEvent, UpdateEvent},
 };
-use crate::utilities::scenario::get_injects_and_roles_by_node_event;
-use crate::utilities::{scenario::get_conditions_by_event, try_some};
+use crate::services::deployment::inject::InjectDeployment;
+use crate::utilities::{event::await_event_start, try_some};
 use crate::Addressor;
 use actix::{Actor, Addr, Context, Handler, Message, ResponseActFuture, WrapFuture};
 use anyhow::{Ok, Result};
 use async_trait::async_trait;
 use chrono::Utc;
-use futures::future::try_join_all;
+use futures_util::future::join_all;
 use log::debug;
-use sdl_parser::inject::Inject;
-use sdl_parser::node::NodeType;
-use sdl_parser::{node::Role, Scenario};
+use sdl_parser::{
+    event::Event,
+    inject::Inject,
+    node::{NodeType, VM},
+    Scenario,
+};
 use std::collections::HashMap;
 use tokio::time::sleep;
+
+#[derive(Debug, Clone)]
+pub struct DeploymentEvent {
+    pub id: Uuid,
+    pub sdl_key: String,
+    pub sdl_event: Event,
+    pub name: Option<String>,
+    pub injects: Option<Vec<InjectProperties>>,
+    pub condition_keys: Option<Vec<String>>,
+}
 
 #[async_trait]
 pub trait DeployableEvents {
     async fn create_events(
         &self,
         addressor: &Addressor,
-        deployed_nodes: &[DeployedNode],
         deployment: &Deployment,
-    ) -> Result<Vec<(DeployedNode, Vec<ConditionProperties>)>>;
+    ) -> Result<Vec<DeploymentEvent>>;
 
     async fn deploy_event_pollers(
         &self,
         addressor: &Addressor,
         exercise: &Exercise,
         deployers: &[String],
-        deployed_nodes_with_conditions: &[(DeployedNode, Vec<ConditionProperties>)],
+        node_deployment_info: &[NodeDeploymentInfo],
+        events: Vec<DeploymentEvent>,
     ) -> Result<()>;
+}
+
+fn get_event_injects_with_roles(
+    event: &Event,
+    sdl_injects: &HashMap<String, Inject>,
+    node_key: &String,
+    vm_node: &VM,
+) -> Result<Vec<InjectProperties>> {
+    let event_inject_keys = event.injects.clone().unwrap_or_default();
+    let event_injects = sdl_injects
+        .iter()
+        .filter_map(|(inject_key, inject)| {
+            if event_inject_keys.contains(inject_key) {
+                Some((inject_key.to_owned(), inject.clone()))
+            } else {
+                None
+            }
+        })
+        .collect::<HashMap<_, _>>();
+
+    let vm_roles = try_some(vm_node.roles.clone(), "VM Node missing Roles")?;
+
+    let event_injects_with_roles = event_injects
+        .into_iter()
+        .map(|(inject_key, inject)| {
+            let role_name = try_some(
+                vm_node.injects.get(&inject_key),
+                "Inject not found under VM Node Injects",
+            )?;
+            let role = try_some(vm_roles.get(role_name), "Node Roles missing Role")?;
+
+            Ok(InjectProperties {
+                name: inject_key.to_owned(),
+                inject: inject.clone(),
+                role: role.to_owned(),
+                target_node_key: node_key.to_owned(),
+            })
+        })
+        .collect::<Result<Vec<InjectProperties>>>()?;
+
+    Ok(event_injects_with_roles)
+}
+
+async fn poll_event(
+    addressor: &Addressor,
+    deployers: &[String],
+    exercise: &Exercise,
+    event: &DeploymentEvent,
+    node_deployment_infos: &[NodeDeploymentInfo],
+) -> Result<()> {
+    if event.condition_keys.is_some() || event.injects.is_some() {
+        let event_succeeded = addressor
+            .event_poller
+            .send(StartPolling(
+                exercise.id,
+                addressor.database.clone(),
+                event.clone(),
+            ))
+            .await??;
+        if event_succeeded {
+            let event_node_deployment_infos_by_injects = node_deployment_infos
+                .iter()
+                .filter(|node_deployment_info| {
+                    event.injects.as_ref().map_or(false, |injects| {
+                        match &node_deployment_info.node_properties.node.type_field {
+                            NodeType::VM(vm_node) => injects
+                                .iter()
+                                .any(|inject| vm_node.injects.contains_key(&inject.name)),
+                            _ => false,
+                        }
+                    })
+                })
+                .collect::<Vec<_>>();
+
+            let mut deployment_futures = Vec::new();
+            for inject_property in event.injects.clone().unwrap_or_default() {
+                for node_deployment_info in
+                    event_node_deployment_infos_by_injects
+                        .iter()
+                        .filter(|node_deployment_info| {
+                            let vm_node_key = &node_deployment_info
+                                .node_properties
+                                .deployment_element
+                                .scenario_reference;
+
+                            &inject_property.target_node_key == vm_node_key
+                        })
+                {
+                    let inject_deployment = InjectDeployment {
+                        addressor: addressor.clone(),
+                        deployers: deployers.to_vec(),
+                        deployment_element: node_deployment_info
+                            .node_properties
+                            .deployment_element
+                            .clone(),
+                        exercise_id: exercise.id,
+                        username: inject_property.role.username.clone(),
+                        template_id: node_deployment_info.node_properties.template_id,
+                        inject_key: inject_property.name.to_owned(),
+                        inject: inject_property.inject.clone(),
+                    };
+
+                    let deployment_future = inject_deployment.deploy_inject();
+
+                    deployment_futures.push(deployment_future);
+                }
+            }
+            let results = join_all(deployment_futures).await;
+            for result in results {
+                result?;
+            }
+        }
+    } else {
+        addressor
+            .event_poller
+            .send(StartPollingInformational(
+                exercise.id,
+                addressor.database.clone(),
+                event.id,
+            ))
+            .await??;
+    }
+
+    Ok(())
 }
 
 #[async_trait]
@@ -48,148 +182,96 @@ impl DeployableEvents for Scenario {
     async fn create_events(
         &self,
         addressor: &Addressor,
-        deployed_nodes: &[DeployedNode],
         deployment: &Deployment,
-    ) -> Result<Vec<(DeployedNode, Vec<ConditionProperties>)>> {
+    ) -> Result<Vec<DeploymentEvent>> {
         let sdl_events = self.events.clone().unwrap_or_default();
-        let conditions = &self.conditions.clone().unwrap_or_default();
-        let referenced_event_keys = self
-            .scripts
-            .clone()
-            .unwrap_or_default()
-            .iter()
-            .flat_map(|(_, script)| script.events.keys().cloned())
-            .collect::<Vec<_>>();
+        let sdl_injects = self.injects.clone().unwrap_or_default();
 
-        let event_conditions_tuple = &sdl_events
+        let referenced_event_keys: Vec<_> =
+            self.scripts.as_ref().map_or_else(Vec::new, |scripts| {
+                scripts
+                    .iter()
+                    .flat_map(|(_, script)| script.events.keys())
+                    .cloned()
+                    .collect()
+            });
+        let referenced_events = sdl_events
             .into_iter()
-            .filter_map(
-                |(event_key, sdl_event)| match referenced_event_keys.contains(&event_key) {
-                    true => {
-                        let conditions = get_conditions_by_event(self, &sdl_event);
-                        Some((event_key, sdl_event, conditions))
+            .filter_map(|(event_key, sdl_event)| {
+                if referenced_event_keys.contains(&event_key) {
+                    Some((event_key, sdl_event))
+                } else {
+                    None
+                }
+            })
+            .collect::<HashMap<_, _>>();
+
+        let vm_nodes = self.nodes.as_ref().map_or_else(Vec::new, |nodes| {
+            nodes
+                .iter()
+                .filter_map(|(node_key, node)| {
+                    if let NodeType::VM(vm_node) = &node.type_field {
+                        Some((node_key, vm_node))
+                    } else {
+                        None
                     }
-                    false => None,
-                },
-            )
-            .collect::<Vec<_>>();
+                })
+                .collect()
+        });
 
-        let output = try_join_all(deployed_nodes.iter().map(|deployed_node| async move {
-            let DeployedNode {
-                node,
-                deployment_element,
-                template_id,
-            } = deployed_node;
-            let mut node_event_conditions: Vec<ConditionProperties> = vec![];
+        let mut deployment_events = Vec::new();
+        for (event_key, event) in referenced_events.iter() {
+            let event_injects = event.injects.clone().unwrap_or_default();
+            let event_inject_vms = vm_nodes
+                .iter()
+                .filter_map(|(node_key, vm_node)| {
+                    if event_injects
+                        .iter()
+                        .any(|inject_key| vm_node.injects.contains_key(inject_key))
+                    {
+                        Some((node_key, vm_node))
+                    } else {
+                        None
+                    }
+                })
+                .collect::<HashMap<_, _>>();
 
-            let potential_vm_node = if let NodeType::VM(vm_node) = &node.type_field {
-                Some(vm_node)
+            let event_inject_properties: Option<Vec<_>> = if !event_inject_vms.is_empty() {
+                let mut properties = Vec::new();
+                for (node_key, vm_node) in event_inject_vms.iter() {
+                    let event_injects_with_roles =
+                        get_event_injects_with_roles(event, &sdl_injects, node_key, vm_node)?;
+
+                    properties.extend(event_injects_with_roles);
+                }
+                Some(properties)
             } else {
                 None
             };
 
-            let vm_node = try_some(potential_vm_node, "Node is not a VM")?;
+            let new_event = addressor
+                .database
+                .send(CreateEvent::new(
+                    event_key,
+                    event,
+                    deployment,
+                    self,
+                    deployment.id,
+                )?)
+                .await??;
 
-            let node_roles = try_some(vm_node.roles.clone(), "VM Node missing Roles")?;
-            let node_condition_roles = vm_node.conditions.clone();
-            let node_conditions = conditions
-                .iter()
-                .filter_map(
-                    |(name, condition)| match node_condition_roles.contains_key(name) {
-                        true => Some((name.to_owned(), condition.clone())),
-                        false => None,
-                    },
-                )
-                .collect::<HashMap<_, _>>();
+            let deployment_event = DeploymentEvent {
+                id: new_event.id,
+                sdl_key: event_key.to_owned(),
+                sdl_event: event.clone(),
+                name: event.name.clone(),
+                injects: event_inject_properties,
+                condition_keys: event.conditions.clone(),
+            };
+            deployment_events.push(deployment_event);
+        }
 
-            for (condition_name, condition) in node_conditions.clone().iter() {
-                let condition_role_name = try_some(
-                    node_condition_roles.get(condition_name),
-                    "Condition RoleName not found under Node Conditions",
-                )?;
-                let condition_role = try_some(
-                    node_roles.get(condition_role_name),
-                    "Condition Role not found under Node Roles",
-                )?;
-
-                if let Some((event_key, event, event_conditions)) = event_conditions_tuple
-                    .iter()
-                    .find(|(_, _, event_conditions)| event_conditions.contains_key(condition_name))
-                {
-                    if node_condition_roles.contains_key(condition_name)
-                        && event_conditions.contains_key(condition_name)
-                    {
-                        let (event_start, event_end) = calculate_event_start_end_times(
-                            self,
-                            event_key,
-                            deployment.start,
-                            deployment.end,
-                        )?;
-                        let injects = get_injects_and_roles_by_node_event(
-                            self,
-                            event,
-                            &deployment_element.scenario_reference,
-                        );
-                        let parent_node_id_string = try_some(
-                            deployment_element.handler_reference.clone(),
-                            "DeploymentElement missing HandlerReference",
-                        )?;
-                        let event_id =
-                            match node_event_conditions.iter().find(|condition_properties| {
-                                condition_properties.event_name == Some(event_key.clone())
-                            }) {
-                                Some(event) => try_some(event.event_id, "Event missing Id")?,
-                                None => Uuid::random(),
-                            };
-
-                        let new_event = addressor
-                            .database
-                            .send(CreateEvent {
-                                id: event_id,
-                                name: event_key.to_owned(),
-                                exercise_id: deployment.exercise_id,
-                                deployment_id: deployment_element.deployment_id,
-                                description: event.description.clone(),
-                                parent_node_id: Uuid::try_from(parent_node_id_string.as_str())?,
-                                start: event_start,
-                                end: event_end,
-                                use_shared_connection: true,
-                            })
-                            .await??;
-
-                        node_event_conditions.push(ConditionProperties {
-                            name: condition_name.to_owned(),
-                            condition: condition.clone(),
-                            role: condition_role.clone(),
-                            event_id: Some(new_event.id),
-                            event_name: Some(event_key.to_owned()),
-                            injects: Some(injects),
-                        });
-                    }
-                } else {
-                    node_event_conditions.push(ConditionProperties {
-                        name: condition_name.to_owned(),
-                        condition: condition.clone(),
-                        role: condition_role.clone(),
-                        event_id: None,
-                        event_name: None,
-                        injects: None,
-                    });
-                }
-            }
-
-            Ok((
-                DeployedNode {
-                    node: node.clone(),
-                    deployment_element: deployment_element.clone(),
-                    template_id: *template_id,
-                },
-                node_event_conditions,
-            ))
-        }))
-        .await?;
-
-        Ok(output)
+        Ok(deployment_events)
     }
 
     async fn deploy_event_pollers(
@@ -197,99 +279,25 @@ impl DeployableEvents for Scenario {
         addressor: &Addressor,
         exercise: &Exercise,
         deployers: &[String],
-        deployed_nodes: &[(DeployedNode, Vec<ConditionProperties>)],
+        node_deployment_infos: &[NodeDeploymentInfo],
+        events: Vec<DeploymentEvent>,
     ) -> Result<()> {
-        if self.scripts.is_some() && self.events.is_some() {
-            try_join_all(deployed_nodes.iter().map(
-                |(deployed_node, node_conditions)| async move {
-                    let DeployedNode {
-                        deployment_element,
-                        template_id,
-                        ..
-                    } = deployed_node;
-                    let event_conditions: HashMap<Uuid, Vec<(String, Role)>> = node_conditions
-                        .iter()
-                        .fold(HashMap::new(), |mut event_conditions, properties| {
-                            if let Some(event_id) = properties.event_id {
-                                event_conditions
-                                    .entry(event_id)
-                                    .or_default()
-                                    .push((properties.name.to_owned(), properties.role.to_owned()));
-                            }
-                            event_conditions
-                        });
-                    let event_injects: HashMap<Uuid, Vec<(String, Inject, Role)>> = node_conditions
-                        .iter()
-                        .fold(HashMap::new(), |mut event_injects, properties| {
-                            if let (Some(event_id), Some(injects)) =
-                                (properties.event_id, properties.injects.clone())
-                            {
-                                event_injects.insert(event_id, injects.to_vec());
-                            }
-                            event_injects
-                        });
-
-                    let event_combo = event_conditions.into_iter().fold(
-                        HashMap::new(),
-                        |mut accumulator, (uuid, condition)| {
-                            if let Some(injects) = event_injects.get(&uuid) {
-                                accumulator.insert(uuid, (condition, injects.clone()));
-                            }
-                            accumulator
-                        },
-                    );
-
-                    try_join_all(event_combo.iter().map(
-                        |(event_id, (conditions, injects))| async move {
-                            let event_succeeded = addressor
-                                .event_poller
-                                .send(StartPolling(
-                                    exercise.id,
-                                    addressor.database.clone(),
-                                    *event_id,
-                                    conditions.to_vec(),
-                                    deployment_element.clone(),
-                                ))
-                                .await??;
-
-                            if event_succeeded {
-                                for (inject_name, inject, inject_role) in injects {
-                                    (
-                                        addressor,
-                                        deployers.to_vec(),
-                                        deployment_element.clone(),
-                                        exercise.id,
-                                        inject_role.username.clone(),
-                                        *template_id,
-                                        (inject_name.to_owned(), inject.clone()),
-                                    )
-                                        .deploy_inject()
-                                        .await?;
-                                }
-                            }
-                            Ok(())
-                        },
-                    ))
-                    .await?;
-
-                    Ok(())
-                },
-            ))
-            .await?;
+        let mut futures = Vec::new();
+        for event in events.iter() {
+            let future = poll_event(addressor, deployers, exercise, event, node_deployment_infos);
+            futures.push(future);
         }
+
+        let results = join_all(futures).await;
+        results.into_iter().collect::<Result<Vec<()>>>()?;
+
         Ok(())
     }
 }
 
-#[derive(Message, Clone)]
+#[derive(Message, Clone, Debug)]
 #[rtype(result = "Result<bool>")]
-pub struct StartPolling(
-    Uuid,
-    Addr<Database>,
-    Uuid,
-    Vec<(String, Role)>,
-    DeploymentElement,
-);
+pub struct StartPolling(Uuid, Addr<Database>, DeploymentEvent);
 
 pub struct EventPoller();
 
@@ -313,13 +321,7 @@ impl Handler<StartPolling> for EventPoller {
     type Result = ResponseActFuture<Self, Result<bool>>;
 
     fn handle(&mut self, msg: StartPolling, _ctx: &mut Context<Self>) -> Self::Result {
-        let StartPolling(
-            exercise_id,
-            database_address,
-            event_id,
-            event_conditions,
-            node_deployment_element,
-        ) = msg;
+        let StartPolling(exercise_id, database_address, event) = msg;
 
         Box::pin(
             async move {
@@ -328,72 +330,87 @@ impl Handler<StartPolling> for EventPoller {
                     triggered_at: *NAIVEDATETIME_DEFAULT_VALUE,
                 };
                 let has_succeeded: bool;
-                let node_name = node_deployment_element.scenario_reference.clone();
-                let vm_handler_reference = try_some(
-                    node_deployment_element.handler_reference,
-                    "VM Node missing handler reference",
-                )?;
-                let event = await_event_start(&database_address, event_id, &node_name).await?;
+                let is_conditional_event = event.condition_keys.is_some();
+                let event =
+                    await_event_start(&database_address, event.id, is_conditional_event).await?;
 
-                await_conditions_to_be_deployed(
-                    &database_address,
-                    event_id,
-                    &event_conditions,
-                    &vm_handler_reference,
-                )
-                .await?;
+                if is_conditional_event {
+                    debug!("Starting Polling for Event '{}'", event.name);
+                    loop {
+                        let current_time = Utc::now().naive_utc();
+                        let condition_deployment_elements = database_address
+                            .send(GetDeploymentElementByEventId(event.id, true))
+                            .await??;
 
-                debug!(
-                    "Starting Polling for Event '{}' for node '{}'",
-                    event.name, &node_deployment_element.scenario_reference
-                );
-                let parent_node_id = Uuid::try_from(vm_handler_reference.as_str())?;
-                loop {
-                    let current_time = Utc::now().naive_utc();
-                    let condition_deployment_elements = database_address
-                        .send(GetDeploymentElementByEventIdByParentNodeId(
-                            event_id,
-                            parent_node_id,
-                            true,
-                        ))
-                        .await??;
+                        let successful_condition_count = condition_deployment_elements
+                            .iter()
+                            .filter(|condition| {
+                                matches!(condition.status, ElementStatus::ConditionSuccess)
+                            })
+                            .count();
 
-                    let successful_condition_count = condition_deployment_elements
-                        .iter()
-                        .filter(|condition| {
-                            matches!(condition.status, ElementStatus::ConditionSuccess)
-                        })
-                        .count();
+                        if condition_deployment_elements
+                            .len()
+                            .eq(&successful_condition_count)
+                        {
+                            debug!("Event '{}' has been triggered successfully", event.name,);
+                            updated_event.has_triggered = true;
+                            updated_event.triggered_at = Utc::now().naive_utc();
+                            has_succeeded = true;
+                            break;
+                        } else if current_time > event.end {
+                            debug!("Event '{}' deployment window has ended", event.name);
+                            has_succeeded = false;
+                            break;
+                        }
 
-                    if condition_deployment_elements
-                        .len()
-                        .eq(&successful_condition_count)
-                    {
-                        debug!(
-                            "Event '{}' has been triggered successfully for node '{}'",
-                            event.name, node_name
-                        );
-                        updated_event.has_triggered = true;
-                        updated_event.triggered_at = Utc::now().naive_utc();
-                        has_succeeded = true;
-                        break;
-                    } else if current_time > event.end {
-                        debug!(
-                            "Event '{}' deployment window has ended for node '{}'",
-                            event.name, node_name
-                        );
-                        has_succeeded = false;
-                        break;
+                        sleep(EVENT_POLLER_RETRY_DURATION).await;
                     }
-
-                    sleep(EVENT_POLLER_RETRY_DURATION).await;
+                } else {
+                    debug!("Purely timed Event '{}' has been triggered", event.name);
+                    updated_event.has_triggered = true;
+                    updated_event.triggered_at = Utc::now().naive_utc();
+                    has_succeeded = true;
                 }
+
+                database_address
+                    .send(UpdateEvent(exercise_id, event.id, updated_event))
+                    .await??;
+
+                Ok(has_succeeded)
+            }
+            .into_actor(self),
+        )
+    }
+}
+
+#[derive(Message, Clone, Debug)]
+#[rtype(result = "Result<bool>")]
+pub struct StartPollingInformational(Uuid, Addr<Database>, Uuid);
+
+impl Handler<StartPollingInformational> for EventPoller {
+    type Result = ResponseActFuture<Self, Result<bool>>;
+
+    fn handle(&mut self, msg: StartPollingInformational, _ctx: &mut Context<Self>) -> Self::Result {
+        let StartPollingInformational(exercise_id, database_address, event_id) = msg;
+
+        Box::pin(
+            async move {
+                let mut updated_event = crate::models::UpdateEvent {
+                    has_triggered: false,
+                    triggered_at: *NAIVEDATETIME_DEFAULT_VALUE,
+                };
+
+                await_event_start(&database_address, event_id, false).await?;
+
+                updated_event.has_triggered = true;
+                updated_event.triggered_at = Utc::now().naive_utc();
 
                 database_address
                     .send(UpdateEvent(exercise_id, event_id, updated_event))
                     .await??;
 
-                Ok(has_succeeded)
+                Ok(true)
             }
             .into_actor(self),
         )

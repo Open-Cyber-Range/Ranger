@@ -23,7 +23,6 @@ pub const FOREIGN_KEY_CONSTRAINT_FAILS: &str = "a foreign key constraint fails";
 pub const NAIVEDATETIME_DEFAULT_STRING: &str = "1970-01-01 00:00:01";
 pub const DATETIME_FORMAT: &str = "%Y-%m-%d %H:%M:%S";
 
-pub const EVENT_POLLER_TIMEOUT_TRIES: u8 = 20;
 pub const EVENT_POLLER_RETRY_DURATION: Duration = Duration::from_secs(3);
 
 pub const OCTET_STREAM_MIME_TYPE: &str = "application/octet-stream";

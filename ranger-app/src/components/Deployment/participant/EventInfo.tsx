@@ -30,7 +30,7 @@ const EventInfo = ({eventName, event}:
           </summary>
           <div className='mt-4 ml-2 text-sm'>
             {event.description ?? t('participant.exercise.events.noDescription')}
-            <Divider className='pt-4'/>
+            <Divider className='mt-4'/>
             <div className='pt-2 text-slate-600 italic'>
               {t('participant.exercise.events.triggeredAt',
                 {date: new Date(event.triggeredAt).toLocaleString()})}

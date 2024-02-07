@@ -63,7 +63,7 @@ const StatusCard = ({element, childElements, selectedElement, setSelectedElement
               {element?.scenarioReference}
             </span>
           </Button>
-          {childElements.length > 0
+          {childElements.length > 0 && selectedElement?.status !== ElementStatus.Ongoing
           && (
             <Button
               minimal
@@ -78,8 +78,8 @@ const StatusCard = ({element, childElements, selectedElement, setSelectedElement
           )}
         </ButtonGroup>
         {childElements.length > 0 && (
-          <Collapse className='' isOpen={isOpen}>
-            <div className='grid grid-cols-6 gap-3 m-4'>
+          <Collapse isOpen={isOpen}>
+            <div className='grid grid-cols-6 gap-3 mb-4 p-4 border-2 border-t-0 rounded-xl'>
               {featureElements.length > 0 && (
                 <>
                   <H4 className='col-span-6 text-center'>

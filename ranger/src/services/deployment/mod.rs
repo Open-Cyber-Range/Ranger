@@ -3,7 +3,7 @@ pub(crate) mod event;
 pub mod event_info;
 mod feature;
 mod inject;
-mod node;
+pub mod node;
 mod template;
 
 use self::node::RemoveableNodes;
@@ -61,23 +61,25 @@ impl DeploymentManager {
             .deploy_scenario_features(addressor, exercise, deployers, &deployed_nodes)
             .await?;
 
-        let nodes_with_conditions = scenario
-            .create_events(addressor, &deployed_nodes, deployment)
+        let events = scenario.create_events(addressor, deployment).await?;
+
+        let deployment_info = scenario
+            .populate_condition_properties(&deployed_nodes, &events)
             .await?;
 
         scenario
-            .deploy_scenario_conditions(addressor, exercise, deployers, &nodes_with_conditions)
+            .deploy_conditions(addressor, exercise, deployers, &deployment_info)
             .await?;
 
         scenario
-            .create_event_info_pages(addressor, deployers, &nodes_with_conditions)
+            .create_event_info_pages(addressor, deployers, &events)
             .await?;
 
         scenario
-            .deploy_event_pollers(addressor, exercise, deployers, &nodes_with_conditions)
+            .deploy_event_pollers(addressor, exercise, deployers, &deployment_info, events)
             .await?;
 
-        info!("Deployment {} successful", deployment.name);
+        info!("Deployment {} finished", deployment.name);
         Ok(())
     }
 
@@ -153,7 +155,10 @@ impl Handler<RemoveDeployment> for DeploymentManager {
                     .await;
 
                 if let Err(error) = &undeploy_result {
-                    error!("Error deleting nodes for deployment '{deplyoment_name}': '{error}'", deplyoment_name = &deployment.name);
+                    error!(
+                        "Error deleting nodes for deployment '{deplyoment_name}': '{error}'",
+                        deplyoment_name = &deployment.name
+                    );
                 }
 
                 Ok(())
