@@ -40,6 +40,8 @@ const StatusCard = ({element, childElements, selectedElement, setSelectedElement
 
   const hasFailedChild = childElements.some(
     child => child.status === (ElementStatus.Failed || ElementStatus.RemoveFailed));
+  const isChildElementSelected = element.handlerReference ? element.handlerReference
+    === selectedElement?.parentNodeId : false;
 
   return (
     <div>
@@ -49,8 +51,7 @@ const StatusCard = ({element, childElements, selectedElement, setSelectedElement
             minimal
             fill
             outlined
-            active={element.id === selectedElement?.id
-                || element.handlerReference === selectedElement?.parentNodeId}
+            active={element.id === selectedElement?.id || isChildElementSelected}
             color={element.id === selectedElement?.id ? Colors.BLUE3 : ''}
             className='w-full rounded-xl outline-none'
             intent={hasFailedChild ? Intent.DANGER
@@ -63,7 +64,7 @@ const StatusCard = ({element, childElements, selectedElement, setSelectedElement
               {element?.scenarioReference}
             </span>
           </Button>
-          {childElements.length > 0 && selectedElement?.status !== ElementStatus.Ongoing
+          {childElements.length > 0 && element.status !== ElementStatus.Ongoing
           && (
             <Button
               minimal
