@@ -98,7 +98,7 @@ const DeploymentFocus = () => {
             <>
               <H2>{t('exercises.tabs.events')}</H2>
               <ManagerEvents
-                scenarioEvents={scenario?.events}
+                scenario={scenario}
                 deploymentEvents={deploymentEvents}
                 deploymentElements={deploymentElements}
               />

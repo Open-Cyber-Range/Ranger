@@ -35,7 +35,7 @@ const ProgressBarWithTimer = ({event, allNodesHaveTriggered}:
     return (
       <div className='items-center w-full mb-2'>
         <div className='flex text-sm justify-center italic'>
-          {t('deployments.events.allNodesHaveTriggered')}
+          { t('deployments.events.eventHasTriggered')}
         </div>
         <ProgressBar
           intent='success'

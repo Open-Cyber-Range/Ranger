@@ -34,7 +34,6 @@ type DeploymentEvent = {
   id: string;
   name: string;
   deploymentId: string;
-  parentNodeId: string;
   start: string;
   end: string;
   description?: string;

@@ -2316,9 +2316,9 @@ dependencies = [
 
 [[package]]
 name = "sdl-parser"
-version = "0.19.0"
+version = "0.20.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a1fb7c322c71d1aee65d57db8dc8fa7a7ac9e8ffc72a9bcd52e0c14b58e479b5"
+checksum = "aee35d08afff535fa54a894789fa6ab14f461536b5fb1f5e8edac9e84ae8398e"
 dependencies = [
  "anyhow",
  "bytesize",

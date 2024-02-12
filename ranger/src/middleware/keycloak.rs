@@ -76,7 +76,7 @@ impl KeycloakAccess {
             })?;
 
         let keycloak_client_id = keycloak_clients
-            .get(0)
+            .first()
             .ok_or_else(|| {
                 error!("Failed to get keycloak client");
                 RangerError::KeycloakQueryFailed

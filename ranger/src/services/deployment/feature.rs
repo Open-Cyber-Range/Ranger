@@ -1,4 +1,4 @@
-use super::node::DeployedNode;
+use super::node::NodeProperties;
 use crate::models::helpers::uuid::Uuid;
 use crate::models::{DeploymentElement, ElementStatus, Exercise};
 use crate::services::database::account::GetAccount;
@@ -24,7 +24,7 @@ pub trait DeployableFeatures {
         addressor: &Addressor,
         exercise: &Exercise,
         deployers: &[String],
-        deployed_nodes: &[DeployedNode],
+        deployed_nodes: &[NodeProperties],
     ) -> Result<()>;
 }
 #[async_trait]
@@ -34,7 +34,7 @@ impl DeployableFeatures for Scenario {
         addressor: &Addressor,
         exercise: &Exercise,
         deployers: &[String],
-        deployed_nodes: &[DeployedNode],
+        deployed_nodes: &[NodeProperties],
     ) -> Result<()> {
         if self.features.is_some() {
             try_join_all(deployed_nodes.iter().map(|deployed_node| async move {
@@ -61,10 +61,10 @@ pub trait DeployableNodeFeatures {
 }
 
 #[async_trait]
-impl DeployableNodeFeatures for (Addressor, Vec<String>, Scenario, Uuid, &DeployedNode) {
+impl DeployableNodeFeatures for (Addressor, Vec<String>, Scenario, Uuid, &NodeProperties) {
     async fn deploy_node_features(&self) -> Result<()> {
         let (addressor, deployers, scenario, exercise_id, deployed_node) = self;
-        let DeployedNode {
+        let NodeProperties {
             node,
             deployment_element,
             template_id,

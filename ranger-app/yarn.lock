@@ -569,10 +569,10 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@open-cyber-range/wasm-sdl-parser@^0.16.0":
-  version "0.16.0"
-  resolved "https://registry.yarnpkg.com/@open-cyber-range/wasm-sdl-parser/-/wasm-sdl-parser-0.16.0.tgz#12efff847d8e40703d80a3807f5aa895318db7d2"
-  integrity sha512-2psp3KYIONVKIqVYX9bs5IejzODPNtNzsJdRt2+9EqGuf1/JhJwxobFoUE3jKGn2lkRyA9+nyrxD43xojKfnfw==
+"@open-cyber-range/wasm-sdl-parser@^0.20.0":
+  version "0.20.0"
+  resolved "https://registry.yarnpkg.com/@open-cyber-range/wasm-sdl-parser/-/wasm-sdl-parser-0.20.0.tgz#de318024f557eba08b3853f62ba9ed710e8c8279"
+  integrity sha512-CzLwZp0liC1fe32iXbi1PG2j63Eu1b9+XZJx9pdQH1e3REvlMpAjQcxarA+rHs35wt1OmsCRVitxbQsm089PsQ==
 
 "@popperjs/core@^2.11.6", "@popperjs/core@^2.11.7", "@popperjs/core@^2.11.8", "@popperjs/core@^2.9.2":
   version "2.11.8"

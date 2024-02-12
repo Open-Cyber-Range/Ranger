@@ -1,4 +1,5 @@
-use super::node::DeployedNode;
+use super::event::DeploymentEvent;
+use super::node::{NodeDeploymentInfo, NodeProperties};
 use super::Database;
 use crate::models::helpers::uuid::Uuid;
 use crate::models::{DeploymentElement, ElementStatus, Exercise};
@@ -15,22 +16,28 @@ use async_trait::async_trait;
 use futures::future::try_join_all;
 use futures_util::future::join_all;
 use log::debug;
-use ranger_grpc::capabilities::DeployerType as GrpcDeployerType;
-use ranger_grpc::{Account as GrpcAccount, Condition as GrpcCondition, Source as GrpcSource};
-use sdl_parser::condition::Condition;
-use sdl_parser::inject::Inject;
-use sdl_parser::metric::Metrics;
-use sdl_parser::{node::Role, Scenario};
+use ranger_grpc::{
+    capabilities::DeployerType as GrpcDeployerType, Account as GrpcAccount,
+    Condition as GrpcCondition, Source as GrpcSource,
+};
+use sdl_parser::{condition::Condition, metric::Metrics, node::NodeType, node::Role, Scenario};
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 #[async_trait]
 pub trait DeployableConditions {
-    async fn deploy_scenario_conditions(
+    async fn populate_condition_properties(
+        &self,
+        deployed_nodes: &[NodeProperties],
+        events: &[DeploymentEvent],
+    ) -> Result<Vec<NodeDeploymentInfo>>;
+
+    async fn deploy_conditions(
         &self,
         addressor: &Addressor,
         exercise: &Exercise,
         deployers: &[String],
-        deployed_nodes: &[(DeployedNode, Vec<ConditionProperties>)],
+        deployed_nodes: &[NodeDeploymentInfo],
     ) -> Result<()>;
 }
 #[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
@@ -39,40 +46,108 @@ pub struct ConditionProperties {
     pub condition: Condition,
     pub role: Role,
     pub event_id: Option<Uuid>,
-    pub event_name: Option<String>,
-    pub injects: Option<Vec<(String, Inject, Role)>>,
 }
 
 #[async_trait]
 impl DeployableConditions for Scenario {
-    async fn deploy_scenario_conditions(
+    async fn populate_condition_properties(
+        &self,
+        deployed_nodes: &[NodeProperties],
+        events: &[DeploymentEvent],
+    ) -> Result<Vec<NodeDeploymentInfo>> {
+        let sdl_conditions = &self.conditions.clone().unwrap_or_default();
+
+        let node_deployment_infos = deployed_nodes
+            .iter()
+            .filter_map(|deployed_node| {
+                if let NodeType::VM(vm_node) = &deployed_node.node.type_field {
+                    Some((deployed_node, vm_node))
+                } else {
+                    None
+                }
+            })
+            .map(|(deployed_node, vm_node)| {
+                let node_roles = try_some(vm_node.roles.clone(), "VM Node missing Roles")?;
+                let node_condition_roles = vm_node.conditions.clone();
+
+                let node_conditions = sdl_conditions
+                    .iter()
+                    .filter_map(
+                        |(name, condition)| match node_condition_roles.contains_key(name) {
+                            true => Some((name.to_owned(), condition.clone())),
+                            false => None,
+                        },
+                    )
+                    .collect::<HashMap<_, _>>();
+
+                let condition_properties: Vec<ConditionProperties> = node_conditions.iter().fold(
+                    vec![],
+                    |mut accumulator, (condition_key, condition)| {
+                        if let Some(role_name) = node_condition_roles.get(condition_key) {
+                            let condition_event_id = events
+                                .iter()
+                                .find(|event| {
+                                    if let Some(event_condition_keys) = &event.condition_keys {
+                                        event_condition_keys.contains(condition_key)
+                                    } else {
+                                        false
+                                    }
+                                })
+                                .map(|event| event.id);
+
+                            if let Some(role) = node_roles.get(role_name) {
+                                accumulator.push(ConditionProperties {
+                                    name: condition_key.to_owned(),
+                                    condition: condition.clone(),
+                                    role: role.clone(),
+                                    event_id: condition_event_id,
+                                })
+                            }
+                        }
+
+                        accumulator
+                    },
+                );
+
+                let deployment_node_info = NodeDeploymentInfo {
+                    node_properties: deployed_node.clone(),
+                    condition_properties,
+                };
+                Ok(deployment_node_info)
+            })
+            .collect::<Result<Vec<_>>>();
+
+        node_deployment_infos
+    }
+
+    async fn deploy_conditions(
         &self,
         addressor: &Addressor,
         exercise: &Exercise,
         deployers: &[String],
-        deployed_nodes: &[(DeployedNode, Vec<ConditionProperties>)],
+        node_deployment_infos: &[NodeDeploymentInfo],
     ) -> Result<()> {
         if self.conditions.is_some() {
             try_join_all(
-                deployed_nodes
+                node_deployment_infos
                     .iter()
-                    .map(|(deployed_node, conditions)| async move {
-                        let DeployedNode {
-                            deployment_element,
-                            template_id,
-                            ..
-                        } = deployed_node;
+                    .filter(|node_deployment_info| {
+                        !node_deployment_info.condition_properties.is_empty()
+                    })
+                    .map(|node_deployment_info| async move {
+                        let node_properties = node_deployment_info.node_properties.clone();
+
                         debug!(
                             "Deploying conditions for Node: {:?}",
-                            deployment_element.scenario_reference
+                            node_properties.deployment_element.scenario_reference
                         );
                         addressor.condition_aggregator.do_send(DeployConditions {
                             addressor: addressor.clone(),
                             deployers: deployers.to_owned(),
-                            condition_properties: conditions.clone(),
-                            deployment_element: deployment_element.clone(),
+                            node_deployment_info: node_deployment_info.clone(),
+                            deployment_element: node_properties.deployment_element.clone(),
                             exercise_id: exercise.id,
-                            template_id: *template_id,
+                            template_id: node_properties.template_id,
                             metrics: self.metrics.clone(),
                         });
 
@@ -108,7 +183,7 @@ impl Actor for ConditionAggregator {
 pub struct DeployConditions {
     pub addressor: Addressor,
     pub deployers: Vec<String>,
-    pub condition_properties: Vec<ConditionProperties>,
+    pub node_deployment_info: NodeDeploymentInfo,
     pub deployment_element: DeploymentElement,
     pub exercise_id: Uuid,
     pub template_id: Uuid,
@@ -124,14 +199,15 @@ impl Handler<DeployConditions> for ConditionAggregator {
                 let DeployConditions {
                     addressor,
                     deployers,
-                    condition_properties: conditions,
+                    node_deployment_info,
                     deployment_element,
                     exercise_id,
                     template_id,
                     metrics,
                 } = &msg;
 
-                let futures = conditions
+                let futures = node_deployment_info
+                    .condition_properties
                     .iter()
                     .map(|condition_properties| async move {
                         let ConditionProperties {
@@ -139,8 +215,6 @@ impl Handler<DeployConditions> for ConditionAggregator {
                             condition,
                             role: condition_role,
                             event_id,
-                            event_name: _,
-                            injects: _,
                         } = condition_properties;
                         let virtual_machine_id_string = try_some(
                             deployment_element.clone().handler_reference,
@@ -149,7 +223,7 @@ impl Handler<DeployConditions> for ConditionAggregator {
                         let virtual_machine_id =
                             Uuid::try_from(virtual_machine_id_string.as_str())?;
 
-                        if condition_name.eq_ignore_ascii_case(condition_name) {
+                        if condition_name.eq_ignore_ascii_case(condition_name.as_str()) {
                             debug!(
                                 "Deploying condition '{condition_name}' for VM '{node_name}'",
                                 node_name = deployment_element.scenario_reference
@@ -250,7 +324,7 @@ impl Handler<DeployConditions> for ConditionAggregator {
                     .collect::<Vec<_>>();
 
                 let results: Result<Vec<_>, _> = join_all(futures).await.into_iter().collect();
-                let _ = results?;
+                results?;
 
                 Ok(())
             }
@@ -264,7 +338,7 @@ pub async fn create_condition_request(
     virtual_machine_id: &str,
     template_id: &Uuid,
     condition: &Condition,
-    condition_name: &str,
+    condition_name: &String,
     role: &Role,
 ) -> Result<Box<GrpcCondition>> {
     let template_account = database_address

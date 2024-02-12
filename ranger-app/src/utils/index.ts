@@ -21,6 +21,7 @@ import {
   deleteEntityConnectionButton,
 } from 'src/components/Deployment/EntityTree';
 import {type TFunction} from 'i18next';
+import {DateTime} from 'luxon';
 
 export const createEntityTree = (
   clickedDelete: (participantId: string) => void,
@@ -515,3 +516,7 @@ export const getReadableDeployerType = (t: TFunction, type: DeployerType): strin
     }
   }
 };
+
+export const formatStringToDateTime = (date: string) => DateTime.fromISO(date, {zone: 'utc'})
+  .setZone('local')
+  .toFormat('dd LLL yyyy HH:mm:ss');

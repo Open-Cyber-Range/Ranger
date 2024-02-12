@@ -13,36 +13,48 @@ use ranger_grpc::{
     Account as GrpcAccount, ExecutorResponse, Inject as GrpcInject, Source as GrpcSource,
 };
 use sdl_parser::inject::Inject;
+use sdl_parser::node::Role;
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
+pub struct InjectProperties {
+    pub name: String,
+    pub inject: Inject,
+    pub role: Role,
+    pub target_node_key: String,
+}
+#[derive(Debug, Clone)]
+pub struct InjectDeployment {
+    pub addressor: Addressor,
+    pub deployers: Vec<String>,
+    pub deployment_element: DeploymentElement,
+    pub exercise_id: Uuid,
+    pub username: String,
+    pub template_id: Uuid,
+    pub inject_key: String,
+    pub inject: Inject,
+}
 
 #[async_trait]
 pub trait DeployableInject {
-    async fn deploy_inject(&self) -> Result<()>;
+    async fn deploy_inject(self) -> Result<()>;
 }
 #[async_trait]
-impl DeployableInject
-    for (
-        &Addressor,
-        Vec<String>,
-        DeploymentElement,
-        Uuid,
-        String,
-        Uuid,
-        (String, Inject),
-    )
-{
-    async fn deploy_inject(&self) -> Result<()> {
-        let (
+impl DeployableInject for InjectDeployment {
+    async fn deploy_inject(self) -> Result<()> {
+        let InjectDeployment {
             addressor,
             deployers,
             deployment_element,
             exercise_id,
             username,
             template_id,
-            (inject_name, inject),
-        ) = self;
+            inject_key,
+            inject,
+        } = self;
 
         debug!(
-            "Deploying '{inject_name}' for '{node_name}",
+            "Deploying '{inject_key}' for '{node_name}",
             node_name = deployment_element.scenario_reference
         );
         let parent_node_id_string = try_some(
@@ -55,16 +67,16 @@ impl DeployableInject
 
         let template_account = addressor
             .database
-            .send(GetAccount(*template_id, username.to_owned()))
+            .send(GetAccount(template_id, username.to_owned()))
             .await??;
 
         let mut inject_deployment_element = addressor
             .database
             .send(CreateDeploymentElement(
-                *exercise_id,
+                exercise_id,
                 DeploymentElement::new_ongoing(
                     deployment_element.deployment_id,
-                    Box::new(inject_name.to_owned()),
+                    Box::new(inject_key.to_owned()),
                     GrpcDeployerType::Inject,
                     None,
                     Some(virtual_machine_id),
@@ -74,7 +86,7 @@ impl DeployableInject
             .await??;
 
         let inject_deployment = Box::new(GrpcInject {
-            name: inject_name.to_owned(),
+            name: inject_key.to_owned(),
             virtual_machine_id: parent_node_id_string,
             source: Some(GrpcSource {
                 name: inject_source.name.to_owned(),
@@ -113,14 +125,14 @@ impl DeployableInject
                     addressor
                         .database
                         .send(UpdateDeploymentElement(
-                            *exercise_id,
+                            exercise_id,
                             inject_deployment_element,
                             false,
                         ))
                         .await??;
 
                     debug!(
-                        "Deployed '{inject_name}' on '{node_name}'",
+                        "Deployed '{inject_key}' on '{node_name}'",
                         node_name = deployment_element.scenario_reference
                     );
                     return Ok(());
@@ -135,7 +147,7 @@ impl DeployableInject
                     addressor
                         .database
                         .send(UpdateDeploymentElement(
-                            *exercise_id,
+                            exercise_id,
                             inject_deployment_element,
                             false,
                         ))
