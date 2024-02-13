@@ -105,6 +105,8 @@ pub struct ParticipantDeployment {
     pub id: Uuid,
     pub name: String,
     pub exercise_id: Uuid,
+    pub start: NaiveDateTime,
+    pub end: NaiveDateTime,
     pub updated_at: String,
 }
 
@@ -113,6 +115,8 @@ impl From<Deployment> for ParticipantDeployment {
         Self {
             id: deployment.id,
             name: deployment.name,
+            start: deployment.start,
+            end: deployment.end,
             exercise_id: deployment.exercise_id,
             updated_at: deployment.updated_at.to_string(),
         }

@@ -2,6 +2,8 @@
 type ParticipantDeployment = {
   name: string;
   id: string;
+  start: string;
+  end: string;
   updatedAt: string;
 };
 
@@ -28,8 +30,6 @@ type NewDeployment = {
 type Deployment = {
   id: string;
   exerciseId: string;
-  startTime: string;
-  endTime: string;
   groupName?: string;
   createdAt: string;
   updatedAt: string;

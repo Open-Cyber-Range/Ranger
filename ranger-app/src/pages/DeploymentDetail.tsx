@@ -23,7 +23,11 @@ import SideBar from 'src/components/Exercise/SideBar';
 import useAdminExerciseStreaming from 'src/hooks/websocket/useAdminExerciseStreaming';
 import {toastSuccess, toastWarning} from 'src/components/Toaster';
 import RoleScoresButtonGroup from 'src/components/Scoring/RoleScoresButtonGroup';
-import {tryIntoScoringMetadata, isVMDeploymentOngoing} from 'src/utils';
+import {
+  tryIntoScoringMetadata,
+  isVMDeploymentOngoing,
+  formatStringToDateTime,
+} from 'src/utils';
 import {Tooltip2} from '@blueprintjs/popover2';
 import InfoTags from 'src/components/Deployment/InfoTags';
 import StatusBox from 'src/components/Deployment/Status/StatusBox';
@@ -75,7 +79,7 @@ const DeploymentDetail = () => {
         <>
           <div className='flex justify-between overflow-auto'>
             <div className='flex space-x-6 align-middle'>
-              <H2>{deployment?.name}</H2>
+              <H2>{deployment.name}</H2>
               <InfoTags deploymentElements={deploymentElements ?? []}/>
             </div>
             <Tooltip2
@@ -113,9 +117,19 @@ const DeploymentDetail = () => {
             scoringData={tryIntoScoringMetadata(scenario)}
             scores={scores ?? []}
           />
+          <div className='pt-8 pb-4'>
+            <p>
+              <span className='font-medium'>{t('deployments.startTime')} </span>
+              {formatStringToDateTime(deployment.start)}
+            </p>
+            <p>
+              <span className='font-medium'>{t('deployments.endTime')} </span>
+              {formatStringToDateTime(deployment.end)}
+            </p>
+          </div>
           <Card className='h-[60vh] p-0 mb-4' elevation={Elevation.TWO}>
             <Editor
-              value={deployment?.sdlSchema}
+              value={deployment.sdlSchema}
               defaultLanguage='yaml'
               options={{readOnly: true}}
             />

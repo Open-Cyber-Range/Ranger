@@ -35,11 +35,11 @@ const ParentlessEventCard: React.FC<ParentlessEventCardProps>
       <div className='mb-6 text-base'>
         <div className='mb-6'>
           <p>
-            <span className='font-medium'>{t('deployments.events.startTime')} </span>
+            <span className='font-medium'>{t('deployments.startTime')} </span>
             {formatStringToDateTime(event.start)}
           </p>
           <p>
-            <span className='font-medium'>{t('deployments.events.endTime')} </span>
+            <span className='font-medium'>{t('deployments.endTime')} </span>
             {formatStringToDateTime(event.end)}
           </p>
           <p>

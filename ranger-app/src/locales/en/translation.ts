@@ -77,6 +77,8 @@ const language = {
     deleteFail: 'Failed to delete the deployment',
     noDeployments: 'No deployments',
     noAccounts: 'No accounts',
+    startTime: 'Start time:',
+    endTime: 'End time:',
     entitySelect: 'Select an entity',
     entityConnector: {
       entityConnector: 'Entity Connector',
@@ -112,8 +114,6 @@ const language = {
     beingDeleted: 'Deployment is being deleted',
     events: {
       title: 'Events',
-      startTime: 'Start time:',
-      endTime: 'End time:',
       triggeredAt: 'Triggered at:',
       description: 'Description:',
       nodes: 'Nodes:',
