@@ -37,11 +37,11 @@ const EventCard: React.FC<EventCardProps>
       <div className='mb-6 text-base'>
         <div className='mb-6'>
           <p>
-            <span className='font-medium'>{t('deployments.startTime')} </span>
+            <span className='font-medium'>{t('deployments.startTime')}: </span>
             {formatStringToDateTime(event.start)}
           </p>
           <p>
-            <span className='font-medium'>{t('deployments.endTime')} </span>
+            <span className='font-medium'>{t('deployments.endTime')}: </span>
             {formatStringToDateTime(event.end)}
           </p>
           <p>

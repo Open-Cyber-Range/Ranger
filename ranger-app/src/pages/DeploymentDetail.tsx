@@ -18,6 +18,8 @@ import {
   Card,
   Elevation,
   H2,
+  H4,
+  Icon,
 } from '@blueprintjs/core';
 import SideBar from 'src/components/Exercise/SideBar';
 import useAdminExerciseStreaming from 'src/hooks/websocket/useAdminExerciseStreaming';
@@ -117,15 +119,19 @@ const DeploymentDetail = () => {
             scoringData={tryIntoScoringMetadata(scenario)}
             scores={scores ?? []}
           />
-          <div className='pt-8 pb-4'>
-            <p>
-              <span className='font-medium'>{t('deployments.startTime')} </span>
-              {formatStringToDateTime(deployment.start)}
-            </p>
-            <p>
-              <span className='font-medium'>{t('deployments.endTime')} </span>
-              {formatStringToDateTime(deployment.end)}
-            </p>
+          <div className='pt-2 pb-4'>
+            <div className='flex'>
+              <Icon icon='time' size={22}/>
+              <H4 className='font-bold pl-2'>{t('deployments.startTime')} </H4>
+            </div>
+            {formatStringToDateTime(deployment.start)}
+          </div>
+          <div className='pt-2 pb-4'>
+            <div className='flex'>
+              <Icon icon='time' size={22}/>
+              <H4 className='font-bold pl-2'>{t('deployments.endTime')} </H4>
+            </div>
+            {formatStringToDateTime(deployment.end)}
           </div>
           <Card className='h-[60vh] p-0 mb-4' elevation={Elevation.TWO}>
             <Editor

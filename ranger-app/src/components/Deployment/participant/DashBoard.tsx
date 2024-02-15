@@ -1,5 +1,5 @@
 import React from 'react';
-import {H2} from '@blueprintjs/core';
+import {H2, H4, Icon} from '@blueprintjs/core';
 import {type Banner} from 'src/models/exercise';
 import {useKeycloak} from '@react-keycloak/web';
 import {parseBannerForParticipant} from 'src/utils/banner';
@@ -21,7 +21,7 @@ const ParticipantDashBoard = ({exerciseId, deploymentId, existingBanner}:
   const {data: deployment} = useParticipantGetDeploymentQuery(
     {exerciseId, deploymentId},
   );
-  
+
   if (!deployment) {
     return (
       <div className='flex flex-col h-full min-h-screen'>
@@ -34,14 +34,22 @@ const ParticipantDashBoard = ({exerciseId, deploymentId, existingBanner}:
   if (!exercise || !existingBanner || !keycloak.tokenParsed) {
     return (
       <div className='flex flex-col h-full min-h-screen'>
-        <p>
-          <span className='font-medium'>{t('deployments.startTime')} </span>
+        <div className='pt-2 pb-4'>
+          <div className='flex'>
+            <Icon icon='time' size={22}/>
+            <H4 className='font-bold pl-2'>{t('deployments.startTime')} </H4>
+          </div>
           {formatStringToDateTime(deployment.start)}
-        </p>
-        <p>
-          <span className='font-medium'>{t('deployments.endTime')} </span>
+        </div>
+        <div className='pt-2 pb-4'>
+          <div className='flex'>
+            <Icon icon='time' size={22}/>
+            <H4 className='font-bold pl-2'>{t('deployments.endTime')} </H4>
+          </div>
           {formatStringToDateTime(deployment.end)}
-        </p>
+        </div>
+        <H2>{parsedBanner.name}</H2>
+        <MarkdownFrame content={parsedBanner.content}/>
       </div>
     );
   }
@@ -60,14 +68,20 @@ const ParticipantDashBoard = ({exerciseId, deploymentId, existingBanner}:
   const parsedUint8Array = new TextEncoder().encode(parsedContent.content);
   return (
     <div className='flex flex-col h-full min-h-screen'>
-      <p>
-        <span className='font-medium'>{t('deployments.startTime')} </span>
+      <div className='pt-2 pb-4'>
+        <div className='flex'>
+          <Icon icon='time' size={22}/>
+          <H4 className='font-bold pl-2'>{t('deployments.startTime')} </H4>
+        </div>
         {formatStringToDateTime(deployment.start)}
-      </p>
-      <p>
-        <span className='font-medium'>{t('deployments.endTime')} </span>
+      </div>
+      <div className='pt-2 pb-4'>
+        <div className='flex'>
+          <Icon icon='time' size={22}/>
+          <H4 className='font-bold pl-2'>{t('deployments.endTime')} </H4>
+        </div>
         {formatStringToDateTime(deployment.end)}
-      </p>
+      </div>
       <ContentIFrame content={parsedUint8Array}/>
     </div>
   );
