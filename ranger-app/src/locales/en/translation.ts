@@ -19,12 +19,15 @@ const language = {
     addingFail: 'Failed to add the exercise',
     updateSuccess: 'Exercise {{exerciseName}} updated',
     updateFail: 'Failed to update the exercise: {{errorMessage}}',
+    bannerDocumentation: 'Banner documentation',
+    bannerGuide: 'Banner reference guide',
+    easeBannerCreation: 'To ease the creation of the banner: ',
     noBanner: 'No banner exists for this exercise',
     noDeployments: 'No deployments',
     noDeploymentInfo: 'No deployment info',
     deleteSuccess: 'Exercise {{exerciseName}} deleted',
     deleteFail: 'Failed to delete the exercise {{exerciseName}}',
-    easeDevelopment: 'To ease the development of the exercise open: ',
+    easeDevelopment: 'To ease the development of the exercise: ',
     mustHaveName: 'Exercise must have a name',
     group: {
       placeholder: 'Select group...',
@@ -32,7 +35,8 @@ const language = {
       required: 'Deployment group is required',
     },
     package: {
-      add: 'Get scenario SDL from Deputy package',
+      getScenarioSDL: 'Get scenario SDL from Deputy package',
+      getBannerPackage: 'Get banner from Deputy package',
       name: {
         placeholder: 'Select package...',
         title: 'Package name',

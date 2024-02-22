@@ -22,12 +22,12 @@ type UpdateExercise = NewExercise;
 
 type Banner = {
   name: string;
-  content: string;
+  content: Uint8Array;
 };
 
 type BannerVariable = {
   name: string;
-  content: string;
+  content: Uint8Array;
 };
 
 type DeploymentEvent = {

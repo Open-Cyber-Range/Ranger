@@ -1,14 +1,12 @@
 import nunjucks from 'nunjucks';
-import {type Banner} from 'src/models/exercise';
 
 export const parseBannerForParticipant = (
-  banner: Banner,
+  bannerContent: string,
   exerciseName: string,
   deploymentName: string,
   username: string,
 ) => ({
-  ...banner,
-  content: nunjucks.renderString(banner.content, {
+  content: nunjucks.renderString(bannerContent, {
     exerciseName,
     deploymentName,
     username,

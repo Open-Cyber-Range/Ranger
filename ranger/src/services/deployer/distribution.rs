@@ -16,8 +16,11 @@ use actix::{
 };
 use anyhow::{anyhow, Ok, Result};
 use futures::future::try_join_all;
-use ranger_grpc::{capabilities::DeployerType as GrpcDeployerType, Package, Source};
+use ranger_grpc::{
+    capabilities::DeployerType as GrpcDeployerType, DeputyStreamResponse, Package, Source,
+};
 use std::collections::HashMap;
+use tonic::Streaming;
 
 #[derive(Clone)]
 pub struct DeployerDistribution {
@@ -305,6 +308,35 @@ impl Handler<DeputyPackageQueryGetExercise> for DeployerDistribution {
                 let sdl = deployment_client.get_exercise(source).await?;
 
                 Ok((sdl, best_deployer))
+            }
+            .into_actor(self)
+            .map(Self::release_deployer_closure),
+        )
+    }
+}
+
+#[derive(Message)]
+#[rtype(result = "Result<Streaming<DeputyStreamResponse>>")]
+pub struct DeputyPackageQueryGetBannerFile(pub Source, pub Vec<String>);
+
+impl Handler<DeputyPackageQueryGetBannerFile> for DeployerDistribution {
+    type Result = ResponseActFuture<Self, Result<Streaming<DeputyStreamResponse>>>;
+
+    fn handle(
+        &mut self,
+        msg: DeputyPackageQueryGetBannerFile,
+        _ctx: &mut Self::Context,
+    ) -> Self::Result {
+        let source = msg.0;
+        let potential_deployers = msg.1;
+
+        let client_result = self.get_deputy_query_client(potential_deployers);
+
+        Box::pin(
+            async move {
+                let (mut deployment_client, best_deployer) = client_result?;
+                let stream = deployment_client.get_banner_file(source).await?;
+                Ok((stream, best_deployer))
             }
             .into_actor(self)
             .map(Self::release_deployer_closure),

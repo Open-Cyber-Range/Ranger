@@ -3,19 +3,19 @@ use actix::{Actor, Addr, Context, Handler, Message, ResponseFuture};
 use anyhow::{Ok, Result};
 use async_trait::async_trait;
 use ranger_grpc::{
-    event_info_service_client::EventInfoServiceClient, EventCreateResponse, EventStreamResponse,
+    deputy_query_service_client::DeputyQueryServiceClient, DeputyCreateResponse, DeputyStreamResponse,
     Identifier, Source as GrpcSource,
 };
 use tonic::{transport::Channel, Streaming};
 
 pub struct EventInfoClient {
-    event_info_client: EventInfoServiceClient<Channel>,
+    event_info_client: DeputyQueryServiceClient<Channel>,
 }
 
 impl EventInfoClient {
     pub async fn new(server_address: String) -> Result<Self> {
         Ok(Self {
-            event_info_client: EventInfoServiceClient::connect(server_address).await?,
+            event_info_client: DeputyQueryServiceClient::connect(server_address).await?,
         })
     }
 }
@@ -60,11 +60,11 @@ impl DeploymentClient<Box<dyn DeploymentInfo>> for Addr<EventInfoClient> {
 }
 
 #[derive(Message)]
-#[rtype(result = "Result<EventCreateResponse>")]
+#[rtype(result = "Result<DeputyCreateResponse>")]
 pub struct CreateEventInfo(pub GrpcSource);
 
 impl Handler<CreateEventInfo> for EventInfoClient {
-    type Result = ResponseFuture<Result<EventCreateResponse>>;
+    type Result = ResponseFuture<Result<DeputyCreateResponse>>;
 
     fn handle(&mut self, msg: CreateEventInfo, _ctx: &mut Self::Context) -> Self::Result {
         let create_event = msg.0;
@@ -78,11 +78,11 @@ impl Handler<CreateEventInfo> for EventInfoClient {
 }
 
 #[derive(Message)]
-#[rtype(result = "Result<Streaming<EventStreamResponse>>")]
+#[rtype(result = "Result<Streaming<DeputyStreamResponse>>")]
 pub struct CreateEventInfoStream(pub Identifier);
 
 impl Handler<CreateEventInfoStream> for EventInfoClient {
-    type Result = ResponseFuture<Result<Streaming<EventStreamResponse>>>;
+    type Result = ResponseFuture<Result<Streaming<DeputyStreamResponse>>>;
 
     fn handle(&mut self, msg: CreateEventInfoStream, _ctx: &mut Self::Context) -> Self::Result {
         let identifier = msg.0;

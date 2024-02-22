@@ -314,6 +314,10 @@ export const apiSlice = createApi({
     adminGetExerciseSdlFromPackage: builder.query<string, {name: string; version: string}>({
       query: ({name, version}) => `/admin/query/package/exercise?name=${name}&version=${version}`,
     }),
+    adminGetBannerContentFromPackage: builder.query<Banner, {name: string; version: string}>({
+      query: ({name, version}) =>
+        `/admin/query/package/exercise/banner?name=${name}&version=${version}`,
+    }),
     participantGetExercises: builder.query<ParticipantExercise[], void>({
       query: () => '/participant/exercise',
       providesTags: (result = []) =>
@@ -592,6 +596,7 @@ export const {
   useAdminGetEventInfoQuery,
   useAdminGetDeputyPackagesQuery,
   useAdminGetExerciseSdlFromPackageQuery,
+  useAdminGetBannerContentFromPackageQuery,
   useLazyAdminGetManualMetricArtifactQuery,
   useParticipantGetExercisesQuery,
   useParticipantGetExerciseQuery,

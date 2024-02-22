@@ -18,7 +18,7 @@ use serde::{Deserialize, Serialize};
 pub struct Banner {
     pub exercise_id: Uuid,
     pub name: String,
-    pub content: String,
+    pub content: Vec<u8>,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
 }
@@ -45,7 +45,7 @@ impl Banner {
 #[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
 pub struct NewBanner {
     pub name: String,
-    pub content: String,
+    pub content: Vec<u8>,
 }
 
 #[derive(Insertable, Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
@@ -54,7 +54,7 @@ pub struct NewBanner {
 pub struct NewBannerWithId {
     pub exercise_id: Uuid,
     pub name: String,
-    pub content: String,
+    pub content: Vec<u8>,
 }
 
 impl NewBannerWithId {
@@ -68,7 +68,7 @@ impl NewBannerWithId {
 #[diesel(table_name = banners)]
 pub struct UpdateBanner {
     pub name: String,
-    pub content: String,
+    pub content: Vec<u8>,
 }
 
 impl UpdateBanner {
@@ -80,4 +80,10 @@ impl UpdateBanner {
             .filter(banners::exercise_id.eq(id))
             .set(self)
     }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
+pub struct BannerContentRest {
+    pub name: String,
+    pub content: Vec<u8>,
 }

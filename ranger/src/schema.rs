@@ -36,7 +36,7 @@ diesel::table! {
         #[max_length = 16]
         exercise_id -> Binary,
         name -> Tinytext,
-        content -> Text,
+        content -> Mediumblob,
         created_at -> Timestamp,
         updated_at -> Timestamp,
     }

@@ -255,7 +255,7 @@ const ExerciseForm = ({exercise, onContentChange, children}:
             className='mb-4'
             icon='add'
             intent='success'
-            text={t('exercises.package.add')}
+            text={t('exercises.package.getScenarioSDL')}
             onClick={() => {
               setIsOpen(true);
             }}
