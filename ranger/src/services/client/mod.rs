@@ -16,10 +16,9 @@ pub use event_info::*;
 pub use feature::*;
 pub use inject::*;
 use ranger_grpc::{
-    ConditionStreamResponse, EventCreateResponse, EventStreamResponse, ExecutorResponse,
-    Identifier, TemplateResponse,
+    ConditionStreamResponse, DeputyCreateResponse, DeputyStreamResponse, ExecutorResponse,
+    Identifier, Package, Source, TemplateResponse,
 };
-use ranger_grpc::{Package, Source};
 use std::any::Any;
 pub use switch::*;
 pub use template::*;
@@ -27,7 +26,7 @@ use tonic::Streaming;
 pub use virtual_machine::*;
 
 pub type ConditionResponse = (Identifier, Streaming<ConditionStreamResponse>);
-pub type EventInfoResponse = (EventCreateResponse, Streaming<EventStreamResponse>);
+pub type EventInfoResponse = (DeputyCreateResponse, Streaming<DeputyStreamResponse>);
 pub enum DeploymentClientResponse {
     Identifier(Identifier),
     ExecutorResponse(ExecutorResponse),
@@ -40,6 +39,7 @@ pub enum DeploymentClientResponse {
 pub trait DeputyQueryDeploymentClient {
     async fn packages_query_by_type(&mut self, package_type: String) -> Result<Vec<Package>>;
     async fn get_exercise(&mut self, source: Source) -> Result<String>;
+    async fn get_banner_file(&mut self, source: Source) -> Result<Streaming<DeputyStreamResponse>>;
 }
 
 #[async_trait]

@@ -1,5 +1,4 @@
 import React, {useEffect, useState} from 'react';
-import {type EventInfo} from 'src/models/exercise';
 import DOMPurify from 'dompurify';
 
 async function fetchCSS(cssURL: string) {
@@ -7,15 +6,15 @@ async function fetchCSS(cssURL: string) {
   return response.text();
 }
 
-const EventIframe = ({eventInfo}:
+const ContentIFrame = ({content}:
 {
-  eventInfo: EventInfo | undefined;
+  content: Uint8Array | undefined;
 }) => {
   const [url, setUrl] = useState<string | undefined>(undefined);
   const cssLink = '/gfm.min.css';
 
   useEffect(() => {
-    const encoded = eventInfo?.content ? new Uint8Array(eventInfo.content) : new Uint8Array();
+    const encoded = content ? new Uint8Array(content) : new Uint8Array();
     let htmlString = new TextDecoder().decode(encoded);
     htmlString = DOMPurify.sanitize(htmlString);
 
@@ -53,9 +52,9 @@ const EventIframe = ({eventInfo}:
 
       setUrl(blobUrl);
     });
-  }, [eventInfo, cssLink]);
+  }, [content, cssLink]);
 
-  if (!eventInfo || !url) {
+  if (!content || !url) {
     return null;
   }
 
@@ -68,4 +67,4 @@ const EventIframe = ({eventInfo}:
   );
 };
 
-export default EventIframe;
+export default ContentIFrame;

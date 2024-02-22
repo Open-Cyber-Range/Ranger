@@ -51,7 +51,7 @@ const PackageDialog = (
     return (
       <Dialog isOpen={isOpen} onClose={onClose}>
         <div className='bp4-dialog-header'>
-          <H4>{t('exercises.package.add')}</H4>
+          <H4>{t('exercises.package.getScenarioSDL')}</H4>
           <Button
             small
             minimal

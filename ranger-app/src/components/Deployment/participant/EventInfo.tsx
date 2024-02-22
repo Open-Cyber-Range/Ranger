@@ -7,7 +7,7 @@ import {type DeploymentEvent} from 'src/models/exercise';
 import {type DeploymentDetailRouteParameters} from 'src/models/routes';
 import {useParticipantGetEventInfoQuery} from 'src/slices/apiSlice';
 import {selectedEntity} from 'src/slices/userSlice';
-import EventIframe from 'src/components/Deployment/Event/EventIframe';
+import ContentIFrame from 'src/components/ContentIFrame';
 import {Divider} from '@blueprintjs/core';
 
 const EventInfo = ({eventName, event}:
@@ -52,7 +52,7 @@ const EventInfo = ({eventName, event}:
             {event.description ?? ''}
           </div>
           <div>
-            <EventIframe eventInfo={eventInfo}/>
+            <ContentIFrame content={eventInfo?.content}/>
           </div>
           <Divider/>
           <div className='ml-2 pt-2 text-slate-600 italic'>

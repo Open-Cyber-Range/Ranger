@@ -4,7 +4,7 @@ import {useParams} from 'react-router-dom';
 import {type DeploymentEvent} from 'src/models/exercise';
 import {type DeploymentDetailRouteParameters} from 'src/models/routes';
 import {useAdminGetEventInfoQuery} from 'src/slices/apiSlice';
-import EventIframe from 'src/components/Deployment/Event/EventIframe';
+import ContentIFrame from 'src/components/ContentIFrame';
 
 const EventInfo = ({eventName, event}:
 {eventName: string;
@@ -28,7 +28,7 @@ const EventInfo = ({eventName, event}:
         </summary>
         <div className='mt-2 text-sm'>
           <div>
-            <EventIframe eventInfo={eventInfo}/>
+            <ContentIFrame content={eventInfo?.content}/>
           </div>
         </div>
       </details>
