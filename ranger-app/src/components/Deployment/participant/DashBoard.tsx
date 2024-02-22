@@ -48,8 +48,6 @@ const ParticipantDashBoard = ({exerciseId, deploymentId, existingBanner}:
           </div>
           {formatStringToDateTime(deployment.end)}
         </div>
-        <H2>{parsedBanner.name}</H2>
-        <MarkdownFrame content={parsedBanner.content}/>
       </div>
     );
   }
