@@ -211,6 +211,7 @@ const language = {
     searchPlaceholder: 'Search...',
     collapse: 'Collapse',
     expand: 'Expand',
+    noSuggestions: 'No suggestions',
   },
   emails: {
     status: 'Status',
@@ -499,6 +500,27 @@ const language = {
       Additionally, you can specify the size of the element with a rough number of virtual
       machines and add additional info. This environment sets the stage for realistic
       cyber scenarios.`,
+      add: 'Add an environment',
+      nameRequired: 'Name is required',
+      nameMaxLength: 'Name must be equal or less than 255 characters',
+      name: 'Name',
+      category: 'Category',
+      categoryRequired: 'Category is required',
+      categoryMaxLength: 'Category must be equal or less than 255 characters',
+      size: 'Size',
+      sizeRequired: 'Size is required',
+      sizeMin: 'Size must be greater than 0',
+      additionalInformation: 'Additional information',
+      additionalInformationMaxLength: `Additional information must be equal or less than
+        3000 characters`,
+      addNewStrength: 'Add new strength',
+      strength: 'Strength',
+      strengthRequired: 'Strength is required',
+      strengthMaxLength: 'Strength must be equal or less than 255 characters',
+      addNewWeakness: 'Add new weakness',
+      weakness: 'Weakness',
+      weaknessRequired: 'Weakness is required',
+      weaknessMaxLength: 'Weakness must be equal or less than 255 characters',
     },
   },
 };

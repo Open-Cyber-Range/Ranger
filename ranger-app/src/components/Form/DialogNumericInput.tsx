@@ -1,18 +1,26 @@
-import {FormGroup, Intent, TextArea} from '@blueprintjs/core';
+import {FormGroup, Intent, NumericInput} from '@blueprintjs/core';
+import {
+  type InputSharedProps,
+} from '@blueprintjs/core/lib/esm/components/forms/inputSharedProps';
 import type React from 'react';
-import {Controller, type FieldValues} from 'react-hook-form';
+import {
+  Controller,
+  type PathValue,
+  type FieldValues,
+  type Path,
+} from 'react-hook-form';
 import {useTranslation} from 'react-i18next';
 
-const DialogTextArea = <T extends FieldValues>({
+const DialogNumericInput = <T extends FieldValues>({
   controllerProps,
-  textAreaProps,
   id,
   label,
+  leftElement,
 }: {
   controllerProps: Omit<React.ComponentProps<typeof Controller<T>>, 'render'>;
-  textAreaProps?: Omit<React.ComponentProps<typeof TextArea>, 'ref' | 'value' | 'onChange'>;
   id: string;
   label: string;
+  leftElement?: InputSharedProps['leftElement'];
 }) => {
   const {t} = useTranslation();
 
@@ -23,8 +31,9 @@ const DialogTextArea = <T extends FieldValues>({
         field: {onChange, onBlur, ref, value}, fieldState: {error},
       }) => {
         const intent = error ? Intent.DANGER : Intent.NONE;
-        if (typeof value !== 'string') {
-          throw new TypeError('TextInput value must be a string');
+
+        if (typeof value !== 'number') {
+          throw new TypeError('NumericInput value must be a number');
         }
 
         return (
@@ -35,14 +44,19 @@ const DialogTextArea = <T extends FieldValues>({
             intent={intent}
             label={label}
           >
-            <TextArea
-              {...(textAreaProps ?? {})}
+            <NumericInput
               large
+              fill
+              leftElement={leftElement}
               intent={intent}
+              stepSize={1}
               value={value}
               inputRef={ref}
+              min={typeof controllerProps.rules?.min === 'number' ? controllerProps.rules.min : 1}
               id={id}
-              onChange={onChange}
+              onValueChange={value => {
+                onChange(value as unknown as PathValue<T, Path<T>>);
+              }}
               onBlur={onBlur}
             />
           </FormGroup>
@@ -52,5 +66,5 @@ const DialogTextArea = <T extends FieldValues>({
   );
 };
 
-export default DialogTextArea;
+export default DialogNumericInput;
 

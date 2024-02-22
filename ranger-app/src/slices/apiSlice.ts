@@ -774,6 +774,15 @@ export const apiSlice = createApi({
 });
 
 export const {
+  useClientAddEnvironmentMutation,
+  useClientUpdateEnvironmentMutation,
+  useClientDeleteEnvironmentMutation,
+  useClientAddCustomElementMutation,
+  useClientUpdateCustomElementMutation,
+  useClientDeleteCustomElementMutation,
+  useClientAddPlotMutation,
+  useClientUpdatePlotMutation,
+  useClientDeletePlotMutation,
   useClientAddStructureMutation,
   useClientDeleteStructureMutation,
   useClientUpdateStructureMutation,

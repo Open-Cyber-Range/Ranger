@@ -36,15 +36,6 @@ const DialogSelect = <T extends FieldValues>({
             intent={intent}
             label={label}
           >
-            {/* <InputGroup
-              large
-              intent={intent}
-              value={value}
-              inputRef={ref}
-              id={id}
-              onChange={onChange}
-              onBlur={onBlur}
-            /> */}
             <HTMLSelect
               {...(selectProps ?? {})}
               large
