@@ -13,6 +13,7 @@ import TrainingObjectives from 'src/components/Order/client/TrainingObjectives';
 import Structure from 'src/components/Order/client/Structure';
 import Environment from 'src/components/Order/client/Environment';
 import {type Order} from 'src/models/order';
+import CustomElements from 'src/components/Order/client/CustomElements';
 
 function readyForNext(formType: string, order: Order | undefined): boolean {
   return (formType === 'training-objectives' && (order?.trainingObjectives?.length ?? 0) > 0)
@@ -96,7 +97,7 @@ const OrderDetail = () => {
         {order && formType === 'training-objectives' && (<TrainingObjectives order={order}/>)}
         {order && formType === 'structure' && (<Structure order={order}/>)}
         {order && formType === 'environment' && (<Environment order={order}/>)}
-        {order && formType === 'custom-elements' && (<Environment order={order}/>)}
+        {order && formType === 'custom-elements' && (<CustomElements order={order}/>)}
       </div>
     </PageHolder>
   );

@@ -135,6 +135,7 @@ type Order = {
   trainingObjectives?: TrainingObjective[];
   structures?: Structure[];
   environments?: Environment[];
+  customElements?: CustomElement[];
   createdAt: string;
   updatedAt: string;
 } & NewOrder;

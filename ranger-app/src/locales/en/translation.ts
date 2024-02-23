@@ -521,6 +521,38 @@ const language = {
       weakness: 'Weakness',
       weaknessRequired: 'Weakness is required',
       weaknessMaxLength: 'Weakness must be equal or less than 255 characters',
+      failedtoAdd: 'Failed to add member',
+      failedToDelete: 'Failed to delete member',
+      failedToUpadate: 'Failed to update member',
+    },
+    customElement: {
+      explenation: `Integrate your client-specific software into the exercise.
+      Provide details for custom elements you want to see incorporated into the
+      exercise and upload any necessary files with your exercise request.`,
+      add: 'Add a custom element',
+      name: 'Name',
+      nameRequired: 'Name is required',
+      nameMaxLength: 'Name must be equal or less than 255 characters',
+      description: 'Description',
+      descriptionRequired: 'Description is required',
+      descriptionMaxLength: 'Description must be equal or less than 3000 characters',
+      connectedTrainingObjectives: 'Connected training objectives',
+      environment: 'Environment',
+      environmentRequired: 'Environment is required',
+      noEnvironment: 'No environment',
+      noPossibleEnvironments: 'No possible environments',
+      failedtoAdd: 'Failed to add custom element',
+      failedToDelete: 'Failed to delete custom element',
+      failedToUpadate: 'Failed to update custom element',
+    },
+    plotElement: {
+      explenation: `Craft the narrative of your exercise. In the Plot section, describe the
+      storyline in a free-form text field. Set the start and end times to establish
+      the exercise's timeframe. This is to guide the overarching story of the cyber scenario.`,
+      plotPointExplenation: `Fine-tune the exercise narrative with Plot Points. Specify events
+      or turning points in detail. Add affected members from the structure, set the time for
+      the plot point to trigger, and link it to a specific objective if aimed at testing a
+      certain skill or accomplishment.`,
     },
   },
 };

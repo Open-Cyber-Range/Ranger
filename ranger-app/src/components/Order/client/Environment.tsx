@@ -38,7 +38,7 @@ const EnvironmentElement = ({order}: {order: Order}) => {
   useEffect(() => {
     if (error) {
       toastWarning(t(
-        'order.structureElements.failedtoAdd',
+        'order.environmentElements.failedtoAdd',
       ));
     }
   }, [error, t]);
@@ -46,7 +46,7 @@ const EnvironmentElement = ({order}: {order: Order}) => {
   useEffect(() => {
     if (deleteError) {
       toastWarning(t(
-        'order.structureElements.failedToDelete',
+        'order.environmentElements.failedToDelete',
       ));
     }
   }, [deleteError, t]);
@@ -54,7 +54,7 @@ const EnvironmentElement = ({order}: {order: Order}) => {
   useEffect(() => {
     if (updateError) {
       toastWarning(t(
-        'order.structureElements.failedToUpdate',
+        'order.environmentElements.failedToUpdate',
       ));
     }
   }, [updateError, t]);
