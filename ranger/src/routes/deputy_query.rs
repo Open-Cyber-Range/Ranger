@@ -1,14 +1,17 @@
 use crate::models::helpers::grpc_package::SerializableGrpcPackage;
-use crate::models::BannerContentRest;
+use crate::models::{BannerContentRest, LocalSource};
 use crate::routes::get_query_param;
 use crate::services::deployer::{
-    DeputyPackageQueryByType, DeputyPackageQueryGetBannerFile, DeputyPackageQueryGetExercise,
+    DeputyPackageQueryByType, DeputyPackageQueryCheckPackageExists,
+    DeputyPackageQueryGetBannerFile, DeputyPackageQueryGetExercise,
 };
 use crate::services::deployment::GetDefaultDeployers;
-use crate::utilities::{create_database_error_handler, create_mailbox_error_handler};
+use crate::utilities::{
+    create_database_error_handler, create_mailbox_error_handler, create_package_error_handler,
+};
 use crate::AppState;
-use actix_web::web::{Data, Query};
-use actix_web::{get, Error, HttpResponse};
+use actix_web::web::{Data, Json, Query};
+use actix_web::{get, post, Error, HttpResponse};
 use anyhow::Result;
 use ranger_grpc::DeputyStreamResponse;
 use ranger_grpc::Source;
@@ -112,4 +115,38 @@ pub async fn get_deputy_banner_file(
     Ok(HttpResponse::Ok()
         .content_type("application/json")
         .json(banner_content_rest))
+}
+
+#[post("")]
+pub async fn check_package_exists(
+    app_state: Data<AppState>,
+    sources: Json<Vec<LocalSource>>,
+) -> Result<HttpResponse, Error> {
+    let deployers = app_state
+        .deployment_manager_address
+        .send(GetDefaultDeployers())
+        .await
+        .map_err(create_mailbox_error_handler("Deputy Query"))?
+        .map_err(create_database_error_handler("Get default deployers"))?;
+
+    let sources: Vec<LocalSource> = sources.into_inner();
+
+    for local_source in sources {
+        let source: ranger_grpc::Source = local_source.into();
+
+        app_state
+            .deployer_distributor_address
+            .send(DeputyPackageQueryCheckPackageExists(
+                source.clone(),
+                deployers.clone(),
+            ))
+            .await
+            .map_err(create_mailbox_error_handler("Deputy Query"))?
+            .map_err(create_package_error_handler(
+                "Check if package exists".to_string(),
+                source.name,
+            ))?;
+    }
+
+    Ok(HttpResponse::Ok().finish())
 }

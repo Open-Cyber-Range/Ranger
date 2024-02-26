@@ -49,7 +49,7 @@ export type Evaluation = {
 export type Event = {
   name?: string;
   description?: string;
-  time?: number;
+  source?: Source;
   conditions?: string[];
   injects?: string[];
 };

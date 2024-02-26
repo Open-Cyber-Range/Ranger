@@ -343,3 +343,31 @@ impl Handler<DeputyPackageQueryGetBannerFile> for DeployerDistribution {
         )
     }
 }
+
+#[derive(Message)]
+#[rtype(result = "Result<()>")]
+pub struct DeputyPackageQueryCheckPackageExists(pub Source, pub Vec<String>);
+impl Handler<DeputyPackageQueryCheckPackageExists> for DeployerDistribution {
+    type Result = ResponseActFuture<Self, Result<()>>;
+
+    fn handle(
+        &mut self,
+        msg: DeputyPackageQueryCheckPackageExists,
+        _ctx: &mut Self::Context,
+    ) -> Self::Result {
+        let source = msg.0;
+        let potential_deployers = msg.1;
+
+        let client_result = self.get_deputy_query_client(potential_deployers);
+
+        Box::pin(
+            async move {
+                let (mut deployment_client, best_deployer) = client_result?;
+                deployment_client.check_package_exists(source).await?;
+                Ok(((), best_deployer))
+            }
+            .into_actor(self)
+            .map(Self::release_deployer_closure),
+        )
+    }
+}

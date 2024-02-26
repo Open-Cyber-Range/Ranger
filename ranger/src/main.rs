@@ -20,7 +20,10 @@ use ranger::routes::admin::metric::{
 };
 use ranger::routes::admin::scenario::get_admin_exercise_deployment_scenario;
 use ranger::routes::deployers::{default_deployer, get_deployers};
-use ranger::routes::deputy_query::{get_deputy_banner_file, get_deputy_packages_by_type, get_exercise_by_source};
+use ranger::routes::deputy_query::{
+    check_package_exists, get_deputy_banner_file, get_deputy_packages_by_type,
+    get_exercise_by_source,
+};
 use ranger::routes::exercise::{
     add_banner, add_exercise, add_exercise_deployment, add_participant, delete_banner,
     delete_exercise, delete_exercise_deployment, delete_participant, get_admin_participants,
@@ -79,6 +82,10 @@ async fn main() -> Result<(), Error> {
                                                     scope("/banner")
                                                         .service(get_deputy_banner_file)
                                                 )
+                                        )
+                                        .service(
+                                            scope("/check")
+                                                .service(check_package_exists)
                                         )
                                 )
                             )

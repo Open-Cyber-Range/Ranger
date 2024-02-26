@@ -3,7 +3,9 @@ pub mod scenario;
 mod validation;
 
 use crate::{
-    constants::{DUPLICATE_ENTRY, FOREIGN_KEY_CONSTRAINT_FAILS, RECORD_NOT_FOUND},
+    constants::{
+        DUPLICATE_ENTRY, FOREIGN_KEY_CONSTRAINT_FAILS, PACKAGE_CHECK_FAILED, RECORD_NOT_FOUND,
+    },
     errors::RangerError,
 };
 use actix::MailboxError;
@@ -36,6 +38,23 @@ pub fn create_database_error_handler(
             return RangerError::DatabaseConflict;
         }
         RangerError::DatabaseUnexpected
+    }
+}
+
+pub fn create_package_error_handler(
+    action_name: String,
+    package_name: String,
+) -> impl Fn(anyhow::Error) -> RangerError {
+    move |err| {
+        error!(
+            "{} error for package '{}': {}",
+            action_name, package_name, err
+        );
+        let error_string = format!("{err}");
+        if error_string.contains(PACKAGE_CHECK_FAILED) {
+            return RangerError::PackageCheckFailed(package_name.clone());
+        }
+        RangerError::PackageNotFound(package_name.clone())
     }
 }
 

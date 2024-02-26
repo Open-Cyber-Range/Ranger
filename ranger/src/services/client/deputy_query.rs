@@ -102,6 +102,27 @@ impl Handler<GetBannerFile> for DeputyQueryClient {
     }
 }
 
+#[derive(Message)]
+#[rtype(result = "Result<()>")]
+pub struct CheckPackageExists(pub Source);
+
+impl Handler<CheckPackageExists> for DeputyQueryClient {
+    type Result = ResponseFuture<Result<()>>;
+
+    fn handle(&mut self, msg: CheckPackageExists, _ctx: &mut Self::Context) -> Self::Result {
+        let check_package_exists_query = msg.0;
+        let mut client = self.deputy_query_client.clone();
+
+        Box::pin(async move {
+            let result = client
+                .check_package_exists(tonic::Request::new(check_package_exists_query))
+                .await?;
+            result.into_inner();
+            Ok(())
+        })
+    }
+}
+
 #[async_trait]
 impl DeputyQueryDeploymentClient for Addr<DeputyQueryClient> {
     async fn packages_query_by_type(&mut self, package_type: String) -> Result<Vec<Package>> {
@@ -127,5 +148,10 @@ impl DeputyQueryDeploymentClient for Addr<DeputyQueryClient> {
             }))
             .await??;
         Ok(query_result)
+    }
+
+    async fn check_package_exists(&mut self, source: Source) -> Result<()> {
+        let result = self.send(CheckPackageExists(source)).await??;
+        Ok(result)
     }
 }
