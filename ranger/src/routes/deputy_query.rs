@@ -1,5 +1,5 @@
 use crate::models::helpers::grpc_package::SerializableGrpcPackage;
-use crate::models::{BannerContentRest, LocalSource};
+use crate::models::BannerContentRest;
 use crate::routes::get_query_param;
 use crate::services::deployer::{
     DeputyPackageQueryByType, DeputyPackageQueryCheckPackageExists,
@@ -15,6 +15,7 @@ use actix_web::{get, post, Error, HttpResponse};
 use anyhow::Result;
 use ranger_grpc::DeputyStreamResponse;
 use ranger_grpc::Source;
+use sdl_parser::common::Source as SdlSource;
 use std::collections::HashMap;
 use tonic::Streaming;
 
@@ -120,7 +121,7 @@ pub async fn get_deputy_banner_file(
 #[post("")]
 pub async fn check_package_exists(
     app_state: Data<AppState>,
-    sources: Json<Vec<LocalSource>>,
+    sources: Json<Vec<SdlSource>>,
 ) -> Result<HttpResponse, Error> {
     let deployers = app_state
         .deployment_manager_address
@@ -129,10 +130,13 @@ pub async fn check_package_exists(
         .map_err(create_mailbox_error_handler("Deputy Query"))?
         .map_err(create_database_error_handler("Get default deployers"))?;
 
-    let sources: Vec<LocalSource> = sources.into_inner();
+    let sources: Vec<SdlSource> = sources.into_inner();
 
-    for local_source in sources {
-        let source: ranger_grpc::Source = local_source.into();
+    for sdl_source in sources {
+        let source = Source {
+            name: sdl_source.name,
+            version: sdl_source.version,
+        };
 
         app_state
             .deployer_distributor_address

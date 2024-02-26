@@ -22,7 +22,7 @@ use diesel::{
     AsChangeset, AsExpression, ExpressionMethods, FromSqlRow, Identifiable, Insertable, QueryDsl,
     Queryable, Selectable, SelectableHelper,
 };
-use ranger_grpc::{capabilities::DeployerType as GrpcDeployerType, ExecutorResponse, Source};
+use ranger_grpc::{capabilities::DeployerType as GrpcDeployerType, ExecutorResponse};
 use serde::{Deserialize, Serialize};
 
 use super::helpers::{deployer_type::DeployerType, uuid::Uuid};
@@ -464,20 +464,5 @@ impl Deployment {
             .await?;
 
         Ok(is_member && is_connected)
-    }
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct LocalSource {
-    pub name: String,
-    pub version: String,
-}
-
-impl From<LocalSource> for Source {
-    fn from(local: LocalSource) -> Self {
-        Source {
-            name: local.name,
-            version: local.version,
-        }
     }
 }
