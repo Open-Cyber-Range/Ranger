@@ -65,9 +65,13 @@ pub enum RangerError {
     AppStateMissing,
     #[error("Not authorized")]
     NotAuthorized,
-    #[error("Failed to upload file")]
+    #[error("Failed to upload the file")]
     FileUploadFailed,
-    #[error("Failed to delete file")]
+    #[error("Failed to read the file")]
+    FileReadFailed,
+    #[error("File not found")]
+    FileNotFound,
+    #[error("Failed to delete the file")]
     FileDeletionFailed,
     #[error("Metric has already been scored")]
     MetricAlreadyScored,
@@ -113,6 +117,7 @@ impl ResponseError for RangerError {
             RangerError::UnsupportedMediaType => StatusCode::UNSUPPORTED_MEDIA_TYPE,
             RangerError::MissingParameter(_) => StatusCode::BAD_REQUEST,
             RangerError::PackageCheckFailed(_) => StatusCode::NOT_FOUND,
+            RangerError::FileNotFound => StatusCode::NOT_FOUND,
             _ => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }

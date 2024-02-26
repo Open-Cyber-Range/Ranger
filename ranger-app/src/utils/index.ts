@@ -558,3 +558,28 @@ export const getBreadcrumIntent = (formType: FormType, currentFormType: FormType
 
   return 'none';
 };
+
+export const dowloadFile = async (
+  fileLink: string, token: string, fileName: string, onError: () => void) => {
+  try {
+    const response = await fetch(fileLink ?? '', {
+      headers: {
+        Authorization: token ? `Bearer ${token}` : '',
+      },
+    });
+    if (response.ok) {
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.append(a);
+      a.click();
+      a.remove();
+    } else {
+      onError();
+    }
+  } catch {
+    onError();
+  }
+};

@@ -42,3 +42,4 @@ export const roleSelectedSelector = (state: RootState) =>
   state.user.roleSelected;
 export const rolesSelector = (state: RootState) => state.user.roles;
 export const selectedEntity = (state: RootState) => state.user.selectedEntity;
+export const tokenSelector = (state: RootState) => state.user.token;

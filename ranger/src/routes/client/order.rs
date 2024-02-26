@@ -310,6 +310,43 @@ pub async fn upload_custom_element_file(
     Ok(HttpResponse::Ok().into())
 }
 
+#[get("/custom_element/{custom_element_uuid}/file")]
+pub async fn get_custom_element_file(
+    _order: OrderInfo,
+    path_variable: Path<(Uuid, Uuid)>,
+    app_state: Data<AppState>,
+) -> Result<HttpResponse, RangerError> {
+    let (_, custom_element_uuid) = path_variable.into_inner();
+    let custom_element_option = app_state
+        .database_address
+        .send(GetCustomElement(custom_element_uuid))
+        .await
+        .map_err(create_mailbox_error_handler(
+            "Database for order custom elements",
+        ))?
+        .map_err(create_database_error_handler("Get order custom element"))?;
+    let storage_path = app_state.configuration.file_storage_path.clone();
+
+    match custom_element_option {
+        Some(custom_element) => {
+            let file_path = PathBuf::from(storage_path).join(custom_element.id.to_string());
+            Ok(
+                HttpResponse::Ok().body(std::fs::read(file_path).map_err(|err| {
+                    error!("File read failed: {:?}", err);
+                    if err.kind() == std::io::ErrorKind::NotFound {
+                        return RangerError::FileNotFound;
+                    }
+                    RangerError::FileReadFailed
+                })?),
+            )
+        }
+        None => {
+            error!("Custom element not found");
+            Err(RangerError::CustomElementNotFound)
+        }
+    }
+}
+
 #[delete("/custom_element/{custom_element_uuid}/file")]
 pub async fn delete_custom_element_file(
     _order: OrderInfo,

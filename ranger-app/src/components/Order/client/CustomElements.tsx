@@ -8,7 +8,7 @@ import {
 } from '@blueprintjs/core';
 import React, {useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {toastWarning} from 'src/components/Toaster';
+import {toastSuccess, toastWarning} from 'src/components/Toaster';
 import {
   type Order,
   type CustomElement,
@@ -20,25 +20,85 @@ import {
   useClientUpdateCustomElementMutation,
 } from 'src/slices/apiSlice';
 import {sortByProperty} from 'sort-by-property';
+import {useSelector} from 'react-redux';
+import {tokenSelector} from 'src/slices/userSlice';
+import {BASE_URL} from 'src/constants';
+import {dowloadFile} from 'src/utils';
 import CustomElementDialog from './CustomElementDialog';
+
+const orderBase = `${BASE_URL}/client/order`;
 
 const CustomElements = ({order}: {order: Order}) => {
   const {t} = useTranslation();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [addCustomElement, {error}] = useClientAddCustomElementMutation();
+  const [addCustomElement, {error, data: addData}] = useClientAddCustomElementMutation();
   const [deleteCustomElement, {error: deleteError}] = useClientDeleteCustomElementMutation();
-  const [updateCustomElement, {error: updateError}]
+  const [updateCustomElement, {error: updateError, data: updateData}]
         = useClientUpdateCustomElementMutation();
   const [editedCustomElement, setEditedCustomElement]
         = useState<CustomElement | undefined>();
   const {customElements: potentialCustomElements} = order;
   const sortedCustomElements = [...(potentialCustomElements ?? [])]
     .sort(sortByProperty('name', 'desc'));
+  const token = useSelector(tokenSelector);
+  const [customElementFile, setCustomElementFile] = useState<File | undefined>();
+
+  useEffect(() => {
+    if (addData && customElementFile) {
+      const formData = new FormData();
+      formData.append('file', customElementFile);
+      fetch(`${orderBase}/${order.id}/custom_element/${addData.id}/file`, {
+        method: 'POST',
+        headers: {
+          Authorization: token ? `Bearer ${token}` : '',
+        },
+        body: formData,
+      }).then(response => {
+        if (response.ok) {
+          toastSuccess(t('order.customElement.fileUploaded'));
+        } else {
+          toastWarning(t('order.customElement.failedToUploadFile'));
+        }
+
+        setCustomElementFile(undefined);
+      })
+        .catch(() => {
+          toastWarning(t('order.customElement.failedToUploadFile'));
+        });
+    }
+  }
+  , [addData, customElementFile, order.id, token, t]);
+
+  useEffect(() => {
+    if (updateData && customElementFile) {
+      const formData = new FormData();
+      formData.append('file', customElementFile);
+      fetch(`${orderBase}/${order.id}/custom_element/${updateData.id}/file`, {
+        method: 'POST',
+        headers: {
+          Authorization: token ? `Bearer ${token}` : '',
+        },
+        body: formData,
+      }).then(response => {
+        if (response.ok) {
+          toastSuccess(t('order.customElement.fileUploaded'));
+        } else {
+          toastWarning(t('order.customElement.failedToUploadFile'));
+        }
+
+        setCustomElementFile(undefined);
+      })
+        .catch(() => {
+          toastWarning(t('order.customElement.failedToUploadFile'));
+        });
+    }
+  }
+  , [updateData, customElementFile, order.id, token, t]);
 
   useEffect(() => {
     if (error) {
       toastWarning(t(
-        'order.customElement.failedtoAdd',
+        'order.customElement.failedToAdd',
       ));
     }
   }, [error, t]);
@@ -59,8 +119,9 @@ const CustomElements = ({order}: {order: Order}) => {
     }
   }, [updateError, t]);
 
-  const onHandleSubmit = async (formContent: NewCustomElement) => {
+  const onHandleSubmit = async (formContent: NewCustomElement, file?: File) => {
     setIsDialogOpen(false);
+    setCustomElementFile(file);
     if (editedCustomElement) {
       await updateCustomElement({
         customElement: {
@@ -124,8 +185,32 @@ const CustomElements = ({order}: {order: Order}) => {
               </div>
               <div className='flex mt-4 gap-2 justify-end'>
                 <Button
+                  icon='download'
+                  intent='primary'
+                  onClick={async () => {
+                    const fileLink = `
+                      ${orderBase}/${order.id}/custom_element/${customElement.id}/file`;
+                    await dowloadFile(
+                      fileLink,
+                      token ?? '',
+                      `${customElement.name}.zip`,
+                      () => {
+                        toastWarning(t('orders.customElement.failedToDownloadFile'));
+                      });
+                  }}
+                >
+                  {t('orders.customElement.content')}
+                </Button>
+                <Button
                   intent='danger'
                   onClick={async () => {
+                    await fetch(
+                      `${orderBase}/${order.id}/custom_element/${customElement.id}/file`, {
+                        method: 'DELETE',
+                        headers: {
+                          Authorization: token ? `Bearer ${token}` : '',
+                        },
+                      });
                     await deleteCustomElement({
                       orderId: order.id,
                       customElementId: customElement.id,

@@ -25,7 +25,7 @@ use ranger::routes::deputy_query::{
     check_package_exists, get_deputy_banner_file, get_deputy_packages_by_type,
     get_exercise_by_source,
 };
-use ranger::routes::client::order::{get_orders_client, upload_custom_element_file, delete_custom_element_file, update_training_objective, create_training_objective, delete_training_objective, create_structure, delete_structure, update_structure, create_environment, update_environment, delete_environment, create_custom_element, update_custom_element, delete_custom_element, create_plot, update_plot, delete_plot};
+use ranger::routes::client::order::{create_custom_element, create_environment, create_plot, create_structure, create_training_objective, delete_custom_element, delete_custom_element_file, delete_environment, delete_plot, delete_structure, delete_training_objective, get_custom_element_file, get_orders_client, update_custom_element, update_environment, update_plot, update_structure, update_training_objective, upload_custom_element_file};
 use ranger::routes::deployers::get_deployers;
 use ranger::routes::exercise::{
     add_banner, add_exercise, add_exercise_deployment, add_participant, delete_banner,
@@ -213,6 +213,7 @@ async fn main() -> Result<(), Error> {
                                     .service(upload_custom_element_file)
                                     .service(delete_custom_element)
                                     .service(delete_custom_element_file)
+                                    .service(get_custom_element_file)
                                     .service(create_plot)
                                     .service(update_plot)
                                     .service(delete_plot)

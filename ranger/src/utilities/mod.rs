@@ -100,9 +100,16 @@ pub async fn save_file(mut payload: Multipart, file_path: &Path) -> Result<()> {
         let mut file_handler = web::block(|| std::fs::File::create(file_path)).await??;
 
         while let Some(chunk) = field.next().await {
-            let data = chunk.unwrap();
-            file_handler =
-                web::block(move || file_handler.write_all(&data).map(|_| file_handler)).await??;
+            match chunk {
+                Ok(data) => {
+                    file_handler =
+                        web::block(move || file_handler.write_all(&data).map(|_| file_handler))
+                            .await??;
+                }
+                Err(error) => {
+                    return Err(anyhow!("Failed to read file: {:?}", error));
+                }
+            }
         }
     }
 

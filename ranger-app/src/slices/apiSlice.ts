@@ -42,6 +42,7 @@ import {
   type NewEnvironment,
   type NewCustomElement,
   type NewPlot,
+  type CustomElement,
 } from 'src/models/order';
 
 export const apiSlice = createApi({
@@ -89,7 +90,7 @@ export const apiSlice = createApi({
         [{type: 'Order', id: orderId}],
     }),
     clientAddCustomElement: builder
-      .mutation<NewCustomElement,
+      .mutation<CustomElement,
     {
       newCustomElement: NewCustomElement; orderId: string;
     }>({
@@ -177,7 +178,7 @@ export const apiSlice = createApi({
         [{type: 'Order', id: orderId}],
     }),
     clientUpdateCustomElement: builder
-      .mutation<NewCustomElement,
+      .mutation<CustomElement,
     {
       customElement: NewCustomElement; orderId: string; customElementId: string;
     }>({
