@@ -54,7 +54,7 @@ pub fn create_package_error_handler(
         if error_string.contains(PACKAGE_CHECK_FAILED) {
             return RangerError::PackageCheckFailed(package_name.clone());
         }
-        RangerError::PackageNotFound(package_name.clone())
+        RangerError::DeputyQueryFailed
     }
 }
 

@@ -147,7 +147,7 @@ pub async fn check_package_exists(
             .await
             .map_err(create_mailbox_error_handler("Deputy Query"))?
             .map_err(create_package_error_handler(
-                "Check if package exists".to_string(),
+                "Check package exists".to_string(),
                 source.name,
             ))?;
     }
