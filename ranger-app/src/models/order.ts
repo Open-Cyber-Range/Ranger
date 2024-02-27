@@ -136,6 +136,7 @@ type Order = {
   structures?: Structure[];
   environments?: Environment[];
   customElements?: CustomElement[];
+  plots?: Plot[];
   createdAt: string;
   updatedAt: string;
 } & NewOrder;

@@ -108,7 +108,7 @@ export const apiSlice = createApi({
       newPlot: NewPlot; orderId: string;
     }>({
       query: ({newPlot, orderId}) => ({
-        url: `/client/order/${orderId}/lot`,
+        url: `/client/order/${orderId}/plot`,
         method: 'POST',
         body: newPlot,
       }),

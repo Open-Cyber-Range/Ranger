@@ -14,12 +14,14 @@ import Structure from 'src/components/Order/client/Structure';
 import Environment from 'src/components/Order/client/Environment';
 import {type Order} from 'src/models/order';
 import CustomElements from 'src/components/Order/client/CustomElements';
+import Plot from 'src/components/Order/client/Plot';
 
 function readyForNext(formType: string, order: Order | undefined): boolean {
   return (formType === 'training-objectives' && (order?.trainingObjectives?.length ?? 0) > 0)
   || (formType === 'structure' && (order?.structures?.length ?? 0) > 0)
   || (formType === 'environment' && (order?.environments?.length ?? 0) > 0)
-  || formType === 'custom-elements';
+  || formType === 'custom-elements'
+  || formType === 'plot';
 }
 
 const OrderDetail = () => {
@@ -98,6 +100,7 @@ const OrderDetail = () => {
         {order && formType === 'structure' && (<Structure order={order}/>)}
         {order && formType === 'environment' && (<Environment order={order}/>)}
         {order && formType === 'custom-elements' && (<CustomElements order={order}/>)}
+        {order && formType === 'plot' && (<Plot order={order}/>)}
       </div>
     </PageHolder>
   );

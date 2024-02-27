@@ -172,7 +172,7 @@ const EnvironmentDialog = (
                     },
                     defaultValue: '',
                   }}
-                  id={`skill.${index}`}
+                  id={`strengt.${index}`}
                   label={t('orders.environmentElements.strength')}
                 />
               </div>

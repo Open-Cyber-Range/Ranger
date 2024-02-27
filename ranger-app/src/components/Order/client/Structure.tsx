@@ -208,7 +208,7 @@ const StructureElement = ({order}: {order: Order}) => {
   useEffect(() => {
     if (error) {
       toastWarning(t(
-        'order.structureElements.failedtoAdd',
+        'orders.structureElements.failedtoAdd',
       ));
     }
   }, [error, t]);
@@ -216,7 +216,7 @@ const StructureElement = ({order}: {order: Order}) => {
   useEffect(() => {
     if (deleteError) {
       toastWarning(t(
-        'order.structureElements.failedToDelete',
+        'orders.structureElements.failedToDelete',
       ));
     }
   }, [deleteError, t]);
@@ -224,7 +224,7 @@ const StructureElement = ({order}: {order: Order}) => {
   useEffect(() => {
     if (updateError) {
       toastWarning(t(
-        'order.structureElements.failedToUpdate',
+        'orders.structureElements.failedToUpdate',
       ));
     }
   }, [updateError, t]);

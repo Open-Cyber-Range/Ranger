@@ -55,15 +55,15 @@ const CustomElements = ({order}: {order: Order}) => {
         body: formData,
       }).then(response => {
         if (response.ok) {
-          toastSuccess(t('order.customElement.fileUploaded'));
+          toastSuccess(t('orders.customElement.fileUploaded'));
         } else {
-          toastWarning(t('order.customElement.failedToUploadFile'));
+          toastWarning(t('orders.customElement.failedToUploadFile'));
         }
 
         setCustomElementFile(undefined);
       })
         .catch(() => {
-          toastWarning(t('order.customElement.failedToUploadFile'));
+          toastWarning(t('orders.customElement.failedToUploadFile'));
         });
     }
   }
@@ -81,15 +81,15 @@ const CustomElements = ({order}: {order: Order}) => {
         body: formData,
       }).then(response => {
         if (response.ok) {
-          toastSuccess(t('order.customElement.fileUploaded'));
+          toastSuccess(t('orders.customElement.fileUploaded'));
         } else {
-          toastWarning(t('order.customElement.failedToUploadFile'));
+          toastWarning(t('orders.customElement.failedToUploadFile'));
         }
 
         setCustomElementFile(undefined);
       })
         .catch(() => {
-          toastWarning(t('order.customElement.failedToUploadFile'));
+          toastWarning(t('orders.customElement.failedToUploadFile'));
         });
     }
   }
@@ -98,7 +98,7 @@ const CustomElements = ({order}: {order: Order}) => {
   useEffect(() => {
     if (error) {
       toastWarning(t(
-        'order.customElement.failedToAdd',
+        'orders.customElement.failedToAdd',
       ));
     }
   }, [error, t]);
@@ -106,7 +106,7 @@ const CustomElements = ({order}: {order: Order}) => {
   useEffect(() => {
     if (deleteError) {
       toastWarning(t(
-        'order.customElement.failedToDelete',
+        'orders.customElement.failedToDelete',
       ));
     }
   }, [deleteError, t]);
@@ -114,7 +114,7 @@ const CustomElements = ({order}: {order: Order}) => {
   useEffect(() => {
     if (updateError) {
       toastWarning(t(
-        'order.customElement.failedToUpdate',
+        'orders.customElement.failedToUpdate',
       ));
     }
   }, [updateError, t]);

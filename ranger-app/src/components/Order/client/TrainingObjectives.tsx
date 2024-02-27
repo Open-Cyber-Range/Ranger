@@ -37,7 +37,7 @@ const TrainingObjectives = ({order}: {order: Order}) => {
   useEffect(() => {
     if (error) {
       toastWarning(t(
-        'order.trainingObjective.failedtoAdd',
+        'orders.trainingObjective.failedtoAdd',
       ));
     }
   }, [error, t]);
@@ -45,7 +45,7 @@ const TrainingObjectives = ({order}: {order: Order}) => {
   useEffect(() => {
     if (deleteError) {
       toastWarning(t(
-        'order.trainingObjective.failedToDelete',
+        'orders.trainingObjective.failedToDelete',
       ));
     }
   }, [deleteError, t]);
@@ -53,7 +53,7 @@ const TrainingObjectives = ({order}: {order: Order}) => {
   useEffect(() => {
     if (updateError) {
       toastWarning(t(
-        'order.trainingObjective.failedToUpadate',
+        'orders.trainingObjective.failedToUpadate',
       ));
     }
   }, [updateError, t]);

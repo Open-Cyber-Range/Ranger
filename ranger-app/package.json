@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@blueprintjs/core": "^5.6.0",
+    "@blueprintjs/datetime2": "^2.3.2",
     "@blueprintjs/docs-theme": "^5.2.0",
     "@blueprintjs/select": "^5.0.17",
     "@monaco-editor/react": "^4.4.6",
