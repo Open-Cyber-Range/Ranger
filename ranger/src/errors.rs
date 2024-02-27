@@ -71,6 +71,10 @@ pub enum RangerError {
     MissingParameter(String),
     #[error("Failed to create Websocket connection")]
     WebsocketFailed,
+    #[error("Failed to find package: {0}")]
+    PackageCheckFailed(String),
+    #[error("Deputy server error")]
+    DeputyQueryFailed,
 }
 
 impl ResponseError for RangerError {
@@ -97,6 +101,7 @@ impl ResponseError for RangerError {
             RangerError::PayloadTooLarge => StatusCode::PAYLOAD_TOO_LARGE,
             RangerError::UnsupportedMediaType => StatusCode::UNSUPPORTED_MEDIA_TYPE,
             RangerError::MissingParameter(_) => StatusCode::BAD_REQUEST,
+            RangerError::PackageCheckFailed(_) => StatusCode::NOT_FOUND,
             _ => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }

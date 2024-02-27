@@ -19,6 +19,7 @@ pub const MAX_ARTIFACT_FILE_SIZE: usize = 10_000_000;
 pub const RECORD_NOT_FOUND: &str = "Record not found";
 pub const DUPLICATE_ENTRY: &str = "Duplicate entry";
 pub const FOREIGN_KEY_CONSTRAINT_FAILS: &str = "a foreign key constraint fails";
+pub const PACKAGE_CHECK_FAILED: &str = "Failed to get package checksum";
 
 pub const NAIVEDATETIME_DEFAULT_STRING: &str = "1970-01-01 00:00:01";
 pub const DATETIME_FORMAT: &str = "%Y-%m-%d %H:%M:%S";

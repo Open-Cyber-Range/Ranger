@@ -15,6 +15,7 @@ import {toastSuccess, toastWarning} from 'src/components/Toaster';
 import type {Exercise, UpdateExercise} from 'src/models/exercise';
 import {type AdGroup} from 'src/models/groups';
 import {
+  useAdminCheckPackagesExistMutation,
   useAdminGetDeploymentGroupsQuery,
   useAdminGetDeputyPackagesQuery,
   useAdminGetExerciseSdlFromPackageQuery,
@@ -30,6 +31,8 @@ import {Suggest2} from '@blueprintjs/select';
 import {MenuItem2} from '@blueprintjs/popover2';
 import useResourceEstimation from 'src/hooks/useResourceEstimation';
 import {type Package} from 'src/models/package';
+import {type Scenario} from 'src/models/scenario';
+import {getPackageSources} from 'src/utils/scenario';
 import PackageDialog from './PackageDialog';
 
 const ExerciseForm = ({exercise, onContentChange, children}:
@@ -93,12 +96,15 @@ const ExerciseForm = ({exercise, onContentChange, children}:
   }, [watch, onContentChange]);
 
   const [updateExercise, {isSuccess, error}] = useAdminUpdateExerciseMutation();
+  const [adminCheckPackagesExist] = useAdminCheckPackagesExistMutation();
 
   const onSubmit: SubmitHandler<UpdateExercise> = async exerciseUpdate => {
+    let scenario: Scenario | undefined;
     if (exerciseUpdate.sdlSchema) {
       try {
-        parseAndVerifySDL(exerciseUpdate.sdlSchema);
-      } catch (error: unknown) {
+        const parsedSdl = parseAndVerifySDL(exerciseUpdate.sdlSchema);
+        scenario = JSON.parse(parsedSdl) as Scenario;
+      } catch (error: any) {
         if (typeof error === 'string') {
           toastWarning(error);
         } else {
@@ -109,8 +115,24 @@ const ExerciseForm = ({exercise, onContentChange, children}:
       }
     }
 
-    await updateExercise({exerciseUpdate, exerciseId: exercise.id});
-    onContentChange(false);
+    if (scenario) {
+      const packageSources = getPackageSources(scenario);
+      try {
+        await adminCheckPackagesExist(packageSources).unwrap().then(async () => {
+          await updateExercise({exerciseUpdate, exerciseId: exercise.id});
+          onContentChange(false);
+        },
+        );
+      } catch (error: any) {
+        if ('data' in error) {
+          toastWarning(t('exercises.packageCheckFail', {
+            errorMessage: JSON.stringify(error.data),
+          }));
+        } else {
+          toastWarning(t('exercises.packageCheckFail'));
+        }
+      }
+    }
   };
 
   useEffect(() => {

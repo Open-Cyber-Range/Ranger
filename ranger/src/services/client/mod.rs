@@ -40,6 +40,7 @@ pub trait DeputyQueryDeploymentClient {
     async fn packages_query_by_type(&mut self, package_type: String) -> Result<Vec<Package>>;
     async fn get_exercise(&mut self, source: Source) -> Result<String>;
     async fn get_banner_file(&mut self, source: Source) -> Result<Streaming<DeputyStreamResponse>>;
+    async fn check_package_exists(&mut self, source: Source) -> Result<()>;
 }
 
 #[async_trait]

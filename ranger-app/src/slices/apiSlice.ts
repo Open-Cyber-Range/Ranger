@@ -24,7 +24,7 @@ import type {
   NewEmailTemplate,
 } from 'src/models/email';
 import {type AdGroup, type AdUser} from 'src/models/groups';
-import {type Scenario} from 'src/models/scenario';
+import {type Source, type Scenario} from 'src/models/scenario';
 import {type Score} from 'src/models/score';
 import {type RootState} from 'src/store';
 import {
@@ -318,6 +318,13 @@ export const apiSlice = createApi({
       query: ({name, version}) =>
         `/admin/query/package/exercise/banner?name=${name}&version=${version}`,
     }),
+    adminCheckPackagesExist: builder.mutation<void, Source[]>({
+      query: sources => ({
+        url: '/admin/query/package/check',
+        method: 'POST',
+        body: sources,
+      }),
+    }),
     participantGetExercises: builder.query<ParticipantExercise[], void>({
       query: () => '/participant/exercise',
       providesTags: (result = []) =>
@@ -597,6 +604,7 @@ export const {
   useAdminGetDeputyPackagesQuery,
   useAdminGetExerciseSdlFromPackageQuery,
   useAdminGetBannerContentFromPackageQuery,
+  useAdminCheckPackagesExistMutation,
   useLazyAdminGetManualMetricArtifactQuery,
   useParticipantGetExercisesQuery,
   useParticipantGetExerciseQuery,
