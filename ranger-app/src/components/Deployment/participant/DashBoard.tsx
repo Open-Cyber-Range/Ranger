@@ -1,5 +1,5 @@
 import React from 'react';
-import {H2, H4, Icon} from '@blueprintjs/core';
+import {Divider, H2, H4, Icon} from '@blueprintjs/core';
 import {type Banner} from 'src/models/exercise';
 import {useKeycloak} from '@react-keycloak/web';
 import {parseBannerForParticipant} from 'src/utils/banner';
@@ -33,20 +33,31 @@ const ParticipantDashBoard = ({exerciseId, deploymentId, existingBanner}:
 
   if (!exercise || !existingBanner || !keycloak.tokenParsed) {
     return (
-      <div className='flex flex-col h-full min-h-screen'>
-        <div className='pt-2 pb-4'>
-          <div className='flex'>
-            <Icon icon='time' size={22}/>
-            <H4 className='font-bold pl-2'>{t('deployments.startTime')} </H4>
+      <div className='h-full min-h-screen'>
+        <div className='pt-2 pb-4 flex'>
+          <div className='flex-col pr-2'>
+            <div className='flex'>
+              <Icon icon='time' size={22}/>
+              <H4 className='font-bold pl-2'>{t('deployments.startTime')}</H4>
+            </div>
+            <div>
+              <p>{formatStringToDateTime(deployment.start)}</p>
+            </div>
           </div>
-          {formatStringToDateTime(deployment.start)}
-        </div>
-        <div className='pt-2 pb-4'>
-          <div className='flex'>
-            <Icon icon='time' size={22}/>
-            <H4 className='font-bold pl-2'>{t('deployments.endTime')} </H4>
+          <Divider/>
+          <div className='flex-col pl-2'>
+            <div className='flex'>
+              <Icon
+                icon='time'
+                size={22}
+                style={{transform: 'rotate(90deg) translateX(-0.3rem) translateY(0.3rem)'}}
+              />
+              <H4 className='font-bold pl-2'>{t('deployments.endTime')}</H4>
+            </div>
+            <div>
+              <p>{formatStringToDateTime(deployment.end)}</p>
+            </div>
           </div>
-          {formatStringToDateTime(deployment.end)}
         </div>
       </div>
     );
@@ -65,20 +76,31 @@ const ParticipantDashBoard = ({exerciseId, deploymentId, existingBanner}:
 
   const parsedUint8Array = new TextEncoder().encode(parsedContent.content);
   return (
-    <div className='flex flex-col h-full min-h-screen'>
-      <div className='pt-2 pb-4'>
-        <div className='flex'>
-          <Icon icon='time' size={22}/>
-          <H4 className='font-bold pl-2'>{t('deployments.startTime')} </H4>
+    <div className='h-full min-h-screen'>
+      <div className='pt-2 pb-4 flex'>
+        <div className='flex-col pr-2'>
+          <div className='flex'>
+            <Icon icon='time' size={22}/>
+            <H4 className='font-bold pl-2'>{t('deployments.startTime')}</H4>
+          </div>
+          <div>
+            <p>{formatStringToDateTime(deployment.start)}</p>
+          </div>
         </div>
-        {formatStringToDateTime(deployment.start)}
-      </div>
-      <div className='pt-2 pb-4'>
-        <div className='flex'>
-          <Icon icon='time' size={22}/>
-          <H4 className='font-bold pl-2'>{t('deployments.endTime')} </H4>
+        <Divider/>
+        <div className='flex-col pl-2'>
+          <div className='flex'>
+            <Icon
+              icon='time'
+              size={22}
+              style={{transform: 'rotate(90deg) translateX(-0.3rem) translateY(0.3rem)'}}
+            />
+            <H4 className='font-bold pl-2'>{t('deployments.endTime')}</H4>
+          </div>
+          <div>
+            <p>{formatStringToDateTime(deployment.end)}</p>
+          </div>
         </div>
-        {formatStringToDateTime(deployment.end)}
       </div>
       <ContentIFrame content={parsedUint8Array}/>
     </div>

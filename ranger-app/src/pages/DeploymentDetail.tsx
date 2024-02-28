@@ -16,6 +16,7 @@ import {
   AnchorButton,
   Callout,
   Card,
+  Divider,
   Elevation,
   H2,
   H4,
@@ -103,6 +104,31 @@ const DeploymentDetail = () => {
               </AnchorButton>
             </Tooltip2>
           </div>
+          <div className='pt-2 pb-4 flex'>
+            <div className='flex-col pr-2'>
+              <div className='flex'>
+                <Icon icon='time' size={22}/>
+                <H4 className='font-bold pl-2'>{t('deployments.startTime')}</H4>
+              </div>
+              <div>
+                <p>{formatStringToDateTime(deployment.start)}</p>
+              </div>
+            </div>
+            <Divider/>
+            <div className='flex-col pl-2'>
+              <div className='flex'>
+                <Icon
+                  icon='time'
+                  size={22}
+                  style={{transform: 'rotate(90deg) translateX(-0.3rem) translateY(0.3rem)'}}
+                />
+                <H4 className='font-bold pl-2'>{t('deployments.endTime')}</H4>
+              </div>
+              <div>
+                <p>{formatStringToDateTime(deployment.end)}</p>
+              </div>
+            </div>
+          </div>
           <div className='pt-8 pb-4'>
             <StatusBox deploymentElements={deploymentElements ?? []}/>
           </div>
@@ -119,20 +145,6 @@ const DeploymentDetail = () => {
             scoringData={tryIntoScoringMetadata(scenario)}
             scores={scores ?? []}
           />
-          <div className='pt-2 pb-4'>
-            <div className='flex'>
-              <Icon icon='time' size={22}/>
-              <H4 className='font-bold pl-2'>{t('deployments.startTime')} </H4>
-            </div>
-            {formatStringToDateTime(deployment.start)}
-          </div>
-          <div className='pt-2 pb-4'>
-            <div className='flex'>
-              <Icon icon='time' size={22}/>
-              <H4 className='font-bold pl-2'>{t('deployments.endTime')} </H4>
-            </div>
-            {formatStringToDateTime(deployment.end)}
-          </div>
           <Card className='h-[60vh] p-0 mb-4' elevation={Elevation.TWO}>
             <Editor
               value={deployment.sdlSchema}
