@@ -519,4 +519,4 @@ export const getReadableDeployerType = (t: TFunction, type: DeployerType): strin
 
 export const formatStringToDateTime = (date: string) => DateTime.fromISO(date, {zone: 'utc'})
   .setZone('local')
-  .toLocaleString(DateTime.DATETIME_SHORT);
+  .toLocaleString(DateTime.DATETIME_SHORT_WITH_SECONDS);
