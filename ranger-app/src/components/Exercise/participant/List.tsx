@@ -2,7 +2,7 @@ import React from 'react';
 import {useParticipantGetExercisesQuery} from 'src/slices/apiSlice';
 import humanInterval from 'human-interval';
 import {sortByProperty} from 'sort-by-property';
-import {Spinner} from '@blueprintjs/core';
+import {H1, Spinner} from '@blueprintjs/core';
 import {useTranslation} from 'react-i18next';
 import ExerciseDeployments from './ExerciseDeployments';
 
@@ -21,9 +21,9 @@ const ExerciseList = () => {
   if (isLoading) {
     return (
       <div className='flex flex-col items-center justify-center space-y-4 min-h-screen'>
-        <h1 className='text-2xl font-bold'>
+        <H1 className='text-2xl font-bold'>
           {t('exercises.loadingExercises')}
-        </h1>
+        </H1>
         <Spinner/>
       </div>
     );
