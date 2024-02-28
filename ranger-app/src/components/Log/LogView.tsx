@@ -5,6 +5,7 @@ import {useLogs} from 'src/contexts/LogContext';
 import {useEffect, useState, useRef} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Callout, H2} from '@blueprintjs/core';
+import {formatStringToDateTime} from 'src/utils';
 
 const logSeverity = {
   DEBUG: 1,
@@ -111,7 +112,7 @@ const LogView: React.FC = () => {
                 {filteredLogs.map(log => (
                   <tr key={log.datetime} className={logSeverityColors[log.level]}>
                     <td className='px-6 py-4 whitespace-nowrap'>
-                      {new Date(log.datetime).toLocaleString()}
+                      {formatStringToDateTime(log.datetime)}
                     </td>
                     <td className='px-6 py-4 whitespace-nowrap'>{log.level}</td>
                     <td className='px-6 py-4'>{log.message}</td>

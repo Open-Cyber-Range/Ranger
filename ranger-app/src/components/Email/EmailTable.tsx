@@ -6,6 +6,7 @@ import {EmailStatusType} from 'src/models/email';
 import {toastWarning} from 'src/components/Toaster';
 import {useAdminGetEmailsQuery} from 'src/slices/apiSlice';
 import {openNewBlobWindow} from 'src/utils/email';
+import {formatStringToDateTime} from 'src/utils';
 
 const emailIntent = (status: EmailStatusType): Intent => {
   switch (status) {
@@ -78,7 +79,7 @@ const EmailTable = ({exercise}: {exercise: Exercise}) => {
                     {email.statusType}
                   </Tag>
                 </td>
-                <td>{new Date(email.createdAt).toLocaleString()}</td>
+                <td>{formatStringToDateTime(email.createdAt)}</td>
                 <td>{email.fromAddress}</td>
                 <td>{email.toAddresses}</td>
                 <td>{email.replyToAddresses}</td>
