@@ -1,3 +1,4 @@
+import {Intent, Spinner, SpinnerSize} from '@blueprintjs/core';
 import React, {useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Link} from 'react-router-dom';
@@ -18,8 +19,7 @@ const HomeView = ({buttonText, buttonLink}: {buttonText: string; buttonLink: str
   if (loading) {
     return (
       <div className='flex justify-center items-center h-screen'>
-        <div
-          className='animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500'/>
+        <Spinner size={SpinnerSize.LARGE} intent={Intent.PRIMARY}/>
       </div>
     );
   }

@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   BrowserRouter as Router,
   Routes,
@@ -13,6 +13,7 @@ import HomeParticipant from 'src/pages/participant/Home';
 import {useKeycloak} from '@react-keycloak/web';
 import {LogProvider} from 'src/contexts/LogContext';
 import {useDispatch} from 'react-redux';
+import {Intent, Spinner, SpinnerSize} from '@blueprintjs/core';
 import ParticipantExercises from './pages/participant/Exercises';
 import DeploymentDetail from './pages/DeploymentDetail';
 import ParticipantDeploymentDetail from './pages/participant/DeploymentDetail';
@@ -29,6 +30,8 @@ import ParticipantNavbarLinks from './components/Navbar/ParticipantLinks';
 const App = () => {
   const {keycloak, keycloak: {authenticated, token}} = useKeycloak();
   const dispatch = useDispatch();
+  const currentRole = useDefaultRoleSelect();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (token !== undefined) {
@@ -56,7 +59,19 @@ const App = () => {
     dispatch,
   ]);
 
-  const currentRole = useDefaultRoleSelect();
+  useEffect(() => {
+    if (authenticated && currentRole !== undefined) {
+      setLoading(false);
+    }
+  }, [authenticated, currentRole]);
+
+  if (loading) {
+    return (
+      <div className='flex justify-center items-center h-screen'>
+        <Spinner size={SpinnerSize.LARGE} intent={Intent.PRIMARY}/>
+      </div>
+    );
+  }
 
   if (authenticated && (currentRole === UserRole.MANAGER)) {
     return (
