@@ -15,12 +15,10 @@ use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 use log::error;
 pub use validation::*;
 pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!();
-use std::{collections::HashMap, path::Path};
+use std::{collections::HashMap, path::Path, io::Write};
 use actix_multipart::Multipart;
 use actix_web::web;
 use futures::{StreamExt, TryStreamExt};
-use std::io::Write;
-use std::path::Path;
 
 pub fn create_mailbox_error_handler(actor_name: &str) -> impl Fn(MailboxError) -> RangerError + '_ {
     move |err| {

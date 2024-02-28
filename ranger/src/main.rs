@@ -26,7 +26,6 @@ use ranger::routes::deputy_query::{
     get_exercise_by_source,
 };
 use ranger::routes::client::order::{create_custom_element, create_environment, create_plot, create_structure, create_training_objective, delete_custom_element, delete_custom_element_file, delete_environment, delete_plot, delete_structure, delete_training_objective, get_custom_element_file, get_orders_client, update_custom_element, update_environment, update_plot, update_structure, update_training_objective, upload_custom_element_file};
-use ranger::routes::deployers::get_deployers;
 use ranger::routes::exercise::{
     add_banner, add_exercise, add_exercise_deployment, add_participant, delete_banner,
     delete_exercise, delete_exercise_deployment, delete_participant, get_admin_participants,

@@ -45,10 +45,6 @@ const intentToIcon = (intent: Intent, progressionValue: number) => {
       return <Icon icon='error' intent={intent}/>;
     }
 
-    case 'warning': {
-      return <Icon icon='full-circle' intent={intent}/>;
-    }
-
     case 'success': {
       return <Icon icon='tick-circle' intent={intent}/>;
     }

@@ -7,7 +7,7 @@ const ParticipantNavbarLinks = () => {
   return (
     <Link
       role='button'
-      className='bp4-button bp4-minimal bp4-icon-document'
+      className='bp5-button bp5-minimal bp5-icon-document'
       to='/exercises'
     >
       {t('menu.exercises')}

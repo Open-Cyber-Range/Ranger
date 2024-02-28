@@ -4,13 +4,13 @@ import humanInterval from 'human-interval';
 import React from 'react';
 import {useTranslation} from 'react-i18next';
 import Header from 'src/components/Header';
-import NameDialog from 'src/components/NameDialog';
 import {
   useClientAddOrderMutation,
   useClientGetOrdersQuery,
 } from 'src/slices/apiSlice';
 import {sortByProperty} from 'sort-by-property';
 import OrderCard from './Card';
+import NameDialog from './NameDialog';
 
 const OrderList = () => {
   const {

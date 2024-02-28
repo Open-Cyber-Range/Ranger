@@ -1,7 +1,7 @@
 import React from 'react';
 import {Alignment, Navbar} from '@blueprintjs/core';
 import {useTranslation} from 'react-i18next';
-import LoginInfo from './LoginInfo';
+import LoginInfo from './Navbar/LoginInfo';
 
 const ClientNavBar = () => {
   const {t} = useTranslation();

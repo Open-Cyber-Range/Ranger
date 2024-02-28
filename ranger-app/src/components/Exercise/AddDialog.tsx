@@ -44,7 +44,7 @@ const AddDialog = (
   if (isOpen !== undefined && onSubmit && onCancel) {
     return (
       <Dialog isOpen={isOpen}>
-        <div className='bp4-dialog-header'>
+        <div className='bp5-dialog-header'>
           <H2>{title}</H2>
           <Button
             small
@@ -55,7 +55,7 @@ const AddDialog = (
             }}/>
         </div>
         <form onSubmit={handleSubmit(onHandleSubmit)}>
-          <div className='bp4-dialog-body'>
+          <div className='bp5-dialog-body'>
             <Controller
               control={control}
               name='name'
@@ -112,8 +112,8 @@ const AddDialog = (
               )}
             />
           </div>
-          <div className='bp4-dialog-footer'>
-            <div className='bp4-dialog-footer-actions'>
+          <div className='bp5-dialog-footer'>
+            <div className='bp5-dialog-footer-actions'>
               <Button
                 large
                 type='submit'

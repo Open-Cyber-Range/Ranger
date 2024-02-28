@@ -44,6 +44,7 @@ import {
   openNewBlobWindow,
 } from 'src/utils/email';
 import {useEmailVariablesInEditor} from 'src/hooks/useEmailVariablesInEditor';
+import {sortByProperty} from 'sort-by-property';
 import EmailVariablesPopover from './EmailVariablesPopover';
 import EmailVariablesInfo from './EmailVariablesInfo';
 import TemplateSaveDialog from './TemplateSaveDialog';
@@ -630,19 +631,29 @@ const SendEmail = ({exercise}: {readonly exercise: Exercise}) => {
           }}
         />
       </div>
-      <Tooltip
-        content={t('emails.sendButtonDisabled') ?? ''}
-        disabled={!isFetchingUsers}
-      >
+      <div className='flex justify-end gap-4 mb-4'>
         <Button
           large
-          outlined
-          intent='primary'
+          intent='warning'
           text={t('emails.form.preview')}
           type='button'
           onClick={previewHtmlContent}
         />
-      </Tooltip>
+
+        <Tooltip
+          content={t('emails.form.sendButtonDisabled') ?? ''}
+          disabled={!isFetchingUsers}
+        >
+          <Button
+            large
+            type='submit'
+            intent='primary'
+            text={t('emails.form.send')}
+            disabled={isFetchingUsers}
+          />
+        </Tooltip>
+      </div>
+
       <TemplateSaveDialog
         isOpen={isAddEmailTemplateDialogOpen}
         title={t('emails.form.templateName.title')}
