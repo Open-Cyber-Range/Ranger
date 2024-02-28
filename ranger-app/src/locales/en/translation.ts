@@ -118,6 +118,7 @@ const language = {
       description: 'Description:',
       nodes: 'Nodes:',
       conditions: 'Conditions:',
+      injects: 'Injects:',
       notifiedEntities: 'Notified entities:',
       noEventsYet: 'No Events to display - deployment in progress',
       noScenarioEvents: 'No Events to display - scenario has no events',
@@ -130,7 +131,7 @@ const language = {
       eventWillTriggerIn: 'Event will trigger in',
       eventHasTriggered: 'Event has triggered',
       allNodesHaveTriggered: 'All nodes have triggered the event',
-      infoOnly: 'This is an informational event and is not directly connected to any nodes',
+      infoOnly: 'This is an informational event and has no conditions nor injects',
       informedEntities: 'Informed Entities:',
     },
     status: {
