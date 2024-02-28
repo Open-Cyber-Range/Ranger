@@ -30,6 +30,7 @@ const language = {
     deleteFail: 'Failed to delete the exercise {{exerciseName}}',
     easeDevelopment: 'To ease the development of the exercise: ',
     mustHaveName: 'Exercise must have a name',
+    loadingExercises: 'Loading exercises, please wait...',
     group: {
       placeholder: 'Select group...',
       title: 'Deployment group',
