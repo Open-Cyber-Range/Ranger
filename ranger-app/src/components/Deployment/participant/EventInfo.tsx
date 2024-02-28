@@ -9,6 +9,7 @@ import {useParticipantGetEventInfoQuery} from 'src/slices/apiSlice';
 import {selectedEntity} from 'src/slices/userSlice';
 import ContentIFrame from 'src/components/ContentIFrame';
 import {Divider} from '@blueprintjs/core';
+import {formatStringToDateTime} from 'src/utils';
 
 const EventInfo = ({eventName, event}:
 {eventName: string | undefined; event: DeploymentEvent ;
@@ -33,7 +34,7 @@ const EventInfo = ({eventName, event}:
             <Divider className='mt-4'/>
             <div className='pt-2 text-slate-600 italic'>
               {t('participant.exercise.events.triggeredAt',
-                {date: new Date(event.triggeredAt).toLocaleString()})}
+                {date: formatStringToDateTime(event.triggeredAt)})}
             </div>
           </div>
         </details>
@@ -57,7 +58,7 @@ const EventInfo = ({eventName, event}:
           <Divider/>
           <div className='ml-2 pt-2 text-slate-600 italic'>
             {t('participant.exercise.events.triggeredAt',
-              {date: new Date(event.triggeredAt).toLocaleString()})}
+              {date: formatStringToDateTime(event.triggeredAt)})}
           </div>
         </div>
       </details>
