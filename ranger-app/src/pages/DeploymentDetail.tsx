@@ -16,14 +16,21 @@ import {
   AnchorButton,
   Callout,
   Card,
+  Divider,
   Elevation,
   H2,
+  H4,
+  Icon,
 } from '@blueprintjs/core';
 import SideBar from 'src/components/Exercise/SideBar';
 import useAdminExerciseStreaming from 'src/hooks/websocket/useAdminExerciseStreaming';
 import {toastSuccess, toastWarning} from 'src/components/Toaster';
 import RoleScoresButtonGroup from 'src/components/Scoring/RoleScoresButtonGroup';
-import {tryIntoScoringMetadata, isVMDeploymentOngoing} from 'src/utils';
+import {
+  tryIntoScoringMetadata,
+  isVMDeploymentOngoing,
+  formatStringToDateTime,
+} from 'src/utils';
 import {Tooltip2} from '@blueprintjs/popover2';
 import InfoTags from 'src/components/Deployment/InfoTags';
 import StatusBox from 'src/components/Deployment/Status/StatusBox';
@@ -75,7 +82,7 @@ const DeploymentDetail = () => {
         <>
           <div className='flex justify-between overflow-auto'>
             <div className='flex space-x-6 align-middle'>
-              <H2>{deployment?.name}</H2>
+              <H2>{deployment.name}</H2>
               <InfoTags deploymentElements={deploymentElements ?? []}/>
             </div>
             <Tooltip2
@@ -97,6 +104,31 @@ const DeploymentDetail = () => {
               </AnchorButton>
             </Tooltip2>
           </div>
+          <div className='pt-2 pb-4 flex justify-center'>
+            <div className='flex-col pr-2'>
+              <div className='flex'>
+                <Icon icon='time' size={22}/>
+                <H4 className='font-bold pl-2'>{t('deployments.startTime')}</H4>
+              </div>
+              <div>
+                <p>{formatStringToDateTime(deployment.start)}</p>
+              </div>
+            </div>
+            <Divider/>
+            <div className='flex-col pl-2'>
+              <div className='flex'>
+                <Icon
+                  icon='time'
+                  size={22}
+                  style={{transform: 'rotate(90deg) translateX(-0.3rem) translateY(0.3rem)'}}
+                />
+                <H4 className='font-bold pl-2'>{t('deployments.endTime')}</H4>
+              </div>
+              <div>
+                <p>{formatStringToDateTime(deployment.end)}</p>
+              </div>
+            </div>
+          </div>
           <div className='pt-8 pb-4'>
             <StatusBox deploymentElements={deploymentElements ?? []}/>
           </div>
@@ -115,7 +147,7 @@ const DeploymentDetail = () => {
           />
           <Card className='h-[60vh] p-0 mb-4' elevation={Elevation.TWO}>
             <Editor
-              value={deployment?.sdlSchema}
+              value={deployment.sdlSchema}
               defaultLanguage='yaml'
               options={{readOnly: true}}
             />
