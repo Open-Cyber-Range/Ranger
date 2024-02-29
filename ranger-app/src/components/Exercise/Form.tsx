@@ -24,6 +24,7 @@ import {
 } from 'src/slices/apiSlice';
 import Editor from '@monaco-editor/react';
 import {useTranslation} from 'react-i18next';
+import {Resizable} from 're-resizable';
 import init, {
   parse_and_verify_sdl as parseAndVerifySDL,
 } from '@open-cyber-range/wasm-sdl-parser';
@@ -318,13 +319,22 @@ const ExerciseForm = ({exercise, onContentChange, children}:
                 </Callout>
               }
             >
-              <div className='h-[40vh]'>
+              <Resizable
+                defaultSize={{
+                  width: '100%',
+                  height: '40vh',
+                }}
+                enable={{
+                  bottom: true,
+                }}
+                className='h-[40vh] border border-b-8'
+              >
                 <Editor
                   value={value}
                   defaultLanguage='yaml'
                   onChange={onChange}
                 />
-              </div>
+              </Resizable>
               <div className='mt-4'>
                 {resourceEstimationError && (
                   <Callout
