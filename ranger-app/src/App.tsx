@@ -28,7 +28,6 @@ import MainNavbar from './components/Navbar/MainNavBar';
 import ManagerNavbarLinks from './components/Navbar/ManagerLinks';
 import ParticipantNavbarLinks from './components/Navbar/ParticipantLinks';
 import NotFoundFallback from './pages/NotFoundFallback';
-import ClientNavBar from './components/ClientNavBar';
 import OrderDetail from './pages/client/OrderDetail';
 
 const App = () => {
@@ -122,7 +121,7 @@ const App = () => {
   if (authenticated && (currentRole === UserRole.CLIENT)) {
     return (
       <Router>
-        <ClientNavBar/>
+        <MainNavbar/>
         <Routes>
           <Route path='/' element={<HomeClient/>}/>
           <Route path='/*' element={<NotFoundFallback/>}/>
