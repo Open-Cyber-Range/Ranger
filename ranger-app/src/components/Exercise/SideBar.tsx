@@ -106,7 +106,7 @@ const SideBar = ({renderMainContent}: {
   const hasDeployments = deployments && deployments.length > 0;
   const [activeTab, setActiveTab] = useState<ActiveTab>(hashTabs[hash] ?? ActiveTab.Dash);
   if (exercise && deployments) {
-    const orderedDeployments = deployments.slice().sort(sortByProperty('updatedAt', 'desc'));
+    const orderedDeployments = deployments.slice().sort(sortByProperty('name', 'asc'));
     return (
       <div className='flex h-[100%]'>
         <div className='pb-[2rem] '>
