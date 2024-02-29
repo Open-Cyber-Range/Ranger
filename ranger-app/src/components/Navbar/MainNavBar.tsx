@@ -14,12 +14,11 @@ const MainNavbar: React.FC<{navbarLinks?: JSX.Element}> = ({navbarLinks}) => {
         <Navbar.Heading>
           <Link
             to='/'
-            className='py-4 text-m font-bold uppercase tracking-wider text-gray-600'
-            style={{textDecoration: 'none'}}
+            className='py-4 outline-none hover:no-underline'
           >
-            <div className='flex flex-col items-center mt-1'>
+            <div className='flex flex-col items-center mt-1 text-gray-600 '>
               <Logo className='h-10 w-10'/>
-              {t('appName')}
+              <span className='text-m font-bold uppercase tracking-wider'> {t('appName')} </span>
             </div>
           </Link>
         </Navbar.Heading>
