@@ -224,62 +224,6 @@ const AddDialog = (
                 );
               }}
             />
-            {fields.map((field, index) => (
-              <Controller
-                key={field.id}
-                control={control}
-                name={`groupNames.${index}.groupName`}
-                rules={{required: true}}
-                render={({
-                  field: {onBlur, ref, value, onChange}, fieldState: {error},
-                }) => {
-                  const intent = error ? Intent.DANGER : Intent.NONE;
-                  const activeItem = groups?.find(group => group.name === value);
-                  return (
-                    <FormGroup
-                      labelFor='group-name'
-                      labelInfo='(required)'
-                      helperText={error?.message}
-                      intent={intent}
-                      label={t('deployments.form.adGroups.title', {number: index + 1})}
-                    >
-                      <Suggest2<AdGroup>
-                        inputProps={{
-                          id: 'group-name',
-                          onBlur,
-                          inputRef: ref,
-                          placeholder: '',
-                          leftIcon: 'search',
-                        }}
-                        activeItem={activeItem}
-                        inputValueRenderer={item => item.name}
-                        itemPredicate={(query, item) =>
-                          item.name.toLowerCase().includes(query.toLowerCase())}
-                        itemRenderer={(item, {handleClick, handleFocus}) => (
-                          <MenuItem2
-                            key={item.id}
-                            text={item.name}
-                            onClick={handleClick}
-                            onFocus={handleFocus}
-                          />
-                        )}
-                        items={groups ?? []}
-                        noResults={
-                          <MenuItem
-                            disabled
-                            text={t('common.noResults')}
-                            roleStructure='listoption'/>
-                        }
-                        onItemSelect={item => {
-                          onChange(item.name);
-                        }}
-                      />
-                    </FormGroup>
-                  );
-                }}
-              />
-            ),
-            )}
             <Controller
               control={control}
               name='count'
@@ -313,6 +257,61 @@ const AddDialog = (
                 );
               }}
             />
+            {fields.map((field, index) => (
+              <Controller
+                key={field.id}
+                control={control}
+                name={`groupNames.${index}.groupName`}
+                rules={{required: true}}
+                render={({
+                  field: {onBlur, ref, value, onChange}, fieldState: {error},
+                }) => {
+                  const intent = error ? Intent.DANGER : Intent.NONE;
+                  const activeItem = groups?.find(group => group.name === value);
+                  return (
+                    <FormGroup
+                      labelFor='group-name'
+                      labelInfo='(required)'
+                      helperText={error?.message}
+                      intent={intent}
+                      label={t('deployments.form.adGroups.title', {number: index + 1})}
+                    >
+                      <Suggest2<AdGroup>
+                        inputProps={{
+                          id: 'group-name',
+                          onBlur,
+                          inputRef: ref,
+                          placeholder: t('common.searchPlaceholder') ?? '',
+                        }}
+                        activeItem={activeItem}
+                        inputValueRenderer={item => item.name}
+                        itemPredicate={(query, item) =>
+                          item.name.toLowerCase().includes(query.toLowerCase())}
+                        itemRenderer={(item, {handleClick, handleFocus}) => (
+                          <MenuItem2
+                            key={item.id}
+                            text={item.name}
+                            onClick={handleClick}
+                            onFocus={handleFocus}
+                          />
+                        )}
+                        items={groups ?? []}
+                        noResults={
+                          <MenuItem
+                            disabled
+                            text={t('common.noResults')}
+                            roleStructure='listoption'/>
+                        }
+                        onItemSelect={item => {
+                          onChange(item.name);
+                        }}
+                      />
+                    </FormGroup>
+                  );
+                }}
+              />
+            ),
+            )}
           </div>
           <div className={Classes.DIALOG_FOOTER}>
             <div className={Classes.DIALOG_FOOTER_ACTIONS}>

@@ -207,6 +207,7 @@ const language = {
     adGroup: 'AD Group',
     browse: 'Browse',
     points: 'Points',
+    searchPlaceholder: 'Search...',
     collapse: 'Collapse',
     expand: 'Expand',
   },
