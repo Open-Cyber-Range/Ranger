@@ -104,7 +104,7 @@ const DeploymentDetail = () => {
               </AnchorButton>
             </Tooltip2>
           </div>
-          <div className='pt-2 pb-4 flex'>
+          <div className='pt-2 pb-4 flex justify-center'>
             <div className='flex-col pr-2'>
               <div className='flex'>
                 <Icon icon='time' size={22}/>

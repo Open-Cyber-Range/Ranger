@@ -34,7 +34,7 @@ const ParticipantDashBoard = ({exerciseId, deploymentId, existingBanner}:
   if (!exercise || !existingBanner || !keycloak.tokenParsed) {
     return (
       <div className='h-full min-h-screen'>
-        <div className='pt-2 pb-4 flex'>
+        <div className='pt-2 pb-4 flex justify-center'>
           <div className='flex-col pr-2'>
             <div className='flex'>
               <Icon icon='time' size={22}/>
@@ -77,7 +77,7 @@ const ParticipantDashBoard = ({exerciseId, deploymentId, existingBanner}:
   const parsedUint8Array = new TextEncoder().encode(parsedContent.content);
   return (
     <div className='h-full min-h-screen'>
-      <div className='pt-2 pb-4 flex'>
+      <div className='pt-2 pb-4 flex justify-center'>
         <div className='flex-col pr-2'>
           <div className='flex'>
             <Icon icon='time' size={22}/>
