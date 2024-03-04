@@ -1,4 +1,4 @@
-import {Breadcrumbs, H2, Tag} from '@blueprintjs/core';
+import {Breadcrumbs, Callout, H2, Tag} from '@blueprintjs/core';
 import React from 'react';
 import {useTranslation} from 'react-i18next';
 import {useParams} from 'react-router-dom';
@@ -21,7 +21,7 @@ function readyForNext(formType: string, order: Order | undefined): boolean {
   || (formType === 'structure' && (order?.structures?.length ?? 0) > 0)
   || (formType === 'environment' && (order?.environments?.length ?? 0) > 0)
   || formType === 'custom-elements'
-  || formType === 'plot';
+  || (formType === 'plot' && (order?.plots?.length ?? 0) > 0);
 }
 
 const OrderDetail = () => {
@@ -101,6 +101,11 @@ const OrderDetail = () => {
         {order && formType === 'environment' && (<Environment order={order}/>)}
         {order && formType === 'custom-elements' && (<CustomElements order={order}/>)}
         {order && formType === 'plot' && (<Plot order={order}/>)}
+        {order && formType === 'final' && (
+          <Callout intent='success' icon='info-sign'>
+            {t('orders.submitExplenation')}
+          </Callout>
+        )}
       </div>
     </PageHolder>
   );

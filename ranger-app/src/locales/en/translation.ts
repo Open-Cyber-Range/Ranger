@@ -436,6 +436,10 @@ const language = {
     next: 'Next',
     back: 'Back',
     submit: 'Submit',
+    submitExplenation: `Now you are ready to submit the order. It is recommended to give the order a
+    good final look. Once you submit your order it goes to the exercise team for review and
+    processing. You can keep track of its progress in the order list. If there are questions or
+    additional information required for the exercise you will be contacted by the exercise team.`,
     trainingObjective: {
       add: 'Add Training Objective',
       explenation: `Start by creating training objectives for your order.
