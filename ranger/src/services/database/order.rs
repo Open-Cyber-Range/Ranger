@@ -618,8 +618,7 @@ impl Handler<UpsertPlot> for Database {
                 let mut connection = connection_result?;
                 block(move || {
                     if let Some(existing_plot_uuid) = existing_plot_uuid {
-                        Environment::hard_delete_by_id(existing_plot_uuid)
-                            .execute(&mut connection)?;
+                        Plot::hard_delete_by_id(existing_plot_uuid).execute(&mut connection)?;
                     }
                     plot.create_insert().execute(&mut connection)?;
                     if let Some(plot_points) = plot_rest.plot_points {

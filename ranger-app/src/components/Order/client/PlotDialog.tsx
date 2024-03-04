@@ -56,12 +56,21 @@ const PlotDialog = (
   }, [editablePlot, reset]);
 
   const onHandleSubmit = async (formContent: NewPlot) => {
-    formContent.startTime = formContent.startTime.slice(0, -5);
-    formContent.endTime = formContent.endTime.slice(0, -5);
+    if (formContent.startTime.length > 23) {
+      formContent.startTime = formContent.startTime.slice(0, -5);
+    }
+
+    if (formContent.endTime.length > 23) {
+      formContent.endTime = formContent.endTime.slice(0, -5);
+    }
+
     // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let index = 0; index < formContent.plotPoints.length; index += 1) {
       const plotPoint = formContent.plotPoints[index];
-      plotPoint.triggerTime = plotPoint.triggerTime.slice(0, -5);
+
+      if (plotPoint.triggerTime.length > 23) {
+        plotPoint.triggerTime = plotPoint.triggerTime.slice(0, -5);
+      }
     }
 
     onSubmit(formContent);

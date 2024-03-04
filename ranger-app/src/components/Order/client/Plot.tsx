@@ -76,6 +76,8 @@ const PlotElement = ({order}: {order: Order}) => {
     setEditedPlot(undefined);
   };
 
+  const environments = order.environments ?? [];
+
   return (
     <>
       <PlotDialog
@@ -97,19 +99,40 @@ const PlotElement = ({order}: {order: Order}) => {
         <div className='flex flex-col gap-4 grow'>
           {sortedPlots.map(plot => (
             <Card key={plot.id} className='min-w-0' elevation={Elevation.TWO}>
-              <div className='flex gap-2'>
+              <div className='flex gap-6'>
                 <H3
                   className='truncate max-w-xl m-0'
                 >
                   {plot.name}
                 </H3>
-                <Tag
-                  minimal
-                  round
-                  icon='time'
-                >
-                  {plot.startTime}-{plot.endTime}
-                </Tag>
+                <div className='flex gap-2'>
+                  <Tag
+                    minimal
+                    round
+                    icon='time'
+                  >
+                    {(new Date(plot.startTime)).toLocaleString()}
+                  </Tag>
+                  -
+                  <Tag
+                    minimal
+                    round
+                    icon='time'
+                  >
+                    {(new Date(plot.endTime)).toLocaleString()}
+                  </Tag>
+                </div>
+                {
+                  environments.some(enviroment => enviroment.id === plot.environmentId) ? (
+                    <Tag
+                      minimal
+                      round
+                      icon='time'
+                    >
+                      {environments.find(enviroment => enviroment.id === plot.environmentId)?.name}
+                    </Tag>
+                  ) : null
+                }
               </div>
               {plot.description && (
                 <div className='flex flex-wrap gap-4 mt-2'>
