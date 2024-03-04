@@ -119,7 +119,6 @@ type PlotPoint = Omit<NewPlotPoint, 'structureIds'> & {
 type NewPlot = {
   name: string;
   description: string;
-  environmentId: string;
   startTime: string;
   endTime: string;
   plotPoints: NewPlotPoint[];

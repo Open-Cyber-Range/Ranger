@@ -37,7 +37,6 @@ const PlotDialog = (
     defaultValues: {
       name: '',
       description: '',
-      environmentId: '',
       startTime: '',
       endTime: '',
       plotPoints: [],
@@ -48,7 +47,6 @@ const PlotDialog = (
     reset({
       name: editablePlot?.name ?? '',
       description: editablePlot?.description ?? '',
-      environmentId: editablePlot?.environmentId ?? '',
       startTime: editablePlot?.startTime ?? '',
       endTime: editablePlot?.endTime ?? '',
       plotPoints: [],
@@ -83,7 +81,6 @@ const PlotDialog = (
     control,
     name: 'plotPoints',
   });
-  const environmentsExist = order.environments && order.environments.length > 0;
   const objectivesExist = order.trainingObjectives && order.trainingObjectives.length > 0;
 
   return (
@@ -117,30 +114,23 @@ const PlotDialog = (
             id='name'
             label={t('orders.plotElement.name')}
           />
-          <DialogSelect<NewPlot>
-            selectProps={{
-              disabled: !environmentsExist,
+          <DialogTextArea<NewPlot>
+            textAreaProps={{
               fill: true,
-              options: environmentsExist ? [
-                {
-                  label: t('orders.plotElement.noEnvironment') ?? '',
-                  value: '',
-                },
-                ...(order.environments?.map(environment => ({
-                  label: environment.name,
-                  value: environment.id,
-                })) ?? []),
-              ] : [{
-                label: t('orders.plotElement.noPossibleEnvironment') ?? '',
-                value: '',
-              }],
+              autoResize: true,
             }}
             controllerProps={{
               control,
-              name: 'environmentId',
+              name: 'description',
+              rules: {
+                maxLength: {
+                  value: 3000,
+                  message: t('orders.plotElement.descriptionMaxLength'),
+                },
+              },
             }}
-            id='environmentId'
-            label={t('orders.plotElement.environment')}
+            id='description'
+            label={t('orders.plotElement.description')}
           />
           <DialogDateTimeInput<NewPlot>
             controllerProps={{

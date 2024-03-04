@@ -2,8 +2,10 @@ import {
   Button,
   Callout,
   Card,
+  CardList,
   Elevation,
   H3,
+  H4,
   Tag,
 } from '@blueprintjs/core';
 import React, {useEffect, useState} from 'react';
@@ -76,7 +78,8 @@ const PlotElement = ({order}: {order: Order}) => {
     setEditedPlot(undefined);
   };
 
-  const environments = order.environments ?? [];
+  const objectives = order.trainingObjectives ?? [];
+  const structures = order.structures ?? [];
 
   return (
     <>
@@ -122,22 +125,61 @@ const PlotElement = ({order}: {order: Order}) => {
                     {(new Date(plot.endTime)).toLocaleString()}
                   </Tag>
                 </div>
-                {
-                  environments.some(enviroment => enviroment.id === plot.environmentId) ? (
-                    <Tag
-                      minimal
-                      round
-                      icon='time'
-                    >
-                      {environments.find(enviroment => enviroment.id === plot.environmentId)?.name}
-                    </Tag>
-                  ) : null
-                }
               </div>
               {plot.description && (
                 <div className='flex flex-wrap gap-4 mt-2'>
                   <p>{plot.description}</p>
                 </div>)}
+              <CardList compact className='mt-4'>
+                {plot.plotPoints.sort(sortByProperty('triggerTime', 'desc')).map(plotPoint => (
+                  <Card key={plotPoint.id}>
+                    <div className='flex flex-col items-start'>
+                      <div className='flex gap-4 justify-end flex-wrap'>
+                        <H4>{plotPoint.name}</H4>
+                        {plotPoint.triggerTime && (
+                          <Tag
+                            minimal
+                            round
+                            icon='time'
+                          >
+                            {(new Date(plotPoint.triggerTime)).toLocaleString()}
+                          </Tag>
+                        )}
+                        {plotPoint.objectiveId && (
+                          <Tag
+                            minimal
+                            round
+                            icon='flag'
+                            intent='primary'
+                          >
+                            {objectives
+                              .find(objective => objective.id === plotPoint.objectiveId)?.objective
+                              ?? ''}
+                          </Tag>
+                        )}
+                        {
+                          plotPoint.structureIds.map(structureId => (
+                            <Tag
+                              key={structureId.structureId}
+                              minimal
+                              round
+                              intent='success'
+                              icon='layout'
+                            >
+                              {structures
+                                .find(structure => structure.id === structureId.structureId)?.name
+                                ?? ''}
+                            </Tag>
+                          ))
+                        }
+                      </div>
+                      <div className='mt-2'>
+                        {plotPoint.description}
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </CardList>
               <div className='flex mt-4 gap-2 justify-end'>
                 <Button
                   intent='danger'

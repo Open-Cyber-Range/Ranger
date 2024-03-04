@@ -573,6 +573,8 @@ const language = {
       nameRequired: 'Name is required',
       nameMaxLength: 'Name must be equal or less than 255 characters',
       addNewPlotPoint: 'Add new plot point',
+      descriptionMaxLength: 'Description must be equal or less than 3000 characters',
+      description: 'Description',
       plotPointName: 'Name',
       plotPointNameRequired: 'Name is required',
       plotPointNameMaxLength: 'Name must be equal or less than 255 characters',
