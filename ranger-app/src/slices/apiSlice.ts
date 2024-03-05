@@ -268,6 +268,18 @@ export const apiSlice = createApi({
       query: orderId => `/client/order/${orderId}`,
       providesTags: (result, error, id) => [{type: 'Order', id}],
     }),
+    adminGetOrders: builder.query<Order[], void>({
+      query: () => '/admin/order',
+      providesTags: (result = []) =>
+        [
+          ...result.map(({id}) => ({type: 'Order' as const, id})),
+          {type: 'Order', id: 'LIST'},
+        ],
+    }),
+    adminGetOrder: builder.query<Order, string>({
+      query: orderId => `/admin/order/${orderId}`,
+      providesTags: (result, error, id) => [{type: 'Order', id}],
+    }),
     adminGetGroups: builder.query<AdGroup[], void>({
       query: () => '/admin/group',
     }),
@@ -793,6 +805,8 @@ export const {
   useClientUpdateTrainingObjectiveMutation,
   useClientGetOrdersQuery,
   useClientGetOrderQuery,
+  useAdminGetOrdersQuery,
+  useAdminGetOrderQuery,
   useAdminGetGroupsQuery,
   useAdminGetGroupUsersQuery,
   useAdminGetDeploymentUsersQuery,

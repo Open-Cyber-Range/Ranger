@@ -1,7 +1,11 @@
 use crate::{
     errors::RangerError,
-    models::Order,
-    services::database::order::GetOrders,
+    middleware::order::OrderInfo,
+    models::{Order, OrderRest, StructureWithElements},
+    services::database::order::{
+        GetCustomElementsByOrder, GetEnvironmentsByOrder, GetOrders, GetPlotsByOrder,
+        GetStructuresByOrder, GetTrainingObjectivesByOrder,
+    },
     utilities::{create_database_error_handler, create_mailbox_error_handler},
     AppState,
 };
@@ -21,4 +25,54 @@ pub async fn get_orders_admin(app_state: Data<AppState>) -> Result<Json<Vec<Orde
         .map_err(create_database_error_handler("Get orders"))?;
 
     Ok(Json(orders))
+}
+
+#[get("")]
+pub async fn get_order_admin(
+    order: OrderInfo,
+    app_state: Data<AppState>,
+) -> Result<Json<OrderRest>, RangerError> {
+    let order = order.into_inner();
+
+    let training_objectives = app_state
+        .database_address
+        .send(GetTrainingObjectivesByOrder(order.clone()))
+        .await
+        .map_err(create_mailbox_error_handler(
+            "Database for training objectives",
+        ))?
+        .map_err(create_database_error_handler("Get training objectives"))?;
+    let structures: StructureWithElements = app_state
+        .database_address
+        .send(GetStructuresByOrder(order.clone()))
+        .await
+        .map_err(create_mailbox_error_handler("Database for structures"))?
+        .map_err(create_database_error_handler("Get structures"))?;
+    let environments = app_state
+        .database_address
+        .send(GetEnvironmentsByOrder(order.clone()))
+        .await
+        .map_err(create_mailbox_error_handler("Database for environments"))?
+        .map_err(create_database_error_handler("Get environments"))?;
+    let custom_elements = app_state
+        .database_address
+        .send(GetCustomElementsByOrder(order.clone()))
+        .await
+        .map_err(create_mailbox_error_handler("Database for custom elements"))?
+        .map_err(create_database_error_handler("Get custom elements"))?;
+    let plots = app_state
+        .database_address
+        .send(GetPlotsByOrder(order.clone()))
+        .await
+        .map_err(create_mailbox_error_handler("Database for plots"))?
+        .map_err(create_database_error_handler("Get plots"))?;
+
+    Ok(Json(OrderRest::from((
+        order,
+        training_objectives,
+        structures,
+        environments,
+        custom_elements,
+        plots,
+    ))))
 }

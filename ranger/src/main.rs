@@ -19,6 +19,7 @@ use ranger::routes::admin::metric::{
     delete_metric, download_metric_artifact, get_admin_metric, get_admin_metrics,
     update_admin_metric,
 };
+use ranger::routes::admin::order::{get_order_admin, get_orders_admin};
 use ranger::routes::admin::scenario::get_admin_exercise_deployment_scenario;
 use ranger::routes::deployers::{default_deployer, get_deployers};
 use ranger::routes::deputy_query::{
@@ -73,6 +74,15 @@ async fn main() -> Result<(), Error> {
                     .wrap(KeycloakAccessMiddlewareFactory)
                     .service(
                         scope("/admin")
+                        .service(
+                            scope("/order")
+                            .service(get_orders_admin)
+                            .service(
+                                scope("/{order_uuid}")
+                                    .wrap(OrderMiddlewareFactory)
+                                    .service(get_order_admin)
+                                )
+                        )
                         .service(
                             scope("/query")
                                 .service(
