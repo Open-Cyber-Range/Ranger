@@ -35,6 +35,7 @@ const OrderList = () => {
             await addOrder({
               name,
               clientId: userInfo.email,
+              status: 'draft',
             });
           }
         }}

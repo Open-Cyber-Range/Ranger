@@ -436,6 +436,13 @@ const language = {
     next: 'Next',
     back: 'Back',
     submit: 'Submit',
+    statuses: {
+      draft: 'Draft',
+      review: 'In Review',
+      inprogress: 'In Progress',
+      ready: 'Ready',
+      finished: 'Finished',
+    },
     submitExplenation: `Now you are ready to submit the order. It is recommended to give the order a
     good final look. Once you submit your order it goes to the exercise team for review and
     processing. You can keep track of its progress in the order list. If there are questions or

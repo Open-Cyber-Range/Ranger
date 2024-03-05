@@ -16,12 +16,29 @@ use crate::{
 use chrono::NaiveDateTime;
 use diesel::{
     associations::{Associations, Identifiable},
+    deserialize::FromSqlRow,
+    expression::AsExpression,
     insert_into,
     prelude::{Insertable, Queryable},
+    sql_types::Text,
     BelongingToDsl, ExpressionMethods, QueryDsl, Selectable, SelectableHelper,
 };
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, hash::Hash, result::Result as StdResult};
+
+#[derive(
+    Clone, Copy, Debug, PartialEq, FromSqlRow, AsExpression, Eq, Deserialize, Serialize, Default,
+)]
+#[diesel(sql_type = Text)]
+#[serde(rename_all = "camelCase")]
+pub enum OrderStatus {
+    #[default]
+    Draft,
+    Review,
+    InProgress,
+    Ready,
+    Finished,
+}
 
 #[derive(Insertable, Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -31,6 +48,8 @@ pub struct NewOrder {
     pub id: Uuid,
     pub name: String,
     pub client_id: String,
+    #[serde(default)]
+    pub status: OrderStatus,
 }
 
 impl NewOrder {
@@ -58,6 +77,7 @@ pub struct Order {
     pub id: Uuid,
     pub name: String,
     pub client_id: String,
+    pub status: OrderStatus,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
 }
@@ -961,6 +981,7 @@ pub struct OrderRest {
     pub id: Uuid,
     pub name: String,
     pub client_id: String,
+    pub status: OrderStatus,
     pub training_objectives: Vec<TrainingObjectiveRest>,
     pub structures: Vec<StructureRest>,
     pub environments: Vec<EnvironmentRest>,
@@ -1028,6 +1049,7 @@ impl
             id: order.id,
             name: order.name,
             client_id: order.client_id,
+            status: order.status,
             training_objectives,
             structures,
             environments,

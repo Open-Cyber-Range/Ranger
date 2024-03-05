@@ -2,6 +2,7 @@
 type NewOrder = {
   name: string;
   clientId: string;
+  status: 'draft' | 'review' | 'inprogress' | 'ready' | 'finished';
 };
 
 type NewThreat = {
