@@ -22,7 +22,7 @@ import {
 import {sortByProperty} from 'sort-by-property';
 import EnvironmentDialog from './EnvironmentDialog';
 
-const EnvironmentElement = ({order}: {order: Order}) => {
+const EnvironmentElement = ({order, isEditable}: {order: Order; isEditable: boolean}) => {
   const {t} = useTranslation();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [addEnvironment, {error}] = useClientAddEnvironmentMutation();
@@ -149,6 +149,7 @@ const EnvironmentElement = ({order}: {order: Order}) => {
                 </div>)}
               <div className='flex mt-4 gap-2 justify-end'>
                 <Button
+                  disabled={!isEditable}
                   intent='danger'
                   onClick={async () => {
                     await deleteEnvironment({
@@ -160,6 +161,7 @@ const EnvironmentElement = ({order}: {order: Order}) => {
                   {t('common.delete')}
                 </Button>
                 <Button
+                  disabled={!isEditable}
                   intent='warning'
                   onClick={() => {
                     setEditedEnvironment(environment);
@@ -174,6 +176,7 @@ const EnvironmentElement = ({order}: {order: Order}) => {
         </div>
         <Button
           large
+          disabled={!isEditable}
           className='shrink-0'
           intent='primary'
           onClick={() => {

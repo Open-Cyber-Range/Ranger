@@ -1,16 +1,20 @@
 use std::collections::HashMap;
 
 use super::Database;
-use crate::models::{
-    helpers::uuid::Uuid, CustomElement, CustomElementRest, Environment, EnvironmentElements,
-    EnvironmentRest, EnvironmentStrength, EnvironmentWeakness, NewOrder, Order, Plot, PlotPoint,
-    PlotPointStructure, PlotRest, PlotWithElements, Skill, SkillRest, StrengthRest, Structure,
-    StructureObjective, StructureObjectiveRest, StructureRest, StructureWithElements, Threat,
-    ThreatRest, TrainingObjective, TrainingObjectiveRest, Weakness, WeaknessRest,
+use crate::{
+    constants::RECORD_NOT_FOUND,
+    models::{
+        helpers::uuid::Uuid, CustomElement, CustomElementRest, Environment, EnvironmentElements,
+        EnvironmentRest, EnvironmentStrength, EnvironmentWeakness, NewOrder, Order, Plot,
+        PlotPoint, PlotPointStructure, PlotRest, PlotWithElements, Skill, SkillRest, StrengthRest,
+        Structure, StructureObjective, StructureObjectiveRest, StructureRest,
+        StructureWithElements, Threat, ThreatRest, TrainingObjective, TrainingObjectiveRest,
+        Weakness, WeaknessRest,
+    },
 };
 use actix::{Handler, Message, ResponseActFuture, WrapFuture};
 use actix_web::web::block;
-use anyhow::{Ok, Result};
+use anyhow::{anyhow, Ok, Result};
 use diesel::RunQueryDsl;
 
 #[derive(Message)]
@@ -60,6 +64,37 @@ impl Handler<GetOrder> for Database {
                     let order = Order::by_id(uuid).first(&mut connection)?;
 
                     Ok(order)
+                })
+                .await??;
+
+                Ok(order)
+            }
+            .into_actor(self),
+        )
+    }
+}
+
+#[derive(Message)]
+#[rtype(result = "Result<Order>")]
+pub struct UpdateOrder(pub Uuid, pub crate::models::UpdateOrder);
+
+impl Handler<UpdateOrder> for Database {
+    type Result = ResponseActFuture<Self, Result<Order>>;
+
+    fn handle(&mut self, msg: UpdateOrder, _ctx: &mut Self::Context) -> Self::Result {
+        let UpdateOrder(uuid, update_order) = msg;
+        let connection_result = self.get_connection();
+
+        Box::pin(
+            async move {
+                let mut connection = connection_result?;
+                let order = block(move || {
+                    let updated_rows = update_order.create_update(uuid).execute(&mut connection)?;
+                    if updated_rows != 1 {
+                        return Err(anyhow!(RECORD_NOT_FOUND));
+                    }
+
+                    Ok(Order::by_id(uuid).first(&mut connection)?)
                 })
                 .await??;
 

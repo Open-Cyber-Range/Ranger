@@ -15,6 +15,13 @@ const ManagerNavbarLinks = () => {
       </Link>
       <Link
         role='button'
+        className='bp5-button bp5-minimal bp5-icon-document-open'
+        to='/orders'
+      >
+        {t('menu.exerciseOrders')}
+      </Link>
+      <Link
+        role='button'
         className='bp5-button bp5-minimal bp5-icon-label'
         to='/logs'
       >

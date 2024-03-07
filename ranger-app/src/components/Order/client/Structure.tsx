@@ -35,6 +35,7 @@ const numberOfParents = (structure: Structure, structures: Structure[]): number 
 
 const createStructureTree = (
   order: Order,
+  isUserClient: boolean,
   functions: {
     deleteFields: {
       text: string;
@@ -167,6 +168,7 @@ const createStructureTree = (
       secondaryLabel: (
         <div className='flex gap-2'>
           <Button
+            disabled={!isUserClient}
             className='pt-1'
             intent='warning'
             onClick={async () => {
@@ -176,6 +178,7 @@ const createStructureTree = (
             {editText}
           </Button>
           <Button
+            disabled={!isUserClient}
             className='pt-1'
             intent='danger'
             onClick={async () => {
@@ -194,7 +197,7 @@ const createStructureTree = (
   });
 };
 
-const StructureElement = ({order}: {order: Order}) => {
+const StructureElement = ({order, isEditable}: {order: Order; isEditable: boolean}) => {
   const {t} = useTranslation();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [addStructure, {error}] = useClientAddStructureMutation();
@@ -269,6 +272,7 @@ const StructureElement = ({order}: {order: Order}) => {
 
     return createStructureTree(
       order,
+      isEditable,
       {
         deleteFields: {
           text: t('orders.structureElements.delete'),
@@ -282,7 +286,7 @@ const StructureElement = ({order}: {order: Order}) => {
       },
       openNodes,
     );
-  }, [order, t, handleDeleteStructure, handleEditStructure, openNodes]);
+  }, [order, isEditable, t, handleDeleteStructure, handleEditStructure, openNodes]);
 
   return (
     <>
@@ -312,6 +316,7 @@ const StructureElement = ({order}: {order: Order}) => {
         </div>
         <Button
           large
+          disabled={!isEditable}
           className='shrink-0'
           intent='primary'
           onClick={() => {

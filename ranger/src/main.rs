@@ -35,7 +35,7 @@ use ranger::routes::exercise::{
     get_exercises, subscribe_to_exercise, update_banner, update_exercise,
 };
 use ranger::routes::logger::subscribe_to_logs_with_level;
-use ranger::routes::order::{create_order, get_order};
+use ranger::routes::order::{create_order, get_order, update_order};
 use ranger::routes::participant::deployment::{
     get_participant_deployment, get_participant_deployments,
     get_participant_node_deployment_elements, subscribe_participant_to_deployment,
@@ -81,6 +81,7 @@ async fn main() -> Result<(), Error> {
                                 scope("/{order_uuid}")
                                     .wrap(OrderMiddlewareFactory)
                                     .service(get_order_admin)
+                                    .service(update_order)
                                 )
                         )
                         .service(
@@ -208,6 +209,7 @@ async fn main() -> Result<(), Error> {
                                 scope("/{order_uuid}")
                                     .wrap(OrderMiddlewareFactory)
                                     .service(get_order)
+                                    .service(update_order)
                                     .service(create_training_objective)
                                     .service(delete_training_objective)
                                     .service(update_training_objective)

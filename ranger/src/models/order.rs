@@ -9,7 +9,7 @@ use crate::{
     },
     services::database::{
         All, Create, DeleteById, FilterExisting, SelectById, SelectByIdFromAll,
-        SelectByIdFromAllReference,
+        SelectByIdFromAllReference, UpdateById,
     },
     utilities::Validation,
 };
@@ -21,7 +21,7 @@ use diesel::{
     insert_into,
     prelude::{Insertable, Queryable},
     sql_types::Text,
-    BelongingToDsl, ExpressionMethods, QueryDsl, Selectable, SelectableHelper,
+    AsChangeset, BelongingToDsl, ExpressionMethods, QueryDsl, Selectable, SelectableHelper,
 };
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, hash::Hash, result::Result as StdResult};
@@ -64,6 +64,27 @@ impl Validation for NewOrder {
             return Err(RangerError::OrderNameTooLong);
         }
         Ok(())
+    }
+}
+
+#[derive(
+    AsChangeset, Queryable, Selectable, Debug, PartialEq, Eq, Clone, Serialize, Deserialize,
+)]
+#[serde(rename_all = "camelCase")]
+#[diesel(table_name = orders)]
+pub struct UpdateOrder {
+    pub status: OrderStatus,
+}
+
+impl UpdateOrder {
+    pub fn create_update(
+        &self,
+        id: Uuid,
+    ) -> UpdateById<orders::id, orders::deleted_at, orders::table, &Self> {
+        diesel::update(orders::table)
+            .filter(orders::id.eq(id))
+            .filter(orders::deleted_at.eq(*NAIVEDATETIME_DEFAULT_VALUE))
+            .set(self)
     }
 }
 

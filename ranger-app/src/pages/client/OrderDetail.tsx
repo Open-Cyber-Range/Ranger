@@ -1,20 +1,38 @@
-import {Breadcrumbs, Callout, H2, Tag} from '@blueprintjs/core';
-import React from 'react';
+import {
+  Breadcrumbs,
+  Callout,
+  H2,
+  Menu,
+  MenuItem,
+  Popover,
+  Tag,
+} from '@blueprintjs/core';
+import type React from 'react';
+import {useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {useParams} from 'react-router-dom';
 import PageHolder from 'src/components/PageHolder';
-import {type OrderDetailRouteParamaters} from 'src/models/routes';
-import {useClientGetOrderQuery} from 'src/slices/apiSlice';
-import {skipToken} from '@reduxjs/toolkit/dist/query';
-import PageLoader from 'src/components/PageLoader';
 import {getBreadcrumIntent} from 'src/utils';
 import StepFooter from 'src/components/Order/client/StepFooter';
 import TrainingObjectives from 'src/components/Order/client/TrainingObjectives';
 import Structure from 'src/components/Order/client/Structure';
 import Environment from 'src/components/Order/client/Environment';
-import {type Order} from 'src/models/order';
+import {type UpdateOrder, type Order, OrderStatus} from 'src/models/order';
 import CustomElements from 'src/components/Order/client/CustomElements';
 import Plot from 'src/components/Order/client/Plot';
+import {UserRole} from 'src/models/userRoles';
+import {type FormType} from 'src/models/routes';
+import {
+  useAdminUpdateOrderMutation,
+  useClientUpdateOrderMutation,
+} from 'src/slices/apiSlice';
+import {toastSuccess, toastWarning} from 'src/components/Toaster';
+import OrderStatusTag from 'src/components/Order/client/OrderStatusTag';
+
+type OrderDetailProps = {
+  order: Order | undefined;
+  userRole: UserRole | 'loading' | undefined;
+  stage: FormType | undefined;
+};
 
 function readyForNext(formType: string, order: Order | undefined): boolean {
   return (formType === 'training-objectives' && (order?.trainingObjectives?.length ?? 0) > 0)
@@ -24,29 +42,115 @@ function readyForNext(formType: string, order: Order | undefined): boolean {
   || (formType === 'plot' && (order?.plots?.length ?? 0) > 0);
 }
 
-const OrderDetail = () => {
+const OrderDetail: React.FC<OrderDetailProps> = ({order, userRole, stage}) => {
   const {t} = useTranslation();
-  const {orderId, stage} = useParams<OrderDetailRouteParamaters>();
   const formType = stage ?? 'training-objectives';
-  const {data: order, isLoading} = useClientGetOrderQuery(orderId ?? skipToken);
+  const [isOrderEditable, setIsOrderEditable] = useState(false);
+  const [clientUpdateOrder, clientUpdatedOrder]
+  = useClientUpdateOrderMutation();
+  const [adminUpdateOrder, adminUpdatedOrder]
+  = useAdminUpdateOrderMutation();
 
-  if (isLoading) {
-    return (
-      <PageLoader title={t('orders.loadingOrder')}/>
-    );
+  const handleStatusChange = async (newStatus: OrderStatus) => {
+    if (order?.id && order.status !== newStatus) {
+      const orderUpdate: UpdateOrder = {
+        status: newStatus,
+      };
+
+      await adminUpdateOrder({
+        orderId: order.id,
+        orderUpdate,
+      });
+    }
+  };
+
+  useEffect(() => {
+    setIsOrderEditable(userRole === UserRole.CLIENT && order?.status === OrderStatus.DRAFT);
   }
+  , [userRole, order]);
+
+  useEffect(() => {
+    if (clientUpdatedOrder.isSuccess) {
+      toastSuccess('Order submitted successfully');
+    } else if (clientUpdatedOrder.isError) {
+      toastWarning('Failed to submit order');
+    }
+
+    if (adminUpdatedOrder.isSuccess) {
+      toastSuccess('Order updated successfully');
+    } else if (adminUpdatedOrder.isError) {
+      toastWarning('Failed to update order');
+    }
+  }
+  , [clientUpdatedOrder, adminUpdatedOrder]);
 
   return (
     <PageHolder>
-      <H2>{t('orders.order')}: {order?.name}</H2>
+      <div className='flex justify-start gap-6'>
+        <H2>{t('orders.order')}: {order?.name}</H2>
+        {userRole === UserRole.CLIENT && <OrderStatusTag order={order} t={t}/>}
+        {userRole === UserRole.MANAGER && (
+          <Popover
+            placement='bottom'
+            className='self-center'
+            content={
+              <Menu>
+                <MenuItem
+                  text={t('orders.statuses.draft')}
+                  onClick={async () => {
+                    await handleStatusChange(OrderStatus.DRAFT);
+                  }}
+                />
+                <MenuItem
+                  text={t('orders.statuses.review')}
+                  onClick={async () => {
+                    await handleStatusChange(OrderStatus.REVIEW);
+                  }}
+                />
+                <MenuItem
+                  text={t('orders.statuses.inprogress')}
+                  onClick={async () => {
+                    await handleStatusChange(OrderStatus.INPROGRESS);
+                  }}
+                />
+                <MenuItem
+                  text={t('orders.statuses.ready')}
+                  onClick={async () => {
+                    await handleStatusChange(OrderStatus.READY);
+                  }}
+                />
+                <MenuItem
+                  text={t('orders.statuses.finished')}
+                  onClick={async () => {
+                    await handleStatusChange(OrderStatus.FINISHED);
+                  }}
+                />
+              </Menu>
+            }
+          >
+            <OrderStatusTag
+              tagProps={{large: true, rightIcon: 'caret-down', interactive: true}}
+              order={order}
+              t={t}/>
+          </Popover>
+        )}
+      </div>
       <div className='my-4'>
-        {orderId && (
+        {order?.id && (
           <StepFooter
             readyForNext={readyForNext(formType, order)}
-            orderId={orderId}
+            orderId={order?.id}
+            isUserClient={isOrderEditable}
             stage={formType}
-            onSubmit={() => {
-              // Console.log('sumbitted');
+            onSubmit={async () => {
+              const orderUpdate: UpdateOrder = {
+                status: OrderStatus.REVIEW,
+              };
+
+              await clientUpdateOrder({
+                orderId: order.id,
+                orderUpdate,
+              });
             }}/>
         )}
       </div>
@@ -96,11 +200,15 @@ const OrderDetail = () => {
           },
         ]}/>
       <div className='mt-4 min-h-full'>
-        {order && formType === 'training-objectives' && (<TrainingObjectives order={order}/>)}
-        {order && formType === 'structure' && (<Structure order={order}/>)}
-        {order && formType === 'environment' && (<Environment order={order}/>)}
-        {order && formType === 'custom-elements' && (<CustomElements order={order}/>)}
-        {order && formType === 'plot' && (<Plot order={order}/>)}
+        {order && formType === 'training-objectives'
+        && (<TrainingObjectives order={order} isEditable={isOrderEditable}/>)}
+        {order && formType === 'structure'
+         && (<Structure order={order} isEditable={isOrderEditable}/>)}
+        {order && formType === 'environment'
+        && (<Environment order={order} isEditable={isOrderEditable}/>)}
+        {order && formType === 'custom-elements'
+         && (<CustomElements order={order} isEditable={isOrderEditable}/>)}
+        {order && formType === 'plot' && (<Plot order={order} isEditable={isOrderEditable}/>)}
         {order && formType === 'final' && (
           <Callout intent='success' icon='info-sign'>
             {t('orders.submitExplenation')}

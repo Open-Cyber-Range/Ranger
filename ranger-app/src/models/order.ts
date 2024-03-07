@@ -2,8 +2,20 @@
 type NewOrder = {
   name: string;
   clientId: string;
-  status: 'draft' | 'review' | 'inprogress' | 'ready' | 'finished';
+  status: OrderStatus;
 };
+
+type UpdateOrder = {
+  status: OrderStatus;
+};
+
+enum OrderStatus {
+  DRAFT = 'draft',
+  REVIEW = 'review',
+  INPROGRESS = 'inProgress',
+  READY = 'ready',
+  FINISHED = 'finished',
+}
 
 type NewThreat = {
   threat: string;
@@ -146,6 +158,7 @@ export type {
   Structure,
   NewTrainingObjective,
   NewOrder,
+  UpdateOrder,
   Order,
   TrainingObjective,
   Skill,
@@ -167,3 +180,5 @@ export type {
   Plot,
   NewPlot,
 };
+
+export {OrderStatus};

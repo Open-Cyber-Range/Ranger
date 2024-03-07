@@ -9,6 +9,7 @@ import {
   useClientGetOrdersQuery,
 } from 'src/slices/apiSlice';
 import {sortByProperty} from 'sort-by-property';
+import {OrderStatus} from 'src/models/order';
 import OrderCard from './Card';
 import NameDialog from './NameDialog';
 
@@ -35,7 +36,7 @@ const OrderList = () => {
             await addOrder({
               name,
               clientId: userInfo.email,
-              status: 'draft',
+              status: OrderStatus.DRAFT,
             });
           }
         }}

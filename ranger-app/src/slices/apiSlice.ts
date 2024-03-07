@@ -43,6 +43,7 @@ import {
   type NewCustomElement,
   type NewPlot,
   type CustomElement,
+  type UpdateOrder,
 } from 'src/models/order';
 
 export const apiSlice = createApi({
@@ -75,6 +76,18 @@ export const apiSlice = createApi({
         url: '/client/order', method: 'POST', body: newOrder,
       }),
       invalidatesTags: [{type: 'Order', id: 'LIST'}],
+    }),
+    clientUpdateOrder: builder.mutation<Order, {
+      orderId: string;
+      orderUpdate: UpdateOrder;
+    }>({
+      query: ({orderId, orderUpdate}) => ({
+        url: `/client/order/${orderId}`,
+        method: 'PUT',
+        body: orderUpdate,
+      }),
+      invalidatesTags: (result, error, {orderId}) =>
+        [{type: 'Order', id: orderId}],
     }),
     clientAddEnvironment: builder
       .mutation<NewEnvironment,
@@ -279,6 +292,18 @@ export const apiSlice = createApi({
     adminGetOrder: builder.query<Order, string>({
       query: orderId => `/admin/order/${orderId}`,
       providesTags: (result, error, id) => [{type: 'Order', id}],
+    }),
+    adminUpdateOrder: builder.mutation<Order, {
+      orderId: string;
+      orderUpdate: UpdateOrder;
+    }>({
+      query: ({orderId, orderUpdate}) => ({
+        url: `/admin/order/${orderId}`,
+        method: 'PUT',
+        body: orderUpdate,
+      }),
+      invalidatesTags: (result, error, {orderId}) =>
+        [{type: 'Order', id: orderId}],
     }),
     adminGetGroups: builder.query<AdGroup[], void>({
       query: () => '/admin/group',
@@ -805,8 +830,10 @@ export const {
   useClientUpdateTrainingObjectiveMutation,
   useClientGetOrdersQuery,
   useClientGetOrderQuery,
+  useClientUpdateOrderMutation,
   useAdminGetOrdersQuery,
   useAdminGetOrderQuery,
+  useAdminUpdateOrderMutation,
   useAdminGetGroupsQuery,
   useAdminGetGroupUsersQuery,
   useAdminGetDeploymentUsersQuery,

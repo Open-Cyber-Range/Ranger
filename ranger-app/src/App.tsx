@@ -28,7 +28,10 @@ import MainNavbar from './components/Navbar/MainNavBar';
 import ManagerNavbarLinks from './components/Navbar/ManagerLinks';
 import ParticipantNavbarLinks from './components/Navbar/ParticipantLinks';
 import NotFoundFallback from './pages/NotFoundFallback';
-import OrderDetail from './pages/client/OrderDetail';
+import ManagerOrders from './pages/Orders';
+import AdminOrderFetcher from './pages/OrderFetcher';
+import ClientOrderFetcher from './pages/client/OrderFetcher';
+import ClientNavbarLinks from './components/Navbar/ClientLinks';
 
 const App = () => {
   const {keycloak, keycloak: {authenticated, token}} = useKeycloak();
@@ -95,6 +98,9 @@ const App = () => {
             <Route
               path='/exercises/:exerciseId/deployments/:deploymentId/scores/:role'
               element={<ScoreDetail/>}/>
+            <Route path='/orders' element={<ManagerOrders/>}/>
+            <Route path='/orders/:orderId' element={<AdminOrderFetcher/>}/>
+            <Route path='/orders/:orderId/:stage' element={<AdminOrderFetcher/>}/>
             <Route path='/*' element={<NotFoundFallback/>}/>
           </Routes>
         </Router>
@@ -121,12 +127,12 @@ const App = () => {
   if (authenticated && (currentRole === UserRole.CLIENT)) {
     return (
       <Router>
-        <MainNavbar/>
+        <MainNavbar navbarLinks={<ClientNavbarLinks/>}/>
         <Routes>
           <Route path='/' element={<HomeClient/>}/>
           <Route path='/*' element={<NotFoundFallback/>}/>
-          <Route path='/orders/:orderId' element={<OrderDetail/>}/>
-          <Route path='/orders/:orderId/:stage' element={<OrderDetail/>}/>
+          <Route path='/orders/:orderId' element={<ClientOrderFetcher/>}/>
+          <Route path='/orders/:orderId/:stage' element={<ClientOrderFetcher/>}/>
         </Routes>
       </Router>
     );
