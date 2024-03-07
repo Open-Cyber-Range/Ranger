@@ -22,7 +22,7 @@ use diesel::{
     AsChangeset, AsExpression, ExpressionMethods, FromSqlRow, Identifiable, Insertable, QueryDsl,
     Queryable, Selectable, SelectableHelper,
 };
-use ranger_grpc::capabilities::DeployerType as GrpcDeployerType;
+use ranger_grpc::{capabilities::DeployerType as GrpcDeployerType, ExecutorResponse};
 use serde::{Deserialize, Serialize};
 
 use super::helpers::{deployer_type::DeployerType, uuid::Uuid};
@@ -33,7 +33,7 @@ pub struct NewDeploymentResource {
     #[serde(default = "Uuid::random")]
     pub id: Uuid,
     pub name: String,
-    pub deployment_group: Option<String>,
+    pub deployment_group: String,
     pub group_name: Option<String>,
     pub sdl_schema: String,
     pub start: NaiveDateTime,
@@ -46,7 +46,7 @@ pub struct NewDeploymentResource {
 pub struct NewDeployment {
     pub id: Uuid,
     pub name: String,
-    pub deployment_group: Option<String>,
+    pub deployment_group: String,
     pub group_name: Option<String>,
     pub sdl_schema: String,
     pub exercise_id: Uuid,
@@ -88,7 +88,7 @@ impl Validation for NewDeployment {
 pub struct Deployment {
     pub id: Uuid,
     pub name: String,
-    pub deployment_group: Option<String>,
+    pub deployment_group: String,
     pub sdl_schema: String,
     pub group_name: Option<String>,
     pub exercise_id: Uuid,
@@ -105,6 +105,8 @@ pub struct ParticipantDeployment {
     pub id: Uuid,
     pub name: String,
     pub exercise_id: Uuid,
+    pub start: NaiveDateTime,
+    pub end: NaiveDateTime,
     pub updated_at: String,
 }
 
@@ -113,6 +115,8 @@ impl From<Deployment> for ParticipantDeployment {
         Self {
             id: deployment.id,
             name: deployment.name,
+            start: deployment.start,
+            end: deployment.end,
             exercise_id: deployment.exercise_id,
             updated_at: deployment.updated_at.to_string(),
         }
@@ -127,6 +131,7 @@ pub enum ElementStatus {
     Failed,
     Removed,
     RemoveFailed,
+    ConditionWarning,
     ConditionSuccess,
     ConditionPolling,
     ConditionClosed,
@@ -173,9 +178,11 @@ pub struct DeploymentElement {
     pub handler_reference: Option<String>,
     pub deployer_type: DeployerType,
     pub status: ElementStatus,
-    pub executor_log: Option<String>,
+    pub executor_stdout: Option<String>,
+    pub executor_stderr: Option<String>,
     pub event_id: Option<Uuid>,
     pub parent_node_id: Option<Uuid>,
+    pub error_message: Option<String>,
 }
 
 type ByDeploymentId<T> = Filter<
@@ -217,10 +224,12 @@ impl DeploymentElement {
             scenario_reference: source_box.reference(),
             deployer_type: DeployerType(deployer_type),
             status: ElementStatus::Ongoing,
-            executor_log: None,
+            executor_stdout: None,
+            executor_stderr: None,
             event_id,
             handler_reference: None,
             parent_node_id,
+            error_message: None,
         }
     }
 
@@ -238,9 +247,11 @@ impl DeploymentElement {
             handler_reference,
             deployer_type: DeployerType(deployer_type),
             status,
-            executor_log: None,
+            executor_stdout: None,
+            executor_stderr: None,
             event_id: None,
             parent_node_id: None,
+            error_message: None,
         }
     }
 
@@ -258,6 +269,17 @@ impl DeploymentElement {
             .send(UpdateDeploymentElement(exercise_id, self.clone(), true))
             .await??;
         Ok(())
+    }
+
+    pub fn set_stdout_and_stderr(&mut self, executor_response: &ExecutorResponse) {
+        self.executor_stdout = match executor_response.stdout.is_empty() {
+            true => None,
+            false => Some(executor_response.stdout.clone()),
+        };
+        self.executor_stderr = match executor_response.stderr.is_empty() {
+            true => None,
+            false => Some(executor_response.stderr.clone()),
+        };
     }
 
     fn all_with_deleted() -> All<deployment_elements::table, Self> {

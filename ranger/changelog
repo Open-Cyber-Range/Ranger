@@ -1,3 +1,12 @@
+ranger-server (2.2.0) stretch; urgency=medium
+
+  * Add client Exercise Order forms
+  * Add manager Events view
+  * Add deployment status overview to deployment details page
+  * Improved event and inject handling
+
+ -- Rait Rotšan <developers@cr14.ee>  Thu, 07 Mar 2024 14:29:48 +0200
+
 ranger-server (2.1.1) stretch; urgency=medium
 
   * Fix metric name and key field discrepancy for scoring

@@ -1,35 +1,45 @@
 import type {Deployment, DeploymentElement} from './deployment';
-import type {UpdateExercise} from './exercise';
+import type {DeploymentEvent, UpdateExercise} from './exercise';
 import {type Score} from './score';
-import type {Log} from './log';
 
-export enum WebsocketMessageType {
+export enum WebsocketAdminMessageType {
   ExerciseUpdate = 'ExerciseUpdate',
   Deployment = 'Deployment',
   DeploymentElement = 'DeploymentElement',
   DeploymentElementUpdate = 'DeploymentElementUpdate',
   Score = 'Score',
-  Log = 'Log',
+  Event = 'Event',
 }
 
-export type WebsocketWrapper = {exerciseId: string; ownId: string} & ({
-  type: WebsocketMessageType.Deployment;
+export type WebsocketAdminWrapper = {exerciseId: string; ownId: string} & ({
+  type: WebsocketAdminMessageType.Deployment;
   content: Deployment;
 } | {
-  type: WebsocketMessageType.ExerciseUpdate;
+  type: WebsocketAdminMessageType.ExerciseUpdate;
   content: UpdateExercise;
 } | {
-  type: WebsocketMessageType.DeploymentElement;
+  type: WebsocketAdminMessageType.DeploymentElement;
   content: DeploymentElement;
 } | {
-  type: WebsocketMessageType.DeploymentElementUpdate;
+  type: WebsocketAdminMessageType.DeploymentElementUpdate;
   content: DeploymentElement;
 } | {
-  type: WebsocketMessageType.Score;
+  type: WebsocketAdminMessageType.Score;
+  content: Score;
+} | {
+  type: WebsocketAdminMessageType.Event;
+  content: DeploymentEvent;
+}
+);
+
+export enum WebsocketParticipantMessageType {
+  Score = 'Score',
+}
+
+export type WebsocketParticipantWrapper = {
+  exerciseId: string;
+  ownId: string;
+} & ({
+  type: WebsocketParticipantMessageType.Score;
   content: Score;
 });
-
-export type WebsocketLogWrapper = {
-  type: WebsocketMessageType.Log;
-  content: Log;
-};

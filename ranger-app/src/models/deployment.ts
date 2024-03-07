@@ -2,12 +2,14 @@
 type ParticipantDeployment = {
   name: string;
   id: string;
+  start: string;
+  end: string;
   updatedAt: string;
 };
 
 type DeploymentForm = {
   name: string;
-  deploymentGroup?: string;
+  deploymentGroup: string;
   groupNames: Array<{
     groupName: string;
   }>;
@@ -18,7 +20,7 @@ type DeploymentForm = {
 
 type NewDeployment = {
   name: string;
-  deploymentGroup?: string;
+  deploymentGroup: string;
   groupName: string;
   sdlSchema: string;
   start: string;
@@ -28,8 +30,6 @@ type NewDeployment = {
 type Deployment = {
   id: string;
   exerciseId: string;
-  startTime: string;
-  endTime: string;
   groupName?: string;
   createdAt: string;
   updatedAt: string;
@@ -55,6 +55,7 @@ export enum ElementStatus {
   ConditionSuccess = 'ConditionSuccess',
   ConditionPolling = 'ConditionPolling',
   ConditionClosed = 'ConditionClosed',
+  ConditionWarning = 'ConditionWarning',
 }
 
 type DeploymentElement = {
@@ -64,6 +65,11 @@ type DeploymentElement = {
   handlerReference?: string;
   deployerType: DeployerType;
   status: ElementStatus;
+  executorStdout?: string;
+  executorStderr?: string;
+  eventId?: string;
+  parentNodeId?: string;
+  errorMessage?: string;
 };
 
 export type {

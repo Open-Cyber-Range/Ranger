@@ -7,10 +7,11 @@ import {
   useAdminGetDeploymentScenarioQuery,
   useAdminGetDeploymentScoresQuery,
   useAdminGetDeploymentUsersQuery,
+  useAdminGetEventsQuery,
 } from 'src/slices/apiSlice';
 import {skipToken} from '@reduxjs/toolkit/dist/query';
 import SideBar from 'src/components/Exercise/SideBar';
-import useExerciseStreaming from 'src/hooks/useExerciseStreaming';
+import useAdminExerciseStreaming from 'src/hooks/websocket/useAdminExerciseStreaming';
 import DeploymentDetailsGraph from 'src/components/Scoring/Graph';
 import TloTable from 'src/components/Scoring/TloTable';
 import {Editor} from '@monaco-editor/react';
@@ -22,17 +23,19 @@ import {ActiveTab} from 'src/models/exercise';
 import {tryIntoScoringMetadata} from 'src/utils';
 import {H2} from '@blueprintjs/core';
 import {useTranslation} from 'react-i18next';
+import ManagerEvents from 'src/components/Deployment/Event/EventList';
 
 const DeploymentFocus = () => {
   const {t} = useTranslation();
   const {exerciseId, deploymentId} = useParams<DeploymentDetailRouteParameters>();
-  useExerciseStreaming(exerciseId);
+  useAdminExerciseStreaming(exerciseId);
   const queryArguments = exerciseId && deploymentId ? {exerciseId, deploymentId} : skipToken;
   const {data: scenario} = useAdminGetDeploymentScenarioQuery(queryArguments);
   const {data: deployment} = useAdminGetDeploymentQuery(queryArguments);
   const {data: scores} = useAdminGetDeploymentScoresQuery(queryArguments);
   const {data: users} = useAdminGetDeploymentUsersQuery(queryArguments);
   const {data: deploymentElements} = useAdminGetDeploymentElementsQuery(queryArguments);
+  const {data: deploymentEvents} = useAdminGetEventsQuery(queryArguments);
 
   if (scenario && exerciseId && deploymentId) {
     return (
@@ -89,6 +92,16 @@ const DeploymentFocus = () => {
               <MetricScorer
                 exerciseId={exerciseId}
                 deploymentId={deploymentId}/>
+            </>
+          )}
+          {activeTab === ActiveTab.Events && (
+            <>
+              <H2>{t('exercises.tabs.events')}</H2>
+              <ManagerEvents
+                scenario={scenario}
+                deploymentEvents={deploymentEvents}
+                deploymentElements={deploymentElements}
+              />
             </>
           )}
         </>

@@ -6,6 +6,7 @@ import {EmailStatusType} from 'src/models/email';
 import {toastWarning} from 'src/components/Toaster';
 import {useAdminGetEmailsQuery} from 'src/slices/apiSlice';
 import {openNewBlobWindow} from 'src/utils/email';
+import {formatStringToDateTime} from 'src/utils';
 
 const emailIntent = (status: EmailStatusType): Intent => {
   switch (status) {
@@ -23,7 +24,7 @@ const emailIntent = (status: EmailStatusType): Intent => {
   }
 };
 
-const EmailTable = ({exercise}: {exercise: Exercise}) => {
+const EmailTable = ({exercise}: {readonly exercise: Exercise}) => {
   const {data: emails, error, isLoading, refetch} = useAdminGetEmailsQuery(exercise.id);
   const {t} = useTranslation();
 
@@ -56,7 +57,7 @@ const EmailTable = ({exercise}: {exercise: Exercise}) => {
 
     return (
       <div>
-        <table className='bp4-html-table bp4-html-table-striped bp4-html-table-bordered'>
+        <table className='bp5-html-table bp5-html-table-striped bp5-html-table-bordered'>
           <thead>
             <tr>
               <th>{t('emails.status')}</th>
@@ -78,7 +79,7 @@ const EmailTable = ({exercise}: {exercise: Exercise}) => {
                     {email.statusType}
                   </Tag>
                 </td>
-                <td>{new Date(email.createdAt).toLocaleString()}</td>
+                <td>{formatStringToDateTime(email.createdAt)}</td>
                 <td>{email.fromAddress}</td>
                 <td>{email.toAddresses}</td>
                 <td>{email.replyToAddresses}</td>

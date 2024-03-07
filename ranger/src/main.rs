@@ -6,20 +6,27 @@ use ranger::middleware::deployment::DeploymentMiddlewareFactory;
 use ranger::middleware::exercise::ExerciseMiddlewareFactory;
 use ranger::middleware::keycloak::KeycloakAccessMiddlewareFactory;
 use ranger::middleware::metric::MetricMiddlewareFactory;
+use ranger::middleware::order::OrderMiddlewareFactory;
 use ranger::middleware::participant_authentication::ParticipantAccessMiddlewareFactory;
 use ranger::roles::RangerRole;
 use ranger::routes::admin::email::{
     add_email_template, delete_email, delete_email_template, get_email, get_email_form,
     get_email_template, get_email_templates, get_emails, send_email,
 };
+use ranger::routes::admin::event::{get_admin_event_info_data, get_exercise_deployment_events};
 use ranger::routes::admin::groups::get_participant_groups_users;
 use ranger::routes::admin::metric::{
     delete_metric, download_metric_artifact, get_admin_metric, get_admin_metrics,
     update_admin_metric,
 };
+use ranger::routes::admin::order::{get_order_admin, get_orders_admin};
 use ranger::routes::admin::scenario::get_admin_exercise_deployment_scenario;
 use ranger::routes::deployers::{default_deployer, get_deployers};
-use ranger::routes::deputy_query::{get_deputy_packages_by_type, get_exercise_by_source};
+use ranger::routes::deputy_query::{
+    check_package_exists, get_deputy_banner_file, get_deputy_packages_by_type,
+    get_exercise_by_source,
+};
+use ranger::routes::client::order::{create_custom_element, create_environment, create_plot, create_structure, create_training_objective, delete_custom_element, delete_custom_element_file, delete_environment, delete_plot, delete_structure, delete_training_objective, get_custom_element_file, get_orders_client, update_custom_element, update_environment, update_plot, update_structure, update_training_objective, upload_custom_element_file};
 use ranger::routes::exercise::{
     add_banner, add_exercise, add_exercise_deployment, add_participant, delete_banner,
     delete_exercise, delete_exercise_deployment, delete_participant, get_admin_participants,
@@ -28,11 +35,12 @@ use ranger::routes::exercise::{
     get_exercises, subscribe_to_exercise, update_banner, update_exercise,
 };
 use ranger::routes::logger::subscribe_to_logs_with_level;
+use ranger::routes::order::{create_order, get_order, update_order};
 use ranger::routes::participant::deployment::{
     get_participant_deployment, get_participant_deployments,
-    get_participant_node_deployment_elements,
+    get_participant_node_deployment_elements, subscribe_participant_to_deployment,
 };
-use ranger::routes::participant::event_info::get_event_info_data;
+use ranger::routes::participant::event_info::get_participant_event_info_data;
 use ranger::routes::participant::events::get_participant_events;
 use ranger::routes::participant::metric::{
     add_metric, get_participant_metric, get_participant_metrics, update_participant_metric,
@@ -67,6 +75,16 @@ async fn main() -> Result<(), Error> {
                     .service(
                         scope("/admin")
                         .service(
+                            scope("/order")
+                            .service(get_orders_admin)
+                            .service(
+                                scope("/{order_uuid}")
+                                    .wrap(OrderMiddlewareFactory)
+                                    .service(get_order_admin)
+                                    .service(update_order)
+                                )
+                        )
+                        .service(
                             scope("/query")
                                 .service(
                                     scope("/package")
@@ -74,6 +92,14 @@ async fn main() -> Result<(), Error> {
                                         .service(
                                             scope("/exercise")
                                                 .service(get_exercise_by_source)
+                                                .service(
+                                                    scope("/banner")
+                                                        .service(get_deputy_banner_file)
+                                                )
+                                        )
+                                        .service(
+                                            scope("/check")
+                                                .service(check_package_exists)
                                         )
                                 )
                             )
@@ -108,6 +134,14 @@ async fn main() -> Result<(), Error> {
                                                                 get_admin_exercise_deployment_scenario,
                                                             )
                                                             .service(get_exercise_deployment_users)
+                                                            .service(
+                                                                scope("/event")
+                                                                    .service(get_exercise_deployment_events)
+                                                                    .service(
+                                                                        scope("/{event_info_id}")
+                                                                            .service(get_admin_event_info_data)
+                                                                    )
+                                                            )
                                                             .service(
                                                                 scope("/metric") 
                                                                 .service(get_admin_metrics)
@@ -166,7 +200,39 @@ async fn main() -> Result<(), Error> {
                             .wrap(admin_auth_middleware),
                     )
                     .service(
-                        scope("/client").wrap(client_auth_middleware))
+                    scope("/client")
+                        .service(
+                            scope("/order")
+                            .service(create_order)
+                            .service(get_orders_client)
+                            .service(
+                                scope("/{order_uuid}")
+                                    .wrap(OrderMiddlewareFactory)
+                                    .service(get_order)
+                                    .service(update_order)
+                                    .service(create_training_objective)
+                                    .service(delete_training_objective)
+                                    .service(update_training_objective)
+                                    .service(create_structure)
+                                    .service(delete_structure)
+                                    .service(update_structure)
+                                    .service(create_environment)
+                                    .service(update_environment)
+                                    .service(delete_environment)
+                                    .service(create_custom_element)
+                                    .service(update_custom_element)
+                                    .service(upload_custom_element_file)
+                                    .service(delete_custom_element)
+                                    .service(delete_custom_element_file)
+                                    .service(get_custom_element_file)
+                                    .service(create_plot)
+                                    .service(update_plot)
+                                    .service(delete_plot)
+                                )
+                        )
+                      .wrap(client_auth_middleware)
+                        
+                    )
                     .service(
                         scope("/participant")
                             .service(
@@ -201,7 +267,7 @@ async fn main() -> Result<(), Error> {
                                                                                 .service(get_participant_events)
                                                                                 .service(
                                                                                     scope("/{event_info_id}")
-                                                                                        .service(get_event_info_data)
+                                                                                        .service(get_participant_event_info_data)
                                                                             )
                                                                             )
                                                                             .service(
@@ -220,7 +286,11 @@ async fn main() -> Result<(), Error> {
                                                                                         .service(update_participant_metric)
                                                                                         .service(upload_participant_artifact)
                                                                                     ),
-                                                                            ),
+                                                                            )
+                                                                            .service(
+                                                                                scope("/websocket")
+                                                                                .service(subscribe_participant_to_deployment)
+                                                                            )
                                                                 )
                                                             )
                                                     ),

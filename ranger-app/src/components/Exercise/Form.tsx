@@ -1,11 +1,12 @@
 import type React from 'react';
-import {useEffect} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import type {SubmitHandler} from 'react-hook-form';
 import {useForm, Controller} from 'react-hook-form';
 import {
   Button,
   Callout,
   FormGroup,
+  HTMLSelect,
   InputGroup,
   Intent,
   MenuItem,
@@ -14,17 +15,25 @@ import {toastSuccess, toastWarning} from 'src/components/Toaster';
 import type {Exercise, UpdateExercise} from 'src/models/exercise';
 import {type AdGroup} from 'src/models/groups';
 import {
+  useAdminCheckPackagesExistMutation,
+  useAdminGetDeploymentGroupsQuery,
+  useAdminGetDeputyPackagesQuery,
+  useAdminGetExerciseSdlFromPackageQuery,
   useAdminGetGroupsQuery,
   useAdminUpdateExerciseMutation,
 } from 'src/slices/apiSlice';
 import Editor from '@monaco-editor/react';
 import {useTranslation} from 'react-i18next';
+import {Resizable} from 're-resizable';
 import init, {
   parse_and_verify_sdl as parseAndVerifySDL,
 } from '@open-cyber-range/wasm-sdl-parser';
-import {Suggest2} from '@blueprintjs/select';
-import {MenuItem2} from '@blueprintjs/popover2';
+import {Suggest} from '@blueprintjs/select';
 import useResourceEstimation from 'src/hooks/useResourceEstimation';
+import {type Package} from 'src/models/package';
+import {type Scenario} from 'src/models/scenario';
+import {getPackageSources} from 'src/utils/scenario';
+import PackageDialog from './PackageDialog';
 
 const ExerciseForm = ({exercise, onContentChange, children}:
 {
@@ -33,16 +42,47 @@ const ExerciseForm = ({exercise, onContentChange, children}:
   children?: React.ReactNode;
 }) => {
   const {t} = useTranslation();
-  const {handleSubmit, control, watch} = useForm<UpdateExercise>({
+  const {handleSubmit, control, setValue, watch} = useForm<UpdateExercise>({
     defaultValues: {
       name: exercise.name,
+      deploymentGroup: exercise.deploymentGroup,
       sdlSchema: exercise.sdlSchema ?? '',
       groupName: exercise.groupName ?? '',
     },
   });
   const {data: groups} = useAdminGetGroupsQuery();
+  const {data: deploymentGroups} = useAdminGetDeploymentGroupsQuery();
+  const {data: exercisePackages} = useAdminGetDeputyPackagesQuery('exercise');
   const {sdlSchema} = watch();
   const {totalRam, totalCpu, resourceEstimationError} = useResourceEstimation(sdlSchema);
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedPackageInfo, setSelectedPackageInfo] = useState({
+    name: '',
+    version: '',
+  });
+  const {data: fetchedSdl, isError: isSdlFetchError}
+  = useAdminGetExerciseSdlFromPackageQuery(selectedPackageInfo, {
+    skip: !selectedPackageInfo.name || !selectedPackageInfo.version,
+  });
+
+  const handlePackageSelect = useCallback((selectedPackage: Package | undefined) => {
+    if (selectedPackage) {
+      setSelectedPackageInfo({name: selectedPackage.name, version: selectedPackage.version});
+    }
+  }, []);
+
+  useEffect(() => {
+    if (fetchedSdl) {
+      setValue('sdlSchema', fetchedSdl);
+      toastSuccess(t('exercises.package.success'));
+    }
+  }, [fetchedSdl, setValue, t, exercise.name]);
+
+  useEffect(() => {
+    if (isSdlFetchError) {
+      toastWarning(t('exercises.package.fail'));
+    }
+  }, [isSdlFetchError, t]);
 
   useEffect(() => {
     const subscription = watch((value, {name, type}) => {
@@ -56,12 +96,15 @@ const ExerciseForm = ({exercise, onContentChange, children}:
   }, [watch, onContentChange]);
 
   const [updateExercise, {isSuccess, error}] = useAdminUpdateExerciseMutation();
+  const [adminCheckPackagesExist] = useAdminCheckPackagesExistMutation();
 
   const onSubmit: SubmitHandler<UpdateExercise> = async exerciseUpdate => {
+    let scenario: Scenario | undefined;
     if (exerciseUpdate.sdlSchema) {
       try {
-        parseAndVerifySDL(exerciseUpdate.sdlSchema);
-      } catch (error: unknown) {
+        const parsedSdl = parseAndVerifySDL(exerciseUpdate.sdlSchema);
+        scenario = JSON.parse(parsedSdl) as Scenario;
+      } catch (error: any) {
         if (typeof error === 'string') {
           toastWarning(error);
         } else {
@@ -72,8 +115,24 @@ const ExerciseForm = ({exercise, onContentChange, children}:
       }
     }
 
-    await updateExercise({exerciseUpdate, exerciseId: exercise.id});
-    onContentChange(false);
+    if (scenario) {
+      const packageSources = getPackageSources(scenario);
+      try {
+        await adminCheckPackagesExist(packageSources).unwrap().then(async () => {
+          await updateExercise({exerciseUpdate, exerciseId: exercise.id});
+          onContentChange(false);
+        },
+        );
+      } catch (error: any) {
+        if ('data' in error) {
+          toastWarning(t('exercises.packageCheckFail', {
+            errorMessage: JSON.stringify(error.data),
+          }));
+        } else {
+          toastWarning(t('exercises.packageCheckFail'));
+        }
+      }
+    }
   };
 
   useEffect(() => {
@@ -140,6 +199,31 @@ const ExerciseForm = ({exercise, onContentChange, children}:
       />
       <Controller
         control={control}
+        name='deploymentGroup'
+        defaultValue={exercise.deploymentGroup}
+        render={({
+          field: {onChange, value},
+        }) => (
+          <FormGroup
+            labelFor='deployment-group'
+            labelInfo='(required)'
+            label={t('exercises.group.title')}
+          >
+            <HTMLSelect
+              large
+              fill
+              id='deployment-group'
+              value={value}
+              onChange={onChange}
+            >
+              {Object.keys((deploymentGroups ?? {})).map(groupName =>
+                <option key={groupName}>{groupName}</option>)}
+            </HTMLSelect>
+          </FormGroup>
+        )}
+      />
+      <Controller
+        control={control}
         name='groupName'
         render={({
           field: {onBlur, ref, value, onChange}, fieldState: {error},
@@ -153,7 +237,7 @@ const ExerciseForm = ({exercise, onContentChange, children}:
               intent={intent}
               label={t('common.adGroup')}
             >
-              <Suggest2<AdGroup>
+              <Suggest<AdGroup>
                 inputProps={{
                   onBlur,
                   inputRef: ref,
@@ -164,7 +248,7 @@ const ExerciseForm = ({exercise, onContentChange, children}:
                 itemPredicate={(query, item) =>
                   item.name.toLowerCase().includes(query.toLowerCase())}
                 itemRenderer={(item, {handleClick, handleFocus}) => (
-                  <MenuItem2
+                  <MenuItem
                     key={item.id}
                     text={item.name}
                     onClick={handleClick}
@@ -187,6 +271,27 @@ const ExerciseForm = ({exercise, onContentChange, children}:
           );
         }}
       />
+      { exercisePackages && (
+        <>
+          <Button
+            className='mb-4'
+            icon='add'
+            intent='success'
+            text={t('exercises.package.getScenarioSDL')}
+            onClick={() => {
+              setIsOpen(true);
+            }}
+          />
+          <PackageDialog
+            isOpen={isOpen}
+            exercisePackages={exercisePackages}
+            onClose={() => {
+              setIsOpen(false);
+            }}
+            onPackageSelect={handlePackageSelect}
+          />
+        </>
+      )}
       <Controller
         control={control}
         name='sdlSchema'
@@ -204,10 +309,7 @@ const ExerciseForm = ({exercise, onContentChange, children}:
                   <span>{t('exercises.easeDevelopment')}</span>
                   <a
                     className='underline text-blue-500'
-                    href={
-                      'https://documentation.opencyberrange.ee/'
-                  + 'docs/sdl-reference-guide/sdl'
-                    }
+                    href='https://documentation.opencyberrange.ee/docs/sdl/reference'
                     target='_blank'
                     rel='noopener noreferrer'
                   >
@@ -216,13 +318,22 @@ const ExerciseForm = ({exercise, onContentChange, children}:
                 </Callout>
               }
             >
-              <div className='h-[40vh]'>
+              <Resizable
+                defaultSize={{
+                  width: '100%',
+                  height: '40vh',
+                }}
+                enable={{
+                  bottom: true,
+                }}
+                className='h-[40vh] border border-b-8'
+              >
                 <Editor
                   value={value}
                   defaultLanguage='yaml'
                   onChange={onChange}
                 />
-              </div>
+              </Resizable>
               <div className='mt-4'>
                 {resourceEstimationError && (
                   <Callout

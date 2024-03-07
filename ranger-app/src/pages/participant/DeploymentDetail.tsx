@@ -1,10 +1,10 @@
 import React from 'react';
 import {useParams} from 'react-router-dom';
 import type {DeploymentDetailRouteParameters} from 'src/models/routes';
-import PariticpantSidebar from 'src/components/Exercise/participant/SideBar';
+import ParticipantSidebar from 'src/components/Exercise/participant/SideBar';
 import ParticipantDashboard from 'src/components/Deployment/participant/DashBoard';
 import ParticipantScore from 'src/components/Deployment/participant/Score';
-import PariticpantEvents from 'src/components/Deployment/participant/Events';
+import ParticipantEvents from 'src/components/Deployment/participant/Events';
 import ManualMetrics from 'src/components/Deployment/participant/ManualMetrics';
 import AccountList from 'src/components/Deployment/AccountList';
 import {
@@ -19,6 +19,7 @@ import {skipToken} from '@reduxjs/toolkit/dist/query';
 import {useSelector} from 'react-redux';
 import {selectedEntity} from 'src/slices/userSlice';
 import {tryIntoScoringMetadata} from 'src/utils';
+import useParticipantExerciseStreaming from 'src/hooks/websocket/useParticipantExerciseStreaming';
 
 const ParticipantDeploymentDetail = () => {
   const {exerciseId, deploymentId} = useParams<DeploymentDetailRouteParameters>();
@@ -26,6 +27,7 @@ const ParticipantDeploymentDetail = () => {
   const generalQueryArgs = exerciseId && deploymentId ? {exerciseId, deploymentId} : skipToken;
   const participantQueryArgs = exerciseId && deploymentId && entitySelector
     ? {exerciseId, deploymentId, entitySelector} : skipToken;
+  useParticipantExerciseStreaming(exerciseId, deploymentId, entitySelector);
 
   const {data: users} = useParticipantGetDeploymentUsersQuery(generalQueryArgs);
   const {data: scores} = useParticipantGetDeploymentScoresQuery(participantQueryArgs);
@@ -37,7 +39,7 @@ const ParticipantDeploymentDetail = () => {
 
   if (exerciseId && deploymentId) {
     return (
-      <PariticpantSidebar renderMainContent={activeTab => (
+      <ParticipantSidebar renderMainContent={activeTab => (
         <>
           {activeTab === 'Dash'
             && <ParticipantDashboard
@@ -53,7 +55,7 @@ const ParticipantDeploymentDetail = () => {
               users={users}
               deploymentElements={nodeDeploymentElements}/>}
           {activeTab === 'Events'
-            && <PariticpantEvents
+            && <ParticipantEvents
               scenarioEvents={scenario?.events}
               deploymentEvents={deploymentEvents}/>}
           {activeTab === 'User Submissions'

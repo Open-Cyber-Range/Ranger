@@ -3,7 +3,7 @@ pub(crate) mod event;
 pub mod event_info;
 mod feature;
 mod inject;
-mod node;
+pub mod node;
 mod template;
 
 use self::node::RemoveableNodes;
@@ -61,40 +61,33 @@ impl DeploymentManager {
             .deploy_scenario_features(addressor, exercise, deployers, &deployed_nodes)
             .await?;
 
-        let nodes_with_conditions = scenario
-            .create_events(addressor, &deployed_nodes, deployment)
+        let events = scenario.create_events(addressor, deployment).await?;
+
+        let deployment_info = scenario
+            .populate_condition_properties(&deployed_nodes, &events)
             .await?;
 
         scenario
-            .deploy_scenario_conditions(addressor, exercise, deployers, &nodes_with_conditions)
+            .deploy_conditions(addressor, exercise, deployers, &deployment_info)
             .await?;
 
         scenario
-            .create_event_info_pages(addressor, deployers, &nodes_with_conditions)
+            .create_event_info_pages(addressor, deployers, &events)
             .await?;
 
         scenario
-            .deploy_event_pollers(addressor, exercise, deployers, &nodes_with_conditions)
+            .deploy_event_pollers(addressor, exercise, deployers, &deployment_info, events)
             .await?;
 
-        info!("Deployment {} successful", deployment.name);
+        info!("Deployment {} finished", deployment.name);
         Ok(())
     }
 
-    fn get_deployment_group(&self, deployment: &Deployment) -> String {
-        let name = deployment
-            .deployment_group
-            .clone()
-            .unwrap_or_else(|| self.default_deployment_group.clone());
-        log::debug!("Using deployment group: {}", &name);
-        name
-    }
-
-    fn get_deployers(&self, deployment: &Deployment) -> Result<Vec<String>> {
-        let group = self.get_deployment_group(deployment);
+    fn get_deployers(&self, deployment_group_name: &String) -> Result<Vec<String>> {
+        log::debug!("Using deployment group: {}", &deployment_group_name);
         self.deployment_group
-            .get(group.as_str())
-            .ok_or_else(|| anyhow!("No deployment group found for {}", group))
+            .get(deployment_group_name.as_str())
+            .ok_or_else(|| anyhow!("No deployment group found for {}", deployment_group_name))
             .cloned()
     }
 }
@@ -117,7 +110,7 @@ impl Handler<StartDeployment> for DeploymentManager {
     fn handle(&mut self, msg: StartDeployment, _: &mut Context<Self>) -> Self::Result {
         let StartDeployment(scenario, deployment, exercise) = msg;
 
-        let deployers_result = self.get_deployers(&deployment);
+        let deployers_result = self.get_deployers(&deployment.deployment_group);
         let addressor = self.addressor.clone();
 
         info!("Starting new Deployment {:?}", deployment.name);
@@ -149,7 +142,7 @@ impl Handler<RemoveDeployment> for DeploymentManager {
     fn handle(&mut self, msg: RemoveDeployment, _: &mut Context<Self>) -> Self::Result {
         let RemoveDeployment(exercise_id, deployment) = msg;
         let addressor = self.addressor.clone();
-        let deployers_result = self.get_deployers(&deployment);
+        let deployers_result = self.get_deployers(&deployment.deployment_group);
         Box::pin(
             async move {
                 let deployers = deployers_result?;
@@ -157,9 +150,17 @@ impl Handler<RemoveDeployment> for DeploymentManager {
                     .database
                     .send(GetDeploymentElementByDeploymentId(deployment.id, false))
                     .await??;
-                deployment_elements
+                let undeploy_result = deployment_elements
                     .undeploy_nodes(&addressor, &deployers, &exercise_id)
-                    .await?;
+                    .await;
+
+                if let Err(error) = &undeploy_result {
+                    error!(
+                        "Error deleting nodes for deployment '{deplyoment_name}': '{error}'",
+                        deplyoment_name = &deployment.name
+                    );
+                }
+
                 Ok(())
             }
             .into_actor(self)

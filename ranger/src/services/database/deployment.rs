@@ -77,13 +77,16 @@ impl Handler<GetDeployment> for Database {
 
     fn handle(&mut self, msg: GetDeployment, _ctx: &mut Self::Context) -> Self::Result {
         let id = msg.0;
-        let connection_result = self.get_connection();
+        let connection_result = self.get_shared_connection();
 
         Box::pin(
             async move {
-                let mut connection = connection_result?;
                 let deployment = block(move || {
-                    let deployment = Deployment::by_id(id).first(&mut connection)?;
+                    let mutex_connection = connection_result?;
+                    let mut connection = mutex_connection
+                        .lock()
+                        .map_err(|error| anyhow!("Error locking Mutex connection: {:?}", error))?;
+                    let deployment = Deployment::by_id(id).first(&mut *connection)?;
                     Ok(deployment)
                 })
                 .await??;

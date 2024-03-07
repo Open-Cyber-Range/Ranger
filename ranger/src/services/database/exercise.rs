@@ -73,13 +73,16 @@ impl Handler<GetExercises> for Database {
     type Result = ResponseActFuture<Self, Result<Vec<Exercise>>>;
 
     fn handle(&mut self, _: GetExercises, _ctx: &mut Self::Context) -> Self::Result {
-        let connection_result = self.get_connection();
+        let connection_result = self.get_shared_connection();
 
         Box::pin(
             async move {
-                let mut connection = connection_result?;
                 let exercise = block(move || {
-                    let exercises = Exercise::all().load(&mut connection)?;
+                    let mutex_connection = connection_result?;
+                    let mut connection = mutex_connection
+                        .lock()
+                        .map_err(|error| anyhow!("Error locking Mutex connection: {:?}", error))?;
+                    let exercises = Exercise::all().load(&mut *connection)?;
 
                     Ok(exercises)
                 })

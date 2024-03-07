@@ -4,33 +4,27 @@ import {
   Button,
   Dialog,
   H2,
-  HTMLSelect,
   InputGroup,
   FormGroup,
   Classes,
-  Label,
   Intent,
   NumericInput,
   MenuItem,
 } from '@blueprintjs/core';
-import {
-  useAdminGetGroupsQuery,
-  useAdminGetDeploymentGroupsQuery,
-} from 'src/slices/apiSlice';
+import {useAdminGetGroupsQuery} from 'src/slices/apiSlice';
 import {useTranslation} from 'react-i18next';
 import {Controller, useFieldArray, useForm, useWatch} from 'react-hook-form';
-import {Suggest2} from '@blueprintjs/select';
-import {MenuItem2} from '@blueprintjs/popover2';
+import {Suggest} from '@blueprintjs/select';
 import {type AdGroup} from 'src/models/groups';
 import DatePicker from 'react-datepicker';
 import {useEffect, useState} from 'react';
 
 const AddDialog = (
-  {isOpen, title, defaultDeploymentGroup, onSubmit, onCancel}:
+  {isOpen, title, deploymentGroup, onSubmit, onCancel}:
   {
     title: string;
     isOpen: boolean;
-    defaultDeploymentGroup: string;
+    deploymentGroup: string;
     onSubmit: ({
       count,
       name,
@@ -43,16 +37,13 @@ const AddDialog = (
   },
 ) => {
   const {t} = useTranslation();
-  const {data: deployers} = useAdminGetDeploymentGroupsQuery();
   const {data: groups} = useAdminGetGroupsQuery();
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
-  const {handleSubmit, control, register, formState: {errors}}
-
-  = useForm<DeploymentForm>({
+  const {handleSubmit, control} = useForm<DeploymentForm>({
     defaultValues: {
       name: '',
-      deploymentGroup: defaultDeploymentGroup || '',
+      deploymentGroup,
       groupNames: [],
       count: 1,
       start: undefined,
@@ -101,50 +92,15 @@ const AddDialog = (
         </div>
         <form onSubmit={handleSubmit(onHandleSubmit)}>
           <div className={Classes.DIALOG_BODY}>
-            <Controller
-              control={control}
-              name='deploymentGroup'
-              render={({
-                field: {onChange, onBlur, value}, fieldState: {error},
-              }) => {
-                const intent = error ? Intent.DANGER : Intent.NONE;
-                return (
-                  <FormGroup
-                    labelFor='deployment-group'
-                    labelInfo='(required)'
-                    helperText={error?.message}
-                    intent={intent}
-                    label={t('deployments.form.group.title')}
-                  >
-                    <Label>
-                      <HTMLSelect
-                        {...register('deploymentGroup',
-                          {required: true})}
-                        autoFocus
-                        large
-                        fill
-                        id='deployment-group'
-                        value={value}
-                        onBlur={onBlur}
-                        onChange={onChange}
-                      >
-                        <option disabled hidden value=''>
-                          {t('deployments.form.group.placeholder')}
-                        </option>
-                        {Object.keys((deployers ?? {})).map(groupName =>
-                          <option key={groupName}>{groupName}</option>)}
-
-                      </HTMLSelect>
-                      {errors.deploymentGroup && (
-                        <span className='text-xs text-red-800'>
-                          {t('deployments.form.group.required')}
-                        </span>
-                      ) }
-                    </Label>
-                  </FormGroup>
-                );
-              }}
-            />
+            <FormGroup
+              label={t('exercises.group.title')}
+            >
+              <InputGroup
+                large
+                disabled
+                placeholder={deploymentGroup ?? ''}
+              />
+            </FormGroup>
             <Controller
               control={control}
               name='name'
@@ -194,7 +150,7 @@ const AddDialog = (
                       <DatePicker
                         selectsStart
                         showTimeSelect
-                        customInput={<input className='bp4-input bp4-large bp4-fill'/>}
+                        customInput={<input className='bp5-input bp5-large bp5-fill'/>}
                         id='start-date'
                         selected={startDate}
                         startDate={startDate}
@@ -247,7 +203,7 @@ const AddDialog = (
                       <DatePicker
                         selectsEnd
                         showTimeSelect
-                        customInput={<input className='bp4-input bp4-large bp4-fill'/>}
+                        customInput={<input className='bp5-input bp5-large bp5-fill'/>}
                         id='end-date'
                         selected={endDate}
                         startDate={startDate}
@@ -267,62 +223,6 @@ const AddDialog = (
                 );
               }}
             />
-            {fields.map((field, index) => (
-              <Controller
-                key={field.id}
-                control={control}
-                name={`groupNames.${index}.groupName`}
-                rules={{required: true}}
-                render={({
-                  field: {onBlur, ref, value, onChange}, fieldState: {error},
-                }) => {
-                  const intent = error ? Intent.DANGER : Intent.NONE;
-                  const activeItem = groups?.find(group => group.name === value);
-                  return (
-                    <FormGroup
-                      labelFor='group-name'
-                      labelInfo='(required)'
-                      helperText={error?.message}
-                      intent={intent}
-                      label={t('deployments.form.adGroups.title', {number: index + 1})}
-                    >
-                      <Suggest2<AdGroup>
-                        inputProps={{
-                          id: 'group-name',
-                          onBlur,
-                          inputRef: ref,
-                          placeholder: '',
-                          leftIcon: 'search',
-                        }}
-                        activeItem={activeItem}
-                        inputValueRenderer={item => item.name}
-                        itemPredicate={(query, item) =>
-                          item.name.toLowerCase().includes(query.toLowerCase())}
-                        itemRenderer={(item, {handleClick, handleFocus}) => (
-                          <MenuItem2
-                            key={item.id}
-                            text={item.name}
-                            onClick={handleClick}
-                            onFocus={handleFocus}
-                          />
-                        )}
-                        items={groups ?? []}
-                        noResults={
-                          <MenuItem
-                            disabled
-                            text={t('common.noResults')}
-                            roleStructure='listoption'/>
-                        }
-                        onItemSelect={item => {
-                          onChange(item.name);
-                        }}
-                      />
-                    </FormGroup>
-                  );
-                }}
-              />
-            ),
-            )}
             <Controller
               control={control}
               name='count'
@@ -356,6 +256,61 @@ const AddDialog = (
                 );
               }}
             />
+            {fields.map((field, index) => (
+              <Controller
+                key={field.id}
+                control={control}
+                name={`groupNames.${index}.groupName`}
+                rules={{required: true}}
+                render={({
+                  field: {onBlur, ref, value, onChange}, fieldState: {error},
+                }) => {
+                  const intent = error ? Intent.DANGER : Intent.NONE;
+                  const activeItem = groups?.find(group => group.name === value);
+                  return (
+                    <FormGroup
+                      labelFor='group-name'
+                      labelInfo='(required)'
+                      helperText={error?.message}
+                      intent={intent}
+                      label={t('deployments.form.adGroups.title', {number: index + 1})}
+                    >
+                      <Suggest<AdGroup>
+                        inputProps={{
+                          id: 'group-name',
+                          onBlur,
+                          inputRef: ref,
+                          placeholder: t('common.searchPlaceholder') ?? '',
+                        }}
+                        activeItem={activeItem}
+                        inputValueRenderer={item => item.name}
+                        itemPredicate={(query, item) =>
+                          item.name.toLowerCase().includes(query.toLowerCase())}
+                        itemRenderer={(item, {handleClick, handleFocus}) => (
+                          <MenuItem
+                            key={item.id}
+                            text={item.name}
+                            onClick={handleClick}
+                            onFocus={handleFocus}
+                          />
+                        )}
+                        items={groups ?? []}
+                        noResults={
+                          <MenuItem
+                            disabled
+                            text={t('common.noResults')}
+                            roleStructure='listoption'/>
+                        }
+                        onItemSelect={item => {
+                          onChange(item.name);
+                        }}
+                      />
+                    </FormGroup>
+                  );
+                }}
+              />
+            ),
+            )}
           </div>
           <div className={Classes.DIALOG_FOOTER}>
             <div className={Classes.DIALOG_FOOTER_ACTIONS}>

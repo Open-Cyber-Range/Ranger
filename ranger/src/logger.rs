@@ -14,7 +14,6 @@ impl FileWriterLogger {
     pub fn new(log_file: &str) -> Result<Self, std::io::Error> {
         let file = OpenOptions::new()
             .create(true)
-            .write(true)
             .append(true)
             .open(log_file)?;
 

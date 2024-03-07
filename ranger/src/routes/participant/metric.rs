@@ -107,13 +107,8 @@ pub async fn add_metric(
             }
         };
 
-        let metric_name = match &metric.name {
-            Some(name) => name,
-            None => &new_metric_resource.metric_key,
-        };
-
         let new_metric = NewMetric::new(
-            metric_name.clone(),
+            metric.name.clone(),
             metric.description.clone(),
             metric.max_score,
             new_metric_resource,

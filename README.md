@@ -1,3 +1,24 @@
+<a href="https://cr14.ee">
+    <img src="assets/logos/CR14-logo.svg" alt="CR14 Logo" width="100" height="100">
+</a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="https://eas.ee">
+    <img src="assets/logos/eas-logo.svg" alt="EAS Logo" width="100" height="100">
+</a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="https://taltech.ee">
+    <img src="assets/logos/Taltech-logo.svg" alt="Taltech Logo" width="100" height="100">
+</a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="https://eeagrants.org">
+    <img src="assets/logos/ng.png" alt="NG Logo" width="100" height="100">
+</a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="https://ntnu.edu">
+    <img src="assets/logos/NTNU-logo.svg" alt="NTNU Logo" width="100" height="100">
+</a>
+
+
 ## Ranger
 
 This is an execution runtime project for the cyber range. It's main purpose is to coordinate deployment of SDL-based scenario in live environment.
@@ -10,6 +31,10 @@ The vSphere related dependencies (docker containers) require network access from
 Use `cargo install cargo-insta` to have access to snapshot tooling under `cargo insta` command.
 
 Use `cargo install diesel_cli` to have access to database management (setup, migrations, etc.) under `diesel` command.
+
+### Web
+
+SVGs in the front-end app use `#FFA263` as the baseline color for unDraw illustrations.
 
 #### Setup
 

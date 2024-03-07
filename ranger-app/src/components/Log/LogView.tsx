@@ -2,9 +2,10 @@ import type React from 'react';
 import {LogLevel} from 'src/models/log';
 import type {Log} from 'src/models/log';
 import {useLogs} from 'src/contexts/LogContext';
-import {useEffect, useState} from 'react';
+import {useEffect, useState, useRef} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Callout, H2} from '@blueprintjs/core';
+import {formatStringToDateTime} from 'src/utils';
 
 const logSeverity = {
   DEBUG: 1,
@@ -13,7 +14,15 @@ const logSeverity = {
   ERROR: 4,
 };
 
+const logSeverityColors = {
+  DEBUG: 'bg-yellow-100',
+  INFO: 'bg-green-100',
+  WARN: 'bg-orange-100',
+  ERROR: 'bg-red-100',
+};
+
 const LogView: React.FC = () => {
+  const tableRef = useRef<HTMLDivElement>(null);
   const {t} = useTranslation();
 
   const {logs, selectedLogLevel, setSelectedLogLevel} = useLogs();
@@ -35,6 +44,12 @@ const LogView: React.FC = () => {
       clearTimeout(timeoutId);
     };
   }, [selectedLogLevel, logs]);
+
+  useEffect(() => {
+    if (tableRef.current) {
+      tableRef.current.scrollTop = tableRef.current.scrollHeight;
+    }
+  }, [filteredLogs]);
 
   return (
     <>
@@ -69,7 +84,7 @@ const LogView: React.FC = () => {
           </div>
         </div>
 
-        <div className='overflow-y-auto mt-4 max-h-[50vh]'>
+        <div ref={tableRef} className='overflow-y-auto mt-4 max-h-[50vh]'>
           {filteredLogs.length === 0 ? (
             <Callout title={t('log.empty') ?? ''}/>
           ) : (
@@ -95,9 +110,9 @@ const LogView: React.FC = () => {
               </thead>
               <tbody className='bg-white divide-y divide-gray-200'>
                 {filteredLogs.map(log => (
-                  <tr key={log.datetime}>
+                  <tr key={log.datetime} className={logSeverityColors[log.level]}>
                     <td className='px-6 py-4 whitespace-nowrap'>
-                      {new Date(log.datetime).toLocaleString()}
+                      {formatStringToDateTime(log.datetime)}
                     </td>
                     <td className='px-6 py-4 whitespace-nowrap'>{log.level}</td>
                     <td className='px-6 py-4'>{log.message}</td>

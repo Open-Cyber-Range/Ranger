@@ -7,6 +7,7 @@ type ParticipantExercise = {
 
 type NewExercise = {
   name: string;
+  deploymentGroup: string;
   sdlSchema?: string;
   groupName?: string;
 };
@@ -21,21 +22,27 @@ type UpdateExercise = NewExercise;
 
 type Banner = {
   name: string;
-  content: string;
+  content: Uint8Array;
 };
 
 type BannerVariable = {
   name: string;
-  content: string;
+  content: Uint8Array;
 };
 
 type DeploymentEvent = {
   id: string;
   name: string;
-  description?: string;
   deploymentId: string;
+  start: string;
+  end: string;
+  description?: string;
+  hasTriggered: boolean;
   triggeredAt: string;
   eventInfoDataChecksum?: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string;
 };
 
 type EventInfo = {
@@ -57,6 +64,7 @@ export enum ActiveTab {
   Accounts,
   EntitySelector,
   UserSubmissions,
+  Events,
 }
 
 export type {

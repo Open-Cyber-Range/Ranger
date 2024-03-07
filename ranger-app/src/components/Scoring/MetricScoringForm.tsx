@@ -129,7 +129,11 @@ const MetricScoringForm = ({exerciseId, deploymentId, metric, onSubmit}:
                       value={value}
                       inputRef={ref}
                       id='score'
-                      onValueChange={onChange}
+                      onValueChange={valueAsNumber => {
+                        if (!Number.isNaN(valueAsNumber) && valueAsNumber >= 0) {
+                          onChange(valueAsNumber);
+                        }
+                      }}
                       onBlur={onBlur}
                     />
                     <Button

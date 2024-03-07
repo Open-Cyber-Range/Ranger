@@ -1,4 +1,4 @@
-use super::node::DeployedNode;
+use super::node::NodeProperties;
 use crate::models::helpers::uuid::Uuid;
 use crate::models::{DeploymentElement, ElementStatus, Exercise};
 use crate::services::database::account::GetAccount;
@@ -24,7 +24,7 @@ pub trait DeployableFeatures {
         addressor: &Addressor,
         exercise: &Exercise,
         deployers: &[String],
-        deployed_nodes: &[DeployedNode],
+        deployed_nodes: &[NodeProperties],
     ) -> Result<()>;
 }
 #[async_trait]
@@ -34,7 +34,7 @@ impl DeployableFeatures for Scenario {
         addressor: &Addressor,
         exercise: &Exercise,
         deployers: &[String],
-        deployed_nodes: &[DeployedNode],
+        deployed_nodes: &[NodeProperties],
     ) -> Result<()> {
         if self.features.is_some() {
             try_join_all(deployed_nodes.iter().map(|deployed_node| async move {
@@ -61,10 +61,10 @@ pub trait DeployableNodeFeatures {
 }
 
 #[async_trait]
-impl DeployableNodeFeatures for (Addressor, Vec<String>, Scenario, Uuid, &DeployedNode) {
+impl DeployableNodeFeatures for (Addressor, Vec<String>, Scenario, Uuid, &NodeProperties) {
     async fn deploy_node_features(&self) -> Result<()> {
         let (addressor, deployers, scenario, exercise_id, deployed_node) = self;
-        let DeployedNode {
+        let NodeProperties {
             node,
             deployment_element,
             template_id,
@@ -159,23 +159,23 @@ impl DeployableNodeFeatures for (Addressor, Vec<String>, Scenario, Uuid, &Deploy
                                     let feature_response = ExecutorResponse::try_from(result)?;
 
                                     let id = feature_response
+                                        .clone()
                                         .identifier
                                         .ok_or_else(|| {
-                                            anyhow!("Identifier in Feature Response not found")
+                                            anyhow!("Successful Feature response did not supply Identifier")
                                         })?
                                         .value;
 
-                                    if feature_type == GrpcFeatureType::Service {
-                                        debug!(
-                                            "Feature: '{feature_name}' output: {:?}",
-                                            feature_response.vm_log
-                                        );
-                                        feature_deployment_element.executor_log =
-                                            Some(feature_response.vm_log);
-                                    }
+                                    debug!(
+                                        "Feature: '{feature_name}' stdout: {:#?}. stderr: {:#?}",
+                                        feature_response.stdout, feature_response.stderr
+                                    );
 
                                     feature_deployment_element.status = ElementStatus::Success;
                                     feature_deployment_element.handler_reference = Some(id);
+                                    feature_deployment_element
+                                    .set_stdout_and_stderr(&feature_response);
+
                                     addressor
                                         .database
                                         .send(UpdateDeploymentElement(
@@ -188,6 +188,10 @@ impl DeployableNodeFeatures for (Addressor, Vec<String>, Scenario, Uuid, &Deploy
                                 }
                                 Err(err) => {
                                     feature_deployment_element.status = ElementStatus::Failed;
+                                    feature_deployment_element.error_message = Some(format!(
+                                        "Handler returned an error while creating a feature: {}",
+                                        err
+                                    ));
                                     addressor
                                         .database
                                         .send(UpdateDeploymentElement(

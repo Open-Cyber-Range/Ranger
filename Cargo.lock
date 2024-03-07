@@ -2016,7 +2016,7 @@ dependencies = [
 
 [[package]]
 name = "ranger"
-version = "2.1.1"
+version = "2.2.0"
 dependencies = [
  "actix",
  "actix-http",
@@ -2316,9 +2316,9 @@ dependencies = [
 
 [[package]]
 name = "sdl-parser"
-version = "0.19.0"
+version = "0.21.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a1fb7c322c71d1aee65d57db8dc8fa7a7ac9e8ffc72a9bcd52e0c14b58e479b5"
+checksum = "e4b015aacb4fcff533ea37d4992ba6b4946e689f9271388d2376c9f0e8ea7510"
 dependencies = [
  "anyhow",
  "bytesize",

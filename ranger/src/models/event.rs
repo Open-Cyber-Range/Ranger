@@ -3,7 +3,8 @@ use crate::{
     constants::NAIVEDATETIME_DEFAULT_VALUE,
     schema::events,
     services::database::{
-        All, Create, CreateOrIgnore, FilterExisting, SelectById, SoftDeleteById, UpdateById,
+        event::CreateEvent, All, Create, CreateOrIgnore, FilterExisting, SelectById,
+        SoftDeleteById, UpdateById,
     },
 };
 use chrono::NaiveDateTime;
@@ -21,7 +22,6 @@ pub struct NewEvent {
     pub id: Uuid,
     pub name: String,
     pub deployment_id: Uuid,
-    pub parent_node_id: Uuid,
     pub description: Option<String>,
     pub start: NaiveDateTime,
     pub end: NaiveDateTime,
@@ -37,6 +37,19 @@ impl NewEvent {
     }
 }
 
+impl From<CreateEvent> for NewEvent {
+    fn from(event: CreateEvent) -> Self {
+        Self {
+            id: event.id,
+            name: event.name,
+            deployment_id: event.deployment_id,
+            description: event.description,
+            start: event.start,
+            end: event.end,
+        }
+    }
+}
+
 #[derive(Queryable, Selectable, Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 #[diesel(table_name = events)]
@@ -45,7 +58,6 @@ pub struct Event {
     pub id: Uuid,
     pub name: String,
     pub deployment_id: Uuid,
-    pub parent_node_id: Uuid,
     pub start: NaiveDateTime,
     pub end: NaiveDateTime,
     pub description: Option<String>,

@@ -1,14 +1,12 @@
 use sdl_parser::{
-    capability::Capabilities,
-    common::Source,
     condition::Conditions,
     entity::{Entities, Entity, ExerciseRole, Flatten},
     evaluation::Evaluations,
-    event::{Event, Events},
+    event::Events,
     feature::Features,
     goal::Goals,
     infrastructure::Infrastructure,
-    inject::{Inject, Injects},
+    inject::Injects,
     metric::{Metric, Metrics},
     node::{NodeType, Nodes, Role},
     script::Scripts,
@@ -21,7 +19,6 @@ use std::collections::HashMap;
 
 pub fn set_optionals_to_none(scenario: &Scenario) -> Scenario {
     let mut participant_scenario = scenario.clone();
-    participant_scenario.capabilities = None;
     participant_scenario.conditions = None;
     participant_scenario.entities = None;
     participant_scenario.evaluations = None;
@@ -125,23 +122,11 @@ pub fn get_entity_vulnerabilities(scenario: &Scenario, entities: &Entities) -> V
 pub fn get_vulnerability_connections(
     scenario: &Scenario,
     vulnerabilities: &Vulnerabilities,
-) -> (Capabilities, Features, Nodes) {
-    let mut capabilities = HashMap::new();
+) -> (Features, Nodes) {
     let mut features = HashMap::new();
     let mut nodes = HashMap::new();
 
     vulnerabilities.keys().for_each(|vulnerability_name| {
-        if let Some(scenario_capabilities) = scenario.capabilities.clone() {
-            scenario_capabilities
-                .into_iter()
-                .for_each(|(key, capability)| {
-                    if let Some(vulnerabilities) = capability.vulnerabilities.clone() {
-                        if vulnerabilities.contains(vulnerability_name) {
-                            capabilities.insert(key, capability);
-                        }
-                    }
-                })
-        }
         if let Some(scenario_features) = scenario.features.clone() {
             scenario_features.into_iter().for_each(|(key, feature)| {
                 if let Some(vulnerabilities) = feature.vulnerabilities.clone() {
@@ -162,7 +147,7 @@ pub fn get_vulnerability_connections(
         }
     });
 
-    (capabilities, features, nodes)
+    (features, nodes)
 }
 
 pub fn get_goals_by_tlos(scenario: &Scenario, tlos: &TrainingLearningObjectives) -> Goals {
@@ -213,26 +198,6 @@ pub fn get_tlo_connections(
     (injects, evaluations)
 }
 
-pub fn get_conditions_by_capabilities(
-    scenario: &Scenario,
-    capabilities: &Capabilities,
-) -> Conditions {
-    capabilities
-        .iter()
-        .fold(HashMap::new(), |mut conditions, capability| {
-            let condition_name = capability.1.condition.clone();
-            if let Some(scenario_conditions) = scenario.conditions.clone() {
-                if scenario_conditions.contains_key(&condition_name) {
-                    conditions.insert(
-                        condition_name.to_owned(),
-                        scenario_conditions[&condition_name].clone(),
-                    );
-                }
-            }
-            conditions
-        })
-}
-
 pub fn get_metrics_by_evaluations(scenario: &Scenario, evaluations: &Evaluations) -> Metrics {
     let metrics = evaluations
         .iter()
@@ -274,50 +239,21 @@ pub fn get_conditions_by_metrics(scenario: &Scenario, metrics: &Metrics) -> Cond
     conditions
 }
 
-pub fn get_inject_capabilities(
-    scenario_capabilities: &Capabilities,
-    inject: &Inject,
-) -> Capabilities {
-    let mut required_inject_capabilities = vec![];
-    required_inject_capabilities.push(inject.capabilities.executive.clone());
-    if let Some(secondary_capabilities) = inject.capabilities.secondary.clone() {
-        required_inject_capabilities.extend(secondary_capabilities);
-    }
-
-    let output = required_inject_capabilities.iter().fold(
-        HashMap::new(),
-        |mut capabilities, capability_name| {
-            if scenario_capabilities.contains_key(capability_name) {
-                capabilities.insert(
-                    capability_name.to_owned(),
-                    scenario_capabilities[capability_name].clone(),
-                );
-            }
-            capabilities
-        },
-    );
-    output
-}
-
-pub fn get_inject_connections(scenario: &Scenario, injects: &Injects) -> (Events, Capabilities) {
-    let mut events = HashMap::new();
-    let mut capabilities = HashMap::new();
-
-    injects.iter().for_each(|(inject_name, inject)| {
-        if let Some(scenario_events) = scenario.events.clone() {
-            scenario_events.into_iter().for_each(|(key, event)| {
-                if event.injects.contains(inject_name) {
-                    events.insert(key, event);
+pub fn get_inject_events(scenario: &Scenario, injects: &Injects) -> Events {
+    injects
+        .iter()
+        .fold(HashMap::new(), |mut events, (inject_name, _inject)| {
+            if let Some(scenario_events) = scenario.events.clone() {
+                for (key, event) in scenario_events {
+                    if let Some(event_injects) = &event.injects {
+                        if event_injects.contains(inject_name) {
+                            events.insert(key, event);
+                        }
+                    }
                 }
-            })
-        }
-
-        if let Some(scenario_capabilities) = scenario.capabilities.clone() {
-            let inject_capabilities = get_inject_capabilities(&scenario_capabilities, inject);
-            capabilities.extend(inject_capabilities);
-        }
-    });
-    (events, capabilities)
+            }
+            events
+        })
 }
 
 pub fn get_nodes_by_conditions(scenario: &Scenario, conditions: &Conditions) -> Nodes {
@@ -388,53 +324,24 @@ pub fn get_node_connections(
     (features, conditions, vulnerabilities, infrastructure)
 }
 
-pub fn get_condition_connections(
-    scenario: &Scenario,
-    conditions: &Conditions,
-) -> (Events, Capabilities) {
-    let mut events = HashMap::new();
-    let mut capabilities = HashMap::new();
-
-    conditions.keys().for_each(|condition_name| {
-        if let Some(scenario_events) = scenario.events.clone() {
-            scenario_events.into_iter().for_each(|(key, event)| {
-                if let Some(conditions) = event.conditions.clone() {
-                    if conditions.contains(condition_name) {
-                        events.insert(key, event);
-                    }
-                }
-            })
-        }
-
-        if let Some(scenario_capabilities) = scenario.capabilities.clone() {
-            scenario_capabilities
-                .into_iter()
-                .for_each(|(key, capability)| {
-                    if capability.condition.eq(condition_name) {
-                        capabilities.insert(key, capability);
-                    }
-                })
-        }
-    });
-
-    (events, capabilities)
-}
-
 pub fn get_event_connections(scenario: &Scenario, events: &Events) -> (Injects, Scripts) {
     let mut injects = HashMap::new();
     let mut scripts = HashMap::new();
 
     events.iter().for_each(|(event_name, event)| {
-        event.injects.iter().for_each(|inject_name| {
-            if let Some(scenario_injects) = scenario.injects.clone() {
-                if scenario_injects.contains_key(inject_name) {
-                    injects.insert(
-                        inject_name.to_owned(),
-                        scenario_injects[inject_name].clone(),
-                    );
+        if let Some(event_injects) = &event.injects {
+            event_injects.iter().for_each(|inject_name| {
+                if let Some(scenario_injects) = scenario.injects.clone() {
+                    if scenario_injects.contains_key(inject_name) {
+                        injects.insert(
+                            inject_name.to_owned(),
+                            scenario_injects[inject_name].clone(),
+                        );
+                    }
                 }
-            }
-        });
+            });
+        }
+
         if let Some(scenario_scripts) = scenario.scripts.clone() {
             scenario_scripts.iter().for_each(|(key, script)| {
                 if script.events.contains_key(event_name) {
@@ -445,31 +352,6 @@ pub fn get_event_connections(scenario: &Scenario, events: &Events) -> (Injects, 
     });
 
     (injects, scripts)
-}
-
-pub fn get_vulnerabilities_by_capabilities(
-    scenario: &Scenario,
-    capabilities: &Capabilities,
-) -> Vulnerabilities {
-    capabilities
-        .values()
-        .fold(HashMap::new(), |mut accumulator, capability| {
-            if let Some(capability_vulnerabilities) = capability.vulnerabilities.clone() {
-                if let Some(scenario_vulnerabilities) = scenario.vulnerabilities.clone() {
-                    capability_vulnerabilities
-                        .iter()
-                        .for_each(|vulnerability_name| {
-                            if scenario_vulnerabilities.contains_key(vulnerability_name) {
-                                accumulator.insert(
-                                    vulnerability_name.to_owned(),
-                                    scenario_vulnerabilities[vulnerability_name].clone(),
-                                );
-                            }
-                        });
-                }
-            }
-            accumulator
-        })
 }
 
 pub fn get_stories_by_scripts(scenario: &Scenario, scripts: &Scripts) -> Stories {
@@ -487,118 +369,7 @@ pub fn get_stories_by_scripts(scenario: &Scenario, scripts: &Scripts) -> Stories
         })
 }
 
-pub fn get_injects_and_roles_by_node_event(
-    scenario: &Scenario,
-    event: &Event,
-    node_name: &str,
-) -> Vec<(String, Inject, Role)> {
-    let event_injects = event
-        .injects
-        .iter()
-        .fold(HashMap::new(), |mut injects, inject_name| {
-            if let Some(scenario_injects) = scenario.injects.clone() {
-                if scenario_injects.contains_key(inject_name) {
-                    injects.insert(
-                        inject_name.to_owned(),
-                        scenario_injects[inject_name].clone(),
-                    );
-                }
-            }
-            injects
-        });
-
-    let injects_with_roles: Vec<(String, Inject, Role)> =
-        event_injects
-            .iter()
-            .fold(vec![], |mut accumulator, (inject_name, inject)| {
-                let inject_executive_capability = inject.capabilities.executive.clone();
-                let scenario_capabilities = scenario.capabilities.clone().unwrap_or_default();
-                if let Some(executive_capability) =
-                    scenario_capabilities.get(&inject_executive_capability)
-                {
-                    if let Some(node) = scenario.nodes.clone().unwrap_or_default().get(node_name) {
-                        if let NodeType::VM(vm_node) = &node.type_field {
-                            if let Some(condition_role) = vm_node
-                                .conditions
-                                .clone()
-                                .get(&executive_capability.condition)
-                            {
-                                if let Some(role) = vm_node
-                                    .roles
-                                    .clone()
-                                    .unwrap_or_default()
-                                    .get(condition_role)
-                                {
-                                    accumulator.push((
-                                        inject_name.to_owned(),
-                                        inject.clone(),
-                                        role.clone(),
-                                    ));
-                                }
-                            };
-                        }
-                    };
-                }
-                accumulator
-            });
-    injects_with_roles
-}
-
-pub fn get_conditions_by_event(scenario: &Scenario, event: &Event) -> Conditions {
-    let event_conditions =
-        event
-            .conditions
-            .iter()
-            .fold(HashMap::new(), |mut conditions, condition_names| {
-                if let Some(scenario_conditions) = scenario.conditions.clone() {
-                    condition_names.iter().for_each(|condition_name| {
-                        if scenario_conditions.contains_key(condition_name) {
-                            conditions.insert(
-                                condition_name.to_owned(),
-                                scenario_conditions[condition_name].clone(),
-                            );
-                        }
-                    })
-                }
-                conditions
-            });
-    let event_inject_capabilities =
-        event
-            .injects
-            .iter()
-            .fold(HashMap::new(), |mut capabilities, inject_name| {
-                if let (Some(scenario_injects), Some(scenario_capabilities)) =
-                    (scenario.injects.clone(), scenario.capabilities.clone())
-                {
-                    capabilities.extend(get_inject_capabilities(
-                        &scenario_capabilities,
-                        &scenario_injects[inject_name],
-                    ));
-                }
-                capabilities
-            });
-    let capability_conditions =
-        event_inject_capabilities
-            .values()
-            .fold(HashMap::new(), |mut conditions, capability| {
-                if let Some(scenario_conditions) = scenario.conditions.clone() {
-                    if scenario_conditions.contains_key(&capability.condition) {
-                        conditions.insert(
-                            capability.condition.to_owned(),
-                            scenario_conditions[&capability.condition].clone(),
-                        );
-                    }
-                }
-                conditions
-            });
-
-    event_conditions
-        .into_iter()
-        .chain(capability_conditions)
-        .collect()
-}
-
-fn get_nodes_by_entities(scenario: &Scenario, entities: HashMap<String, Entity>) -> Nodes {
+fn get_nodes_by_entities(scenario: &Scenario, entities: &HashMap<String, Entity>) -> Nodes {
     let nodes = entities
         .iter()
         .fold(HashMap::new(), |mut accumulator, (entity_name, _entity)| {
@@ -622,22 +393,22 @@ fn get_nodes_by_entities(scenario: &Scenario, entities: HashMap<String, Entity>)
     nodes
 }
 
-pub fn get_capability_connections(scenario: &Scenario, capabilities: &Capabilities) -> Injects {
-    let mut injects = HashMap::new();
-
-    capabilities
+fn get_events_by_entities(scenario: &Scenario, entities: HashMap<String, Entity>) -> Events {
+    entities
         .iter()
-        .for_each(|(capability_name, _capability)| {
-            if let Some(scenario_injects) = scenario.injects.clone() {
-                scenario_injects.iter().for_each(|(inject_name, inject)| {
-                    if inject.capabilities.executive.eq(capability_name) {
-                        injects.insert(inject_name.to_owned(), inject.clone());
+        .fold(HashMap::new(), |mut accumulator, (_entity_name, entity)| {
+            if let Some(entity_events) = &entity.events {
+                entity_events.iter().for_each(|event_name| {
+                    if let Some(scenario_events) = scenario.events.clone() {
+                        if scenario_events.contains_key(event_name) {
+                            accumulator
+                                .insert(event_name.to_owned(), scenario_events[event_name].clone());
+                        }
                     }
                 })
             }
-        });
-
-    injects
+            accumulator
+        })
 }
 
 pub fn filter_scenario_by_role(scenario: &Scenario, role: ExerciseRole) -> Scenario {
@@ -649,17 +420,14 @@ pub fn filter_scenario_by_role(scenario: &Scenario, role: ExerciseRole) -> Scena
     }
 
     let mut vulnerabilities = get_entity_vulnerabilities(scenario, &flattened_entities);
-    let (mut capabilities, mut features, mut nodes) =
-        get_vulnerability_connections(scenario, &vulnerabilities);
-    let mut conditions = get_conditions_by_capabilities(scenario, &capabilities);
+    let (mut features, mut nodes) = get_vulnerability_connections(scenario, &vulnerabilities);
     let tlos = get_tlos_by_entities(scenario, &flattened_entities);
     let goals = get_goals_by_tlos(scenario, &tlos);
     let (mut injects, evaluations) = get_tlo_connections(scenario, &tlos);
     let metrics = get_metrics_by_evaluations(scenario, &evaluations);
-    let metric_conditions = get_conditions_by_metrics(scenario, &metrics);
-    conditions.extend(metric_conditions);
+    let mut conditions = get_conditions_by_metrics(scenario, &metrics);
 
-    let role_nodes = get_nodes_by_entities(scenario, flattened_entities);
+    let role_nodes = get_nodes_by_entities(scenario, &flattened_entities);
     nodes.extend(role_nodes.clone());
 
     let condition_nodes = get_nodes_by_conditions(scenario, &conditions);
@@ -671,25 +439,16 @@ pub fn filter_scenario_by_role(scenario: &Scenario, role: ExerciseRole) -> Scena
     conditions.extend(node_conditions);
     vulnerabilities.extend(node_vulnerabilities);
 
-    let (mut events, condition_capabilities) = get_condition_connections(scenario, &conditions);
-    capabilities.extend(condition_capabilities);
+    let mut events = get_events_by_entities(scenario, flattened_entities);
 
-    let capability_injects = get_capability_connections(scenario, &capabilities);
-    injects.extend(capability_injects);
-
-    let (inject_events, inject_capabilities) = get_inject_connections(scenario, &injects);
+    let inject_events = get_inject_events(scenario, &injects);
     events.extend(inject_events);
-    capabilities.extend(inject_capabilities);
     let (event_injects, scripts) = get_event_connections(scenario, &events);
     injects.extend(event_injects);
 
     let stories = get_stories_by_scripts(scenario, &scripts);
-    let capability_vulnerabilities = get_vulnerabilities_by_capabilities(scenario, &capabilities);
-    vulnerabilities.extend(capability_vulnerabilities);
-
     let entities = get_entities_by_role(scenario, role);
 
-    participant_scenario.capabilities = (!capabilities.is_empty()).then_some(capabilities);
     participant_scenario.conditions = (!conditions.is_empty()).then_some(conditions);
     participant_scenario.entities = (!entities.is_empty()).then_some(entities);
     participant_scenario.evaluations = (!evaluations.is_empty()).then_some(evaluations);
@@ -758,16 +517,30 @@ pub fn get_role_from_string(role: &str) -> Option<ExerciseRole> {
     }
 }
 
-pub fn get_event_sources(events: &Option<HashMap<String, Event>>) -> HashMap<String, Source> {
-    events
-        .iter()
-        .flat_map(|event| {
-            event.iter().filter_map(|(event_name, event)| {
-                event
-                    .source
-                    .as_ref()
-                    .map(|source| (event_name.clone(), source.clone()))
-            })
-        })
-        .collect::<HashMap<String, Source>>()
+pub fn inherit_parent_events(flattened_entities: &Entities) -> Entities {
+    let mut parent_events_map: HashMap<String, Vec<String>> = HashMap::new();
+    let mut new_entities = flattened_entities.clone();
+
+    for key in flattened_entities.keys().cloned().collect::<Vec<String>>() {
+        let parts: Vec<&str> = key.split('.').collect();
+        if parts.len() > 1 {
+            let parent_key = parts[..parts.len() - 1].join(".");
+            if let Some(parent_entity) = flattened_entities.get(&parent_key) {
+                if let Some(parent_events) = &parent_entity.events {
+                    parent_events_map.insert(key.clone(), parent_events.clone());
+                }
+            }
+        }
+    }
+
+    for key in new_entities.keys().cloned().collect::<Vec<String>>() {
+        if let Some(child_entity) = new_entities.get_mut(&key) {
+            if let Some(parent_events) = parent_events_map.get(&key) {
+                let child_events = child_entity.events.get_or_insert(Vec::new());
+                child_events.extend(parent_events.clone());
+            }
+        }
+    }
+
+    new_entities
 }

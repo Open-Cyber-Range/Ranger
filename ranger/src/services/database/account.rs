@@ -44,16 +44,19 @@ impl Handler<GetAccount> for Database {
     type Result = ResponseActFuture<Self, Result<Account>>;
 
     fn handle(&mut self, msg: GetAccount, _ctx: &mut Self::Context) -> Self::Result {
-        let connection_result = self.get_connection();
+        let connection_result = self.get_shared_connection();
         let template_id = msg.0;
         let username = msg.1;
 
         Box::pin(
             async move {
-                let mut connection = connection_result?;
                 let account = block(move || {
+                    let mutex_connection = connection_result?;
+                    let mut connection = mutex_connection
+                        .lock()
+                        .map_err(|error| anyhow!("Error locking Mutex connection: {:?}", error))?;
                     let account = Account::by_template_id_and_username(template_id, username)
-                        .first(&mut connection)?;
+                        .first(&mut *connection)?;
 
                     Ok(account)
                 })

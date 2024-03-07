@@ -20,6 +20,9 @@ import {type Score} from 'src/models/score';
 import {
   deleteEntityConnectionButton,
 } from 'src/components/Deployment/EntityTree';
+import {type TFunction} from 'i18next';
+import {DateTime} from 'luxon';
+import {type FormType} from 'src/models/routes';
 
 export const createEntityTree = (
   clickedDelete: (participantId: string) => void,
@@ -357,7 +360,7 @@ export const getMetricReferencesByRole = (
 ) => {
   const flattenedEntities = flattenEntities(scoringData.entities);
   const result = Object.values(flattenedEntities)
-    .reduce<Record<ExerciseRole, Set<string>>>((acc, entity) => {
+    .reduce<Record<ExerciseRole, Set<string>>>((accumulator, entity) => {
     const role = entity.role;
     const entityTlos = entity.tlos;
     if (role && entityTlos) {
@@ -368,11 +371,11 @@ export const getMetricReferencesByRole = (
         .map(metricKey => scoringData.metrics[metricKey].name ?? metricKey);
 
       for (const metricReference of metricReferences) {
-        acc[role].add(metricReference);
+        accumulator[role].add(metricReference);
       }
     }
 
-    return acc;
+    return accumulator;
   }, {
     [ExerciseRole.Blue]: new Set(),
     [ExerciseRole.Green]: new Set(),
@@ -438,3 +441,145 @@ export const isVMDeploymentOngoing = (deploymentElements: DeploymentElement[]) =
     element => element.deployerType === DeployerType.VirtualMachine
     && element.status === ElementStatus.Ongoing)
 );
+
+export const getReadableElementStatus = (t: TFunction, status: ElementStatus): string => {
+  switch (status) {
+    case ElementStatus.Success: {
+      return t('deployments.status.success');
+    }
+
+    case ElementStatus.Ongoing: {
+      return t('deployments.status.ongoing');
+    }
+
+    case ElementStatus.Failed: {
+      return t('deployments.status.failed');
+    }
+
+    case ElementStatus.Removed: {
+      return t('deployments.status.removed');
+    }
+
+    case ElementStatus.RemoveFailed: {
+      return t('deployments.status.removeFailed');
+    }
+
+    case ElementStatus.ConditionSuccess: {
+      return t('deployments.status.conditionSuccess');
+    }
+
+    case ElementStatus.ConditionPolling: {
+      return t('deployments.status.conditionPolling');
+    }
+
+    case ElementStatus.ConditionClosed: {
+      return t('deployments.status.conditionClosed');
+    }
+
+    case ElementStatus.ConditionWarning: {
+      return t('deployments.status.conditionWarning');
+    }
+
+    default: {
+      return t('deployments.status.unknown');
+    }
+  }
+};
+
+export const getReadableDeployerType = (t: TFunction, type: DeployerType): string => {
+  switch (type) {
+    case DeployerType.Switch: {
+      return t('deployments.deployerTypes.switch');
+    }
+
+    case DeployerType.Template: {
+      return t('deployments.deployerTypes.template');
+    }
+
+    case DeployerType.VirtualMachine: {
+      return t('deployments.deployerTypes.virtualMachine');
+    }
+
+    case DeployerType.Feature: {
+      return t('deployments.deployerTypes.feature');
+    }
+
+    case DeployerType.Condition: {
+      return t('deployments.deployerTypes.condition');
+    }
+
+    case DeployerType.Inject: {
+      return t('deployments.deployerTypes.inject');
+    }
+
+    default: {
+      return t('deployments.deployerTypes.unknown');
+    }
+  }
+};
+
+export const formatStringToDateTime = (date: string) => DateTime.fromISO(date, {zone: 'utc'})
+  .setZone('local')
+  .toLocaleString(DateTime.DATETIME_SHORT_WITH_SECONDS);
+
+export const getBreadcrumIntent = (formType: FormType, currentFormType: FormType) => {
+  if (formType === currentFormType) {
+    return 'primary';
+  }
+
+  if (formType === 'training-objectives' && currentFormType !== 'training-objectives') {
+    return 'success';
+  }
+
+  if (formType === 'structure'
+    && currentFormType !== 'training-objectives'
+    && currentFormType !== 'structure') {
+    return 'success';
+  }
+
+  if (formType === 'environment'
+  && currentFormType !== 'training-objectives'
+  && currentFormType !== 'structure'
+  && currentFormType !== 'environment') {
+    return 'success';
+  }
+
+  if (formType === 'custom-elements'
+  && currentFormType !== 'training-objectives'
+  && currentFormType !== 'structure'
+  && currentFormType !== 'environment'
+  && currentFormType !== 'custom-elements') {
+    return 'success';
+  }
+
+  if (currentFormType === 'final') {
+    return 'success';
+  }
+
+  return 'none';
+};
+
+export const dowloadFile = async (
+  fileLink: string, token: string, fileName: string, onError: () => void) => {
+  try {
+    const response = await fetch(fileLink ?? '', {
+      headers: {
+        Authorization: token ? `Bearer ${token}` : '',
+      },
+    });
+    if (response.ok) {
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.append(a);
+      a.click();
+      a.remove();
+    } else {
+      onError();
+    }
+  } catch {
+    onError();
+  }
+};

@@ -7,7 +7,7 @@ import {
   useAdminGetDeploymentScenarioQuery,
   useAdminGetDeploymentScoresQuery,
 } from 'src/slices/apiSlice';
-import useExerciseStreaming from 'src/hooks/useExerciseStreaming';
+import useAdminExerciseStreaming from 'src/hooks/websocket/useAdminExerciseStreaming';
 import {ExerciseRoleOrder} from 'src/models/scenario';
 import {
   flattenEntities,
@@ -26,7 +26,7 @@ import {Callout} from '@blueprintjs/core';
 const ScoreDetail = () => {
   const {t} = useTranslation();
   const {exerciseId, deploymentId, role} = useParams<DeploymentDetailScoresRouteParameters>();
-  useExerciseStreaming(exerciseId);
+  useAdminExerciseStreaming(exerciseId);
   const queryArguments = exerciseId && deploymentId ? {exerciseId, deploymentId} : skipToken;
   const {data: scenario} = useAdminGetDeploymentScenarioQuery(queryArguments);
   const {data: scores} = useAdminGetDeploymentScoresQuery(queryArguments);
@@ -54,6 +54,7 @@ const ScoreDetail = () => {
                 large
                 exerciseId={exerciseId}
                 deploymentId={deploymentId}
+                scenario={scenario}
                 role={role}
               />
             </div>

@@ -9,7 +9,7 @@ import {sortByProperty} from 'sort-by-property';
 const ExerciseDeployments = ({exercise}: {exercise: ParticipantExercise}) => {
   const navigate = useNavigate();
   const {data: deployments} = useParticipantGetDeploymentsQuery(exercise.id ?? skipToken);
-  const sorted_deployments = deployments?.slice().sort(sortByProperty('updatedAt', 'desc'));
+  const sortedDeployments = deployments?.slice().sort(sortByProperty('updatedAt', 'desc'));
 
   const handleCardClick = (deploymentId: string) => {
     navigate(`/exercises/${exercise.id}/deployments/${deploymentId}`);
@@ -18,7 +18,7 @@ const ExerciseDeployments = ({exercise}: {exercise: ParticipantExercise}) => {
   return (
     // eslint-disable-next-line react/jsx-no-useless-fragment
     <>
-      {sorted_deployments?.map(deployment => (
+      {sortedDeployments?.map(deployment => (
         <Card
           key={deployment.id}
           interactive

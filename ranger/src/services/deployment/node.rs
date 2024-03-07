@@ -5,7 +5,6 @@ use crate::services::database::deployment::{
     CreateDeploymentElement, GetDeploymentElementByDeploymentIdByScenarioReference,
     UpdateDeploymentElement,
 };
-use crate::services::database::event::UpdateEventChecksum;
 use crate::services::database::Database;
 use crate::services::deployer::{Deploy, UnDeploy};
 use crate::services::scheduler::CreateDeploymentSchedule;
@@ -58,41 +57,26 @@ impl Deployable for (String, Node, Deployment, String, Vec<String>, Option<Uuid>
     }
 }
 
-pub struct DeployedNode {
+#[derive(Debug, Clone)]
+pub struct NodeProperties {
     pub node: Node,
     pub deployment_element: DeploymentElement,
     pub template_id: Uuid,
 }
 
-impl DeployedNode {
+#[derive(Debug, Clone)]
+pub struct NodeDeploymentInfo {
+    pub node_properties: NodeProperties,
+    pub condition_properties: Vec<ConditionProperties>,
+}
+
+impl NodeProperties {
     pub fn new(node: Node, deployment_element: DeploymentElement, template_id: Uuid) -> Self {
         Self {
             node,
             deployment_element,
             template_id,
         }
-    }
-
-    pub async fn update_node_events(
-        database_address: &Addr<Database>,
-        deployed_nodes: &[(DeployedNode, Vec<ConditionProperties>)],
-        event_info_checksum: String,
-    ) -> Result<()> {
-        for (_, condition_properties) in deployed_nodes.iter() {
-            for condition_property in condition_properties.iter() {
-                if let Some(event_id) = condition_property.event_id {
-                    database_address
-                        .send(UpdateEventChecksum(
-                            event_id,
-                            crate::models::UpdateEventChecksum {
-                                event_info_data_checksum: Some(event_info_checksum.clone()),
-                            },
-                        ))
-                        .await??;
-                }
-            }
-        }
-        Ok(())
     }
 }
 
@@ -104,7 +88,7 @@ pub trait DeployableNodes {
         exercise: &Exercise,
         deployment: &Deployment,
         deployers: &[String],
-    ) -> Result<Vec<DeployedNode>>;
+    ) -> Result<Vec<NodeProperties>>;
 }
 
 async fn get_template_id(
@@ -139,7 +123,7 @@ impl DeployableNodes for Scenario {
         exercise: &Exercise,
         deployment: &Deployment,
         deployers: &[String],
-    ) -> Result<Vec<DeployedNode>> {
+    ) -> Result<Vec<NodeProperties>> {
         let deployment_schedule = addressor
             .scheduler
             .send(CreateDeploymentSchedule(self.clone()))
@@ -229,6 +213,10 @@ impl DeployableNodes for Scenario {
                             }
                             Err(error) => {
                                 deployment_element.status = ElementStatus::Failed;
+                                deployment_element.error_message = Some(format!(
+                                    "Handler returned an error while creating an inject: {}",
+                                    error
+                                ));
                                 addressor
                                     .database
                                     .send(UpdateDeploymentElement(
@@ -247,13 +235,13 @@ impl DeployableNodes for Scenario {
 
             deployment_results.push(tranche_results);
         }
-        let vm_nodes: Vec<DeployedNode> = deployment_results
+        let vm_nodes: Vec<NodeProperties> = deployment_results
             .concat()
             .into_iter()
             .filter_map(
                 |(node, deployment_element, potential_template_id)| match node.type_field {
                     NodeType::VM(_) => potential_template_id.map(|template_id| {
-                        DeployedNode::new(node, deployment_element, template_id)
+                        NodeProperties::new(node, deployment_element, template_id)
                     }),
                     _ => None,
                 },
@@ -311,6 +299,10 @@ impl RemoveableNodes for Vec<DeploymentElement> {
                             }
                             Err(error) => {
                                 element_update.status = ElementStatus::RemoveFailed;
+                                element_update.error_message = Some(format!(
+                                    "Handler returned an error while deleting a node: {}",
+                                    error
+                                ));
                                 addressor
                                     .database
                                     .send(UpdateDeploymentElement(

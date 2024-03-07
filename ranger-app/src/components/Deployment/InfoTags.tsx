@@ -2,7 +2,6 @@ import React from 'react';
 import {Tag} from '@blueprintjs/core';
 import type {DeploymentElement} from 'src/models/deployment';
 import {DeployerType} from 'src/models/deployment';
-import '@blueprintjs/popover2/lib/css/blueprint-popover2.css';
 import {useTranslation} from 'react-i18next';
 
 const countNodesByType = (deploymentElements: DeploymentElement[]) => {

@@ -3,6 +3,7 @@ import {useLocation, useNavigate, useParams} from 'react-router-dom';
 import type {DeploymentDetailRouteParameters} from 'src/models/routes';
 import {
   useAdminGetDeploymentElementsQuery,
+  useAdminGetDeploymentScenarioQuery,
   useAdminGetDeploymentsQuery,
   useAdminGetExerciseQuery,
 } from 'src/slices/apiSlice';
@@ -12,12 +13,13 @@ import {
   H2,
   H6,
   Icon,
-  type Intent,
+  Intent,
   Menu,
   MenuDivider,
   MenuItem,
+  Spinner,
 } from '@blueprintjs/core';
-import {type ReactNode, useState} from 'react';
+import {type ReactNode, useState, useEffect, useRef} from 'react';
 import {MENU_HEADER} from '@blueprintjs/core/lib/esm/common/classes';
 import {sortByProperty} from 'sort-by-property';
 import {ActiveTab} from 'src/models/exercise';
@@ -34,24 +36,21 @@ const hashTabs: Record<string, ActiveTab> = {
   '#accounts': ActiveTab.Accounts,
   '#entities': ActiveTab.EntitySelector,
   '#submissions': ActiveTab.UserSubmissions,
+  '#events': ActiveTab.Events,
 };
 
-const intentToIcon = (intent: Intent) => {
+const intentToIcon = (intent: Intent, progressionValue: number) => {
   switch (intent) {
     case 'danger': {
-      return 'error';
-    }
-
-    case 'warning': {
-      return 'full-circle';
+      return <Icon icon='error' intent={intent}/>;
     }
 
     case 'success': {
-      return 'tick-circle';
+      return <Icon icon='tick-circle' intent={intent}/>;
     }
 
     default: {
-      return 'full-circle';
+      return <Spinner size={16} intent={intent} value={progressionValue}/>;
     }
   }
 };
@@ -61,13 +60,34 @@ const DeploymentText = ({deployment}: {deployment: Deployment}) => {
     exerciseId: deployment.exerciseId,
     deploymentId: deployment.id,
   });
+  const {data: scenario} = useAdminGetDeploymentScenarioQuery({
+    exerciseId: deployment.exerciseId,
+    deploymentId: deployment.id,
+  });
+  const intentRef = useRef<Intent>(null);
+  const [intent, setIntent] = useState<Intent>(Intent.WARNING);
+  const progressionRef = useRef<number>(0);
+  const [progressionValue, setProgressionValue] = useState<number>(0);
 
-  const [_, intent] = getProgressionAndStatus(deploymentElements ?? []);
+  useEffect(() => {
+    if (deploymentElements && scenario) {
+      const [progression, intentStatus] = getProgressionAndStatus(deploymentElements, scenario);
+      if (intentRef.current !== intentStatus) {
+        setIntent(intentStatus);
+      }
+
+      if (progressionRef.current !== progression) {
+        setProgressionValue(progression);
+      }
+    }
+  }
+  , [deploymentElements, scenario]);
+
   return (
-    <div className={deploymentElements ? '' : 'bp4-skeleton'}>
+    <div className={deploymentElements ? '' : 'bp5-skeleton'}>
       <div className='flex items-center'>
-        <Icon icon={intentToIcon(intent)} intent={intent}/>
-        <h5 className='ml-2'>{deployment.name}</h5>
+        {intentToIcon(intent, progressionValue)}
+        <h5 className='ml-2 truncate'>{deployment.name}</h5>
       </div>
     </div>
   );
@@ -86,16 +106,17 @@ const SideBar = ({renderMainContent}: {
   const hasDeployments = deployments && deployments.length > 0;
   const [activeTab, setActiveTab] = useState<ActiveTab>(hashTabs[hash] ?? ActiveTab.Dash);
   if (exercise && deployments) {
-    const orderedDeployments = deployments.slice().sort(sortByProperty('updatedAt', 'desc'));
+    const orderedDeployments = deployments.slice().sort(sortByProperty('name', 'asc'));
     return (
       <div className='flex h-[100%]'>
         <div className='pb-[2rem] '>
           <Resizable
+            defaultSize={{width: '20%', height: '100%'}}
             minWidth={200}
-            maxWidth={500}
+            maxWidth={300}
           >
-            <Menu large className='max-w-[100%] bp4-elevation-3 h-screen'>
-              <div className='flex flex-col max-h-[100%] overflow-y-auto'>
+            <Menu large className='max-w-[100%] bp5-elevation-3 h-screen '>
+              <div className='flex flex-col max-h-[100%]'>
                 <div className='mt-[2rem] px-[7px]'>
                   <H2>{exercise.name}</H2>
                 </div>
@@ -227,6 +248,16 @@ const SideBar = ({renderMainContent}: {
                           // eslint-disable-next-line max-len
                             `/exercises/${deployment.exerciseId}/deployments/${deployment.id}/focus#submissions`);
                           setActiveTab(ActiveTab.UserSubmissions);
+                        }}/>
+                      <MenuItem
+                        icon='timeline-events'
+                        text={t('exercises.tabs.events')}
+                        active={activeTab === ActiveTab.Events}
+                        onClick={() => {
+                          navigate(
+                          // eslint-disable-next-line max-len
+                            `/exercises/${deployment.exerciseId}/deployments/${deployment.id}/focus#events`);
+                          setActiveTab(ActiveTab.Events);
                         }}/>
                     </MenuItem>
                   ))
