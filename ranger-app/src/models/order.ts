@@ -2,12 +2,20 @@
 type NewOrder = {
   name: string;
   clientId: string;
-  status: 'draft' | 'review' | 'inprogress' | 'ready' | 'finished';
+  status: OrderStatus;
 };
 
 type UpdateOrder = {
-  status: 'draft' | 'review' | 'inprogress' | 'ready' | 'finished';
+  status: OrderStatus;
 };
+
+enum OrderStatus {
+  DRAFT = 'draft',
+  REVIEW = 'review',
+  INPROGRESS = 'inProgress',
+  READY = 'ready',
+  FINISHED = 'finished',
+}
 
 type NewThreat = {
   threat: string;
@@ -172,3 +180,5 @@ export type {
   Plot,
   NewPlot,
 };
+
+export {OrderStatus};
