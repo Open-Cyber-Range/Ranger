@@ -5,6 +5,10 @@ type NewOrder = {
   status: 'draft' | 'review' | 'inprogress' | 'ready' | 'finished';
 };
 
+type UpdateOrder = {
+  status: 'draft' | 'review' | 'inprogress' | 'ready' | 'finished';
+};
+
 type NewThreat = {
   threat: string;
 };
@@ -146,6 +150,7 @@ export type {
   Structure,
   NewTrainingObjective,
   NewOrder,
+  UpdateOrder,
   Order,
   TrainingObjective,
   Skill,
