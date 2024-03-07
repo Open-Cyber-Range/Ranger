@@ -1,8 +1,9 @@
-import {Intent, Position, Toaster} from '@blueprintjs/core';
+import {Intent, OverlayToaster, Position} from '@blueprintjs/core';
 
-export const AppToaster = Toaster.create({
+export const AppToaster = OverlayToaster.create({
   className: 'recipe-toaster',
   position: Position.TOP,
+  maxToasts: 3,
   // eslint-disable-next-line unicorn/prefer-query-selector
 }, document.getElementById('toast') ?? undefined);
 
