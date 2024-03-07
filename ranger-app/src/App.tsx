@@ -28,6 +28,7 @@ import MainNavbar from './components/Navbar/MainNavBar';
 import ManagerNavbarLinks from './components/Navbar/ManagerLinks';
 import ParticipantNavbarLinks from './components/Navbar/ParticipantLinks';
 import NotFoundFallback from './pages/NotFoundFallback';
+import ManagerOrders from './pages/Orders';
 import ClientNavbarLinks from './components/Navbar/ClientLinks';
 
 const App = () => {
@@ -95,6 +96,7 @@ const App = () => {
             <Route
               path='/exercises/:exerciseId/deployments/:deploymentId/scores/:role'
               element={<ScoreDetail/>}/>
+            <Route path='/orders' element={<ManagerOrders/>}/>
             <Route path='/*' element={<NotFoundFallback/>}/>
           </Routes>
         </Router>

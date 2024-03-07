@@ -182,6 +182,7 @@ const language = {
   menu: {
     home: 'Home',
     exercises: 'Exercises',
+    exerciseOrders: 'Exercise Orders',
     logout: 'Logout',
     greeting: 'Hi, {{username}}!',
     userRoles: {
@@ -436,6 +437,7 @@ const language = {
     next: 'Next',
     back: 'Back',
     submit: 'Submit',
+    updateStatus: 'Update status',
     statuses: {
       draft: 'Draft',
       review: 'In Review',
