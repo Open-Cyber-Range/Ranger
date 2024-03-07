@@ -1,7 +1,7 @@
 use crate::{
     errors::RangerError,
     middleware::order::OrderInfo,
-    models::{Order, OrderRest, StructureWithElements},
+    models::{Order, OrderRest, OrderStatus, StructureWithElements},
     services::database::order::{
         GetCustomElementsByOrder, GetEnvironmentsByOrder, GetOrders, GetPlotsByOrder,
         GetStructuresByOrder, GetTrainingObjectivesByOrder,
@@ -24,7 +24,12 @@ pub async fn get_orders_admin(app_state: Data<AppState>) -> Result<Json<Vec<Orde
         .map_err(create_mailbox_error_handler("Database for orders"))?
         .map_err(create_database_error_handler("Get orders"))?;
 
-    Ok(Json(orders))
+    let filtered_orders = orders
+        .into_iter()
+        .filter(|order| order.status != OrderStatus::Draft)
+        .collect();
+
+    Ok(Json(filtered_orders))
 }
 
 #[get("")]
