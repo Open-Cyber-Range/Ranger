@@ -86,6 +86,8 @@ export const apiSlice = createApi({
         method: 'PUT',
         body: orderUpdate,
       }),
+      invalidatesTags: (result, error, {orderId}) =>
+        [{type: 'Order', id: orderId}],
     }),
     clientAddEnvironment: builder
       .mutation<NewEnvironment,
@@ -300,6 +302,8 @@ export const apiSlice = createApi({
         method: 'PUT',
         body: orderUpdate,
       }),
+      invalidatesTags: (result, error, {orderId}) =>
+        [{type: 'Order', id: orderId}],
     }),
     adminGetGroups: builder.query<AdGroup[], void>({
       query: () => '/admin/group',
