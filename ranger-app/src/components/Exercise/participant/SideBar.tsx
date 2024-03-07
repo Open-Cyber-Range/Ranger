@@ -76,7 +76,7 @@ const SideBar = ({renderMainContent}: {
 
       <div className='flex h-[100%]'>
         <div className='pb-[2rem]'>
-          <Menu large className='max-w-[10rem] bp4-elevation-3 h-[100%]'>
+          <Menu large className='max-w-[10rem] bp5-elevation-3 h-[100%]'>
             <div className='flex flex-col max-h-[100%] overflow-y-auto'>
               <div className='mt-[2rem] px-[7px]'>
                 <H2>{exercise.name}</H2>

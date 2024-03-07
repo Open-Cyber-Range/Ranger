@@ -8,6 +8,7 @@ pub(crate) mod event;
 pub(crate) mod event_info;
 pub(crate) mod exercise;
 pub(crate) mod metric;
+pub(crate) mod order;
 pub(crate) mod participant;
 pub(crate) mod upload;
 
@@ -36,11 +37,13 @@ pub type All<Table, T> = Select<Table, AsSelect<T, Mysql>>;
 pub type FilterExisting<Target, DeletedAtColumn> =
     Filter<Target, Eq<DeletedAtColumn, NaiveDateTime>>;
 pub type ById<Id, R> = Filter<R, Eq<Id, Uuid>>;
+pub type ByIdRefernce<'a, Id, R> = Filter<R, Eq<Id, &'a Uuid>>;
 pub type ByName<Name, R> = Filter<R, Eq<Name, String>>;
 pub type ByTemplateId<TemplateId, R> = Filter<R, Eq<TemplateId, Uuid>>;
 pub type ByDeploymentId<DeploymentId, R> = Filter<R, Eq<DeploymentId, Uuid>>;
 pub type ByUsername<Username, R> = Filter<R, Eq<Username, String>>;
 pub type SelectByIdFromAll<Table, Id, T> = ById<Id, All<Table, T>>;
+pub type SelectByIdFromAllReference<'a, Table, Id, T> = ByIdRefernce<'a, Id, All<Table, T>>;
 pub type SelectById<Table, Id, DeletedAtColumn, T> =
     ById<Id, FilterExisting<All<Table, T>, DeletedAtColumn>>;
 pub type SelectByName<Table, Name, DeletedAtColumn, T> =

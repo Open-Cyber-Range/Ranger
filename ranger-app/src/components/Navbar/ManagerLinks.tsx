@@ -8,14 +8,14 @@ const ManagerNavbarLinks = () => {
     <>
       <Link
         role='button'
-        className='bp4-button bp4-minimal bp4-icon-document'
+        className='bp5-button bp5-minimal bp5-icon-document'
         to='/exercises'
       >
         {t('menu.exercises')}
       </Link>
       <Link
         role='button'
-        className='bp4-button bp4-minimal bp4-icon-label'
+        className='bp5-button bp5-minimal bp5-icon-label'
         to='/logs'
       >
         {t('menu.logs')}

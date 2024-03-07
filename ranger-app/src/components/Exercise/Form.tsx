@@ -28,8 +28,7 @@ import {Resizable} from 're-resizable';
 import init, {
   parse_and_verify_sdl as parseAndVerifySDL,
 } from '@open-cyber-range/wasm-sdl-parser';
-import {Suggest2} from '@blueprintjs/select';
-import {MenuItem2} from '@blueprintjs/popover2';
+import {Suggest} from '@blueprintjs/select';
 import useResourceEstimation from 'src/hooks/useResourceEstimation';
 import {type Package} from 'src/models/package';
 import {type Scenario} from 'src/models/scenario';
@@ -238,7 +237,7 @@ const ExerciseForm = ({exercise, onContentChange, children}:
               intent={intent}
               label={t('common.adGroup')}
             >
-              <Suggest2<AdGroup>
+              <Suggest<AdGroup>
                 inputProps={{
                   onBlur,
                   inputRef: ref,
@@ -249,7 +248,7 @@ const ExerciseForm = ({exercise, onContentChange, children}:
                 itemPredicate={(query, item) =>
                   item.name.toLowerCase().includes(query.toLowerCase())}
                 itemRenderer={(item, {handleClick, handleFocus}) => (
-                  <MenuItem2
+                  <MenuItem
                     key={item.id}
                     text={item.name}
                     onClick={handleClick}

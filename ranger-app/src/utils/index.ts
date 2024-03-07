@@ -22,6 +22,7 @@ import {
 } from 'src/components/Deployment/EntityTree';
 import {type TFunction} from 'i18next';
 import {DateTime} from 'luxon';
+import {type FormType} from 'src/models/routes';
 
 export const createEntityTree = (
   clickedDelete: (participantId: string) => void,
@@ -520,3 +521,65 @@ export const getReadableDeployerType = (t: TFunction, type: DeployerType): strin
 export const formatStringToDateTime = (date: string) => DateTime.fromISO(date, {zone: 'utc'})
   .setZone('local')
   .toLocaleString(DateTime.DATETIME_SHORT_WITH_SECONDS);
+
+export const getBreadcrumIntent = (formType: FormType, currentFormType: FormType) => {
+  if (formType === currentFormType) {
+    return 'primary';
+  }
+
+  if (formType === 'training-objectives' && currentFormType !== 'training-objectives') {
+    return 'success';
+  }
+
+  if (formType === 'structure'
+    && currentFormType !== 'training-objectives'
+    && currentFormType !== 'structure') {
+    return 'success';
+  }
+
+  if (formType === 'environment'
+  && currentFormType !== 'training-objectives'
+  && currentFormType !== 'structure'
+  && currentFormType !== 'environment') {
+    return 'success';
+  }
+
+  if (formType === 'custom-elements'
+  && currentFormType !== 'training-objectives'
+  && currentFormType !== 'structure'
+  && currentFormType !== 'environment'
+  && currentFormType !== 'custom-elements') {
+    return 'success';
+  }
+
+  if (currentFormType === 'final') {
+    return 'success';
+  }
+
+  return 'none';
+};
+
+export const dowloadFile = async (
+  fileLink: string, token: string, fileName: string, onError: () => void) => {
+  try {
+    const response = await fetch(fileLink ?? '', {
+      headers: {
+        Authorization: token ? `Bearer ${token}` : '',
+      },
+    });
+    if (response.ok) {
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.append(a);
+      a.click();
+      a.remove();
+    } else {
+      onError();
+    }
+  } catch {
+    onError();
+  }
+};

@@ -34,6 +34,16 @@ import {
   type NewManualMetric,
 } from 'src/models/manualMetric';
 import {type Package} from 'src/models/package';
+import {
+  type NewTrainingObjective,
+  type NewOrder,
+  type Order,
+  type NewStructure,
+  type NewEnvironment,
+  type NewCustomElement,
+  type NewPlot,
+  type CustomElement,
+} from 'src/models/order';
 
 export const apiSlice = createApi({
   reducerPath: 'api',
@@ -48,15 +58,228 @@ export const apiSlice = createApi({
       return headers;
     },
   }),
-  tagTypes: ['Deployment',
+  tagTypes: [
+    'Deployment',
     'Exercise',
     'Score',
     'Scenario',
     'Participant',
     'ManualMetric',
     'Email',
-    'DeploymentEvent'],
+    'DeploymentEvent',
+    'Order',
+  ],
   endpoints: builder => ({
+    clientAddOrder: builder.mutation<Order, NewOrder>({
+      query: newOrder => ({
+        url: '/client/order', method: 'POST', body: newOrder,
+      }),
+      invalidatesTags: [{type: 'Order', id: 'LIST'}],
+    }),
+    clientAddEnvironment: builder
+      .mutation<NewEnvironment,
+    {
+      newEnvironment: NewEnvironment; orderId: string;
+    }>({
+      query: ({newEnvironment, orderId}) => ({
+        url: `/client/order/${orderId}/environment`,
+        method: 'POST',
+        body: newEnvironment,
+      }),
+      invalidatesTags: (result, error, {orderId}) =>
+        [{type: 'Order', id: orderId}],
+    }),
+    clientAddCustomElement: builder
+      .mutation<CustomElement,
+    {
+      newCustomElement: NewCustomElement; orderId: string;
+    }>({
+      query: ({newCustomElement, orderId}) => ({
+        url: `/client/order/${orderId}/custom_element`,
+        method: 'POST',
+        body: newCustomElement,
+      }),
+      invalidatesTags: (result, error, {orderId}) =>
+        [{type: 'Order', id: orderId}],
+    }),
+    clientAddPlot: builder
+      .mutation<NewPlot,
+    {
+      newPlot: NewPlot; orderId: string;
+    }>({
+      query: ({newPlot, orderId}) => ({
+        url: `/client/order/${orderId}/plot`,
+        method: 'POST',
+        body: newPlot,
+      }),
+      invalidatesTags: (result, error, {orderId}) =>
+        [{type: 'Order', id: orderId}],
+    }),
+    clientAddTrainingObjective: builder
+      .mutation<NewTrainingObjective,
+    {
+      newTrainingObjective: NewTrainingObjective; orderId: string;
+    }>({
+      query: ({newTrainingObjective, orderId}) => ({
+        url: `/client/order/${orderId}/training_objective`,
+        method: 'POST',
+        body: newTrainingObjective,
+      }),
+      invalidatesTags: (result, error, {orderId}) =>
+        [{type: 'Order', id: orderId}],
+    }),
+    clientAddStructure: builder
+      .mutation<NewStructure,
+    {
+      newStructure: NewStructure; orderId: string;
+    }>({
+      query: ({newStructure, orderId}) => ({
+        url: `/client/order/${orderId}/structure`,
+        method: 'POST',
+        body: newStructure,
+      }),
+      invalidatesTags: (result, error, {orderId}) =>
+        [{type: 'Order', id: orderId}],
+    }),
+    clientDeleteStructure: builder
+      .mutation<string, {orderId: string; structureId: string}>({
+      query: ({orderId, structureId}) => ({
+        url: `/client/order/${orderId}/structure/${structureId}`,
+        method: 'DELETE',
+        responseHandler: 'text',
+      }),
+      invalidatesTags: (result, error, {orderId}) =>
+        [{type: 'Order', id: orderId}],
+    }),
+    clientUpdateStructure: builder
+      .mutation<NewStructure,
+    {
+      newStructure: NewStructure; orderId: string; structureId: string;
+    }>({
+      query: ({newStructure, orderId, structureId}) => ({
+        url: `/client/order/${orderId}/structure/${structureId}`,
+        method: 'PUT',
+        body: newStructure,
+      }),
+      invalidatesTags: (result, error, {orderId}) =>
+        [{type: 'Order', id: orderId}],
+    }),
+    clientUpdateEnvironment: builder
+      .mutation<NewEnvironment,
+    {
+      newEnvironment: NewEnvironment; orderId: string; environmentId: string;
+    }>({
+      query: ({newEnvironment, orderId, environmentId}) => ({
+        url: `/client/order/${orderId}/environment/${environmentId}`,
+        method: 'PUT',
+        body: newEnvironment,
+      }),
+      invalidatesTags: (result, error, {orderId}) =>
+        [{type: 'Order', id: orderId}],
+    }),
+    clientUpdateCustomElement: builder
+      .mutation<CustomElement,
+    {
+      customElement: NewCustomElement; orderId: string; customElementId: string;
+    }>({
+      query: ({customElement, orderId, customElementId}) => ({
+        url: `/client/order/${orderId}/custom_element/${customElementId}`,
+        method: 'PUT',
+        body: customElement,
+      }),
+      invalidatesTags: (result, error, {orderId}) =>
+        [{type: 'Order', id: orderId}],
+    }),
+    clientUpdatePlot: builder
+      .mutation<NewPlot,
+    {
+      newPlot: NewPlot; orderId: string; plotId: string;
+    }>({
+      query: ({newPlot, orderId, plotId}) => ({
+        url: `/client/order/${orderId}/plot/${plotId}`,
+        method: 'PUT',
+        body: newPlot,
+      }),
+      invalidatesTags: (result, error, {orderId}) =>
+        [{type: 'Order', id: orderId}],
+    }),
+    clientUpdateTrainingObjective: builder
+      .mutation<NewTrainingObjective,
+    {
+      newTrainingObjective: NewTrainingObjective; orderId: string; trainingObjectiveId: string;
+    }>({
+      query: ({newTrainingObjective, orderId, trainingObjectiveId}) => ({
+        url: `/client/order/${orderId}/training_objective/${trainingObjectiveId}`,
+        method: 'PUT',
+        body: newTrainingObjective,
+      }),
+      invalidatesTags: (result, error, {orderId}) =>
+        [{type: 'Order', id: orderId}],
+    }),
+    clientDeleteEnvironment: builder
+      .mutation<string, {orderId: string; environmentId: string}>({
+      query: ({orderId, environmentId}) => ({
+        url: `/client/order/${orderId}/environment/${environmentId}`,
+        method: 'DELETE',
+        responseHandler: 'text',
+      }),
+      invalidatesTags: (result, error, {orderId}) =>
+        [{type: 'Order', id: orderId}],
+    }),
+    clientDeleteCustomElement: builder
+      .mutation<string, {orderId: string; customElementId: string}>({
+      query: ({orderId, customElementId}) => ({
+        url: `/client/order/${orderId}/custom_element/${customElementId}`,
+        method: 'DELETE',
+        responseHandler: 'text',
+      }),
+      invalidatesTags: (result, error, {orderId}) =>
+        [{type: 'Order', id: orderId}],
+    }),
+    clientDeletePlot: builder
+      .mutation<string, {orderId: string; plotId: string}>({
+      query: ({orderId, plotId}) => ({
+        url: `/client/order/${orderId}/plot/${plotId}`,
+        method: 'DELETE',
+        responseHandler: 'text',
+      }),
+      invalidatesTags: (result, error, {orderId}) =>
+        [{type: 'Order', id: orderId}],
+    }),
+    clientDeleteTrainingOrder: builder
+      .mutation<string, {orderId: string; trainingObjectiveId: string}>({
+      query: ({orderId, trainingObjectiveId}) => ({
+        url: `/client/order/${orderId}/training_objective/${trainingObjectiveId}`,
+        method: 'DELETE',
+        responseHandler: 'text',
+      }),
+      invalidatesTags: (result, error, {orderId}) =>
+        [{type: 'Order', id: orderId}],
+    }),
+    clientGetOrders: builder.query<Order[], void>({
+      query: () => '/client/order',
+      providesTags: (result = []) =>
+        [
+          ...result.map(({id}) => ({type: 'Order' as const, id})),
+          {type: 'Order', id: 'LIST'},
+        ],
+    }),
+    clientGetOrder: builder.query<Order, string>({
+      query: orderId => `/client/order/${orderId}`,
+      providesTags: (result, error, id) => [{type: 'Order', id}],
+    }),
+    adminGetOrders: builder.query<Order[], void>({
+      query: () => '/admin/order',
+      providesTags: (result = []) =>
+        [
+          ...result.map(({id}) => ({type: 'Order' as const, id})),
+          {type: 'Order', id: 'LIST'},
+        ],
+    }),
+    adminGetOrder: builder.query<Order, string>({
+      query: orderId => `/admin/order/${orderId}`,
+      providesTags: (result, error, id) => [{type: 'Order', id}],
+    }),
     adminGetGroups: builder.query<AdGroup[], void>({
       query: () => '/admin/group',
     }),
@@ -564,6 +787,26 @@ export const apiSlice = createApi({
 });
 
 export const {
+  useClientAddEnvironmentMutation,
+  useClientUpdateEnvironmentMutation,
+  useClientDeleteEnvironmentMutation,
+  useClientAddCustomElementMutation,
+  useClientUpdateCustomElementMutation,
+  useClientDeleteCustomElementMutation,
+  useClientAddPlotMutation,
+  useClientUpdatePlotMutation,
+  useClientDeletePlotMutation,
+  useClientAddStructureMutation,
+  useClientDeleteStructureMutation,
+  useClientUpdateStructureMutation,
+  useClientAddOrderMutation,
+  useClientAddTrainingObjectiveMutation,
+  useClientDeleteTrainingOrderMutation,
+  useClientUpdateTrainingObjectiveMutation,
+  useClientGetOrdersQuery,
+  useClientGetOrderQuery,
+  useAdminGetOrdersQuery,
+  useAdminGetOrderQuery,
   useAdminGetGroupsQuery,
   useAdminGetGroupUsersQuery,
   useAdminGetDeploymentUsersQuery,

@@ -19,9 +19,10 @@ const ManagerEvents = ({scenario, deploymentEvents, deploymentElements}:
 }) => {
   const {t} = useTranslation();
   const scenarioEvents = scenario?.events;
+  const scenarioNodes = scenario?.nodes;
   const flattenedEntities = scenario?.entities ? flattenEntities(scenario?.entities) : undefined;
 
-  if (scenarioEvents && deploymentEvents && deploymentEvents.length > 0) {
+  if (scenarioEvents && deploymentEvents && deploymentEvents.length > 0 && scenarioNodes) {
     return (
       <PageHolder>
         {
@@ -29,12 +30,10 @@ const ManagerEvents = ({scenario, deploymentEvents, deploymentElements}:
             const now = DateTime.utc();
             const start = DateTime.fromISO(event.start, {zone: 'UTC'});
             const end = DateTime.fromISO(event.end, {zone: 'UTC'});
-            const eventConditionNames = scenarioEvents[event.name]?.conditions;
-            const eventsWithConditions = deploymentElements?.filter(element =>
-              eventConditionNames?.includes(element.scenarioReference),
-            );
+            const eventConditionNames = scenarioEvents[event.name]?.conditions ?? [];
+            const eventInjectNames = scenarioEvents[event.name]?.injects ?? [];
 
-            if (eventsWithConditions && eventsWithConditions.length > 0) {
+            if (eventConditionNames.length > 0 || eventInjectNames.length > 0) {
               return (
                 <EventCard
                   key={event.name}
@@ -42,6 +41,8 @@ const ManagerEvents = ({scenario, deploymentEvents, deploymentElements}:
                   event={event}
                   deploymentElements={deploymentElements}
                   eventConditionNames={eventConditionNames}
+                  eventInjectNames={eventInjectNames}
+                  scenarioNodes={scenarioNodes}
                   now={now}
                   start={start}
                   end={end}

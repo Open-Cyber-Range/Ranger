@@ -1,6 +1,5 @@
 use crate::models::helpers::grpc_package::SerializableGrpcPackage;
 use crate::models::BannerContentRest;
-use crate::routes::get_query_param;
 use crate::services::deployer::{
     DeputyPackageQueryByType, DeputyPackageQueryCheckPackageExists,
     DeputyPackageQueryGetBannerFile, DeputyPackageQueryGetExercise,
@@ -8,6 +7,7 @@ use crate::services::deployer::{
 use crate::services::deployment::GetDefaultDeployers;
 use crate::utilities::{
     create_database_error_handler, create_mailbox_error_handler, create_package_error_handler,
+    get_query_param,
 };
 use crate::AppState;
 use actix_web::web::{Data, Json, Query};

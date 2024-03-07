@@ -1,6 +1,5 @@
 import React, {useEffect, useState} from 'react';
 import {Tag} from '@blueprintjs/core';
-import '@blueprintjs/popover2/lib/css/blueprint-popover2.css';
 import {useAdminGetDeploymentScoresQuery} from 'src/slices/apiSlice';
 import {useTranslation} from 'react-i18next';
 import {

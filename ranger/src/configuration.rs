@@ -28,6 +28,7 @@ pub struct Configuration {
     pub default_deployment_group: String,
     pub deployment_groups: DeploymentGroupMap,
     pub database_url: String,
+    pub file_storage_path: String,
     pub keycloak: KeycloakConfiguration,
     pub mailer_configuration: Option<MailerConfiguration>,
     pub logger: Option<String>,
@@ -49,7 +50,6 @@ pub struct MailerConfiguration {
     pub password: String,
     pub from_address: String,
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -83,6 +83,7 @@ mod tests {
                         - my-machiner-deployer
                         - my-switch-deployer
                 database_url: mysql://user:pass@mariadb:3306/app-database
+                file_storage_path: /etc/opt/ranger/files
                 keycloak:
                     base_url: http://development-keycloak:8080
                     realm: OCR
@@ -122,6 +123,7 @@ mod tests {
             username: username
             password: password
             from_address: address
+        file_storage_path: /etc/opt/ranger/files
         keycloak:
             base_url: http://development-keycloak:8080
             realm: OCR

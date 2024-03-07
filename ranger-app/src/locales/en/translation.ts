@@ -118,6 +118,7 @@ const language = {
       description: 'Description:',
       nodes: 'Nodes:',
       conditions: 'Conditions:',
+      injects: 'Injects:',
       notifiedEntities: 'Notified entities:',
       noEventsYet: 'No Events to display - deployment in progress',
       noScenarioEvents: 'No Events to display - scenario has no events',
@@ -130,7 +131,7 @@ const language = {
       eventWillTriggerIn: 'Event will trigger in',
       eventHasTriggered: 'Event has triggered',
       allNodesHaveTriggered: 'All nodes have triggered the event',
-      infoOnly: 'This is an informational event and is not directly connected to any nodes',
+      infoOnly: 'This is an informational event and has no conditions nor injects',
       informedEntities: 'Informed Entities:',
     },
     status: {
@@ -196,6 +197,7 @@ const language = {
     required: '(required)',
     submit: 'Submit',
     delete: 'Delete',
+    edit: 'Edit',
     back: 'Back',
     deleting: 'Deleting',
     add: 'Add',
@@ -210,6 +212,7 @@ const language = {
     searchPlaceholder: 'Search...',
     collapse: 'Collapse',
     expand: 'Expand',
+    noSuggestions: 'No suggestions',
   },
   emails: {
     status: 'Status',
@@ -401,6 +404,7 @@ const language = {
   },
   fallback: {
     role: 'You do not have any roles assigned to you. Please contact your Ranger administrator.',
+    notFound: 'We could not find the page you were looking for.',
   },
   scoreTable: {
     orderPlaceholder: 'Order by',
@@ -414,7 +418,192 @@ const language = {
     allRoles: 'All roles',
     errorFetchingRoles: 'Error fetching roles',
   },
-
+  orders: {
+    title: 'Orders',
+    noOrdersCallout: 'No orders have been created yet. Start by creating a new order.',
+    createOrder: 'Create order',
+    newOrder: 'New order',
+    trainingObjectives: 'Training objectives',
+    objectives: 'Objectives',
+    organization: 'Organization',
+    structure: 'Structure',
+    environment: 'Environment',
+    customElements: 'Custom elements',
+    plot: 'Plot',
+    order: 'Order',
+    loadingOrders: 'Loading orders...',
+    loadingOrder: 'Loading order...',
+    next: 'Next',
+    back: 'Back',
+    submit: 'Submit',
+    statuses: {
+      draft: 'Draft',
+      review: 'In Review',
+      inprogress: 'In Progress',
+      ready: 'Ready',
+      finished: 'Finished',
+    },
+    submitExplenation: `Now you are ready to submit the order. It is recommended to give the order a
+    good final look. Once you submit your order it goes to the exercise team for review and
+    processing. You can keep track of its progress in the order list. If there are questions or
+    additional information required for the exercise you will be contacted by the exercise team.`,
+    trainingObjective: {
+      add: 'Add Training Objective',
+      explenation: `Start by creating training objectives for your order.
+      Training objectives describe, what the participants are supposed to learn during the exercise.
+      Every objective is connected to a list of performance metrics, which are used to evaluate
+      trainees progression on achieving training objectives.
+      End goal should be to have a list of training objectives, which covers all important threats
+      that the participants should be able to handle.
+      `,
+      objective: 'Objective',
+      objectiveRequired: 'Objective is required',
+      objectiveMaxLength: 'Objective must be equal or less than 255 characters',
+      threats: 'Threats',
+      threat: 'Threat',
+      threatMaxLength: 'Threat must be equal or less than 255 characters',
+      threatRequired: 'Threat is required',
+      addNewThreat: 'Add new threat',
+      removeLastThreat: 'Remove last threat',
+      failedtoAdd: 'Failed to add training objective',
+      failedToDelete: 'Failed to delete training objective',
+      failedToUpadate: 'Failed to update training objective',
+    },
+    structureElements: {
+      explenation: `
+      Establish the organizational structure for your cyber exercise by adding members.
+      Members are the exercise participants, each with key details like name and
+      description of their role in the structure. Each member is connected to
+      associated training objectives they should focus on, and optionally, relevant
+      skills and weaknesses that they should or might possess can be specified.
+      Use the 'parent ID' field to build hierarchy and simulate real-world organizational dynamics.
+      `,
+      add: 'Add a member',
+      name: 'Name',
+      nameRequired: 'Name is required',
+      nameMaxLength: 'Name must be equal or less than 255 characters',
+      description: 'Description',
+      descriptionRequired: 'Description is required',
+      descriptionMaxLength: 'Description must be equal or less than 3000 characters',
+      noPossibleParents: 'No possible parents',
+      noParent: 'No parent',
+      parent: 'Parent',
+      delete: 'Delete',
+      edit: 'Edit',
+      failedtoAdd: 'Failed to add member',
+      failedToDelete: 'Failed to delete member',
+      failedToUpadate: 'Failed to update member',
+      addNewSkill: 'Add new skill',
+      skill: 'Skill',
+      skills: 'Skills',
+      skillMaxLength: 'Skill must be equal or less than 255 characters',
+      skillRequired: 'Skill is required',
+      addNewWeakness: 'Add new weakness',
+      weakness: 'Weakness',
+      weaknesses: 'Weaknesses',
+      weaknessMaxLength: 'Weakness must be equal or less than 255 characters',
+      weaknessRequired: 'Weakness is required',
+      connectedTrainingObjectives: 'Connected training objectives',
+    },
+    environmentElements: {
+      explenation: `Design the cyber environment where your exercise will unfold and which
+      supports the organizational structure. Environment defines a broad category of the
+      cyber infrastructure with its weaknesses and strengths relevant to the scenario at hand.
+      Additionally, you can specify the size of the element with a rough number of virtual
+      machines and add additional info. This environment sets the stage for realistic
+      cyber scenarios.`,
+      add: 'Add an environment',
+      nameRequired: 'Name is required',
+      nameMaxLength: 'Name must be equal or less than 255 characters',
+      name: 'Name',
+      category: 'Category',
+      categoryRequired: 'Category is required',
+      categoryMaxLength: 'Category must be equal or less than 255 characters',
+      size: 'Size',
+      sizeRequired: 'Size is required',
+      sizeMin: 'Size must be greater than 0',
+      additionalInformation: 'Additional information',
+      additionalInformationMaxLength: `Additional information must be equal or less than
+        3000 characters`,
+      addNewStrength: 'Add new strength',
+      strength: 'Strength',
+      strengthRequired: 'Strength is required',
+      strengthMaxLength: 'Strength must be equal or less than 255 characters',
+      addNewWeakness: 'Add new weakness',
+      weakness: 'Weakness',
+      weaknessRequired: 'Weakness is required',
+      weaknessMaxLength: 'Weakness must be equal or less than 255 characters',
+      failedToAdd: 'Failed to add member',
+      failedToDelete: 'Failed to delete member',
+      failedToUpadate: 'Failed to update member',
+    },
+    customElement: {
+      explenation: `Integrate your client-specific software into the exercise.
+      Provide details for custom elements you want to see incorporated into the
+      exercise and upload any necessary files with your exercise request.`,
+      add: 'Add a custom element',
+      name: 'Name',
+      nameRequired: 'Name is required',
+      nameMaxLength: 'Name must be equal or less than 255 characters',
+      description: 'Description',
+      descriptionRequired: 'Description is required',
+      descriptionMaxLength: 'Description must be equal or less than 3000 characters',
+      connectedTrainingObjectives: 'Connected training objectives',
+      environment: 'Environment',
+      environmentRequired: 'Environment is required',
+      noEnvironment: 'No environment',
+      noPossibleEnvironments: 'No possible environments',
+      failedToAdd: 'Failed to add custom element',
+      failedToDelete: 'Failed to delete custom element',
+      failedToUpdate: 'Failed to update custom element',
+      file: 'File',
+      addFile: 'Add a file',
+      updateFile: 'Update the file',
+      failedToDownloadFile: 'Failed to download the file',
+      fileUploaded: 'File uploaded',
+      failedToUploadFile: 'Failed to upload the file',
+      browse: 'Browse',
+      fileRequired: 'File is required',
+      zipFileRequired: 'File must be a .zip file',
+      downloadCurrentFile: 'Download current file',
+      content: 'Content',
+    },
+    plotElement: {
+      explenation: `Craft the narrative of your exercise. In the Plot section, describe the
+      storyline in a free-form text field. Set the start and end times to establish
+      the exercise's timeframe. This is to guide the overarching story of the cyber scenario.`,
+      plotPointExplenation: `Fine-tune the exercise narrative with Plot Points. Specify events
+      or turning points in detail. Add affected members from the structure, set the time for
+      the plot point to trigger, and link it to a specific objective if aimed at testing a
+      certain skill or accomplishment.`,
+      failedToAdd: 'Failed to add plot',
+      failedToDelete: 'Failed to delete plot',
+      failedToUpdate: 'Failed to update plot',
+      add: 'Add a plot',
+      name: 'Name',
+      nameRequired: 'Name is required',
+      nameMaxLength: 'Name must be equal or less than 255 characters',
+      addNewPlotPoint: 'Add new plot point',
+      descriptionMaxLength: 'Description must be equal or less than 3000 characters',
+      description: 'Description',
+      plotPointName: 'Name',
+      plotPointNameRequired: 'Name is required',
+      plotPointNameMaxLength: 'Name must be equal or less than 255 characters',
+      plotPointDescription: 'Description',
+      plotPointDescriptionMaxLength: 'Description must be equal or less than 3000 characters',
+      noEnvironment: 'No environment',
+      environment: 'Environment',
+      noPossibleEnvironments: 'No possible environments',
+      noObjective: 'No objective',
+      objective: 'Objective',
+      noPossibleObjectives: 'No possible objectives',
+      triggerTime: 'Trigger time',
+      timeRequired: 'Time is required',
+      plotPointConnectedStructures: 'Connected structures',
+      startTime: 'Start time',
+      endTime: 'End time',
+    },
+  },
 };
 
 export default language;

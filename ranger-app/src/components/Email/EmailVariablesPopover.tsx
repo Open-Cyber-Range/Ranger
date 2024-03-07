@@ -1,6 +1,5 @@
 import type React from 'react';
-import {Button, Menu, MenuItem} from '@blueprintjs/core';
-import {Popover2} from '@blueprintjs/popover2';
+import {Button, Menu, MenuItem, Popover} from '@blueprintjs/core';
 import {type EmailVariable} from 'src/models/email';
 import {useTranslation} from 'react-i18next';
 
@@ -27,14 +26,14 @@ const EmailVariablesPopover = ({emailVariables, insertVariable}: EmailVariablesP
   const {t} = useTranslation();
 
   return (
-    <Popover2
+    <Popover
       content={<EmailVariablesMenu
         emailVariables={emailVariables}
         insertVariable={insertVariable}/>}
       position='bottom-left'
     >
       <Button minimal icon='insert' text={t('emails.variables.insert')}/>
-    </Popover2>
+    </Popover>
   );
 };
 

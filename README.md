@@ -32,6 +32,10 @@ Use `cargo install cargo-insta` to have access to snapshot tooling under `cargo 
 
 Use `cargo install diesel_cli` to have access to database management (setup, migrations, etc.) under `diesel` command.
 
+### Web
+
+SVGs in the front-end app use `#FFA263` as the baseline color for unDraw illustrations.
+
 #### Setup
 
 Before opening the folder in `devcontainer` configurations for dependency services need to be filled out. To get the apporiate list of configurations consult either `.gitignore` or `.devcontainer/docker-compose.yml` files.

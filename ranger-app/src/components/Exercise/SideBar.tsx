@@ -39,6 +39,22 @@ const hashTabs: Record<string, ActiveTab> = {
   '#events': ActiveTab.Events,
 };
 
+const intentToIcon = (intent: Intent, progressionValue: number) => {
+  switch (intent) {
+    case 'danger': {
+      return <Icon icon='error' intent={intent}/>;
+    }
+
+    case 'success': {
+      return <Icon icon='tick-circle' intent={intent}/>;
+    }
+
+    default: {
+      return <Spinner size={16} intent={intent} value={progressionValue}/>;
+    }
+  }
+};
+
 const DeploymentText = ({deployment}: {deployment: Deployment}) => {
   const {data: deploymentElements} = useAdminGetDeploymentElementsQuery({
     exerciseId: deployment.exerciseId,
@@ -67,27 +83,11 @@ const DeploymentText = ({deployment}: {deployment: Deployment}) => {
   }
   , [deploymentElements, scenario]);
 
-  const renderIcon = () => {
-    switch (intent) {
-      case Intent.SUCCESS: {
-        return <Icon icon='tick-circle' intent={intent}/>;
-      }
-
-      case Intent.DANGER: {
-        return <Icon icon='error' intent={intent}/>;
-      }
-
-      default: {
-        return <Spinner size={16} intent={intent} value={progressionValue}/>;
-      }
-    }
-  };
-
   return (
-    <div className={deploymentElements ? '' : 'bp4-skeleton'}>
+    <div className={deploymentElements ? '' : 'bp5-skeleton'}>
       <div className='flex items-center'>
-        {renderIcon()}
-        <h5 className='ml-2'>{deployment.name}</h5>
+        {intentToIcon(intent, progressionValue)}
+        <h5 className='ml-2 truncate'>{deployment.name}</h5>
       </div>
     </div>
   );
@@ -111,11 +111,12 @@ const SideBar = ({renderMainContent}: {
       <div className='flex h-[100%]'>
         <div className='pb-[2rem] '>
           <Resizable
+            defaultSize={{width: '20%', height: '100%'}}
             minWidth={200}
-            maxWidth={500}
+            maxWidth={300}
           >
-            <Menu large className='max-w-[100%] bp4-elevation-3 h-screen'>
-              <div className='flex flex-col max-h-[100%] overflow-y-auto'>
+            <Menu large className='max-w-[100%] bp5-elevation-3 h-screen '>
+              <div className='flex flex-col max-h-[100%]'>
                 <div className='mt-[2rem] px-[7px]'>
                   <H2>{exercise.name}</H2>
                 </div>

@@ -15,7 +15,10 @@ use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 use log::error;
 pub use validation::*;
 pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!();
-use std::path::Path;
+use std::{collections::HashMap, path::Path, io::Write};
+use actix_multipart::Multipart;
+use actix_web::web;
+use futures::{StreamExt, TryStreamExt};
 
 pub fn create_mailbox_error_handler(actor_name: &str) -> impl Fn(MailboxError) -> RangerError + '_ {
     move |err| {
@@ -73,4 +76,40 @@ pub fn try_some<T>(item: Option<T>, error_message: &str) -> Result<T> {
 pub fn get_file_extension(filename: &str) -> Option<&str> {
     let path = Path::new(filename);
     path.extension().and_then(|extension| extension.to_str())
+}
+
+pub fn get_query_param(
+    query_params: &HashMap<String, String>,
+    param: &str,
+) -> Result<String, RangerError> {
+    query_params
+        .get(param)
+        .cloned()
+        .ok_or(RangerError::MissingParameter(param.to_string()))
+}
+
+pub async fn save_file(mut payload: Multipart, file_path: &Path) -> Result<()> {
+    if let Some(folder_path) = file_path.parent() {
+        std::fs::create_dir_all(folder_path)?;
+    }
+
+    while let Ok(Some(mut field)) = payload.try_next().await {
+        let file_path = file_path.to_path_buf();
+        let mut file_handler = web::block(|| std::fs::File::create(file_path)).await??;
+
+        while let Some(chunk) = field.next().await {
+            match chunk {
+                Ok(data) => {
+                    file_handler =
+                        web::block(move || file_handler.write_all(&data).map(|_| file_handler))
+                            .await??;
+                }
+                Err(error) => {
+                    return Err(anyhow!("Failed to read file: {:?}", error));
+                }
+            }
+        }
+    }
+
+    Ok(())
 }

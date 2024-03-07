@@ -50,7 +50,7 @@ const PackageDialog = (
   if (isOpen && packagesWithVersions) {
     return (
       <Dialog isOpen={isOpen} onClose={onClose}>
-        <div className='bp4-dialog-header'>
+        <div className='bp5-dialog-header'>
           <H4>{t('exercises.package.getScenarioSDL')}</H4>
           <Button
             small
@@ -60,7 +60,7 @@ const PackageDialog = (
               onClose();
             }}/>
         </div>
-        <div className='bp4-dialog-body'>
+        <div className='bp5-dialog-body'>
           <FormGroup
             labelFor='exercise-package'
             label={t('exercises.package.name.title')}
@@ -102,8 +102,8 @@ const PackageDialog = (
             </FormGroup>
           )}
         </div>
-        <div className='bp4-dialog-footer'>
-          <div className='bp4-dialog-footer-actions'>
+        <div className='bp5-dialog-footer'>
+          <div className='bp5-dialog-footer-actions'>
             <Button
               large
               intent='primary'

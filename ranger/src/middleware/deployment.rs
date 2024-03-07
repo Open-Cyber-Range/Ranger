@@ -116,8 +116,8 @@ where
                     error!("Deployment uuid not found");
                     RangerError::UuidParsingFailed
                 })?)
-                .map_err(|_| {
-                    error!("Invalid exercise uuid");
+                .map_err(|err| {
+                    error!("Invalid exercise uuid {:?}", err);
                     RangerError::UuidParsingFailed
                 })?;
             debug!("Getting deployment with uuid: {:?}", deployment_uuid);

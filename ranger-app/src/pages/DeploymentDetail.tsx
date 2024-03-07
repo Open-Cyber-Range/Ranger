@@ -21,6 +21,7 @@ import {
   H2,
   H4,
   Icon,
+  Tooltip,
 } from '@blueprintjs/core';
 import SideBar from 'src/components/Exercise/SideBar';
 import useAdminExerciseStreaming from 'src/hooks/websocket/useAdminExerciseStreaming';
@@ -31,7 +32,6 @@ import {
   isVMDeploymentOngoing,
   formatStringToDateTime,
 } from 'src/utils';
-import {Tooltip2} from '@blueprintjs/popover2';
 import InfoTags from 'src/components/Deployment/InfoTags';
 import StatusBox from 'src/components/Deployment/Status/StatusBox';
 
@@ -85,7 +85,7 @@ const DeploymentDetail = () => {
               <H2>{deployment.name}</H2>
               <InfoTags deploymentElements={deploymentElements ?? []}/>
             </div>
-            <Tooltip2
+            <Tooltip
               content={deploymentInProgress
                 ? t('deployments.beingDeployed') ?? ''
                 : (deploymentBeingRemoved
@@ -102,7 +102,7 @@ const DeploymentDetail = () => {
               >
                 {t('common.delete')}
               </AnchorButton>
-            </Tooltip2>
+            </Tooltip>
           </div>
           <div className='pt-2 pb-4 flex justify-center'>
             <div className='flex-col pr-2'>

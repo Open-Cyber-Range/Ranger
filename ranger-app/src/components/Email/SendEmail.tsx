@@ -15,6 +15,7 @@ import {
   Intent,
   Label,
   TagInput,
+  Tooltip,
 } from '@blueprintjs/core';
 import {useTranslation} from 'react-i18next';
 import {Controller, type SubmitHandler, useForm} from 'react-hook-form';
@@ -43,13 +44,12 @@ import {
   openNewBlobWindow,
 } from 'src/utils/email';
 import {useEmailVariablesInEditor} from 'src/hooks/useEmailVariablesInEditor';
-import {Tooltip2} from '@blueprintjs/popover2';
 import {sortByProperty} from 'sort-by-property';
 import EmailVariablesPopover from './EmailVariablesPopover';
 import EmailVariablesInfo from './EmailVariablesInfo';
 import TemplateSaveDialog from './TemplateSaveDialog';
 
-const SendEmail = ({exercise}: {exercise: Exercise}) => {
+const SendEmail = ({exercise}: {readonly exercise: Exercise}) => {
   const {t} = useTranslation();
   const {data: potentialEmailTemplates, refetch: refetchEmailTemplates}
     = useAdminGetEmailTemplatesQuery();
@@ -533,7 +533,7 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
                   <div className='flex justify-between items-end'>
                     <Label>
                       {t('emails.form.subject.title')}
-                      <span className='bp4-text-muted'>{t('emails.form.required')}</span>
+                      <span className='bp5-text-muted'>{t('emails.form.required')}</span>
                     </Label>
                     <EmailVariablesInfo emailVariables={emailVariables}/>
                   </div>
@@ -606,7 +606,7 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
                   <div className='flex justify-between items-end'>
                     <Label>
                       {t('emails.form.body.title')}
-                      <span className='bp4-text-muted'>{t('emails.form.required')}</span>
+                      <span className='bp5-text-muted'>{t('emails.form.required')}</span>
                     </Label>
                     <EmailVariablesPopover
                       emailVariables={emailVariables}
@@ -631,16 +631,16 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
           }}
         />
       </div>
-      <div className='flex justify-end mt-[1rem] mb-[1rem] gap-[0.5rem] '>
+      <div className='flex justify-end gap-4 mb-4'>
         <Button
           large
-          outlined
-          intent='primary'
+          intent='warning'
           text={t('emails.form.preview')}
           type='button'
           onClick={previewHtmlContent}
         />
-        <Tooltip2
+
+        <Tooltip
           content={t('emails.form.sendButtonDisabled') ?? ''}
           disabled={!isFetchingUsers}
         >
@@ -651,8 +651,9 @@ const SendEmail = ({exercise}: {exercise: Exercise}) => {
             text={t('emails.form.send')}
             disabled={isFetchingUsers}
           />
-        </Tooltip2>
+        </Tooltip>
       </div>
+
       <TemplateSaveDialog
         isOpen={isAddEmailTemplateDialogOpen}
         title={t('emails.form.templateName.title')}
