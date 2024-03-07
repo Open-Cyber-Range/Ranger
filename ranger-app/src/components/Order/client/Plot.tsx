@@ -20,7 +20,7 @@ import {
 import {sortByProperty} from 'sort-by-property';
 import PlotDialog from './PlotDialog';
 
-const PlotElement = ({order, isUserClient}: {order: Order; isUserClient: boolean}) => {
+const PlotElement = ({order, isEditable: isUserClient}: {order: Order; isEditable: boolean}) => {
   const {t} = useTranslation();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [addPlot, {error}] = useClientAddPlotMutation();

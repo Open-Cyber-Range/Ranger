@@ -42,15 +42,14 @@ function readyForNext(formType: string, order: Order | undefined): boolean {
   || (formType === 'plot' && (order?.plots?.length ?? 0) > 0);
 }
 
-const OrderDetail: React.FC<OrderDetailProps> = ({order: initialOrder, userRole, stage}) => {
+const OrderDetail: React.FC<OrderDetailProps> = ({order, userRole, stage}) => {
   const {t} = useTranslation();
   const formType = stage ?? 'training-objectives';
-  const [isUserClient, setIsUserClient] = useState(false);
+  const [isOrderEditable, setIsOrderEditable] = useState(false);
   const [clientUpdateOrder, clientUpdatedOrder]
   = useClientUpdateOrderMutation();
   const [adminUpdateOrder, adminUpdatedOrder]
   = useAdminUpdateOrderMutation();
-  const [order, setOrder] = useState<Order | undefined>(initialOrder);
 
   const handleStatusChange = async (newStatus: OrderStatus) => {
     if (order?.id && order.status !== newStatus) {
@@ -66,15 +65,9 @@ const OrderDetail: React.FC<OrderDetailProps> = ({order: initialOrder, userRole,
   };
 
   useEffect(() => {
-    setIsUserClient(userRole === UserRole.CLIENT);
+    setIsOrderEditable(userRole === UserRole.CLIENT && order?.status === OrderStatus.DRAFT);
   }
-  , [userRole]);
-
-  useEffect(() => {
-    if (clientUpdatedOrder.isSuccess || adminUpdatedOrder.isSuccess) {
-      setOrder(clientUpdatedOrder.data ?? adminUpdatedOrder.data ?? initialOrder);
-    }
-  }, [clientUpdatedOrder, adminUpdatedOrder, initialOrder]);
+  , [userRole, order]);
 
   useEffect(() => {
     if (clientUpdatedOrder.isSuccess) {
@@ -147,7 +140,7 @@ const OrderDetail: React.FC<OrderDetailProps> = ({order: initialOrder, userRole,
           <StepFooter
             readyForNext={readyForNext(formType, order)}
             orderId={order?.id}
-            isUserClient={isUserClient}
+            isUserClient={isOrderEditable}
             stage={formType}
             onSubmit={async () => {
               const orderUpdate: UpdateOrder = {
@@ -208,14 +201,14 @@ const OrderDetail: React.FC<OrderDetailProps> = ({order: initialOrder, userRole,
         ]}/>
       <div className='mt-4 min-h-full'>
         {order && formType === 'training-objectives'
-        && (<TrainingObjectives order={order} isUserClient={isUserClient}/>)}
+        && (<TrainingObjectives order={order} isEditable={isOrderEditable}/>)}
         {order && formType === 'structure'
-         && (<Structure order={order} isUserClient={isUserClient}/>)}
+         && (<Structure order={order} isEditable={isOrderEditable}/>)}
         {order && formType === 'environment'
-        && (<Environment order={order} isUserClient={isUserClient}/>)}
+        && (<Environment order={order} isEditable={isOrderEditable}/>)}
         {order && formType === 'custom-elements'
-         && (<CustomElements order={order} isUserClient={isUserClient}/>)}
-        {order && formType === 'plot' && (<Plot order={order} isUserClient={isUserClient}/>)}
+         && (<CustomElements order={order} isEditable={isOrderEditable}/>)}
+        {order && formType === 'plot' && (<Plot order={order} isEditable={isOrderEditable}/>)}
         {order && formType === 'final' && (
           <Callout intent='success' icon='info-sign'>
             {t('orders.submitExplenation')}

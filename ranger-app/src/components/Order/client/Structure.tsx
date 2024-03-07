@@ -197,7 +197,7 @@ const createStructureTree = (
   });
 };
 
-const StructureElement = ({order, isUserClient}: {order: Order; isUserClient: boolean}) => {
+const StructureElement = ({order, isEditable}: {order: Order; isEditable: boolean}) => {
   const {t} = useTranslation();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [addStructure, {error}] = useClientAddStructureMutation();
@@ -272,7 +272,7 @@ const StructureElement = ({order, isUserClient}: {order: Order; isUserClient: bo
 
     return createStructureTree(
       order,
-      isUserClient,
+      isEditable,
       {
         deleteFields: {
           text: t('orders.structureElements.delete'),
@@ -286,7 +286,7 @@ const StructureElement = ({order, isUserClient}: {order: Order; isUserClient: bo
       },
       openNodes,
     );
-  }, [order, isUserClient, t, handleDeleteStructure, handleEditStructure, openNodes]);
+  }, [order, isEditable, t, handleDeleteStructure, handleEditStructure, openNodes]);
 
   return (
     <>
@@ -316,7 +316,7 @@ const StructureElement = ({order, isUserClient}: {order: Order; isUserClient: bo
         </div>
         <Button
           large
-          disabled={!isUserClient}
+          disabled={!isEditable}
           className='shrink-0'
           intent='primary'
           onClick={() => {
