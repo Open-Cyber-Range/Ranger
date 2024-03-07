@@ -22,7 +22,7 @@ import {
 import {sortByProperty} from 'sort-by-property';
 import TrainingObjectiveDialog from './TrainingObjectiveDialog';
 
-const TrainingObjectives = ({order}: {order: Order}) => {
+const TrainingObjectives = ({order, isUserClient}: {order: Order; isUserClient: boolean}) => {
   const {t} = useTranslation();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [addTrainingObjective, {error}] = useClientAddTrainingObjectiveMutation();
@@ -115,6 +115,7 @@ const TrainingObjectives = ({order}: {order: Order}) => {
                 <div className='flex mt-4 gap-2 justify-end'>
                   <Button
                     intent='danger'
+                    disabled={!isUserClient}
                     onClick={async () => {
                       await deleteTrainingObjective({
                         orderId: order.id,
@@ -125,6 +126,7 @@ const TrainingObjectives = ({order}: {order: Order}) => {
                     {t('common.delete')}
                   </Button>
                   <Button
+                    disabled={!isUserClient}
                     intent='warning'
                     onClick={() => {
                       setEditedTrainingObjective(trainingObjective);
@@ -141,6 +143,7 @@ const TrainingObjectives = ({order}: {order: Order}) => {
         <Button
           large
           className='shrink-0'
+          disabled={!isUserClient}
           intent='primary'
           onClick={() => {
             setEditedTrainingObjective(undefined);

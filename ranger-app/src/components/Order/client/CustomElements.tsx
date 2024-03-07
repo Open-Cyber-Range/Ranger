@@ -28,7 +28,7 @@ import CustomElementDialog from './CustomElementDialog';
 
 const orderBase = `${BASE_URL}/client/order`;
 
-const CustomElements = ({order}: {order: Order}) => {
+const CustomElements = ({order, isUserClient}: {order: Order; isUserClient: boolean}) => {
   const {t} = useTranslation();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [addCustomElement, {error, data: addData}] = useClientAddCustomElementMutation();
@@ -202,6 +202,7 @@ const CustomElements = ({order}: {order: Order}) => {
                   {t('orders.customElement.content')}
                 </Button>
                 <Button
+                  disabled={!isUserClient}
                   intent='danger'
                   onClick={async () => {
                     await fetch(
@@ -220,6 +221,7 @@ const CustomElements = ({order}: {order: Order}) => {
                   {t('common.delete')}
                 </Button>
                 <Button
+                  disabled={!isUserClient}
                   intent='warning'
                   onClick={() => {
                     setEditedCustomElement(customElement);
@@ -234,6 +236,7 @@ const CustomElements = ({order}: {order: Order}) => {
         </div>
         <Button
           large
+          disabled={!isUserClient}
           className='shrink-0'
           intent='primary'
           onClick={() => {

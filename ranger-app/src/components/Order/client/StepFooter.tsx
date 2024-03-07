@@ -35,11 +35,13 @@ const StepFooter = (
   {
     stage: formType,
     orderId,
+    isUserClient,
     onSubmit,
     readyForNext,
   }: {
     stage: FormType;
     orderId: string;
+    isUserClient: boolean;
     onSubmit: () => void;
     readyForNext: boolean;
   }) => {
@@ -66,6 +68,7 @@ const StepFooter = (
       {formType === 'final' ? (
         <Button
           large
+          disabled={!isUserClient}
           intent='success'
           onClick={() => {
             onSubmit();

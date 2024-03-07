@@ -20,7 +20,7 @@ import {
 import {sortByProperty} from 'sort-by-property';
 import PlotDialog from './PlotDialog';
 
-const PlotElement = ({order}: {order: Order}) => {
+const PlotElement = ({order, isUserClient}: {order: Order; isUserClient: boolean}) => {
   const {t} = useTranslation();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [addPlot, {error}] = useClientAddPlotMutation();
@@ -182,6 +182,7 @@ const PlotElement = ({order}: {order: Order}) => {
               </CardList>
               <div className='flex mt-4 gap-2 justify-end'>
                 <Button
+                  disabled={!isUserClient}
                   intent='danger'
                   onClick={async () => {
                     await deletePlot({
@@ -193,6 +194,7 @@ const PlotElement = ({order}: {order: Order}) => {
                   {t('common.delete')}
                 </Button>
                 <Button
+                  disabled={!isUserClient}
                   intent='warning'
                   onClick={() => {
                     setEditedPlot(plot);
@@ -207,6 +209,7 @@ const PlotElement = ({order}: {order: Order}) => {
         </div>
         <Button
           large
+          disabled={!isUserClient}
           className='shrink-0'
           intent='primary'
           onClick={() => {
