@@ -18,7 +18,7 @@ jobs:
   lint-and-test-backend:
     runs-on: ubuntu-latest
     container:
-      image: ${{ secrets.DOCKER_REGISTRY_PULL }}/rust-builder
+      image: ${{ secrets.DOCKER_REGISTRY_PULL }}/rust-builder:latest
       options: --security-opt seccomp=unconfined
     steps:
       - name: Add Gitea SSH host key
@@ -41,7 +41,7 @@ jobs:
   lint-and-test-frontend:
     runs-on: ubuntu-latest
     container:
-      image: ${{ secrets.DOCKER_REGISTRY_PULL }}/frontend-builder
+      image: ${{ secrets.DOCKER_REGISTRY_PULL }}/frontend-builder:latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -57,7 +57,7 @@ jobs:
     needs: [lint-and-test-backend, lint-and-test-frontend]
     runs-on: ubuntu-latest
     container:
-      image: ${{ secrets.DOCKER_REGISTRY_PULL }}/frontend-builder
+      image: ${{ secrets.DOCKER_REGISTRY_PULL }}/frontend-builder:latest
     steps:
       - name: Add Gitea SSH host key
         run: |
@@ -89,7 +89,7 @@ jobs:
     needs: [build-frontend]
     runs-on: ubuntu-latest
     container:
-      image: ${{ secrets.DOCKER_REGISTRY_PULL }}/rust-builder
+      image: ${{ secrets.DOCKER_REGISTRY_PULL }}/rust-builder:latest
     steps:
       - name: Add Gitea SSH host key
         run: |
@@ -142,7 +142,7 @@ jobs:
     if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     container:
-      image: ${{ secrets.DOCKER_REGISTRY_PULL }}/ocr-base-deployment-image
+      image: ${{ secrets.DOCKER_REGISTRY_PULL }}/ocr-base-deployment-image:latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
