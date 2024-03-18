@@ -18,13 +18,13 @@ jobs:
   lint-and-test-backend:
     runs-on: ubuntu-latest
     container:
-      image: ${{ secrets.DOCKER_REGISTRY_PULL }}/rust-builder:latest
+      image: ${{ vars.DOCKER_REGISTRY_PULL }}/rust-builder:latest
       options: --security-opt seccomp=unconfined
     steps:
       - name: Add Gitea SSH host key
         run: |
           mkdir -p ~/.ssh
-          ssh-keyscan ${{ secrets.REPO_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan ${{ vars.REPO_HOST }} >> ~/.ssh/known_hosts
 
       - name: Checkout code
         uses: actions/checkout@v4
@@ -41,7 +41,7 @@ jobs:
   lint-and-test-frontend:
     runs-on: ubuntu-latest
     container:
-      image: ${{ secrets.DOCKER_REGISTRY_PULL }}/frontend-builder:latest
+      image: ${{ vars.DOCKER_REGISTRY_PULL }}/frontend-builder:latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -57,12 +57,12 @@ jobs:
     needs: [lint-and-test-backend, lint-and-test-frontend]
     runs-on: ubuntu-latest
     container:
-      image: ${{ secrets.DOCKER_REGISTRY_PULL }}/frontend-builder:latest
+      image: ${{ vars.DOCKER_REGISTRY_PULL }}/frontend-builder:latest
     steps:
       - name: Add Gitea SSH host key
         run: |
           mkdir -p ~/.ssh
-          ssh-keyscan ${{ secrets.REPO_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan ${{ vars.REPO_HOST }} >> ~/.ssh/known_hosts
 
       - name: Checkout code
         uses: actions/checkout@v4
@@ -75,7 +75,7 @@ jobs:
         run: |
           cd ranger-app
           touch .env.production.local
-          echo -e ${{ secrets.OCR_RANGER_UI_ENV }} >> .env.production.local
+          echo -e ${{ vars.OCR_RANGER_UI_ENV }} >> .env.production.local
           yarn
           yarn build
 
@@ -89,12 +89,12 @@ jobs:
     needs: [build-frontend]
     runs-on: ubuntu-latest
     container:
-      image: ${{ secrets.DOCKER_REGISTRY_PULL }}/rust-builder:latest
+      image: ${{ vars.DOCKER_REGISTRY_PULL }}/rust-builder:latest
     steps:
       - name: Add Gitea SSH host key
         run: |
           mkdir -p ~/.ssh
-          ssh-keyscan ${{ secrets.REPO_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan ${{ vars.REPO_HOST }} >> ~/.ssh/known_hosts
 
       - name: Checkout code
         uses: actions/checkout@v4
@@ -107,13 +107,13 @@ jobs:
         run: |
           cargo deb --target x86_64-unknown-linux-gnu -p ranger
           DEB_FILE=$(find ./target/x86_64-unknown-linux-gnu/debian/ -maxdepth 1 -type f -name "*.deb")
-          curl -u ${{ secrets.OCR_DEPLOYMENT_USER }}:${{ secrets.OCR_DEPLOYMENT_PASSWORD }} -X POST -H "Content-Type: multipart/form-data" --data-binary "@$DEB_FILE" ${{ secrets.OCR_APT_REPOSITORY }}
+          curl -u ${{ secrets.OCR_DEPLOYMENT_USER }}:${{ secrets.OCR_DEPLOYMENT_PASSWORD }} -X POST -H "Content-Type: multipart/form-data" --data-binary "@$DEB_FILE" ${{ vars.OCR_APT_REPOSITORY }}
 
   staging:
     needs: [build-and-upload-x86-64bit-linux-release-for-ranger]
     runs-on: ubuntu-latest
     container:
-      image: ${{ secrets.DOCKER_REGISTRY_PULL }}/docker:20.10.17
+      image: ${{ vars.DOCKER_REGISTRY_PULL }}/docker:20.10.17
     steps:
       - name: Install Git
         run: |
@@ -132,17 +132,17 @@ jobs:
       - name: Build and push Docker image
         run: |
           docker info
-          echo "${{ secrets.OCR_DEPLOYMENT_PASSWORD }}" | docker login ${{ secrets.DOCKER_REGISTRY }} --username ${{ secrets.OCR_DEPLOYMENT_USER }} --password-stdin
-          docker pull ${{ secrets.DOCKER_REGISTRY }}/ranger-server:latest
+          echo "${{ secrets.OCR_DEPLOYMENT_PASSWORD }}" | docker login ${{ vars.DOCKER_REGISTRY }} --username ${{ secrets.OCR_DEPLOYMENT_USER }} --password-stdin
+          docker pull ${{ vars.DOCKER_REGISTRY }}/ranger-server:latest
           docker build -t ranger-server ./docker
-          docker tag ranger-server:latest ${{ secrets.DOCKER_REGISTRY }}/ranger-server:latest
-          docker push ${{ secrets.DOCKER_REGISTRY }}/ranger-server:latest
+          docker tag ranger-server:latest ${{ vars.DOCKER_REGISTRY }}/ranger-server:latest
+          docker push ${{ vars.DOCKER_REGISTRY }}/ranger-server:latest
 
   sync-to-github:
     if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     container:
-      image: ${{ secrets.DOCKER_REGISTRY_PULL }}/ocr-base-deployment-image:latest
+      image: ${{ vars.DOCKER_REGISTRY_PULL }}/ocr-base-deployment-image:latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
