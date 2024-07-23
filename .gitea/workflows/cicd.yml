@@ -150,7 +150,7 @@ jobs:
       - name: Sync to GitHub
         run: |
           git remote remove github || echo "No repo found"
-          git remote add github https://mannyfred:${{ secrets.MANFRED_GITHUB_TOKEN }}@github.com/Open-Cyber-Range/Ranger.git
+          git remote add github https://${{ secrets.OCR_GITHUB_USER }}:${{ secrets.OCR_GITHUB_TOKEN }}@github.com/Open-Cyber-Range/Ranger.git
           git checkout master
           git pull --rebase origin master
           git push github master:main --force
