@@ -121,6 +121,18 @@ jobs:
     container:
       image: ${{ vars.DOCKER_REGISTRY_PULL }}/docker:20.10.17
     steps:
+      - name: Add Gitea SSH host key
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan ${{ vars.REPO_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          ssh-key: ${{ secrets.DEPLOY_KEY }}
+          ssh-strict: false
+          
       - name: Build and push Docker image
         run: |
           docker info
