@@ -121,24 +121,10 @@ jobs:
     container:
       image: ${{ vars.DOCKER_REGISTRY_PULL }}/docker:20.10.17
     steps:
-      - name: Install Git
-        run: |
-          if ! command -v git &> /dev/null
-          then
-            apt-get update
-            apt-get install -y git
-          fi
-      - name: Install Node.js
-        run: |
-          curl -sL https://deb.nodesource.com/setup_18.x | bash -
-          apt-get install -y nodejs
-      - name: Checkout code
-        uses: actions/checkout@v4
-
       - name: Build and push Docker image
         run: |
           docker info
-          echo "${{ secrets.OCR_DEPLOYMENT_PASSWORD }}" | docker login ${{ vars.DOCKER_REGISTRY }} --username ${{ secrets.OCR_DEPLOYMENT_USER }} --password-stdin
+          docker login ${{ vars.DOCKER_REGISTRY }} -u ${{ secrets.OCR_DEPLOYMENT_USER }} -p ${{ secrets.OCR_DEPLOYMENT_PASSWORD }}
           docker pull ${{ vars.DOCKER_REGISTRY }}/ranger-server:latest
           docker build -t ranger-server ./docker
           docker tag ranger-server:latest ${{ vars.DOCKER_REGISTRY }}/ranger-server:latest
