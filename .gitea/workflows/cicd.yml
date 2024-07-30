@@ -146,7 +146,7 @@ jobs:
 
   sync-to-github:
     if: github.ref == 'refs/heads/master'
-    needs: [build-frontend]
+    needs: [staging]
     runs-on: ubuntu-latest
     container:
       image: ${{ vars.DOCKER_REGISTRY_PULL }}/ocr-base-deployment-image:latest
