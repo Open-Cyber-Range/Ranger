@@ -165,6 +165,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
+          ref: master
+          fetch-depth: 0
           submodules: recursive
           ssh-key: ${{ secrets.DEPLOY_KEY }}
           ssh-strict: false
