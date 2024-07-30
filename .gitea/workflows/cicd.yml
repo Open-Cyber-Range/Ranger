@@ -86,6 +86,7 @@ jobs:
           path: ranger-app/build
 
   build-and-upload-x86-64bit-linux-release-for-ranger:
+    if: github.ref == 'refs/heads/master'
     needs: [build-frontend]
     runs-on: ubuntu-latest
     container:
@@ -116,11 +117,18 @@ jobs:
           curl -u ${{ secrets.OCR_DEPLOYMENT_USER }}:${{ secrets.OCR_DEPLOYMENT_PASSWORD }} -X POST -H "Content-Type: multipart/form-data" --data-binary "@$DEB_FILE" ${{ vars.OCR_APT_REPOSITORY }}
 
   staging:
+    if: github.ref == 'refs/heads/master'
     needs: [build-and-upload-x86-64bit-linux-release-for-ranger]
     runs-on: ubuntu-latest
     container:
-      image: ${{ vars.DOCKER_REGISTRY_PULL }}/docker:20.10.17
+      image: ${{ vars.DOCKER_REGISTRY_PULL }}/docker:20.10.17-dind
     steps:
+      - name: Install Node.js and Git
+        run: |
+          apk update
+          apk add nodejs
+          apk add git
+
       - name: Add Gitea SSH host key
         run: |
           mkdir -p ~/.ssh
@@ -132,11 +140,11 @@ jobs:
           submodules: recursive
           ssh-key: ${{ secrets.DEPLOY_KEY }}
           ssh-strict: false
-          
+
       - name: Build and push Docker image
         run: |
           docker info
-          docker login ${{ vars.DOCKER_REGISTRY }} -u ${{ secrets.OCR_DEPLOYMENT_USER }} -p ${{ secrets.OCR_DEPLOYMENT_PASSWORD }}
+          echo "${{ secrets.OCR_DEPLOYMENT_PASSWORD }}" | docker login ${{ vars.DOCKER_REGISTRY }} -u ${{ secrets.OCR_DEPLOYMENT_USER }} --password-stdin
           docker pull ${{ vars.DOCKER_REGISTRY }}/ranger-server:latest
           docker build -t ranger-server ./docker
           docker tag ranger-server:latest ${{ vars.DOCKER_REGISTRY }}/ranger-server:latest
