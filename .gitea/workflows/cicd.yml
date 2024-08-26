@@ -75,7 +75,7 @@ jobs:
         run: |
           cd ranger-app
           touch .env.production.local
-          echo -e ${{ vars.OCR_RANGER_UI_ENV }} >> .env.production.local
+          printf "%b\n" "${{ vars.OCR_RANGER_UI_ENV }}" >> .env.production.local
           yarn
           yarn build
 
