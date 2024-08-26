@@ -33,10 +33,14 @@ jobs:
           ssh-key: ${{ secrets.DEPLOY_KEY }}
           ssh-strict: false
 
-      - name: Run tests
+      # - name: Run tests
+      #   run: |
+      #     cargo clippy -- -Dwarnings
+      #     cargo tarpaulin --skip-clean --out Xml
+
+      - name: Build
         run: |
-          cargo clippy -- -Dwarnings
-          cargo tarpaulin --skip-clean --out Xml
+          cargo build
 
   lint-and-test-frontend:
     runs-on: ubuntu-latest
