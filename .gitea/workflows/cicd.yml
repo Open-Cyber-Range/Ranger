@@ -171,6 +171,10 @@ jobs:
           ssh-key: ${{ secrets.DEPLOY_KEY }}
           ssh-strict: false
 
+      - name: Fetch all branches and tags
+        run: |
+          git fetch --all
+
       - name: Sync to GitHub
         run: |
           git remote add github https://${{ secrets.OCR_GITHUB_TOKEN }}@github.com/Open-Cyber-Range/Ranger.git
